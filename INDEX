@@ -1,0 +1,25 @@
+Hbcv                    Biased cross-validation (BCV) bandwidth matrix
+                        selector for bivariate data
+Hkda                    Bandwidth matrix selectors for kernel
+                        discriminant analysis for bivariate data
+Hlscv                   Least-squares cross-validation (LSCV)
+                        bandwidth matrix selector for bivariate data
+Hmise.mixt              MISE- and AMISE-optimal bandwidth matrix
+                        selectors for normal mixture densities
+Hpi                     Plug-in bandwidth matrix selector for
+                        bivariate data
+Hscv                    Smoothed cross-validation (SCV) bandwidth
+                        matrix selector for bivariate data
+ise.mixt                ISE, MISE and AMISE of kernel density
+                        estimates for normal and t mixture densities
+kda                     Kernel and parametric discriminant analysis
+kda.kde                 Density estimates for kernel and parametric
+                        discriminant analysis
+kde                     Kernel density estimate for bivariate data
+plot.dade               Density estimates and partition plot for
+                        discriminant analysis for bivariate data
+plot.kde                Kernel density estimate plot for bivariate
+                        data
+pre.sphere              Pre-sphering and pre-scaling
+rmvnorm.mixt            Multivariate normal mixture distribution
+rmvt.mixt               Multivariate t mixture distribution
