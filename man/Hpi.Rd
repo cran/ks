@@ -48,9 +48,9 @@ Plug-in bandwidth matrix.
 
 
 \examples{
-data(faithful)
-Hpi(faithful, nstage=1, pilot="amse", pre="scale")
-Hpi(faithful, nstage=2, pilot="samse", pre="sphere")
-Hpi.diag(faithful, nstage=2, pilot="amse", pre="scale") 
+data(unicef)
+Hpi(unicef, nstage=1, pilot="amse", pre="scale")
+Hpi(unicef, nstage=2, pilot="samse", pre="sphere")
+Hpi.diag(unicef, nstage=2, pilot="amse", pre="scale") 
 }
 \keyword{ smooth }

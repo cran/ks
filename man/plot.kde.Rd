@@ -52,9 +52,9 @@
 \seealso{\code{\link{kde}}}
 
 \examples{
-data(faithful)
-Hpi <- Hpi(faithful)
-fhat <- kde(faithful, Hpi)
+data(unicef)
+H.scv <- Hscv(unicef)
+fhat <- kde(unicef, H.scv)
 
 layout(rbind(c(1,2), c(3,4)))
 plot(fhat, display="slice", cont=seq(10,90, by=20), cex=0.3)

@@ -1,0 +1,5 @@
+unicef.full <- read.table(file="unicef.full.txt", na.strings='-')
+unicef.country <- na.omit(unicef.full[unicef.full[,10] <= 1000,1])
+unicef <- as.matrix(na.omit(unicef.full[unicef.full[,10] <= 1000,c(4,11)]))
+rownames(unicef) <- 1:nrow(unicef)
+colnames(unicef) <- c("GNI", "Ave life exp")

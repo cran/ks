@@ -43,7 +43,7 @@ selector is not available.
 \seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}}
 
 \examples{
-data(faithful)
-Hscv(faithful)
+data(unicef)
+Hscv(unicef)
 }
 \keyword{ smooth }
