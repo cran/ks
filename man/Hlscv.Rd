@@ -39,8 +39,8 @@ LSCV bandwidth matrix.
 \seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}
 
 \examples{
-data(faithful)
-Hlscv(faithful)
-Hlscv.diag(faithful)
+data(unicef)
+Hlscv(unicef)
+Hlscv.diag(unicef)
 }
 \keyword{ smooth }

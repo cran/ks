@@ -47,9 +47,10 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-data(faithful)
-Hpi <- Hpi(faithful)
-fhat <- kde(faithful, Hpi)
+data(unicef)
+H.pi <- Hpi(unicef, nstage=1)
+H.pi1 <- invvech(c(797.5755, -106.63338, 19.56761))
+fhat <- kde(unicef, H.pi)
 }
 
 \keyword{smooth}

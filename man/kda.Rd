@@ -58,7 +58,7 @@ appropriate.  See Silverman (1986).
 
 \details{
   If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise set \code{prior.prob=NULL} (the default) and the sample proportions are
+  Otherwise the default is \code{prior.prob=NULL} and the sample proportions are
   used as the estimates for the prior probabilities.
 
   The parametric discriminant analysers use the code from the

@@ -4,8 +4,6 @@
 ###############################################################################
 
 
-
-
 ###############################################################################
 # Generate grid over a set of points
 #
@@ -159,11 +157,6 @@ kde <- function(x, H, gridsize, supp=3.7, eval.points)
   }
   class(fhat) <- "kde"
 
-  #setClass("kde", representation(x="matrix", eval.points="list", estimate="matrix",
-  #       H="matrix"))
-  #fhat.new <- new("kde", x=fhat$x, eval.points=fhat$eval.points, estimate=fhat$estimate,
-  #    H=fhat$H)
-
   return(fhat)
 }
 
@@ -207,17 +200,22 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
     eval.x.len <- length(eval.x)
     eval.pts <- permute(list(eval.x, eval.y))
     fhat <- dmvnorm(eval.pts, x[i,], H)
-
+    
     # place vector of density estimate values `fhat' onto grid 'fhat.grid' 
     for (j in 1:length(eval.y))
       fhat.grid[eval.x.ind, eval.y.ind[j]] <- 
         fhat.grid[eval.x.ind, eval.y.ind[j]] + 
           fhat[((j-1) * eval.x.len + 1):(j * eval.x.len)] 
+#	  print(i)
   }
+  #browser()
   fhat.grid <- fhat.grid/n
-  length(gridx) <- length(gridx) - 1 
+  gridx1 <- list(gridx[[1]], gridx[[2]]) 
+  #fhat.list <- list()
+  #fhat.list$x <- x
+  fhat.list <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H)
   
-  return(list(x=x, eval.points=gridx, estimate=fhat.grid, H=H))
+  return(fhat.list)
 }
 
 
@@ -289,11 +287,11 @@ kde.pc.grid.2d <- function(x.pc, H.pc, gridsize, supp=3.7)
             fhat[((k-1) * eval.xj.len + 1):(k * eval.xj.len)]      
     }
   }
-  
+
   fhat.grid <- fhat.grid/n
-  length(gridx) <- length(gridx) - 1 
+  gridx1 <- list(gridx[[1]], gridx[[2]])
     
-  return(list(x=x.pc, eval.points=gridx, estimate=fhat.grid, H=H.pc))
+  return(list(x=x.pc, eval.points=gridx1, estimate=fhat.grid, H=H.pc))
 }      
 
 

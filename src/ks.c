@@ -153,7 +153,7 @@ void dmvnormd1_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       y = x2[i - 1];
       
       derivt[i - 1] = 
-	(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+	(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
          pow(sigma11,2)*pow(y,2))/
        (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
      (2*pow(sigma22,2)*x - 2*rho*sigma11*sigma22*y))/
@@ -166,7 +166,7 @@ void dmvnormd1_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       y = x2[i - 1];
       
       derivt[i - 1] =
-	(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+	(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
          pow(sigma11,2)*pow(y,2))/
        (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
      (-2*rho*sigma11*sigma22*x + 2*pow(sigma11,2)*y))/
@@ -203,7 +203,7 @@ void dmvnormd2_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  x = x1[i - 1];
 	  y = x2[i - 1];
 	  
-	  derivt[i - 1] = (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	  derivt[i - 1] = (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -222,7 +222,7 @@ void dmvnormd2_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] = 
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -241,7 +241,7 @@ void dmvnormd2_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] = 
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -285,7 +285,7 @@ void dmvnormd3_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
 	
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (pow(sigma22,3)*pow(x,3) - 3*rho*sigma11*pow(sigma22,2)*pow(x,2)*y + 
@@ -301,7 +301,7 @@ void dmvnormd3_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
 	
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (2*pow(rho,4)*pow(sigma11,3)*pow(sigma22,2)*y + 
@@ -319,7 +319,7 @@ void dmvnormd3_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
 	
-      derivt[i - 1] = (pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = (pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (pow(rho,2)*pow(sigma22,3)*pow(x,3) - 
@@ -335,7 +335,7 @@ void dmvnormd3_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
 	
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (-(pow(rho,3)*pow(sigma22,3)*x*(3*pow(sigma11,2) + pow(x,2))) + 
@@ -377,7 +377,7 @@ void dmvnormd4_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	y = x2[i - 1];
 	
 	derivt[i - 1] = 
-	  (pow(E,(pow(sigma22,2)*pow(x,2) -2*rho*sigma11*sigma22*x*y + 
+	  (pow(M_E,(pow(sigma22,2)*pow(x,2) -2*rho*sigma11*sigma22*x*y + 
 		    pow(sigma11,2)*pow(y,2))/
 	       (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
 		pow(sigma22,2)))*
@@ -402,7 +402,7 @@ void dmvnormd4_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	y = x2[i - 1];
 	
 	derivt[i - 1] =  
-	  (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	  (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		    2*rho*sigma11*sigma22*x*y + 
 		    pow(sigma11,2)*pow(y,2))/
 		     (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -435,7 +435,7 @@ void dmvnormd4_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
             x = x1[i - 1];
             y = x2[i - 1];
 	    derivt[i - 1] =
-	      (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	      (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 			2*rho*sigma11*sigma22*x*y + 
 			pow(sigma11,2)*pow(y,2))/
 		   (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -466,7 +466,7 @@ void dmvnormd4_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	y = x2[i - 1];
 	
 	derivt[i - 1] = 
-	  (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	  (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		    2*rho*sigma11*sigma22*x*y + 
 		    pow(sigma11,2)*pow(y,2))/
 	       (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -502,7 +502,7 @@ void dmvnormd4_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		   (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -552,7 +552,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
       
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (sigma22*x - rho*sigma11*y)*(240*pow(-1 + pow(rho,2),2)*pow(sigma11,4)*
@@ -567,7 +567,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
       
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (-3*pow(-1 + pow(rho,2),2)*pow(sigma11,4)*pow(sigma22,4)*
@@ -586,7 +586,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
     {
       x = x1[i - 1];
       y = x2[i - 1];
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (pow(rho,2)*pow(sigma22,5)*pow(x,5) - 
@@ -610,7 +610,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
     {
       x = x1[i - 1];
       y = x2[i - 1];
-      derivt[i - 1] = (pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = (pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
          pow(sigma11,2)*pow(y,2))/
        (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
      (6*pow(rho,7)*pow(sigma11,4)*pow(sigma22,5)*x - 
@@ -643,7 +643,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
     {
       x = x1[i - 1];
       y = x2[i - 1];  
-      derivt[i - 1] = (pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = (pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
          pow(sigma11,2)*pow(y,2))/
        (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
      (-(pow(sigma11,2)*(sigma22*x - rho*sigma11*y)*
@@ -662,7 +662,7 @@ void dmvnormd5_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
     {
       x = x1[i - 1];
       y = x2[i - 1];
-      derivt[i - 1] = -(pow(E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (-(rho*sigma22*x) + sigma11*y)*(240*pow(-1 + pow(rho,2),2)*pow(sigma11,8)*
@@ -702,7 +702,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] = 
-	    (pow(E,(pow(sigma22,2)*pow(x,2) -2*rho*sigma11*sigma22*x*y + 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) -2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)* pow(sigma22,2)))*
 	     (pow(sigma22,6)*pow(x,6) - 
@@ -740,7 +740,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -799,7 +799,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  x = x1[i - 1];
 	  y = x2[i - 1];
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -848,7 +848,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  x = x1[i - 1];
 	  y = x2[i - 1];
 	  derivt[i - 1] = 
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -918,7 +918,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  x = x1[i - 1];
 	  y = x2[i - 1];  
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -965,7 +965,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  x = x1[i - 1];
 	  y = x2[i - 1];
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
 		 (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -1025,7 +1025,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 	  y = x2[i - 1];
 	  
 	  derivt[i - 1] =
-	    (pow(E,(pow(sigma22,2)*pow(x,2) - 
+	    (pow(M_E,(pow(sigma22,2)*pow(x,2) - 
 		      2*rho*sigma11*sigma22*x*y + 
 		      pow(sigma11,2)*pow(y,2))/
      (2.*(-1 + pow(rho,2))*pow(sigma11,2)*
@@ -1713,81 +1713,81 @@ void dmvnormd2_4d(double *x1, double *x2, double *x3, double *x4, double *vsigma
   if ((r[0] == 2) && (r[1] == 0) && (r[2] == 0) && (r[3] == 0)) 	  
   {  
     derivt[i - 1] =
-(-(1/(pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+(-(1/(pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
               pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*
           pow(sigma11,2))) + pow(y1,2)/
-      (pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
             pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*pow(sigma11,4)
        ))/(4.*pow(M_PI,2)*sigma11*sigma22*sigma33*sigma44);
   }
   else if ((r[0] == 0) && (r[1] == 2) && (r[2] == 0) && (r[3] == 0))
   {
     derivt[i - 1] =
-      (-(1/(pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (-(1/(pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
               pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*
           pow(sigma22,2))) + pow(y2,2)/
-      (pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
             pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*pow(sigma22,4)
        ))/(4.*pow(M_PI,2)*sigma11*sigma22*sigma33*sigma44);
   }
   else if ((r[0] == 0) && (r[1] == 0) && (r[2] == 2) && (r[3] == 0))
   {
     derivt[i - 1] = 
-      (-(1/(pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (-(1/(pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
               pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*
           pow(sigma33,2))) + pow(y3,2)/
-      (pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
             pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*pow(sigma33,4)
        ))/(4.*pow(M_PI,2)*sigma11*sigma22*sigma33*sigma44);
   }
   else if ((r[0] == 0) && (r[1] == 0) && (r[2] == 0) && (r[3] == 2))
   {    
     derivt[i - 1] =
-	(-(1/(pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+	(-(1/(pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
               pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*
           pow(sigma44,2))) + pow(y4,2)/
-      (pow(E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
+      (pow(M_E,(pow(y1,2)/pow(sigma11,2) + pow(y2,2)/pow(sigma22,2) + 
             pow(y3,2)/pow(sigma33,2) + pow(y4,2)/pow(sigma44,2))/2.)*pow(sigma44,4)
        ))/(4.*pow(M_PI,2)*sigma11*sigma22*sigma33*sigma44);
   }
   else if ((r[0] == 1) && (r[1] == 1) && (r[2] == 0) && (r[3] == 0))
   {
-    derivt[i - 1] = (y1*y2)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y1*y2)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*pow(sigma11,3)*
 			       pow(sigma22,3)*sigma33*sigma44);
   }
   else if ((r[0] == 1) && (r[1] == 0) && (r[2] == 1) && (r[3] == 0))
   {
-    derivt[i - 1] = (y1*y3)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y1*y3)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*pow(sigma11,3)*sigma22*
 			     pow(sigma33,3)*sigma44);
   }
   else if ((r[0] == 1) && (r[1] == 0) && (r[2] == 0) && (r[3] == 1))
   {
-    derivt[i - 1] = (y1*y4)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y1*y4)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*pow(sigma11,3)*sigma22*
 			     sigma33*pow(sigma44,3));
   }
   else if ((r[0] == 0) && (r[1] == 1) && (r[2] == 1) && (r[3] == 0))
   {    
-    derivt[i - 1] = (y2*y3)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y2*y3)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*sigma11*pow(sigma22,3)*
 			     pow(sigma33,3)*sigma44);
   }
   else if ((r[0] == 0) && (r[1] == 1) && (r[2] == 0) && (r[3] == 1))		     
   {    
-    derivt[i - 1] = (y2*y4)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y2*y4)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*sigma11*pow(sigma22,3)*
 			     sigma33*pow(sigma44,3));
   }
   else if ((r[0] == 0) && (r[1] == 0) && (r[2] == 1) && (r[3] == 1))
   {    
-    derivt[i - 1] = (y3*y4)/(4.*pow(E,(pow(y1,2)/pow(sigma11,2) + 
+    derivt[i - 1] = (y3*y4)/(4.*pow(M_E,(pow(y1,2)/pow(sigma11,2) + 
          pow(y2,2)/pow(sigma22,2) + pow(y3,2)/pow(sigma33,2) + 
          pow(y4,2)/pow(sigma44,2))/2.)*pow(M_PI,2)*sigma11*sigma22*
 			     pow(sigma33,3)*pow(sigma44,3));

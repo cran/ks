@@ -100,7 +100,7 @@
 
 \title{Internal functions in the ks library}
 \description{
-These functions are user-level and the user is not required to use them directly.   
+These functions are user-level but the user is not required to use them directly.   
 }
 
 

@@ -54,8 +54,8 @@ BCV bandwidth matrix.
 }
 
 \examples{
-data(faithful)
-Hbcv(faithful)
-Hbcv.diag(faithful)
+data(unicef)
+Hbcv(unicef)
+Hbcv.diag(unicef)
 }
 \keyword{ smooth }

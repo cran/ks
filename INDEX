@@ -23,3 +23,4 @@ plot.kde                Kernel density estimate plot for bivariate
 pre.sphere              Pre-sphering and pre-scaling
 rmvnorm.mixt            Multivariate normal mixture distribution
 rmvt.mixt               Multivariate t mixture distribution
+unicef                  Unicef child mortality - life expectancy data
