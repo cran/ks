@@ -68,6 +68,29 @@ psins.2d <- function(r, Sigma)
   return(1/sqrt(2*pi)^2 * sqrt(det(A))*psi) 
 }
   
+psins.3d <- function(r, Sigma)
+{
+  A <- chol2inv(chol(2*Sigma[1:3, 1:3]))
+  a11 <- A[1,1]
+  a22 <- A[2,2]
+  a33 <- A[3,3]
+  a44 <- 0
+
+  a12 <- A[1,2]
+  a13 <- A[1,3]
+  a14 <- 0
+  a23 <- A[2,3]
+  a24 <- 0
+  a34 <- 0
+  
+  r <- c(r, 0) 
+  if (sum(r)==6)
+    psi <- psins.4d.part6(r, a11, a22, a33, a44, a12, a13, a14, a23, a24, a34)
+  else if (sum(r)==8)
+    psi <- psins.4d.part8(r, a11, a22, a33, a44, a12, a13, a14, a23, a24, a34)
+
+  return(1/sqrt(2*pi)^3 * sqrt(det(A))*psi)
+}
 
 psins.4d <- function(r, Sigma)
 {
@@ -84,15 +107,63 @@ psins.4d <- function(r, Sigma)
   a24 <- A[2,4]
   a34 <- A[3,4]
   
-  
   if (sum(r)==6)
     psi <- psins.4d.part6(r, a11, a22, a33, a44, a12, a13, a14, a23, a24, a34)
   else if (sum(r)==8)
     psi <- psins.4d.part8(r, a11, a22, a33, a44, a12, a13, a14, a23, a24, a34)
+
   return(1/sqrt(2*pi)^4 * sqrt(det(A))*psi)
 }
 
 
+psins.5d <- function(r, Sigma)
+{
+  A <- chol2inv(chol(2*Sigma[1:5,1:5]))
+  a11 <- A[1,1]
+  a22 <- A[2,2]
+  a33 <- A[3,3]
+  a44 <- A[4,4]
+  a55 <- A[3,3]
+  a66 <- 0
+  
+  a12 <- A[1,2]
+  a13 <- A[1,3]
+  a14 <- A[1,4]
+  a15 <- A[1,5]
+  a16 <- 0
+  a23 <- A[2,3]
+  a24 <- A[2,4]
+  a25 <- A[2,5]
+  a26 <- 0
+  a34 <- A[3,4]
+  a35 <- A[3,5]
+  a36 <- 0
+  a45 <- A[4,5]
+  a46 <- 0
+  a56 <- 0
+
+  r <- c(r,0)  
+  if (sum(r)==6)
+   psi <- psins.6d.part6(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
+                          a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
+  else if (sum(r)==8)
+  {
+    psi	<- psins.6d.part81(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
+                          a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
+    if (is.na(psi))
+      psi <- psins.6d.part82(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
+                          a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
+    if (is.na(psi))
+      psi <- psins.6d.part83(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
+                          a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
+    if (is.na(psi))
+      psi <- psins.6d.part84(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
+                          a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
+  }
+  return(1/sqrt(2*pi)^6 * sqrt(det(A))*psi)
+}
+
+ 
 psins.6d <- function(r, Sigma)
 {
   A <- chol2inv(chol(2*Sigma))
@@ -2765,10 +2836,10 @@ return(psi)
 psins.6d.part81 <- function(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
                            a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
 {
-
+psi <- NA
 if ((r[1]==8) & (r[2]==0) & (r[3]==0) & (r[4]==0)  & (r[5]==0) & (r[6]==0))
-    psi <- 105*a11^4
- if ((r[1]==7) & (r[2]==1) & (r[3]==0) & (r[4]==0) & (r[5]==0) & (r[6]==0))
+    psi <- 105*a11^4 
+if ((r[1]==7) & (r[2]==1) & (r[3]==0) & (r[4]==0) & (r[5]==0) & (r[6]==0))
   psi <- 105*a11^3*a12
  if ((r[1]==7) & (r[2]==0) & (r[3]==1) & (r[4]==0) & (r[5]==0) & (r[6]==0))
 psi <-
@@ -4455,8 +4526,7 @@ psi <-
 3*(4*a12*a16*a25*a55 + 2*a12^2*a55*a56 + 2*a15^2*(2*a25*a26 + a22*a56) + 
   2*a15*(2*a16*a25^2 + a16*a22*a55 + 2*a12*a26*a55 + 4*a12*a25*a56) + 
   a11*(2*a25*a26*a55 + 2*a25^2*a56 + a22*a55*a56))
-else 
-  psi <- NA
+
 
 return(psi)
 }
@@ -4469,7 +4539,7 @@ return(psi)
 psins.6d.part82 <- function(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
                            a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
 {
-  
+  psi <- NA
 if ((r[1]==2) & (r[2]==2) & (r[3]==0) & (r[4]==0) & (r[5]==2) & (r[6]==2))
 psi <-
 2*a11*a26^2*a55 + 2*a16^2*(2*a25^2 + a22*a55) + 8*a11*a25*a26*a56 + 
@@ -6088,8 +6158,6 @@ psi <-
  2*(a14*(2*a26^2*a45 + 4*a25*a26*a46 + 4*a24*a26*a56 + 2*a22*a46*a56 + 
      2*a24*a25*a66 + a22*a45*a66) + a12*(4*a26*a45*a46 + 2*a25*a46^2 + 
      2*a26*a44*a56 + 4*a24*a46*a56 + a25*a44*a66 + 2*a24*a45*a66))
-else
-   psi <- NA
 
 return(psi)
 }
@@ -6097,6 +6165,7 @@ return(psi)
 psins.6d.part83 <- function(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
                            a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
 {
+psi <- NA
   if ((r[1]==1) & (r[2]==2) & (r[3]==0) & (r[4]==2) & (r[5]==0) & (r[6]==3))
 psi <-
 3*(a16*(2*a26^2*a44 + 8*a24*a26*a46 + 2*a22*a46^2 + 2*a24^2*a66 + 
@@ -7726,8 +7795,7 @@ psi <-
 3*(2*a24^2*(a26*a33 + 2*a23*a36) + 2*a23^2*a26*a44 + 
   2*a24*(4*a23*a26*a34 + 2*a22*a34*a36 + 2*a23^2*a46 + a22*a33*a46) + 
   a22*(2*a26*a34^2 + a26*a33*a44 + 2*a23*a36*a44 + 4*a23*a34*a46))
-else
-   psi <- NA
+
 
 return(psi)
 }
@@ -7735,6 +7803,7 @@ return(psi)
 psins.6d.part84 <- function(r, a11, a22, a33, a44, a55, a66, a12, a13, a14, a15,
                            a16, a23, a24, a25, a26, a34, a35, a36, a45, a46, a56)
 {
+psi <- NA
 if ((r[1]==0) & (r[2]==3) & (r[3]==2) & (r[4]==1) 
 & (r[5]==2) & (r[6]==0))
 psi <-

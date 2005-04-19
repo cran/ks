@@ -4,9 +4,9 @@
 
 
 \title{Least-squares cross-validation (LSCV) bandwidth matrix selector
-  for bivariate data}
+  for multivariate data}
 \description{
-LSCV bandwidth matrix for bivariate data.}
+LSCV bandwidth matrix for 2- to 6-dimensional data}
 \usage{
 Hlscv(x, Hstart)
 Hlscv.diag(x, Hstart)

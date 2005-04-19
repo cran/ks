@@ -38,12 +38,15 @@ Hamise.mixt(mus, Sigmas, props, samp, Hstart)
   Chapman \& Hall. London. } 
 
 \examples{
-mus <- rbind(c(-3/2,0), c(3/2,0))
-Sigmas <- rbind(diag(c(1/16, 1)), rbind(c(1/16, 1/18), c(1/18, 1/16)))
-props <- c(2/3, 1/3)
-samp <- 100
+mus <- rbind(c(0,0,0), c(2,2,2))
+Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
+Sigmas <- rbind(Sigma, Sigma)
+props <- c(1/2, 1/2)
+samp <- 1000
 Hmise.mixt(mus, Sigmas, props, samp)
 Hamise.mixt(mus, Sigmas, props, samp)
+
+
 }
 
 \keyword{ smooth}

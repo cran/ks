@@ -4,7 +4,7 @@
 \title{Smoothed cross-validation (SCV) bandwidth matrix selector
   for bivariate data}
 \description{
-SCV bandwidth matrix for bivariate data.}
+SCV bandwidth matrix for 2- to 6-dimensional data.}
 \usage{
 Hscv(x, pre="sphere", Hstart)
 }

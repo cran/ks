@@ -1,7 +1,7 @@
 .First.lib <- function(lib=NULL, pkg=ks)
 {
   library.dynam("ks", pkg, lib)
-  cat("ks version 1.2   (2004) \n")
+  cat("ks version 1.3.1   (2005) \n")
 }  
 
 require(mvtnorm)
@@ -106,6 +106,22 @@ invvech.cat <- function(x, d)
   
 }
 
+
+
+##### Trace of matrix
+
+tr <- function(A)
+{
+  count <- 0
+  if (is.vector(A)) return (A[1])
+  if (nrow(A)!=ncol(A))
+    stop('Not square matrix')
+
+  else 
+     for (i in 1:nrow(A))
+       count <- count + A[i,i]
+  return(count)
+}
 
 ###############################################################################
 # Permute a list of values
@@ -282,20 +298,22 @@ is.even <- function(x)
 # Taken from Felipe Osorio http://www.ime.usp.br/~osorio/files/dupl.q
 ###############################################################################
 
-dupl <- function(order, ret.q = F)
+dupl <- function(order, ret.q = FALSE)
 {
-# call
+    # call
     cl <- match.call()
     time1 <- proc.time()
     if (!is.integer(order))
         order <- as.integer(order)
     n <- order - 1
-# initial duplication matrix
+    
+    # initial duplication matrix
     d1 <- matrix(0, nrow = 1, ncol = 1)
     d1[1,1] <- 1
     if (!is.integer(d1))
         storage.mode(d1) <- "integer"
-# recursive formula
+    
+    # recursive formula
     if (n > 0){
     	for (k in 1:n){
     	    drow <- 2*k + 1 + nrow(d1)
@@ -307,7 +325,7 @@ dupl <- function(order, ret.q = F)
     	    d2[(k+2):(2*k+1),2:(k+1)] <- diag(k)
     	    d2[(2*k+2):drow,(k+2):dcol] <- d1
     	    # permutation matrix
-    	    q <- permut(k)
+    	    q <- permute.mat(k)
     	    # new duplication matrix
     	    d2 <- q %*% d2
     	    storage.mode(d2) <- "integer"
@@ -318,7 +336,7 @@ dupl <- function(order, ret.q = F)
     	d2 <- q <- d1
     }
     
-# results
+    # results
     obj <- list(call=cl, order=order, d=d2)
     if (ret.q)
         obj$q <- q
@@ -326,19 +344,20 @@ dupl <- function(order, ret.q = F)
     obj
 }
 
-invdupl <- function(order, ret.q = F)
+invdupl <- function(order, ret.q = FALSE)
 {
-# call
+    # call
     cl <- match.call()
     time1 <- proc.time()
     if (!is.integer(order))
         order <- as.integer(order)
     n <- order - 1
-# initial inverse of duplication matrix
+
+    # initial inverse of duplication matrix
     h1 <- matrix(0, nrow = 1, ncol = 1)
     h1[1,1] <- 1
 
-# recursive formula
+    # recursive formula
     if (n > 0){
     	for (k in 1:n){
     	    hrow <- k + 1 + nrow(h1)
@@ -349,7 +368,7 @@ invdupl <- function(order, ret.q = F)
     	    h2[2:(k+1),(k+2):(2*k+1)] <- .5*diag(k)
     	    h2[(k+2):hrow,(2*k+2):hcol] <- h1
     	    # permutation matrix
-    	    q <- permut(k)
+    	    q <- permute.mat(k)
     	    # new inverse of duplication matrix
     	    h2 <- h2 %*% t(q)
     	    h1 <- h2
@@ -359,7 +378,7 @@ invdupl <- function(order, ret.q = F)
     	h2 <- q <- h1
     }
     
-# results
+    # results
     obj <- list(call=cl, order=order, h=h2)
     if (ret.q)
         obj$q <- q
@@ -367,7 +386,7 @@ invdupl <- function(order, ret.q = F)
     obj
 }
 
-permut <- function(order)
+permute.mat <- function(order)
 {
     m <- as.integer(order)
     m <- m + 1

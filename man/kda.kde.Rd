@@ -2,13 +2,15 @@
 \alias{kda.kde}
 \alias{pda.pde}
 
-\title{Density estimates for kernel and parametric discriminant analysis}
+\title{Density estimates for kernel and parametric discriminant analysis
+   for multivariate data}
 \description{
-  Density estimates for kernel and parametric discriminant analysis.
+  Density estimates for kernel and parametric discriminant analysis 
+   for 2- to 6-dimensional data.
 }
 \usage{
-kda.kde(x, x.group, Hs, gridsize=c(100,100), supp=3.7, eval.points=NULL)
-pda.pde(x, x.group, gridsize=c(100,100), type="quad", xlim, ylim)
+kda.kde(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
+pda.pde(x, x.group, gridsize, type="quad", xlim, ylim)
 }
 
 \arguments{
@@ -42,7 +44,7 @@ pda.pde(x, x.group, gridsize=c(100,100), type="quad", xlim, ylim)
   
   If \code{gridsize} is not set to a specific value, then it
   defaults to 100 grid points in each co-ordinate direction
-  i.e. \code{c(100,100)}. Not required
+  i.e. \code{rep(100, d)}. Not required
   to be set if specifying \code{eval.points}.
 
   If \code{eval.points} is not specified, then the

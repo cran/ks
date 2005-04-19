@@ -3,13 +3,15 @@
 \alias{Hkda.diag}
 
 \title{Bandwidth matrix selectors for kernel discriminant analysis for
-  bivariate data}
+  multivariate data}
 \description{
-  Bandwidth matrices for kernel discriminant analysis for bivariate data.
+  Bandwidth matrices for kernel discriminant analysis for 2- to 6-dimensional data.
 }
 \usage{
-Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",pre="sphere")
-Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere")
+Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
+     pre="sphere")
+Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
+     pre="sphere")
 }
 
 \arguments{
@@ -18,8 +20,8 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere")
   \item{bw}{bandwidth: \code{"plugin"} = plug-in, \code{"lscv"} = LSCV, 
   \code{"scv"} = SCV} 
  \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{\code{"amse"} = AMSE-optimal pilot bandwidths,
-    \code{"samse"} = single SAMSE-optimal pilot bandwidth}
+  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
+    \code{"samse"} = single SAMSE pilot bandwidth}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} =
     pre-sphering}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
@@ -47,8 +49,8 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere")
   the other two need to be set.  For LSCV selectors, none of them are required. 
 
 
-  For \code{Hkda.diag}, only \code{"plugin"} or \code{"lscv"} are valid
-  which in turn call  \code{\link{Hpi.diag}} 
+  For \code{Hkda.diag}, options are \code{"plugin"} or \code{"lscv"}
+  which in turn call respectively \code{\link{Hpi.diag}} 
   and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
   \code{pre} are available for \code{Hpi.diag} but not required for
   \code{Hlscv.diag}.

@@ -58,8 +58,8 @@ appropriate.  See Silverman (1986).
 
 \details{
   If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise the default is \code{prior.prob=NULL} and the sample proportions are
-  used as the estimates for the prior probabilities.
+  Otherwise the default is to use the sample proportions as 
+  estimates of the prior probabilities.
 
   The parametric discriminant analysers use the code from the
   \code{MASS} library namely \code{lda} and
@@ -71,11 +71,26 @@ appropriate.  See Silverman (1986).
 }
 
 \examples{
+
+### bivariate example - restricted iris dataset  
 library(MASS)
 data(iris)
 iris.mat <- rbind(iris[,,1], iris[,,2], iris[,,3])
 ir <- iris.mat[,c(1,2)]
 ir.gr <- iris.mat[,5]
+
+H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
+kda.gr <- kda(ir, ir.gr, H, ir)
+lda.gr <- pda(ir, ir.gr, ir, type="line")
+qda.gr <- pda(ir, ir.gr, ir, type="quad")
+
+compare(kda.gr, ir.gr)
+compare(qda.gr, ir.gr)
+compare(lda.gr, ir.gr)
+
+### multivariate example - full iris dataset
+ir <- iris[,1:4]
+ir.gr <- iris[,5]
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.gr <- kda(ir, ir.gr, H, ir)

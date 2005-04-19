@@ -1,0 +1,41 @@
+README file for ks 
+
+
+New in v1.3
+
+1. Multivariate (for 3 to 6 dimensions inclusive) bandwidth selectors added 
+for `Hpi', `Hpi.diag' (plugin), `Hlscv', `Hlscv.diag' (least squares cross 
+validation) and `Hscv' (smoothed cross-validation).  So this means that 
+these selectors can also be used in kernel discriminant analysis. (NB: 
+because `Hbcv' and `Hbcv.diag' (biased cross validation) performed poorly 
+for 2-dimensions, these have not been implemented in the higher dimensions).
+   
+
+
+New in v1.2
+
+1. The child mortality data set `unicef' is used in the examples now. See `unicef'
+for more details.
+
+2. Package has been checked by CRAN testers and has been accepted on the CRAN
+website. To pass all the necessary checks involved some internal programming 
+changes but has not affected the user interface.   
+
+New in v1.1
+
+1. The `adapt' library is no longer required. This was formerly used on 
+the functions for integrated squared error computations (i.e. `ise.mixt' 
+and `iset.mixt').
+
+2. Kernel discriminant analysers are now available. See help on 
+`kda' and `Hkda'; Parametric (i.e. linear and quadratic) discriminant analysers 
+are accessed using  `pda'.
+
+3. Cross validation bandwidth selectors are now available. They are `Hbcv' and
+`Hbcv.diag' for biased cross validation, `Hlscv' and `Hlscv.diag" for least squares
+cross validation and `Hscv' for smoothed cross-validation.
+
+4. S3 type objects have been introduced.  The output from `kde' are `kde' objects.
+The output from `kda.kde' and `pda.pde' are `dade' objects. The major effect of this
+is that the corresponding plot functions (i.e.`plot.kde' and `plot.dade') will 
+be called automatically by invoking just `plot'.

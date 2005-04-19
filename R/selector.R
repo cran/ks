@@ -79,7 +79,7 @@ Psi4.list <- function(d)
 
 
 ###############################################################################
-# Estimate g_AMSE pilot bandwidths for even orders
+# Estimate g_AMSE pilot bandwidths for even orders - 2-dim
 #
 # Parameters
 # r - (r1, r2) partial derivative
@@ -102,7 +102,7 @@ gamse.even.2d <- function(r, n, psi1, psi2)
 }
 
 ###############################################################################
-# Estimate g_AMSE pilot bandwidths for odd orders
+# Estimate g_AMSE pilot bandwidths for odd orders - 2-dim
 #
 # Parameters
 #
@@ -237,6 +237,104 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
   return (g.samse)      
 }
 
+
+
+###############################################################################
+# Estimate g_SAMSE pilot bandwidth - 3-dim 
+#
+# Parameters
+# Sigma.star - scaled variance matrix
+# n - sample size
+#
+# Returns
+# g_SAMSE pilot bandwidth
+###############################################################################
+
+gsamse.3d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
+{
+  d <- 3
+  RK <- numeric(); K <- numeric(); psi <- numeric()
+
+  d0 <- 4
+  derivt <- numeric()
+  for (j1 in d0:0)
+    for (j2 in d0:0)
+      for (j3 in d0:0)
+          if (sum(c(j1,j2,j3))==d0) derivt <- rbind(derivt, c(j1,j2,j3))
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+          if (sum(c(j1,j2,j3))==d1) derivt6 <- rbind(derivt6, c(j1,j2,j3))
+  d2 <- 8
+  derivt8 <- numeric()
+  for (j1 in d2:0)
+    for (j2 in d2:0)
+      for (j3 in d2:0)
+          if (sum(c(j1,j2,j3))==d2) derivt8 <- rbind(derivt8, c(j1,j2,j3))
+
+ 
+                          
+  # 4th order g_SAMSE
+  if (modr == 4)
+  {
+    for (i in 1:nrow(derivt))
+    {
+      r <- derivt[i,]        
+      if (is.even(r))
+      {
+        K <- c(K, dmvnorm.deriv.3d(x=rep(0,d), r=r, Sigma=diag(d)))
+
+        A3psi <- 0
+        for (j in 1:d)
+        {
+          if (nstage==1)
+            A3psi <- A3psi + psins.3d(r=r+2*elem(j,d), Sigma=Sigma.star)
+          else if (nstage==2)
+            A3psi <- A3psi + psihat[which.mat(r=r+2*elem(j,d), mat=derivt6)]
+          psi <- c(psi, A3psi)     
+        }
+      }
+    }
+  }
+  #6-th order g_SAMSE
+  else if (modr==6)
+  {
+    for (i in 1:nrow(derivt6))
+    {
+      r <- derivt6[i,]        
+      
+      if (is.even(r))
+      {
+        K <- c(K, dmvnorm.deriv.3d(x=rep(0,d), r=r, Sigma=diag(d)))
+        
+        A3psi <- 0
+        for (j in 1:d)
+          A3psi <- A3psi + psins.3d(r=r+2*elem(j,d), Sigma=Sigma.star)
+        
+        psi <- c(psi, A3psi)
+      }
+    }
+  }
+  
+  
+  # see thesis for formula
+  #A0 <- sum(RK)
+  A1 <- sum(K^2)
+  A2 <- sum(K * psi)  
+  A3 <- sum(psi^2)
+  B1 <- (2*modr + 2*d)*A1
+  B2 <- (modr + d - 2)*A2
+  B3 <- A3
+  gamma <- (-B2 + sqrt(B2^2 + 4*B1*B3)) / (2*B1)
+  
+  g.samse <- (gamma * n)^(-1/(modr + d + 2))
+  
+  return (g.samse)      
+}
+
+
 ###############################################################################
 # Estimate g_SAMSE pilot bandwidth - 4-dim 
 #
@@ -334,6 +432,108 @@ gsamse.4d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
   
   return (g.samse)      
 }
+
+
+###############################################################################
+# Estimate g_SAMSE pilot bandwidth - 5-dim 
+#
+# Parameters
+# Sigma.star - scaled variance matrix
+# n - sample size
+#
+# Returns
+# g_SAMSE pilot bandwidth
+###############################################################################
+
+gsamse.5d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
+{
+  d <- 5
+  RK <- numeric(); K <- numeric(); psi <- numeric()
+
+  d0 <- 4
+  derivt <- numeric()
+  for (j1 in d0:0)
+    for (j2 in d0:0)
+      for (j3 in d0:0)
+        for (j4 in d0:0)
+          for (j5 in d0:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d0)
+                derivt <- rbind(derivt, c(j1,j2,j3,j4,j5))
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+        for (j4 in d1:0)
+          for (j5 in d1:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d1)
+                derivt6 <- rbind(derivt6, c(j1,j2,j3,j4,j5))
+  d2 <- 8
+  derivt8 <- numeric()
+  for (j1 in d2:0)
+    for (j2 in d2:0)
+      for (j3 in d2:0)
+        for (j4 in d2:0)
+          for (j5 in d2:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d2)
+                derivt8 <- rbind(derivt8, c(j1,j2,j3,j4,j5))
+                        
+  # 4th order g_SAMSE
+  if (modr == 4)
+  {
+    for (i in 1:nrow(derivt))
+    {
+      r <- derivt[i,]        
+      if (is.even(r))
+      {
+        K <- c(K, dmvnorm.deriv.5d(x=rep(0,d), r=r, Sigma=diag(d)))
+
+        A3psi <- 0
+        for (j in 1:d)
+        {
+          if (nstage==1)
+            A3psi <- A3psi + psins.5d(r=r+2*elem(j,d), Sigma=Sigma.star)
+          else if (nstage==2)
+            A3psi <- A3psi + psihat[which.mat(r=r+2*elem(j,d), mat=derivt6)]
+          psi <- c(psi, A3psi)
+        }
+      }
+    }
+  }
+  #6-th order g_SAMSE
+  else if (modr==6)
+  {
+    for (i in 1:nrow(derivt6))
+    {
+      r <- derivt6[i,]        
+
+      if (is.even(r))
+      {
+        K <- c(K, dmvnorm.deriv.5d(x=rep(0,d), r=r, Sigma=diag(d)))
+        A3psi <- 0
+        for (j in 1:d)
+          A3psi <- A3psi + psins.5d(r=r+2*elem(j,d), Sigma=Sigma.star)
+        
+        psi <- c(psi, A3psi)
+      }
+    }
+  }
+  
+  # see thesis for formula
+  #A0 <- sum(RK)
+  A1 <- sum(K^2)
+  A2 <- sum(K * psi)  
+  A3 <- sum(psi^2)
+  B1 <- (2*modr + 2*d)*A1
+  B2 <- (modr + d - 2)*A2
+  B3 <- A3
+  gamma <- (-B2 + sqrt(B2^2 + 4*B1*B3)) / (2*B1)
+  
+  g.samse <- (gamma * n)^(-1/(modr + d + 2))
+  
+  return (g.samse)      
+}
+
 
 
 ###############################################################################
@@ -442,7 +642,7 @@ gsamse.6d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 
 
 ##############################################################################
-# Estimate psi functionals for bivariate data using 1-stage plug-in
+# Estimate psi functionals for bivariate data using 1-stage plug-in - 2-dim
 #
 # Parameters
 # x.star - pre-transformed data points
@@ -505,7 +705,7 @@ psifun1.2d <- function(x.star, pilot="samse")
 
 
 ###############################################################################
-# Estimate psi functionals for bivariate data using 2-stage plug-in
+# Estimate psi functionals for bivariate data using 2-stage plug-in - 2-dim
 #
 # Parameters
 # x - pre-transformed data points
@@ -598,8 +798,129 @@ psifun2.2d <- function(x.star, pilot="samse")
   return(psihat.star)
 }
 
+
 ###############################################################################
-# Estimate psi functionals for 4-variate data using 1-stage plug-in
+# Estimate psi functionals for 3-variate data using 1-stage plug-in - 3-dim
+#
+# Parameters
+# x.star - pre-transformed data points
+# pilot - "amse" = different AMSE pilot bandwidths
+#       - "samse" = optimal SAMSE pilot bandwidth
+# Returns
+# estimated psi functionals
+###############################################################################
+
+psifun1.3d <- function(x.star, pilot="samse")
+{ 
+  d <- 3
+  derivt <- Psi4.list(d)$psi
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+
+  psihat.star <- vector()
+  g.star <- vector()
+  
+  # compute 1 pilot for SAMSE
+  g.star <- gsamse.3d(S.star, n, 4, nstage=1)
+  G.star <- g.star^2 * diag(d)
+  
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1)
+    psihat.star[k] <- psihat/(n^2)
+  }
+  
+  return(psihat.star)
+}
+
+
+
+###############################################################################
+# Estimate psi functionals for 3-variate data using 2-stage plug-in - 3-dim
+#
+# Parameters
+# x.star - pre-transformed data points
+# pilot - "amse" = different AMSE pilot bandwidths
+#       - "samse" = optimal SAMSE pilot bandwidth
+#
+# Returns
+# estimated psi functionals
+###############################################################################
+
+psifun2.3d <- function(x.star, pilot="samse")
+{ 
+  d <- 3
+
+  d0 <- 4
+  derivt <- numeric()
+    for (j1 in d0:0)
+      for (j2 in d0:0)
+        for (j3 in d0:0)
+            if (sum(c(j1,j2,j3))==d0) derivt <- rbind(derivt, c(j1,j2,j3))
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+          if (sum(c(j1,j2,j3))==d1) derivt6 <- rbind(derivt6, c(j1,j2,j3))
+
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+    
+  psihat6.star <- vector()
+  g6.star <- vector()
+  psihat.list.star <- vector()
+  psihat.star <- vector()
+  g.star <- vector()
+
+  
+  ## pilots are based on 6th order derivatives
+  
+  # compute 1 pilot for SAMSE    
+  if (pilot=="samse")
+    g6.star <- gsamse.3d(S.star, n, 6)   
+ 
+  for (k in 1:nrow(derivt6))
+  {
+    r <- derivt6[k,]
+    G6.star <- g6.star^2 * diag(d)
+    psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psihat6.star[k] <- psihat6/(n^2)
+  }    
+
+  
+  ## pilots are based on 4th order derivatives using 6th order psi functionals
+  ## computed above 'psihat6.star'
+    
+  if (pilot=="samse")
+    g.star <- gsamse.3d(S.star, n, 4, nstage=2, psihat=psihat6.star) 
+
+  
+  ## map psi functionals into the correct order for Psi_4 matrix
+  
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    G.star <- g.star^2 * diag(d)
+    psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+    psihat.list.star[k] <- psihat/(n^2)
+  }  
+
+  derivt.mat <- Psi4.list(d)$psi
+  for (k in 1:nrow(derivt.mat))
+  {
+    i <- which.mat(derivt.mat[k,], derivt)
+    psihat.star[k] <- psihat.list.star[i]
+  }
+  
+  return(psihat.star)
+}
+
+
+
+###############################################################################
+# Estimate psi functionals for 4-variate data using 1-stage plug-in - 4-dim
 #
 # Parameters
 # x.star - pre-transformed data points
@@ -634,7 +955,7 @@ psifun1.4d <- function(x.star, pilot="samse")
 }
 
 ###############################################################################
-# Estimate psi functionals for 4-variate data using 2-stage plug-in
+# Estimate psi functionals for 4-variate data using 2-stage plug-in - 4-dim
 #
 # Parameters
 # x.star - pre-transformed data points
@@ -713,9 +1034,274 @@ psifun2.4d <- function(x.star, pilot="samse")
   return(psihat.star)
 }
 
+###############################################################################
+# Estimate psi functionals for 5-variate data using 1-stage plug-in - 5-dim
+#
+# Parameters
+# x.star - pre-transformed data points
+# pilot - "amse" = different AMSE pilot bandwidths
+#       - "samse" = optimal SAMSE pilot bandwidth
+# Returns
+# estimated psi functionals
+###############################################################################
+
+psifun1.5d <- function(x.star, pilot="samse")
+{ 
+  d <- 5
+  derivt <- Psi4.list(d)$psi
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+
+  psihat.star <- vector()
+  g.star <- vector()
+  
+
+  # compute 1 pilot for SAMSE
+  g.star <- gsamse.5d(S.star, n, 4, nstage=1)
+  G.star <- g.star^2 * diag(d)
+  
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    psihat <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G.star, inc=1)
+    psihat.star[k] <- psihat/(n^2)
+  }
+  
+  return(psihat.star)
+}
+
+### psifun1.diag.5d is more efficient than psifun1.5d for diagonal pilot selectors
+
+psifun1.diag.5d <- function(x.star, pilot="samse")
+{ 
+  d <- 5
+  derivt <- Psi4.list(d)$psi
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+
+  psihat.star <- vector()
+  psihat.list.star <- vector()
+  g.star <- vector()
+  
+
+  # compute 1 pilot for SAMSE
+  g.star <- gsamse.5d(S.star, n, 4, nstage=1)
+  G.star <- g.star^2 * diag(d)
+  
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    if (is.even(r))
+    {
+       G.star <- g.star^2 * diag(d)
+       psihat <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+       psihat.star[k] <- psihat/(n^2)
+    }
+  }
+
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    if (is.even(derivt[k,]))
+    {
+       G.star <- g.star^2 * diag(d)
+       psihat <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+       psihat.list.star[k] <- psihat/(n^2)
+    } 
+  }
+  
+  derivt.mat <- Psi4.list(d)$psi
+  for (k in 1:nrow(derivt.mat))
+  {
+    if (is.even(derivt.mat[k,]))
+    {  
+      i <- which.mat(derivt.mat[k,], derivt)
+      psihat.star[k] <- psihat.list.star[i]
+    }
+    else
+      psihat.star[k] <- 0
+  }
+  
+  return(psihat.star)
+}
+
 
 ###############################################################################
-# Estimate psi functionals for 6-variate data using 1-stage plug-in
+# Estimate psi functionals for 5-variate data using 2-stage plug-in - 5-dim
+#
+# Parameters
+# x.star - pre-transformed data points
+# pilot - "amse" = different AMSE pilot bandwidths
+#       - "samse" = optimal SAMSE pilot bandwidth
+#
+# Returns
+# estimated psi functionals
+###############################################################################
+
+psifun2.5d <- function(x.star, pilot="samse")
+{ 
+  d <- 5
+  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+
+  d0 <- 4
+  derivt <- numeric()
+  for (j1 in d0:0)
+    for (j2 in d0:0)
+      for (j3 in d0:0)
+        for (j4 in d0:0)
+          for (j5 in d0:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d0)
+                derivt <- rbind(derivt, c(j1,j2,j3,j4,j5))
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+        for (j4 in d1:0)
+          for (j5 in d1:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d1)
+                derivt6 <- rbind(derivt6, c(j1,j2,j3,j4,j5))
+ 
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+   
+  psihat6.star <- vector()
+  g6.star <- vector()
+  psihat.star <- vector()
+  psihat.list.star <- vector()
+  g.star <- vector()
+
+  ## pilots are based on 6th order derivatives
+  
+  # compute 1 pilot for SAMSE    
+  if (pilot=="samse")
+    g6.star <- gsamse.5d(S.star, n, 6)   
+
+  for (k in 1:nrow(derivt6))
+  {
+    r <- derivt6[k,]
+    G6.star <- g6.star^2 * diag(d)
+    psihat6 <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psihat6.star[k] <- psihat6/(n^2)
+  }    
+  
+  ## pilots are based on 4th order derivatives using 6th order psi functionals
+  ## computed above 'psihat6.star'
+    
+  if (pilot=="samse")
+    g.star <- gsamse.5d(S.star, n, 4, nstage=2, psihat=psihat6.star) 
+ 
+  
+  ## map psi functionals into the correct order for Psi_4 matrix     
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    G.star <- g.star^2 * diag(d)
+    psihat <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+    psihat.list.star[k] <- psihat/(n^2)
+  }
+  
+  derivt.mat <- Psi4.list(d)$psi
+  for (k in 1:nrow(derivt.mat))
+  {
+    i <- which.mat(derivt.mat[k,], derivt)
+    psihat.star[k] <- psihat.list.star[i]
+  }
+  
+  return(psihat.star)
+}
+
+
+
+### psifun2.diag.5d is more efficient than psifun2.5d for diagonal pilot selectors
+
+psifun2.diag.5d <- function(x.star, pilot="samse")
+{ 
+  d <- 5
+  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+
+  d0 <- 4
+  derivt <- numeric()
+  for (j1 in d0:0)
+    for (j2 in d0:0)
+      for (j3 in d0:0)
+        for (j4 in d0:0)
+          for (j5 in d0:0)
+              if ((sum(c(j1,j2,j3,j4,j5))==d0) && is.even(c(j1,j2,j3,j4,j5)))
+                derivt <- rbind(derivt, c(j1,j2,j3,j4,j5))
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+        for (j4 in d1:0)
+          for (j5 in d1:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d1)
+                derivt6 <- rbind(derivt6, c(j1,j2,j3,j4,j5))
+ 
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+   
+  psihat6.star <- vector()
+  g6.star <- vector()
+  psihat.star <- vector()
+  psihat.list.star <- vector()
+  g.star <- vector()
+
+  ## pilots are based on 6th order derivatives
+  
+  # compute 1 pilot for SAMSE    
+  if (pilot=="samse")
+    g6.star <- gsamse.5d(S.star, n, 6)   
+
+  psihat6.star <- rep(0, nrow(derivt6))
+  for (k in 1:nrow(derivt6))
+  {
+    r <- derivt6[k,]
+    if (is.even(r))
+    {
+       G6.star <- g6.star^2 * diag(d)
+       psihat6 <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+       psihat6.star[k] <- psihat6/(n^2)
+    }
+  }    
+  
+  ## pilots are based on 4th order derivatives using 6th order psi functionals
+  ## computed above 'psihat6.star'
+    
+  if (pilot=="samse")
+    g.star <- gsamse.5d(S.star, n, 4, nstage=2, psihat=psihat6.star) 
+ 
+  
+  ## map psi functionals into the correct order for Psi_4 matrix     
+  for (k in 1:nrow(derivt))
+  { 
+    r <- derivt[k,] 
+    if (is.even(r))
+    {
+      G.star <- g.star^2 * diag(d)
+      psihat <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+      psihat.list.star[k] <- psihat/(n^2)
+    }
+  }
+  
+  derivt.mat <- Psi4.list(d)$psi
+  for (k in 1:nrow(derivt.mat))
+  {
+    if (is.even(derivt.mat[k,]))
+    {  
+      i <- which.mat(derivt.mat[k,], derivt)
+      psihat.star[k] <- psihat.list.star[i]
+    }
+    else
+      psihat.star[k] <- 0
+  }
+  
+  return(psihat.star)
+}
+
+###############################################################################
+# Estimate psi functionals for 6-variate data using 1-stage plug-in - 6-dim
 #
 # Parameters
 # x.star - pre-transformed data points
@@ -735,6 +1321,7 @@ psifun1.6d <- function(x.star, pilot="samse")
   psihat.star <- vector()
   g.star <- vector()
   
+
   # compute 1 pilot for SAMSE
   g.star <- gsamse.6d(S.star, n, 4, nstage=1)
   G.star <- g.star^2 * diag(d)
@@ -749,8 +1336,64 @@ psifun1.6d <- function(x.star, pilot="samse")
   return(psihat.star)
 }
 
+### psifun1.diag.6d is more efficient than psifun1.6d for diagonal pilot selectors
+
+psifun1.diag.6d <- function(x.star, pilot="samse")
+{ 
+  d <- 6
+  derivt <- Psi4.list(d)$psi
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+
+  psihat.star <- vector()
+  psihat.list.star <- vector()
+  g.star <- vector()
+  
+
+  # compute 1 pilot for SAMSE
+  g.star <- gsamse.6d(S.star, n, 4, nstage=1)
+  G.star <- g.star^2 * diag(d)
+  
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    if (is.even(r))
+    {
+       G.star <- g.star^2 * diag(d)
+       psihat <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+       psihat.star[k] <- psihat/(n^2)
+    }
+  }
+
+  for (k in 1:nrow(derivt))
+  {
+    r <- derivt[k,] 
+    if (is.even(derivt[k,]))
+    {
+       G.star <- g.star^2 * diag(d)
+       psihat <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+       psihat.list.star[k] <- psihat/(n^2)
+    } 
+  }
+  
+  derivt.mat <- Psi4.list(d)$psi
+  for (k in 1:nrow(derivt.mat))
+  {
+    if (is.even(derivt.mat[k,]))
+    {  
+      i <- which.mat(derivt.mat[k,], derivt)
+      psihat.star[k] <- psihat.list.star[i]
+    }
+    else
+      psihat.star[k] <- 0
+  }
+  
+  return(psihat.star)
+}
+
+
 ###############################################################################
-# Estimate psi functionals for 6-variate data using 2-stage plug-in
+# Estimate psi functionals for 6-variate data using 2-stage plug-in - 6-dim
 #
 # Parameters
 # x.star - pre-transformed data points
@@ -837,6 +1480,9 @@ psifun2.6d <- function(x.star, pilot="samse")
 }
 
 
+
+### psifun2.diag.6d is more efficient than psifun2.6d for diagonal selectors
+
 psifun2.diag.6d <- function(x.star, pilot="samse")
 { 
   d <- 6
@@ -878,12 +1524,16 @@ psifun2.diag.6d <- function(x.star, pilot="samse")
   if (pilot=="samse")
     g6.star <- gsamse.6d(S.star, n, 6)   
 
+  psihat6.star <- rep(0, nrow(derivt6))
   for (k in 1:nrow(derivt6))
   {
     r <- derivt6[k,]
-    G6.star <- g6.star^2 * diag(d)
-    psihat6 <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G6.star, inc=1)
-    psihat6.star[k] <- psihat6/(n^2)
+    if (is.even(r))
+    {
+       G6.star <- g6.star^2 * diag(d)
+       psihat6 <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+       psihat6.star[k] <- psihat6/(n^2)
+    }
   }    
   
   ## pilots are based on 4th order derivatives using 6th order psi functionals
@@ -895,11 +1545,14 @@ psifun2.diag.6d <- function(x.star, pilot="samse")
   
   ## map psi functionals into the correct order for Psi_4 matrix     
   for (k in 1:nrow(derivt))
-  {
+  { 
     r <- derivt[k,] 
-    G.star <- g.star^2 * diag(d)
-    psihat <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G.star, inc=1) 
-    psihat.list.star[k] <- psihat/(n^2)
+    if (is.even(r))
+    {
+      G.star <- g.star^2 * diag(d)
+      psihat <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G.star, inc=1) 
+      psihat.list.star[k] <- psihat/(n^2)
+    }
   }
   
   derivt.mat <- Psi4.list(d)$psi
@@ -919,8 +1572,7 @@ psifun2.diag.6d <- function(x.star, pilot="samse")
 
 
 ###############################################################################
-# Creates Psi_4 matrix i.e. matrix of 4th order psi functionals used
-# in AMISE
+# Creates Psi_4 matrix of 4th order psi functionals used in AMISE - 2 to 6 dim
 #
 # Parameters
 # x - data points
@@ -957,9 +1609,26 @@ psimat.2d <- function(x, nstage=1, pilot="samse", pre="sphere")
   return(matrix(coeff * psi.fun, nc=3, nr=3))
 }
 
+psimat.3d <- function(x, nstage=1, pilot="samse", pre="sphere")
+{
+  d <- 3
+  if (pre=="sphere")
+    x.star <- pre.sphere(x)
+  else if (pre=="scale")
+    x.star <- pre.scale(x)
+  if (nstage==1)
+    psi.fun <- psifun1.3d(x.star, pilot=pilot)
+  else if (nstage==2)
+    psi.fun <- psifun2.3d(x.star, pilot=pilot)
+  
+  coeff <- Psi4.list(3)$coeff
+
+  return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
+}
 
 psimat.4d <- function(x, nstage=1, pilot="samse", pre="sphere")
 {
+  d <- 4 
   if (pre=="sphere")
     x.star <- pre.sphere(x)
   else if (pre=="scale")
@@ -969,13 +1638,51 @@ psimat.4d <- function(x, nstage=1, pilot="samse", pre="sphere")
   else if (nstage==2)
     psi.fun <- psifun2.4d(x.star, pilot=pilot)
   
-  coeff <- Psi4.list(4)$coeff
+  coeff <- Psi4.list(d)$coeff
 
-  return(matrix(coeff * psi.fun, nc=10, nr=10))
+  return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
+}
+
+
+psimat.5d <- function(x, nstage=1, pilot="samse", pre="sphere")
+{
+  d <- 5
+  if (pre=="sphere")
+    x.star <- pre.sphere(x)
+  else if (pre=="scale")
+    x.star <- pre.scale(x)
+  if (nstage==1)
+    psi.fun <- psifun1.5d(x.star, pilot=pilot)
+  else if (nstage==2)
+    psi.fun <- psifun2.5d(x.star, pilot=pilot)
+  
+  coeff <- Psi4.list(d)$coeff
+
+  return(matrix(coeff * psi.fun,  nc=d*(d+1)/2, nr=d*(d+1)/2))
+}
+
+### psimat.diag.5d is more efficient than psimat.5d for diagonal selectors
+
+psimat.diag.5d <- function(x, nstage=1, pilot="samse", pre="sphere")
+{
+  d <- 5
+  if (pre=="sphere")
+    x.star <- pre.sphere(x)
+  else if (pre=="scale")
+    x.star <- pre.scale(x)
+  if (nstage==1)
+    psi.fun <- psifun1.diag.5d(x.star, pilot=pilot)
+  else if (nstage==2)
+    psi.fun <- psifun2.diag.5d(x.star, pilot=pilot)
+
+  coeff <- Psi4.list(d)$coeff
+
+  return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
 psimat.6d <- function(x, nstage=1, pilot="samse", pre="sphere")
 {
+  d <- 6
   if (pre=="sphere")
     x.star <- pre.sphere(x)
   else if (pre=="scale")
@@ -985,14 +1692,16 @@ psimat.6d <- function(x, nstage=1, pilot="samse", pre="sphere")
   else if (nstage==2)
     psi.fun <- psifun2.6d(x.star, pilot=pilot)
   
-  coeff <- Psi4.list(6)$coeff
+  coeff <- Psi4.list(d)$coeff
 
-  return(matrix(coeff * psi.fun, nc=21, nr=21))
+  return(matrix(coeff * psi.fun,  nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
+### psimat.diag.6d is more efficient than psimat.6d for diagonal selectors
 
 psimat.diag.6d <- function(x, nstage=1, pilot="samse", pre="sphere")
 {
+  d <- 6
   if (pre=="sphere")
     x.star <- pre.sphere(x)
   else if (pre=="scale")
@@ -1002,9 +1711,9 @@ psimat.diag.6d <- function(x, nstage=1, pilot="samse", pre="sphere")
   else if (nstage==2)
     psi.fun <- psifun2.diag.6d(x.star, pilot=pilot)
 
-  coeff <- Psi4.list(6)$coeff
+  coeff <- Psi4.list(d)$coeff
 
-  return(matrix(coeff * psi.fun, nc=21, nr=21))
+  return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
 
@@ -1014,7 +1723,7 @@ psimat.diag.6d <- function(x, nstage=1, pilot="samse", pre="sphere")
 
     
 ###############################################################################
-# Computes plug-in full bandwidth matrix
+# Computes plug-in full bandwidth matrix - 2 to 6 dim
 #
 # Parameters
 # x - data points
@@ -1054,8 +1763,12 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart)
   # psi.mat is on pre-transformed data scale 
   if (d==2)
     psi.mat <- psimat.2d(x, nstage=nstage, pilot=pilot, pre=pre)
+  else if (d==3)
+    psi.mat <- psimat.3d(x, nstage=nstage, pilot=pilot, pre=pre)
   else if (d==4)
     psi.mat <- psimat.4d(x, nstage=nstage, pilot=pilot, pre=pre)
+  else if (d==5)
+    psi.mat <- psimat.5d(x, nstage=nstage, pilot=pilot, pre=pre)
   else if (d==6)
     psi.mat <- psimat.6d(x, nstage=nstage, pilot=pilot, pre=pre)
   
@@ -1088,7 +1801,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart)
 }     
 
 ###############################################################################
-# Computes plug-in diagonal bandwidth matrix for 2D
+# Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
 #
 # Parameters
 # x - data points
@@ -1143,12 +1856,19 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart)
   }
   else 
   { 
+    if (pilot=="amse")
+      stop("Use SAMSE pilot selectors for higher dimensions")
+ 
      # use normal reference bandwidth as initial condition
     if (missing(Hstart)) 
       Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
-    
-    if (d==4)
+ 
+    if (d==3)
+      psi.mat <- psimat.3d(x, nstage=nstage, pilot=pilot, pre=pre)    
+    else if (d==4)
       psi.mat <- psimat.4d(x, nstage=nstage, pilot=pilot, pre=pre)
+    else if (d==5)
+      psi.mat <- psimat.diag.5d(x, nstage=nstage, pilot=pilot, pre=pre)
     else if (d==6)
       psi.mat <- psimat.diag.6d(x, nstage=nstage, pilot=pilot, pre=pre)
     
@@ -1180,7 +1900,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart)
 ###############################################################################
 
 ###############################################################################
-# Computes the least squares cross validation LSCV function
+# Computes the least squares cross validation LSCV function for 2 to 6 dim
 # 
 # Parameters
 # x - data values
@@ -1200,10 +1920,20 @@ lscv.mat <- function(x, H)
     lscv1 <- dmvnorm.2d.sum(x, 2*H, inc=1)
     lscv2 <- dmvnorm.2d.sum(x, H, inc=0)
   }
+  else if (d==3)
+  {
+    lscv1 <- dmvnorm.3d.sum(x, 2*H, inc=1)
+    lscv2 <- dmvnorm.3d.sum(x, H, inc=0)
+  }
   else if (d==4)
   {
     lscv1 <- dmvnorm.4d.sum(x, 2*H, inc=1)
     lscv2 <- dmvnorm.4d.sum(x, H, inc=0)
+  }
+  else if (d==5)
+  {
+    lscv1 <- dmvnorm.5d.sum(x, 2*H, inc=1)
+    lscv2 <- dmvnorm.5d.sum(x, H, inc=0)
   }
   else if (d==6)
   {
@@ -1216,7 +1946,7 @@ lscv.mat <- function(x, H)
 
    
 ###############################################################################
-# Finds the bandwidth matrix that minimises LSCV 
+# Finds the bandwidth matrix that minimises LSCV for 2 to 6 dim
 # 
 # Parameters
 # x - data values
@@ -1248,7 +1978,7 @@ Hlscv <- function(x, Hstart)
 }
 
 ###############################################################################
-# Finds the diagonal bandwidth matrix that minimises LSCV 
+# Finds the diagonal bandwidth matrix that minimises LSCV for 2 to 6 dim
 # 
 # Parameters
 # x - data values
@@ -1280,7 +2010,7 @@ Hlscv.diag <- function(x, Hstart)
 }
 
 ###############################################################################
-# Computes the biased cross validation BCV function
+# Computes the biased cross validation BCV function for 2-dim
 # 
 # Parameters
 # x - data values
@@ -1316,7 +2046,7 @@ bcv.mat <- function(x, H1, H2)
 
 
 ###############################################################################
-# Find the bandwidth matrix that minimises the BCV
+# Find the bandwidth matrix that minimises the BCV for 2-dim
 # 
 # Parameters
 # x - data values
@@ -1417,7 +2147,7 @@ Hbcv <- function(x, whichbcv=1, Hstart)
 }
 
 ###############################################################################
-# Find the diagonal bandwidth matrix that minimises the BCV
+# Find the diagonal bandwidth matrix that minimises the BCV for 2-dim
 # 
 # Parameters
 # x - data values
@@ -1472,7 +2202,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart)
 
 
 ###############################################################################
-# Computes the smoothed cross validation function
+# Computes the smoothed cross validation function for 2 to 6 dim
 # 
 # Parameters
 # x - data values
@@ -1494,12 +2224,24 @@ scv.mat <- function(x, H, G)
     scv2 <- dmvnorm.2d.sum(x, Sigma=H + 2*G, inc=1)
     scv3 <- dmvnorm.2d.sum(x, Sigma=2*G, inc=1)
   }
+  else if (d==3)
+  {
+    scv1 <- dmvnorm.3d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.3d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.3d.sum(x, Sigma=2*G, inc=1)
+  }
   else if (d==4)
   {
     scv1 <- dmvnorm.4d.sum(x, Sigma=2*H + 2*G, inc=1)
     scv2 <- dmvnorm.4d.sum(x, Sigma=H + 2*G, inc=1)
     scv3 <- dmvnorm.4d.sum(x, Sigma=2*G, inc=1)
-  }
+  } 
+  else if (d==5)
+  {
+    scv1 <- dmvnorm.5d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.5d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.5d.sum(x, Sigma=2*G, inc=1)
+  } 
   else if (d==6)
   {
     scv1 <- dmvnorm.6d.sum(x, Sigma=2*H + 2*G, inc=1)
@@ -1540,7 +2282,7 @@ Theta6.elem <- function(d)
   
 
 ###############################################################################
-# Estimate g_AMSE pilot bandwidth for SCV 
+# Estimate g_AMSE pilot bandwidth for SCV for 2 to 6 dim
 #
 # Parameters
 # Sigma.star - scaled/ sphered variance matrix
@@ -1585,6 +2327,63 @@ gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n)
 
   return(gamse)
 }
+
+
+gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n)
+{
+  d <- 3
+  psi.fun6 <- vector()
+  g6.star <- gsamse.3d(Sigma.star, n, 6) 
+  G6.star <- g6.star^2 * diag(d)
+  
+  # required psi functionals
+
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+          if (sum(c(j1,j2,j3))==d1) derivt6 <- rbind(derivt6, c(j1,j2,j3))
+
+  for (k in 1:nrow(derivt6))
+  {
+    r <- derivt6[k,]
+    G6.star <- g6.star^2 * diag(d)
+    psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psi.fun6[k] <- psihat6/(n^2)
+  }    
+  
+  Theta6.mat <- matrix(0, nc=d, nr=d)
+  Theta6.mat.ind <- Theta6.elem(d)
+  for (i in 1:d)
+    for (j in 1:d)
+    {
+      temp <- Theta6.mat.ind[[i]][[j]]
+      temp.sum <- 0
+      for (k in 1:nrow(temp))
+      {
+        temp.sum <- temp.sum + psi.fun6[which.mat(temp[k,], derivt6)]
+      }
+      Theta6.mat[i,j] <- temp.sum 
+    }
+    
+  eye3 <- diag(d)
+  D4 <- dupl(d)$d
+  trHamise <- Hamise[1,1] + Hamise[2,2] + Hamise[3,3] 
+
+  # required constants - see thesis
+  Cmu1 <- 1/2*t(D4) %*% vec(Theta6.mat %*% Hamise)
+  Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D4)%*% vec(Hamise)
+                               + trHamise * t(D4) %*% vec(eye3))
+
+  num <- 2 * (d+4) * sum(Cmu2*Cmu2)
+  den <- -(d+2) * sum(Cmu1*Cmu2) +
+    sqrt((d+2)^2 * sum(Cmu1*Cmu2)^2 + 8*(d+4)*sum(Cmu1*Cmu1) * sum(Cmu2*Cmu2))
+  gamse <- (num / (den*n))^(1/(d+6)) 
+
+  return(gamse)
+}
+
 
 
 gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n)
@@ -1643,6 +2442,64 @@ gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n)
   return(gamse)
 }
 
+gamse.scv.5d <- function(x.star, Sigma.star, Hamise, n)
+{
+  d <- 5
+  g6.star <- gsamse.5d(Sigma.star, n, 6) 
+  G6.star <- g6.star^2 * diag(d)
+  psi.fun6 <- vector()
+  
+  # required psi functionals
+
+  d1 <- 6
+  derivt6 <- numeric()
+  for (j1 in d1:0)
+    for (j2 in d1:0)
+      for (j3 in d1:0)
+        for (j4 in d1:0)
+          for (j5 in d1:0)
+              if (sum(c(j1,j2,j3,j4,j5))==d1)
+                derivt6 <- rbind(derivt6, c(j1,j2,j3,j4,j5))
+ 
+  for (k in 1:nrow(derivt6))
+  {
+    r <- derivt6[k,]
+    G6.star <- g6.star^2 * diag(d)
+    psihat6 <- dmvnorm.deriv.5d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psi.fun6[k] <- psihat6/(n^2)
+  }    
+     
+  Theta6.mat <- matrix(0, nc=d, nr=d)
+  Theta6.mat.ind <- Theta6.elem(d)
+  for (i in 1:d)
+    for (j in 1:d)
+    {
+      temp <- Theta6.mat.ind[[i]][[j]]
+      temp.sum <- 0
+      for (k in 1:nrow(temp))
+      {
+        temp.sum <- temp.sum + psi.fun6[which.mat(temp[k,], derivt6)]
+      }
+      Theta6.mat[i,j] <- temp.sum 
+    }
+    
+  eye5 <- diag(d)
+  D6 <- dupl(d)$d
+  trHamise <- Hamise[1,1] + Hamise[2,2] + Hamise[3,3] + Hamise[4,4]+ Hamise[5,5]
+  
+  # required constants - see thesis
+  Cmu1 <- 1/2*t(D6) %*% vec(Theta6.mat %*% Hamise)
+  Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D6)%*% vec(Hamise)
+                               + trHamise * t(D6) %*% vec(eye5))
+
+  num <- 2 * (d+4) * sum(Cmu2*Cmu2)
+  den <- -(d+2) * sum(Cmu1*Cmu2) +
+    sqrt((d+2)^2 * sum(Cmu1*Cmu2)^2 + 8*(d+4)*sum(Cmu1*Cmu1) * sum(Cmu2*Cmu2))
+  gamse <- (num / (den*n))^(1/(d+6)) 
+
+  return(gamse)
+}
+
 gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
 {
   d <- 6
@@ -1662,8 +2519,7 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
             for (j6 in d1:0)
               if (sum(c(j1,j2,j3,j4,j5,j6))==d1)
                 derivt6 <- rbind(derivt6, c(j1,j2,j3,j4,j5,j6))
-
-  
+ 
   for (k in 1:nrow(derivt6))
   {
     r <- derivt6[k,]
@@ -1671,9 +2527,7 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
     psihat6 <- dmvnorm.deriv.6d.sum(x.star, r=r, Sigma=G6.star, inc=1)
     psi.fun6[k] <- psihat6/(n^2)
   }    
- 
-
-    
+     
   Theta6.mat <- matrix(0, nc=d, nr=d)
   Theta6.mat.ind <- Theta6.elem(d)
   for (i in 1:d)
@@ -1707,7 +2561,7 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
 
 
 ###############################################################################
-# Find the bandwidth matrix that minimises the SCV
+# Find the bandwidth matrix that minimises the SCV for 2 to 6 dim
 # 
 # Parameters
 # x - data values
@@ -1745,8 +2599,12 @@ Hscv <- function(x, pre="sphere", Hstart)
   
   if (d==2)
     gamse <- gamse.scv.2d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+  else if (d==3)
+    gamse <- gamse.scv.3d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
   else if (d==4)
     gamse <- gamse.scv.4d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+  else if (d==5)
+    gamse <- gamse.scv.5d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
   else if (d==6)
     gamse <- gamse.scv.6d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
   

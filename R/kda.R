@@ -4,7 +4,7 @@
 
 
 ###############################################################################
-# Find bandwidths for each class in training set
+# Find bandwidths for each class in training set, for 2- to 6-dim 
 #
 # Parameters
 # x - data values
@@ -21,7 +21,7 @@
 Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
                  pre="sphere")
 {
-  d <- 2
+  d <- ncol(x)
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   bw <- substr(tolower(bw),1,1)
@@ -58,7 +58,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
 Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
                  pre="sphere")
 {
-  d <- 2
+  d <- ncol(x)
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   bw <- substr(tolower(bw),1,1)
@@ -80,6 +80,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
 
 ###############################################################################
 # Classify data set according to discriminant analysis based on training data
+# for 2- to 6-dim
 #
 # Parameter
 # x - training data
@@ -168,7 +169,7 @@ compare <- function(x.group, est.group)
                        
 
 ###############################################################################
-# KDEs of individual densities for KDA
+# KDEs of individual densities for KDA - only for 2-dim 
 #
 # Parameters
 # x - data values
@@ -176,20 +177,23 @@ compare <- function(x.group, est.group)
 # Hs - bandwidth matrices
 #
 # Returns
-# List with components
+# List with components (class dade)
 # x - list of data values
 # eval.points - evaluation points of dnesity estimate
 # estimate - list of density estimate
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda.kde <- function(x, x.group, Hs, gridsize=c(100,100), supp=3.7, eval.points=NULL)
+kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
 {
   if (is.data.frame(x)) x <- as.matrix(x)
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   d <- ncol(x)
-  
+   
+  if (missing(gridsize)) 
+    gridsize <- rep(100,d)
+   
   # find largest bandwidth matrix to initialise grid
   detH <- vector() 
   for (j in 1:m)
@@ -240,7 +244,7 @@ kda.kde <- function(x, x.group, Hs, gridsize=c(100,100), supp=3.7, eval.points=N
 
 
 ##############################################################################
-# Plot KDE of individual densities and partition
+# Plot KDE of individual densities and partition - only for 2-dim
 #
 # Parameters
 # fhat - output from `kda.kde'
@@ -249,7 +253,6 @@ kda.kde <- function(x, x.group, Hs, gridsize=c(100,100), supp=3.7, eval.points=N
 # prior.prob - vector of prior porbabilities
 # disp - "part" - plot partition
 #      - "" - don't plot partition
-#
 ##############################################################################
 
 
@@ -365,19 +368,22 @@ plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
   
 }
 
-##############################################################################
-# Plot density estimate of individual densities and classifcation region
-# for parametric DA
+
+###############################################################################
+# Classify data set according to discriminant analysis based on training data
+# using linear or quadratic discrimination 
 #
-# Parameters
+# Parameter
 # x - training data
-# x.goup - training data group labels 
-# y - data points 
-# y.group - data group labels
-# prior.prob - vector of prior porbabilities
-# disp - "part" - plot partition
-#      - "" - don't plot partition
-##############################################################################
+# x.group - group variable for x
+# y - data values to be classified
+# prior.prob - prior probabilities
+# type - "line" - linear disc.
+#      - "quad" - quadratic disc.
+#
+# Returns
+# Group classification of data set y
+###############################################################################
 
 
 pda <- function(x, x.group, y, prior.prob=NULL, type="quad")
@@ -410,8 +416,24 @@ pda <- function(x, x.group, y, prior.prob=NULL, type="quad")
   return(disc.gr) 
 }
 
+##############################################################################
+# Compute density estimate of individual densities and classifcation region
+# for parametric DA - for 2-dim only
+#
+# Parameters
+# x - training data
+# x.group - training data group labels 
+# type - "line" - linear disc.
+#      - "quad" - quadratic disc.
+#
+# Returns 
+# List with components (class dade)
+# x - list of data values
+# eval.points - evaluation points of dnesity estimate
+# estimate - list of density estimate 
+##############################################################################
 
-pda.pde <- function(x, x.group, gridsize=c(100,100), type="quad", xlim, ylim)
+pda.pde <- function(x, x.group, gridsize, type="quad", xlim, ylim)
 {
   n <- nrow(x)
   gr <- sort(unique(x.group))
@@ -420,7 +442,9 @@ pda.pde <- function(x, x.group, gridsize=c(100,100), type="quad", xlim, ylim)
     xlim <- range(x[,1])
   if (missing(ylim))
     ylim <- range(x[,2])
-  
+  if (missing(gridsize)) 
+    gridsize <- rep(100,2)
+   
   ex <- seq(xlim[1]-abs(xlim[1])/10, xlim[2]+abs(xlim[2])/10, length=gridsize[1])
   ey <- seq(ylim[1]-abs(ylim[1])/10, ylim[2]+abs(ylim[2])/10, length=gridsize[2])
   xy <- permute(list(ex, ey))
