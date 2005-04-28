@@ -67,6 +67,7 @@ lambda <- function(mus, Sigmas, k, r)
     
   if (is.vector(mus)) d <- length(mus)
   else d <- ncol(mus)
+  k <- length(props)
   
   if (k == 1) 
     lambda.mat <- dmvnorm.deriv.2d(r=r, x=rep(0, length(mus)), Sigma=2*Sigmas)
@@ -133,7 +134,54 @@ mise.mixt <- function(H, mus, Sigmas, props, samp)
 
 
 
+psir.mixt <- function(mus, Sigmas, props, r)
+{
+  if (is.vector(mus)) { d <- length(mus); mus <- t(matrix(mus))}
+  else d <- ncol(mus)
+  k <- length(props)
+  
+  psir <- 0 
+  for (i in 1:k)
+    {
+      Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
+      mui <- mus[i,]
+      for (j in 1:k)
+      {
+        Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
+        muj <- mus[j,]   
+        if (d==2)     
+           psir <- psir + dmvnorm.deriv.2d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+        else if (d==3)     
+           psir <- psir + dmvnorm.deriv.3d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+        else if (d==4)     
+           psir <- psir + dmvnorm.deriv.4d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+        else if (d==5)     
+           psir <- psir + dmvnorm.deriv.5d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+        else if (d==6)     
+           psir <- psir + dmvnorm.deriv.6d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+      }
+    }
+  
+  return(psir)
+}
 
+Psi4.mixt <- function(mus, Sigmas, props)
+{
+  if (is.vector(mus)) d <- length(mus)
+  else d <- ncol(mus)
+  k <- length(props)
+  
+  P <- Psi4.list(d)
+  psi4mixt.elem <- vector()
+  for (i in 1:nrow(P$psi))
+  {
+    r <- P$psi[i,] 
+    psi4mixt.elem[i] <- psir.mixt(mus=mus, Sigmas=Sigmas, props=props, r=r)
+  }
+  
+  return(matrix(P$coeff*psi4mixt.elem, nr=1/2*d*(d+1), nc=1/2*d*(d+1)))
+
+}
  
 ###############################################################################
 # Exact AMISE for bivariate normal mixtures - 2-dim
@@ -149,7 +197,14 @@ mise.mixt <- function(H, mus, Sigmas, props, samp)
 # Exact AMISE for normal mixtures
 ###############################################################################
 
+amise.mixt.blah <- function(H, mus, Sigmas, props, samp)
+{
 
+   d <- ncol(Sigmas)
+
+   return(drop(1/(samp *(4*pi)^(d/2)*sqrt(det(H)))
+          + 1/4*vech(H) %*% Psi4.mixt(mus, Sigmas, props) %*% vech(H)))
+}
 
 amise.mixt <- function(H, mus, Sigmas, props, samp)
 {
@@ -176,18 +231,20 @@ amise.mixt <- function(H, mus, Sigmas, props, samp)
        Cij <- Aij %*% (diag(d) - (mui - muj) %*%  t(mui - muj) %*% Aij)
     
        Xi[i,j] <- dmvnorm.mixt(x=mui, mus=muj, Sigmas=Sigmai+Sigmaj, props=1) *
-                  (2*tr(H %*% Aij %*% H %*% Bij) + tr(H %*% Cij)^2)
+                  2*tr(H %*% Aij %*% H %*% Bij) + (tr(H %*% Cij)^2)
     }  
   }
-   
-  amise <- 1/(samp *(4*pi)^(d/2)*sqrt(det(H)))+ 1/4*props %*% Xi %*% props
+    browser()
+    amise <- 1/(samp *(4*pi)^(d/2)*sqrt(det(H)))+ 1/4*props %*% Xi %*% props
 
-  return(drop(amise))
+    return(drop(amise))
+
+  
 }
 
 amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
 {  
-  d <- ncol(Sigmas)
+  d <- 2
   k <- length(props)
   
   h1 <- sqrt(H[1,1])
@@ -197,26 +254,23 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
   ## formula is found in Wand & Jones (1993)
   if (k == 1) 
   {
-   amise <- 1/(samp * (4*pi)^(d/2) * sqrt(det(H))) +
-       1/4 *(lambda(mus, Sigmas, k, r=c(4,0))*H[1,1]^2 +
-           4*lambda(mus, Sigmas, k, r=c(3,1))*H[1,1]*H[1,2] +  
-           2*lambda(mus, Sigmas, k, r=c(2,2))*(H[1,1]*H[2,2] + 2*H[1,2]^2) + 
-           4*lambda(mus, Sigmas, k, r=c(1,3))*H[2,2]*H[1,2]+    
-             lambda(mus, Sigmas, k, r=c(0,4))*H[2,2]^2) 
+    amise <- 1/(samp * (4*pi)^(d/2) * sqrt(det(H))) + 
+      1/4 * (lambda(mus, Sigmas, 1, r=c(4, 0))*H[1,1]^2 +
+             2*lambda(mus, Sigmas, 1, r=c(2, 2))*H[1,1]*H[2,2] + 
+             lambda(mus, Sigmas, 1, r=c(0, 4))*H[2,2]^2) 
   }
   else
   {
     amise <- 1/(samp * (4*pi)^(d/2) * sqrt(det(H))) +
-      1/4 * props %*% 
-          (  lambda(mus, Sigmas, k, r=c(4,0))*H[1,1]^2 +
-           4*lambda(mus, Sigmas, k, r=c(3,1))*H[1,1]*H[1,2] +  
-           2*lambda(mus, Sigmas, k, r=c(2,2))*(H[1,1]*H[2,2] + 2*H[1,2]^2) + 
-           4*lambda(mus, Sigmas, k, r=c(1,3))*H[2,2]*H[1,2]+    
-             lambda(mus, Sigmas, k, r=c(0,4))*H[2,2]^2) %*% props
+      1/4 * props %*% (lambda(mus, Sigmas, k, r=c(4,0))*H[1,1]^2 +
+                       2*lambda(mus, Sigmas, k, r=c(2, 2))*H[1,1]*H[2,2] + 
+                       lambda(mus, Sigmas, k, r=c(0,4))*H[2,2]^2) %*% props
   }
   
   return(drop(amise)) 
 }
+
+
 
 
 ###############################################################################

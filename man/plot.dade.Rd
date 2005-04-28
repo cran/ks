@@ -15,8 +15,8 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
 }
 
 \usage{
-\method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="part", cont=c(25,50,75),
-     ncont=NULL, ...)
+\method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="part", 
+       cont=c(25,50,75), ncont=NULL, ...)
 }
 
 \arguments{
@@ -92,11 +92,14 @@ lda.fhat <- pda.pde(ir, ir.gr, type="line")
 qda.fhat <- pda.pde(ir, ir.gr, type="quad")
 
 layout(rbind(c(1,2), c(3,4)))
-plot(fhat, cont=0, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, pch=c(1,5,10))
+plot(fhat, cont=0, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, 
+    pch=c(1,5,10))
 plot(fhat, ncont=6, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim,
      col=c("transparent", "grey", "#8f8f8f"), drawlabels=FALSE)
-plot(lda.fhat, ncont=6, xlim=xlim, ylim=ylim,  xlab=xlab, ylab=ylab, disp="")
-plot(qda.fhat, ncont=6, xlim=xlim, ylim=ylim,  xlab=xlab, ylab=ylab, lty=c(2,5,3))
+plot(lda.fhat, ncont=6, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, 
+     disp="")
+plot(qda.fhat, ncont=6, xlim=xlim, ylim=ylim,  xlab=xlab, ylab=ylab, 
+     lty=c(2,5,3))
 layout(1)
 }
 

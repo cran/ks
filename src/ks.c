@@ -48,15 +48,26 @@ void dmvnormd6_2d_sum(double *x1, double *x2, double *vsigma, int *r, int *n,
 void dmvt_2d(double *x, double *y, double *mu, double *viSigma,  
 	     double *df, int *n, double *dens);
 
+/* 3-dim */
+void dmvnorm_3d(double *x1, double *x2, double *x3, double *mu, 
+		double *visigma, double *detsigma, int *n, double *dens);
+void dmvnorm_3d_sum(double *x1, double *x2, double *x3, double *visigma, 
+		    double *detsigma, int *n, double *sum);
 
 /* 4-dim */
 void dmvnorm_4d(double *x1, double *x2, double *x3, double *x4, double *mu, 
 		double *visigma, double *detsigma, int *n, double *dens);
 void dmvnormd2_4d(double *x1, double *x2, double *x3, double *x4, double *vsigma, 
 		  int *r, int *n, double *derivt);
-void dmvnorm_4d_sum(double *x1, double *x2, double *x3, double *x4, double *visigma, 
+void dmvnorm_4d_sum(double *x1, double *x2, double *x3, double *x4,double *visigma, 
 		    double *detsigma, int *n, double *sum);
 
+/* 5-dim */
+void dmvnorm_5d(double *x1, double *x2, double *x3, double *x4, double *x5, 
+		double *mu, double *visigma, double *detsigma, 
+		int *n, double *dens);
+void dmvnorm_5d_sum(double *x1, double *x2, double *x3, double *x4, double *x5, 
+		    double *visigma, double *detsigma, int *n, double *sum);
 
 /* 6-dim */
 void dmvnorm_6d(double *x1, double *x2, double *x3, double *x4, double *x5, 
@@ -1613,6 +1624,69 @@ void dmvt_2d(double *x, double *y, double *mu, double *viSigma,
 }
 
 /*************************************************************************
+* 3-dim normal density 
+*************************************************************************/
+
+void dmvnorm_3d(double *x1, double *x2, double *x3, double *mu, 
+		double *visigma, double *detsigma, int *n, double *dens)
+{
+  double norm;
+  double xmu[3];
+  int j, d;
+  
+  d = 3;
+  norm = 1/sqrt(pow(2*M_PI, d) * detsigma[0]);
+  for (j = 1; j <= n[0]; j++)
+  {
+    xmu[0] = x1[j - 1] - mu[0];
+    xmu[1] = x2[j - 1] - mu[1];
+    xmu[2] = x3[j - 1] - mu[2]; 
+    dens[j - 1] = norm * exp(-0.5 * mult(xmu, visigma, xmu, d));
+  }
+}
+
+/*************************************************************************
+* 3-dim normal density - double sum 
+*************************************************************************/
+
+void dmvnorm_3d_sum(double *x1, double *x2, double *x3, double *visigma, 
+		    double *detsigma, int *n, double *sum)
+{
+  int i, j, k, N;
+  double mu[] = {0.0, 0.0, 0.0};
+  double sum1;
+  double *y1, *y2, *y3, *dens;
+  
+  N = n[0];
+  y1 = malloc(sizeof(double)*N);
+  y2 = malloc(sizeof(double)*N);
+  y3 = malloc(sizeof(double)*N);
+  dens = malloc(sizeof(double)*N);
+  sum1 = 0.0;
+ 
+  for (i = 1; i <= N; i++)
+  {
+    for (j = i; j <= N; j++)
+    {
+      y1[j - 1] = x1[i - 1] - x1[j - 1];
+      y2[j - 1] = x2[i - 1] - x2[j - 1];
+      y3[j - 1] = x3[i - 1] - x3[j - 1];
+    }
+    dmvnorm_3d(y1, y2, y3, mu, visigma, detsigma, n, dens);
+    for (k = i; k <= N; k++)
+      sum1 = sum1 + dens[k - 1];
+  }
+
+  sum[0] = sum1;
+  free(y1);
+  free(y2);
+  free(y3);
+  free(dens);
+}
+
+
+
+/*************************************************************************
 * 4-dim normal density 
 *************************************************************************/
 
@@ -1794,6 +1868,80 @@ void dmvnormd2_4d(double *x1, double *x2, double *x3, double *x4, double *vsigma
   }
   }
 }
+
+/*************************************************************************
+* 5-dim normal density 
+*************************************************************************/
+
+void dmvnorm_5d(double *x1, double *x2, double *x3, double *x4, double *x5, 
+		double *mu, 
+		double *visigma, double *detsigma, int *n, double *dens)
+{
+  double norm;
+  double xmu[5];
+  int j, d;
+  
+  d = 5;
+  norm = 1/sqrt(pow(2*M_PI, d) * detsigma[0]);
+  for (j = 1; j <= n[0]; j++)
+  {
+    xmu[0] = x1[j - 1] - mu[0];
+    xmu[1] = x2[j - 1] - mu[1];
+    xmu[2] = x3[j - 1] - mu[2]; 
+    xmu[3] = x4[j - 1] - mu[3];
+    xmu[4] = x5[j - 1] - mu[4]; 
+    dens[j - 1] = norm * exp(-0.5 * mult(xmu, visigma, xmu, d));
+  }
+}
+
+/*************************************************************************
+* 5-dim normal density - double sum 
+*************************************************************************/
+
+void dmvnorm_5d_sum(double *x1, double *x2, double *x3, double *x4, double *x5, 
+		    double *visigma, double *detsigma, int *n, double *sum)
+{
+  int i, j, k, N;
+  double mu[] = {0.0, 0.0, 0.0, 0.0, 0.0};
+  double sum1;
+  double *y1, *y2, *y3, *y4, *y5, *dens;
+  
+  N = n[0];
+  y1 = malloc(sizeof(double)*N);
+  y2 = malloc(sizeof(double)*N);
+  y3 = malloc(sizeof(double)*N);
+  y4 = malloc(sizeof(double)*N);
+  y5 = malloc(sizeof(double)*N);
+  dens = malloc(sizeof(double)*N);
+  sum1 = 0.0;
+ 
+  for (i = 1; i <= N; i++)
+  {
+    for (j = i; j <= N; j++)
+    {
+      y1[j - 1] = x1[i - 1] - x1[j - 1];
+      y2[j - 1] = x2[i - 1] - x2[j - 1];
+      y3[j - 1] = x3[i - 1] - x3[j - 1];
+      y4[j - 1] = x4[i - 1] - x4[j - 1];
+      y5[j - 1] = x5[i - 1] - x5[j - 1];
+    }
+    dmvnorm_5d(y1, y2, y3, y4, y5, mu, visigma, detsigma, n, dens);
+    for (k = i; k <= N; k++)
+      sum1 = sum1 + dens[k - 1];
+  }
+
+  sum[0] = sum1;
+  free(y1);
+  free(y2);
+  free(y3);
+  free(y4);
+  free(y5);
+  free(dens);
+}
+
+
+
+
 
 /*************************************************************************
 * 6-dim normal density 

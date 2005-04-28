@@ -1,10 +1,11 @@
 \name{plot.kde}
 \alias{plot.kde}
 
-\title{Kernel density estimate plot for bivariate data}
+\title{Kernel density estimate plot for 2- and 3-dimensional data}
 \description{
-  Kernel density estimate plot for bivariate data.
+  Kernel density estimate plot for 2- and 3-dimensional data.
 }
+
 \usage{
 \method{plot}{kde}(x, display="slice", ...)
 }
@@ -46,12 +47,17 @@
   If \code{display="image"} then an image plot
   is generated. The colors are the default from the usual
   \code{image} command.
+
+  For 3-dimensional data, the plot is a series of 2-dimensional contour plots. 
+  Use \code{layout.mat} to control the grid layout from the usual \code{layout}
+  command.     
 }
  
 
 \seealso{\code{\link{kde}}}
 
 \examples{
+### bivariate example
 data(unicef)
 H.scv <- Hscv(unicef)
 fhat <- kde(unicef, H.scv)
@@ -62,6 +68,17 @@ plot(fhat, display="slice", ncont=5, cex=0.3, drawlabels=FALSE)
 plot(fhat, display="persp")
 plot(fhat, display="image", col=rev(heat.colors(15)))
 layout(1)
+
+### 3-variate example
+
+mus <- rbind(c(0,0,0), c(2,2,2))
+Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
+Sigmas <- rbind(Sigma, Sigma)
+props <- c(1/2, 1/2)
+x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
+H.pi <- Hpi(x)
+fhat <- kde(x, H.pi, eval.levels=seq(-3,3, length=9))  
+plot(fhat, disp="slice", ncont=6, cex=0.3)
 }
 
 \keyword{ hplot}

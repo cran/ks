@@ -2,9 +2,9 @@
 \alias{Hpi}
 \alias{Hpi.diag}
 
-\title{Plug-in bandwidth matrix selector for bivariate data}
+\title{Plug-in bandwidth matrix selector for multivariate data}
 \description{
-Plug-in bandwidth matrix for bivariate data.}
+Plug-in bandwidth matrix for for 2- to 6-dimensional data.}
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart)
 Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart)
@@ -13,8 +13,8 @@ Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart)
 \arguments{
   \item{x}{matrix of data values}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{\code{"amse"} = AMSE-optimal pilot bandwidths,
-    \code{"samse"} = single SAMSE-optimal pilot bandwidth}
+  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
+    \code{"samse"} = single SAMSE pilot bandwidth}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
@@ -48,9 +48,20 @@ Plug-in bandwidth matrix.
 
 
 \examples{
+###bivariate example
+
 data(unicef)
 Hpi(unicef, nstage=1, pilot="amse", pre="scale")
 Hpi(unicef, nstage=2, pilot="samse", pre="sphere")
 Hpi.diag(unicef, nstage=2, pilot="amse", pre="scale") 
+
+### trivariate example
+
+mus <- rbind(c(0,0,0), c(2,2,2))
+Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
+Sigmas <- rbind(Sigma, Sigma)
+x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=c(1/2, 1/2))
+Hpi(x)
+Hscv(x)
 }
 \keyword{ smooth }
