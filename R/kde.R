@@ -453,12 +453,12 @@ kde.pc.points <- function(x.pc, Hs, eval.points)
 ###############################################################################
 
 plot.kde <- function(x, display="slice", ...)
-{
-  d <- ncol(fhat$x) 
+{ 
   fhat <- x
+  d <- ncol(fhat$x)
   rm(x)
-  eval1 <- fhat$eval.points[[1]]
-  eval2 <- fhat$eval.points[[2]]
+  #eval1 <- fhat$eval.points[[1]]
+  #eval2 <- fhat$eval.points[[2]]
   
   #if (missing(xlim))  xlim <- c(min(eval1), max(eval1))
   #if (missing(ylim))  ylim <- c(min(eval2), max(eval2))
