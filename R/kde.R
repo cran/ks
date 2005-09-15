@@ -27,7 +27,7 @@ make.grid <- function(x, H, tol, gridsize)
   maxx <- apply(x, 2, max) + tol.H
   stepsize <- rep(0, d)
   gridx <- numeric(0)
-  
+ 
   for (i in 1:d)
   {
     gridx <- c(gridx, list(seq(minx[i], maxx[i], length=gridsize[i])))
@@ -125,7 +125,7 @@ find.gridpts <- function(gridx, suppx)
 ###############################################################################
 
 
-kde <- function(x, H, gridsize, supp=3.7, eval.points, eval.levels)
+kde <- function(x, H, gridsize, supp=3.7, eval.points)
 {
    
   d <- ncol(x)
@@ -150,7 +150,7 @@ kde <- function(x, H, gridsize, supp=3.7, eval.points, eval.levels)
       if (d == 2)
         fhat <- kde.grid.2d(x, H, gridsize, supp)
       else if (d == 3)
-        fhat <- kde.grid.3d(x, H, gridsize, supp, eval.levels=eval.levels) 
+        fhat <- kde.grid.3d(x, H, gridsize, supp) 
       else 
         stop("Need to specify eval.points for more than 3 dimensions")
     }
@@ -237,18 +237,20 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 ###############################################################################
 
 
-kde.grid.3d <- function(x, H, gridsize, eval.levels, supp, gridx=NULL, 
-   grid.pts=NULL)
+kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 {
   # initialise grid 
   n <- nrow(x)
+
   if (is.null(gridx))
     gridx <- make.grid(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
   suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
+
   if (is.null(grid.pts))
     grid.pts <- find.gridpts(gridx, suppx)    
   fhat.grid <- array(0, dim=c(length(gridx[[1]]), length(gridx[[2]]), 
                length(gridx[[3]])))
+  
   for (i in 1:n)
   {
     # compute evaluation points 
@@ -256,11 +258,10 @@ kde.grid.3d <- function(x, H, gridsize, eval.levels, supp, gridx=NULL,
                   gridx[[1]][grid.pts$maxx[i,1]], by=gridx$stepsize[1])
     eval.y <- seq(gridx[[2]][grid.pts$minx[i,2]], 
                   gridx[[2]][grid.pts$maxx[i,2]], by=gridx$stepsize[2])
-    if (missing(eval.levels))
-       eval.z <- seq(gridx[[1]][grid.pts$minx[i,1]], 
-                  gridx[[1]][grid.pts$maxx[i,1]], by=gridx$stepsize[3])
-    else
-      eval.z <- eval.levels
+    eval.z <- seq(gridx[[3]][grid.pts$minx[i,3]], 
+                  gridx[[3]][grid.pts$maxx[i,3]], by=gridx$stepsize[3])
+    #else
+    #  eval.z <- eval.levels
  
     eval.x.ind <- c(grid.pts$minx[i,1]:grid.pts$maxx[i,1])
     eval.y.ind <- c(grid.pts$minx[i,2]:grid.pts$maxx[i,2])
@@ -268,30 +269,23 @@ kde.grid.3d <- function(x, H, gridsize, eval.levels, supp, gridx=NULL,
     eval.x.len <- length(eval.x)
     eval.pts <- permute(list(eval.x, eval.y))
    
-    #browser()
     # place vector of density estimate values `fhat' onto grid 'fhat.grid' 
 
     for (k in 1:length(eval.z))
     {
       fhat <- dmvnorm(cbind(eval.pts, eval.z[k]), x[i,], H)
       for (j in 1:length(eval.y))
-        fhat.grid[eval.x.ind,eval.y.ind[j], k] <- 
-          fhat.grid[eval.x.ind, eval.y.ind[j], k] + 
+        fhat.grid[eval.x.ind,eval.y.ind[j], eval.z.ind[k]] <- 
+          fhat.grid[eval.x.ind, eval.y.ind[j], eval.z.ind[k]] + 
             fhat[((j-1) * eval.x.len + 1):(j * eval.x.len)]
      }
   }
   
   fhat.grid <- fhat.grid/n
 
-  if (missing(eval.levels))
-  {  
-    gridx1 <- list(gridx[[1]], gridx[[2]], gridx[[3]]) 
-    fhat.list <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H)
-  }
-  else
-    fhat.list <- list(x=x, eval.points=list(gridx[[1]], gridx[[2]], eval.levels), 
-                 estimate=fhat.grid, H=H)
- 
+  gridx1 <- list(gridx[[1]], gridx[[2]], gridx[[3]]) 
+  fhat.list <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H)
+
   return(fhat.list)
 }
 
@@ -457,16 +451,11 @@ plot.kde <- function(x, display="slice", ...)
   fhat <- x
   d <- ncol(fhat$x)
   rm(x)
-  #eval1 <- fhat$eval.points[[1]]
-  #eval2 <- fhat$eval.points[[2]]
-  
-  #if (missing(xlim))  xlim <- c(min(eval1), max(eval1))
-  #if (missing(ylim))  ylim <- c(min(eval2), max(eval2))
 
   if (d==2) 
     plotkde.2d(fhat, display=display, ...)
   else if (d== 3)
-    plotkde.3d(fhat, display=display, ...)
+    plotkde.3d(fhat, display="rgl", ...)
   else 
     stop ("Plot function only available for 2 or 3-dimensional data")
 }
@@ -574,43 +563,28 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
 # cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.3d <- function(fhat, layout.mat, ...)
-{  
-  dx <- length(fhat$eval.points[[1]])
-  dy <- length(fhat$eval.points[[2]])
-  dz <- length(fhat$eval.points[[3]])
 
-  is.zero <- rep(FALSE, dz)
-  for (k in 1:dz)
-     if (max(fhat$est[,,k])==0) is.zero[k] <- TRUE
+plotkde.3d <- function(fhat, display="rgl", cont=c(75,50,25), colors,
+  alphalo=0.2, alphahi=0.4, size=3, col="blue", ...)
 
-  if (missing(layout.mat))
-  {  
-     dz.nonzero <- dz-sum(is.zero)
-  
-     zfactor1 <- round(sqrt(dz.nonzero),0)+1 
-     while (dz.nonzero %% zfactor1 != 0) zfactor1 <- zfactor1 - 1 
-  
-     zfactor2 <- dz.nonzero/zfactor1
-     layout.mat <- matrix(1:dz.nonzero, nr=zfactor1, nc=zfactor2, byrow=TRUE)
-  }    
-   
-  layout(layout.mat)
+{
+  dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
+  hts <- quantile(dobs, prob = (100 - cont)/100)
 
-  #mar.old <- par()$mar 
-  #par(mar=c(1,1,1,1))  
-  
-  for (k in (1:dz)[!is.zero])
-  { 
-    fhat.temp <- fhat
-    fhat.temp$eval.points <- list(fhat$eval.points[[1]], fhat$eval.points[[2]])
-    fhat.temp$estimate <- fhat$estimate[,,k]     
-    plotkde.2d(fhat.temp, main=paste("z=", fhat$eval.points[[3]][k]), ...) 
- 
+  if (missing(colors))
+    colors <- rev(heat.colors(length(cont)))
+                  
+  alph <- seq(alphalo, alphahi, length=length(cont))
+  rgl.bg(col="white")
+
+  for (i in 1:length(cont)) 
+  {
+    scale <- cont[i]/hts[i]
+    contour3d(fhat$estimate, level=hts[i], fhat$eval.points[[1]],
+              fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
+              color=colors[i], alpha=alph[i],...)
   }
-  #par(mar=mar.old)
-  layout(1)
+  rgl.points(fhat$x[,1],fhat$x[,3],-fhat$x[,2], size=size, col=col)
 }
-
 
 
