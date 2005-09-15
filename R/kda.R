@@ -158,15 +158,148 @@ compare <- function(x.group, est.group)
       comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))
   
   er <- 1 - sum(diag(comp))/sum(comp)
-  colnames(comp) <- as.character(grlab)
-  rownames(comp) <- as.character(grlab)
+  colnames(comp) <- as.character(paste(grlab, "(est.)"))
+  rownames(comp) <- as.character(paste(grlab, "(true)"))
   comp <- cbind(comp, rowSums(comp))
   comp <- rbind(comp, colSums(comp))
   
   return(list(cross=comp, error=er))
  
 }
-                       
+
+###############################################################################
+# Computes cross-validated misclassification rates (for use when test data =
+# training data) for KDA
+#
+# Parameters
+# x - training data
+# x.group - group variable for x
+# y - data values to be classified
+# Hs - bandwidth matrices
+# prior.prob - prior probabilities
+#
+# Returns
+# List with components
+# comp - cross-classification table of groupings - true groups are the rows,
+#        estiamted groups are the columns
+# error - total mis-classification rate
+###############################################################################
+
+compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, ...)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+  
+  if (!missing(Hstart))
+    H <- Hkda(x, x.group, bw=bw, Hstart=Hstart, ...)
+  else
+    H <- Hkda(x, x.group, bw=bw, ...)
+
+  ### classify data x using KDA rules based on x itself
+  kda.group <- kda(x, x.group, H, x, prior.prob=prior.prob)
+  comp <- compare(x.group, kda.group)
+ 
+  gr <- sort(unique(x.group)) 
+  kda.cv.gr <- x.group
+
+  for (i in 1:n)
+  {
+    ### find group that x[i] belongs to 
+    ind <- which(x.group[i]==gr)
+    indx <- x.group==gr[ind]
+    indx[i] <- FALSE
+
+    ### compute b/w matrix for that group with x[i] excluded
+    if (!missing(Hstart))
+    {  
+      Hstart.temp <- Hstart[((ind-1)*d+1):(ind*d),]
+      
+      if (substr(bw,1,1)=="p")
+        H.temp <- Hpi(x[indx,], Hstart=Hstart.temp, ...)
+      else if (substr(bw,1,1)=="s")
+        H.temp <- Hscv(x[indx,],  Hstart=Hstart.temp,...)
+      else if (substr(bw,1,1)=="l")
+        H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp,...)
+    }
+    else
+    {
+      if (substr(bw,1,1)=="p")
+        H.temp <- Hpi(x[indx,],  ...)
+      else if (substr(bw,1,1)=="s")
+        H.temp <- Hscv(x[indx,], ...)
+      else if (substr(bw,1,1)=="l")
+        H.temp <- Hlscv(x[indx,], ...)
+    }
+      
+    H[((ind-1)*d+1):(ind*d),] <- H.temp
+
+    ### recompute KDA estimate of groups with x[i] excluded
+    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H, x, prior.prob=prior.prob)[i]  
+  }
+  
+  return(compare(x.group, kda.cv.gr)) 
+}
+
+###############################################################################
+### Same as compare.kda.cv except uses diagonal b/w matrices
+###############################################################################
+
+compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, ...)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+
+  H <- Hkda.diag(x, x.group, bw=bw, ...)
+  kda.group <- kda(x, x.group, H, x, prior.prob=prior.prob)
+  comp <- compare(x.group, kda.group)
+ 
+  gr <- sort(unique(x.group)) 
+  kda.cv.gr <- x.group
+  
+  for (i in 1:n)
+  {
+    ind <- which(x.group[i]==gr)
+    indx <- x.group==gr[ind]
+    indx[i] <- FALSE
+    if (substr(bw,1,1)=="p")
+      H.temp <- Hpi.diag(x[indx,],  ...)
+    else if (substr(bw,1,1)=="l")
+      H.temp <- Hlscv.diag(x[indx,], ...)
+    
+    H[((ind-1)*d+1):(ind*d),] <- H.temp
+    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H, x, prior.prob=prior.prob)[i]  
+  }
+  return(compare(x.group, kda.cv.gr)) 
+}
+
+###############################################################################
+# Computes cross-validated misclassification rates (for use when test data =
+# training data) for parametric DA
+#
+# Parameter
+# x - training data
+# x.group - group variable for x
+# prior.prob - prior probabilities
+# type - "line" - linear disc.
+#      - "quad" - quadratic disc.
+###############################################################################
+
+compare.pda.cv <- function(x, x.group, type="quad", prior.prob=NULL)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+
+  pda.group <- pda(x, x.group, x, prior.prob=prior.prob, type=type)
+  comp <- compare(x.group, pda.group)
+  
+  pda.cv.gr <- vector()
+  for (i in 1:n)
+    pda.cv.gr[i] <-
+      as.vector(pda(x[-i,], x.group[-i], x, prior.prob=prior.prob, type=type))[i]
+
+  return(compare(x.group, pda.cv.gr)) 
+}
+
 
 ###############################################################################
 # KDEs of individual densities for KDA - only for 2-dim 

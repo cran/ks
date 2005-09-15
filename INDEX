@@ -1,3 +1,5 @@
+compare                 Comparisons for kernel and parametric
+                        discriminant analysis
 Hbcv                    Biased cross-validation (BCV) bandwidth matrix
                         selector for bivariate data
 Hkda                    Bandwidth matrix selectors for kernel

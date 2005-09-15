@@ -1210,62 +1210,40 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
     
 }
 
-plotmixt.3d <- function(mus, Sigmas, props,
-    xlim=c(-3,3), ylim=c(-3,3), zlim=c(-3,3), znum=10, layout.mat,
-    gridsize=c(100,100), display="slice",
-    cont=c(25,50,75), lty,
-    ncont=NULL, xlabs="x", ylabs="y", zlabs="z",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, ...)
+plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal",
+    gridsize=c(50,50,50), xlim=c(-3,3), ylim=c(-3,3), zlim=c(-3,3),
+    alphalo=0.2, alphahi=0.4, colors=rev(heat.colors(length(cont))))
 {
-  if (missing(layout.mat))
-  {  
-     zfactor1 <- round(sqrt(znum),0)+1 
-     while (znum %% zfactor1 != 0) zfactor1 <- zfactor1 - 1 
-  
-     zfactor2 <- znum/zfactor1
-     layout.mat <- matrix(1:znum, nr=zfactor1, nc=zfactor2)
-  }       
-  layout(layout.mat)
-
+  d <- 3
   x <- seq(1.1*xlim[1], 1.1*xlim[2], length=gridsize[1])
   y <- seq(1.1*ylim[1], 1.1*ylim[2], length=gridsize[2])
-  xy <- permute(list(x, y)) 
-  d <- ncol(Sigmas)
-  zseq <- seq(zlim[1], zlim[2], length=znum)
-
-  for (k in 1:znum)
-  {
-  dens <- dmvnorm.mixt(cbind(xy,zseq[k]), mu=mus, Sigma=Sigmas, props=props)
-  dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
-  
-  disp <- substr(display,1,1)
-
-  if (disp=="p")
-    persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlabs, ylab=ylabs,
-          zlab=zlabs, ...)
-
-  else if (disp=="s")
-  {
-      if (missing(lty)) lty <- 1
-      hts <- quantile(dens, prob=(100 - cont)/100)
-      if (!add)
-        plot(x, y, type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, 
-             main=paste("z=", zseq[k]), ...)
-      
-      if (is.null(ncont))
-        for (i in 1:length(cont)) 
-        {
-          scale <- cont[i]/hts[i]
-          contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE,
-                drawlabels=drawlabels, lty=lty, ...)
-        }
-      else
-        contour(x, y, dens.mat, nlevel=ncont,add=TRUE, drawlabels=drawlabels,
-                lty=lty, ...)
+  z <- seq(1.1*zlim[1], 1.1*zlim[2], length=gridsize[3])
+  xy <- permute(list(x,y))
  
+  dens.array <- array(0, dim=gridsize)
+  
+  for (i in 1:length(z))
+  {
+    if (dist=="normal")
+      dens <- dmvnorm.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, props=props)
+    else if (dist=="t")
+      dens <- dmvt.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, dfs=dfs, props=props)
+    
+    dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
+    dens.array[,,i] <- dens.mat
   }
-  else if (disp=="i")
-    image(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, main=paste("z=", zseq[k]),...)
-  }  
+
+  hts <- quantile(apply(dens.array, 3, max), prob = (100 - cont)/100)
+  alph <- seq(alphalo, alphahi, length=length(cont))
+  rgl.bg(col="white")
+  
+  for (i in 1:length(cont)) 
+  {
+    scale <- cont[i]/hts[i]
+    contour3d(dens.array, level=hts[i],x, y, z, add=(i>1), color=colors[i],
+              alpha=alph[i])
+  }    
 }
+
+
 

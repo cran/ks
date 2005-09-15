@@ -63,9 +63,8 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
 \examples{
 library(MASS)
 data(iris)
-iris.mat <- rbind(iris[,,1], iris[,,2], iris[,,3])
-ir <- iris.mat[,c(1,2)]
-ir.gr <- iris.mat[,5]
+ir <- iris[,c(1:4)]
+ir.gr <- iris[,5]
 
 Hkda(ir, ir.gr, bw="scv", pre="scale")
 Hkda.diag(ir, ir.gr, bw="plugin", pre="scale")
