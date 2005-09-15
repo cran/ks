@@ -10,7 +10,7 @@
   ISE (Integrated Squared Error), MISE (Mean Integrated Squared Error)
   of kernel density estimates
   for normal densities, for 2- to 6-dimensional data, and
-and AMISE (Asymptotic Mean Integrated Squared Error) fpr 2-dimensional data.}
+and AMISE (Asymptotic Mean Integrated Squared Error) for 2-dimensional data.}
 
 \usage{
 ise.mixt(x, H, mus, Sigmas, props)  
