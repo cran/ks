@@ -72,7 +72,9 @@
 \alias{optnum.clust} 
 \alias{permute}
 \alias{permute.mat}
-\alias{plot.pvkde} 
+\alias{plot.pvkde}
+\alias{plotdade.2d}
+\alias{plotdade.3d}
 \alias{plotkde.2d}
 \alias{plotkde.3d}
 \alias{plotmixt.2d}

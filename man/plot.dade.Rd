@@ -2,21 +2,26 @@
 \alias{plot.dade}
 
 \title{Density estimates and partition plot for discriminant analysis
-for bivariate data}
+for bi-and tri-variate data}
 \description{
-  Density estimate plot and partition for bivariate data for kernel, linear and
+  Density estimate plot and partition for bi- and tri-variate data for kernel, linear and
   quadratic discriminant analysis}
 }
 
 \synopsis{
 plot.dade(x, y, y.group, prior.prob=NULL, display="part",
-          cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x",ylabs="y",
-          drawlabels=TRUE, cex=1, pch, lty, col, lcol, ...)
+          cont=c(25,50,75), ncont=NULL, ...)
 }
 
 \usage{
-\method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="part", 
-       cont=c(25,50,75), ncont=NULL, ...)
+## bivariate
+\method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="part",
+    cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x", ylabs="y",
+    drawlabels=TRUE, cex=1, pch, lty, col, lcol, ...)
+
+## trivariate
+\method{plot}{dade}(x, y, y.group, prior.prob=NULL, 
+    cont=c(25,50), colors, alphalo=0.2, alphahi=0.6, ...)
 }
 
 \arguments{
@@ -29,6 +34,11 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
   \item{cont}{vector of percentages (of maximum height) for contour
     level curves}
   \item{ncont}{number of contour level curves}
+  \item{cex,pch,lty,xlim, ylim, xlabs, ylabs}{usual graphics parameters}
+  \item{drawlabels}{draw contour labels}
+  \item{col, lcol}{colour for plotting symbol and lines respectively}
+  \item{colors}{vector of colours for each group}
+  \item{alphalo, alphahi}{minimum and maximum transparency}
   \item{...}{other graphics parameters}
 }
   
@@ -75,19 +85,19 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
   \code{\link{kda}}, \code{\link{pda}}}
 
 \examples{
+## bivariate example
 
 library(MASS)
 data(iris)
-iris.mat <- rbind(iris[,,1], iris[,,2], iris[,,3])
-ir <- iris.mat[,c(1,2)]
-ir.gr <- iris.mat[,5]
+ir <- iris[,c(1,2)]
+ir.gr <- iris[,5]
 xlab <- "Sepal length (mm)"
 ylab <- "Sepal width (mm)"
 xlim <- c(4,8)
 ylim <- c(2,4.5)
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-fhat <- kda.kde(ir, ir.gr, H, gridsize=c(250,250))
+fhat <- kda.kde(ir, ir.gr, H)
 lda.fhat <- pda.pde(ir, ir.gr, type="line")
 qda.fhat <- pda.pde(ir, ir.gr, type="quad")
 
@@ -101,7 +111,19 @@ plot(lda.fhat, ncont=6, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab,
 plot(qda.fhat, ncont=6, xlim=xlim, ylim=ylim,  xlab=xlab, ylab=ylab, 
      lty=c(2,5,3))
 layout(1)
-}
 
+## trivariate example
+\dontrun{
+ir <- iris[,1:3]
+ir.gr <- iris[,5] 
+H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
+fhat <- kda.kde(ir, ir.gr, H)
+plot(fhat, cont=c(25,50))
+   ## colour indicates species, transparency indicates density heights
+
+qda.fhat <- pda.pde(ir, ir.gr, type="quad")
+plot(qda.fhat, cont=c(25,50))
+}
+}
 \keyword{ hplot}
 

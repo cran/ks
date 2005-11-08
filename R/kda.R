@@ -352,7 +352,10 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
       y.grid.pts <- list()
       y.grid.pts$minx <- grid.pts$minx[x.group==grlab[j],]
       y.grid.pts$maxx <- grid.pts$maxx[x.group==grlab[j],]
-      fhat.temp <- kde.grid.2d(y, H, gridx=gridx, supp=supp, grid.pts=y.grid.pts)
+      if (d==2)
+        fhat.temp <- kde.grid.2d(y, H, gridx=gridx, supp=supp, grid.pts=y.grid.pts)
+      else if (d==3)
+        fhat.temp <- kde.grid.3d(y, H, gridx=gridx, supp=supp, grid.pts=y.grid.pts)
     }
     else
       fhat.temp <- kde.points(y, H, eval.points=eval.points)
@@ -390,11 +393,25 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
 
 
 plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
+    cont=c(25,50,75), ncont=NULL, ...)
+{
+  d <- ncol(x$x[[1]])
+
+  if (d==2)
+    plotdade.2d(x, y, y.group, prior.prob=prior.prob, display=display,
+                cont=cont, ncont=ncont, ...)
+  else if (d==3)
+    plotdade.3d(x, y, y.group, prior.prob=prior.prob,
+                cont=cont, ...)
+}
+
+plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
     cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x", ylabs="y",
     drawlabels=TRUE, cex=1, pch, lty, col, lcol, ...)
 { 
   fhat <- x
   rm(x)
+  
   d <- 2
   m <- length(fhat$x)
   type <- substr(fhat$type,1,1)
@@ -502,6 +519,85 @@ plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
 }
 
 
+
+plotdade.3d <- function(x, y, y.group, prior.prob=NULL, 
+    cont=c(25,50), colors, alphalo=0.2, alphahi=0.6, ...)
+{ 
+  fhat <- x
+  rm(x)
+  
+  d <- 3
+  m <- length(fhat$x)
+  type <- substr(fhat$type,1,1)
+  eval1 <- fhat$eval.points[[1]]
+  eval2 <- fhat$eval.points[[2]]
+  eval3 <- fhat$eval.points[[3]]
+
+  if (is.null(prior.prob))
+    prior.prob <- fhat$prior.prob
+  if (m != length(prior.prob))
+    stop("Prior prob. vector not same length as number of components in fhat")
+  if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
+    stop("Sum of prior weights not equal to 1")
+
+  ncont <- length(cont)
+  alph <- seq(alphalo,alphahi,length=ncont)
+ 
+  if (missing(colors))
+    colors <- heat.colors(m)
+  
+  dobs <- numeric(0)
+  xx <- numeric(0)
+  S <- 0
+  n <- 0 
+  for (j in 1:m)
+  {
+    n <- nrow(fhat$x[[j]])
+    S <- S + nrow(fhat$x[[j]]) * var(fhat$x[[j]])
+  }
+  S <- S/(n - m)
+
+
+  for (j in 1:m)
+    xx <- rbind(xx, fhat$x[[j]])
+  if (!missing(y.group)) y.gr <- sort(unique(y.group))
+
+  for (j in 1:m)
+  {
+    if (type=="k")
+      dobs <- c(dobs, kde(fhat$x[[j]], fhat$H[[j]], eval.points=xx)$estimate
+                * prior.prob[j])
+    else if (type=="q")
+    {
+      xbarj <- apply(fhat$x[[j]], 2, mean)
+      Sj <- var(fhat$x[[j]])
+      dobs <- c(dobs, dmvnorm.mixt(x=fhat$x[[j]], mus=xbarj, Sigmas=Sj, props=1)
+                * prior.prob[j])
+    }
+    else if (type=="l")
+    {
+      xbarj <- apply(fhat$x[[j]], 2, mean)      
+      dobs <- c(dobs, dmvnorm.mixt(x=fhat$x[[j]], mus=xbarj, Sigmas=S, props=1)
+                * prior.prob[j])
+    }
+  }
+  
+  hts <- quantile(dobs, prob = (100-cont)/100)
+
+  rgl.clear()
+  rgl.bg(color="white")
+  for (i in 1:ncont) 
+  {
+    for (j in 1:m)
+      contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
+                z=fhat$eval.points[[3]], f=fhat$estimate[[j]],
+                level=hts[ncont-i+1],
+                add=TRUE, alpha=alph[i], col=colors[j],...)
+    
+  }
+}
+
+
 ###############################################################################
 # Classify data set according to discriminant analysis based on training data
 # using linear or quadratic discrimination 
@@ -551,7 +647,7 @@ pda <- function(x, x.group, y, prior.prob=NULL, type="quad")
 
 ##############################################################################
 # Compute density estimate of individual densities and classifcation region
-# for parametric DA - for 2-dim only
+# for parametric DA - for 2-d and 3-d only
 #
 # Parameters
 # x - training data
@@ -566,28 +662,47 @@ pda <- function(x, x.group, y, prior.prob=NULL, type="quad")
 # estimate - list of density estimate 
 ##############################################################################
 
-pda.pde <- function(x, x.group, gridsize, type="quad", xlim, ylim)
+pda.pde <- function(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
 {
   n <- nrow(x)
+  d <- ncol(x)
+  
   gr <- sort(unique(x.group))
   typ <- substr(type,1,1) 
   if (missing(xlim))
     xlim <- range(x[,1])
   if (missing(ylim))
     ylim <- range(x[,2])
+  if (missing(zlim) & d==3)
+    zlim <- range(x[,3])
   if (missing(gridsize)) 
-    gridsize <- rep(100,2)
-   
-  ex <- seq(xlim[1]-abs(xlim[1])/10, xlim[2]+abs(xlim[2])/10, length=gridsize[1])
-  ey <- seq(ylim[1]-abs(ylim[1])/10, ylim[2]+abs(ylim[2])/10, length=gridsize[2])
-  xy <- permute(list(ex, ey))
+    gridsize <- rep(100,d)
 
+  if (d==2)
+  {  
+    ex <- seq(xlim[1]-abs(xlim[1])/10, xlim[2]+abs(xlim[2])/10, length=gridsize[1])
+    ey <- seq(ylim[1]-abs(ylim[1])/10, ylim[2]+abs(ylim[2])/10, length=gridsize[2])
+    xy <- permute(list(ex, ey))
+  }
+  else if (d==3)
+  {
+    ex <- seq(xlim[1]-abs(xlim[1])/10, xlim[2]+abs(xlim[2])/10, length=gridsize[1])
+    ey <- seq(ylim[1]-abs(ylim[1])/10, ylim[2]+abs(ylim[2])/10, length=gridsize[2])
+    ez <- seq(zlim[1]-abs(zlim[1])/10, zlim[2]+abs(ylim[2])/10, length=gridsize[3])
+    xyz <- permute(list(ex, ey, ez))
+  }
+  
   fhat <- list()
   fhat$x <- list()
-  fhat$eval.points <- list(ex, ey)
+  if (d==2)
+    fhat$eval.points <- list(ex, ey)
+  else if(d==3)
+    fhat$eval.points <- list(ex, ey, ez)
+
   fhat$estimate <- list()
   dens.mat <- list()
-  
+
+ 
   S <- 0
   for (i in 1:length(gr))
   {
@@ -603,12 +718,23 @@ pda.pde <- function(x, x.group, gridsize, type="quad", xlim, ylim)
     xbari <- apply(xi, 2, mean)
     Si <- var(xi)
     fhat$x[[i]] <- xi
-    
-    if (typ=="q")
-      dens <- dmvnorm.mixt(xy, mu=xbari, Sigma=Si, props=1)
-    else if (typ=="l")
-      dens <- dmvnorm.mixt(xy, mu=xbari, Sigma=S, props=1)
-    fhat$estimate[[i]] <- matrix(dens, nc=length(ex), byrow=FALSE) 
+
+    if (d==2)
+    {
+      if (typ=="q")
+        dens <- dmvnorm.mixt(xy, mu=xbari, Sigma=Si, props=1)
+      else if (typ=="l")
+        dens <- dmvnorm.mixt(xy, mu=xbari, Sigma=S, props=1)
+      fhat$estimate[[i]] <- matrix(dens, nc=gridsize[1], byrow=FALSE)
+    }
+    else if (d==3)
+    {
+      if (typ=="q")
+        dens <- dmvnorm.mixt(xyz, mu=xbari, Sigma=Si, props=1)
+      else if (typ=="l")
+        dens <- dmvnorm.mixt(xyz, mu=xbari, Sigma=S, props=1)
+      fhat$estimate[[i]] <- array(dens, dim=gridsize)
+    }
   }
 
   prior.prob <- rep(0, length(gr))

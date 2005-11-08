@@ -10,7 +10,7 @@
 }
 \usage{
 kda.kde(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
-pda.pde(x, x.group, gridsize, type="quad", xlim, ylim)
+pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
 }
 
 \arguments{
@@ -22,7 +22,7 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim)
   \item{eval.points}{points that density estimate is evaluated at}
   \item{type}{\code{"line"} = linear discriminant, \code{"quad"} =
     quadratic discriminant}
-  \item{xlim, ylim}{x-axis, y-axis limits}
+  \item{xlim, ylim, zlim}{x-axis, y-axis, z-axis limits}
 }
   
 
@@ -78,17 +78,15 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim)
 \examples{
 library(MASS)
 data(iris)
-iris.mat <- rbind(iris[,,1], iris[,,2], iris[,,3])
-ir <- iris.mat[,c(1,2)]
-ir.gr <- iris.mat[,5]
+ir <- iris[,c(1,2)]
+ir.gr <- iris[,5]
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.gr <- kda(ir, ir.gr, H, ir)
-fhat <- kda.kde(ir, ir.gr, H, gridsize=c(250,250))
+fhat <- kda.kde(ir, ir.gr, H)
 
 qda.gr <- pda(ir, ir.gr, ir, type="quad")
-qda.fhat <- pda.pde(ir, ir.gr, gridsize=c(250,250))
-
+qda.fhat <- pda.pde(ir, ir.gr)
 }
 
 \keyword{smooth}

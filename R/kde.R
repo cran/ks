@@ -564,26 +564,36 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, display="rgl", cont=c(75,50,25), colors,
-  alphalo=0.2, alphahi=0.4, size=3, col="blue", ...)
+plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
+  alphalo=0.2, alphahi=0.6, size=3, col="blue", add=FALSE, ...)
 
 {
   dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
-  hts <- quantile(dobs, prob = (100 - cont)/100)
-
+  hts <- quantile(dobs, prob = (100-cont)/100)
+  nc <- length(cont)
+  
   if (missing(colors))
-    colors <- rev(heat.colors(length(cont)))
-                  
-  alph <- seq(alphalo, alphahi, length=length(cont))
-  rgl.bg(col="white")
+    colors <- rev(heat.colors(nc))
 
-  for (i in 1:length(cont)) 
+  alph <- seq(alphalo, alphahi, length=nc)
+  if (!add)
   {
-    scale <- cont[i]/hts[i]
-    contour3d(fhat$estimate, level=hts[i], fhat$eval.points[[1]],
-              fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
-              color=colors[i], alpha=alph[i],...)
+    rgl.clear()
+    rgl.bg(col="white")
+    for (i in 1:nc) 
+      contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
+                fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
+                color=colors[i], alpha=alph[i], ...)
   }
+  else
+  {
+    rgl.bg(col="white")
+    for (i in 1:nc) 
+      contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
+                fhat$eval.points[[2]], fhat$eval.points[[3]], add=add,
+                color=colors[i], alpha=alph[i], ...)
+  }
+   
   rgl.points(fhat$x[,1],fhat$x[,3],-fhat$x[,2], size=size, col=col)
 }
 

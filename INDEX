@@ -20,7 +20,8 @@ kda.kde                 Density estimates for kernel and parametric
                         discriminant analysis for multivariate data
 kde                     Kernel density estimate for multivariate data
 plot.dade               Density estimates and partition plot for
-                        discriminant analysis for bivariate data
+                        discriminant analysis for bi-and tri-variate
+                        data
 plot.kde                Kernel density estimate plot for 2- and
                         3-dimensional data
 pre.sphere              Pre-sphering and pre-scaling

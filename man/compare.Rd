@@ -21,7 +21,7 @@ compare.pda.cv(x, x.group, type="quad", prior.prob=NULL)
   \item{x.group}{vector of group labels for training data}
   \item{est.group}{vector of estimated group labels}
   \item{bw}{\code{"plugin"} = plug-in, \code{"lscv"} = LSCV, \code{"scv"} = SCV}
-  \item{Hstart}{(stacked) matrix of intitial bandwidth matrices}
+  \item{Hstart}{(stacked) matrix of initial bandwidth matrices}
   \item{prior.prob}{vector of prior probabilities}
   \item{type}{\code{"line"} = linear discriminant, \code{"quad"} =
     quadratic discriminant}

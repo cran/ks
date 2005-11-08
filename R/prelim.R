@@ -1,7 +1,7 @@
 .First.lib <- function(lib=NULL, pkg=ks)
 {
   library.dynam("ks", pkg, lib)
-  cat("ks version 1.3.3 (2005) \n")
+  cat("ks version 1.3.4 (2005) \n")
 }  
 
 require(mvtnorm)

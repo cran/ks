@@ -6,15 +6,35 @@
   Kernel density estimate plot for 2- and 3-dimensional data.
 }
 
+\synopsis{\method{plot}{kde}(x, display="slice", ...)}
+
 \usage{
-\method{plot}{kde}(x, display="slice", ...)
+## bivariate
+\method{plot}{kde}(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0.7, 
+    xlabs="x", ylabs="y", zlabs="Density function", theta=-30, phi=40, d=4,
+    add=FALSE, drawlabels=TRUE, points.diff=TRUE, pch, ...)
+
+## trivariate
+\method{plot}{kde}(fhat, display="rgl", cont=c(25,50,75), colors,
+  alphalo=0.2, alphahi=0.6, size=3, col="blue", add=FALSE, ...)
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde} i.e. output from
+  \item{fhat}{an object of class \code{kde} i.e. output from
     \code{\link{kde}} function}
-  \item{display}{type of display}
-  \item{...}{other graphics parameters - see details below}
+  \item{display}{type of display, "slice" for contour plot, "persp" for
+    perspective plot, "image" for image plot, "rgl" for RGL plot}
+  \item{cont}{vector of percentages (of maximum height) for contour
+    level curves}
+  \item{ncont}{number of contour level curves}
+  \item{cex,pch,xlabs,ylabs,zlabs,add}{usual graphics parameters}
+  \item{theta,phi,d}{graphics parameters for perspective plots}
+  \item{drawlabels}{draw contour labels}
+  \item{points.diff}{not currently implemented}
+  \item{colors}{vector of colours for each group}
+  \item{alphalo, alphahi}{minimum and maximum transparency}
+  \item{size,col}{size and colour for plotting symbol}
+  \item{...}{other graphics parameters}
 }
   
 
@@ -74,7 +94,7 @@ plot(fhat, display="image", col=rev(heat.colors(15)))
 layout(1)
 
 ### 3-variate example
-
+\dontrun{
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
 Sigmas <- rbind(Sigma, Sigma)
@@ -84,5 +104,5 @@ H.pi <- Hpi(x)
 fhat <- kde(x, H.pi)  
 plot(fhat)
 }
-
+}
 \keyword{ hplot}
