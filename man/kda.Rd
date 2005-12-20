@@ -23,9 +23,8 @@ pda(x, x.group, y, prior.prob=NULL, type="quad")
 }
 
 \value{
-  The discriminant analysers are \code{kda} and \code{pda} and these
-  return a vector of group labels assigned via discriminant
-  analysis.  If the test data \code{y} are given then these are
+  A vector of group labels estimated via a discriminant (or classification)
+  rule.  If the test data \code{y} are given then these are
   classified. Otherwise the training data \code{x} are classified.
 }
 
@@ -43,17 +42,18 @@ pda(x, x.group, y, prior.prob=NULL, type="quad")
 
 \details{
   If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise the default is to use the sample proportions as 
-  estimates of the prior probabilities.
+  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  proportions as estimates of the prior probabilities.
 
-  The parametric discriminant analysers use the code from the
-  \code{MASS} library namely \code{lda} and \code{qda}
-  for linear and quadratic discriminants.
+  The linear and quadratic discriminant analysers are based on
+  \code{lda} and \code{qda} from the \code{MASS} library.
 }
 
-\seealso{  \code{\link{kda.kde}}, \code{\link{pda.pde}},
-  \code{\link{compare}}, \code{\link{compare.kda.diag.cv}},
-  \code{\link{compare.kda.cv}}, \code{\link{compare.pda.cv}} 
+\seealso{
+  \code{\link{kda.kde}}, \code{\link{pda.pde}},
+  \code{\link{compare}}, 
+  \code{\link{compare.kda.cv}},
+  \code{\link{compare.pda.cv}} 
 }
 
 \examples{
@@ -61,16 +61,15 @@ pda(x, x.group, y, prior.prob=NULL, type="quad")
 ### bivariate example - restricted iris dataset  
 library(MASS)
 data(iris)
-iris.mat <- rbind(iris[,,1], iris[,,2], iris[,,3])
-ir <- iris.mat[,c(1,2)]
-ir.gr <- iris.mat[,5]
+ir <- iris[,1:2]
+ir.gr <- iris[,5]
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.gr <- kda(ir, ir.gr, H, ir)
 lda.gr <- pda(ir, ir.gr, ir, type="line")
 qda.gr <- pda(ir, ir.gr, ir, type="quad")
 
-
+\dontrun{
 ### multivariate example - full iris dataset
 ir <- iris[,1:4]
 ir.gr <- iris[,5]
@@ -80,5 +79,5 @@ kda.gr <- kda(ir, ir.gr, H, ir)
 lda.gr <- pda(ir, ir.gr, ir, type="line")
 qda.gr <- pda(ir, ir.gr, ir, type="quad")
 }
-
+}
 \keyword{ smooth }

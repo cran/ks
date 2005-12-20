@@ -24,8 +24,8 @@ dmvt.mixt(x, mus, Sigmas, dfs, props)
 \value{Multivariate t mixture random vectors and density values.}
 
 \details{
-  \code{rmvt.mixt} is based on the
-  \code{rmvt} function from the \code{mvtnorm} library.
+  \code{rmvt.mixt} and \code{dmvt.mixt} are based on the
+  \code{rmvt} and \code{dmvt} functions from the \code{mvtnorm} library.
 
   The formula for a d-variate t density with location vector
   \eqn{\bold{\mu}}{mu}, dispersion matrix

@@ -30,16 +30,11 @@
 
 \details{The kernel density estimate is computed exactly i.e. binning
   is not used. 
-  
-  If \code{gridsize} is not set to a specific value, then it
-  defaults to 50 grid points in each co-ordinate direction
-  i.e. \code{rep(50, d)}. Not required
-  to be set if specifying \code{eval.points}.
 
-  If \code{eval.points} is not specified, then the
+  If \code{eval.points=NULL} (default) then the
   density estimate is automatically computed over a grid whose
-  resolution is controlled by \code{gridsize} (a grid is
-  required for plotting). 
+  resolution is controlled by \code{gridsize} (default is
+  100 in each co-ordinate direction).
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
@@ -53,7 +48,6 @@ data(unicef)
 H.pi <- Hpi(unicef, nstage=1)
 fhat <- kde(unicef, H.pi)
 
-
 ### 4-variate example
 library(MASS)
 data(iris)
@@ -61,5 +55,4 @@ ir <- iris[,1:4][iris[,5]=="setosa",]
 H.scv <- Hscv(ir)
 fhat <- kde(ir, H.scv, eval.points=ir)  
 }
-
 \keyword{smooth}

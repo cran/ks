@@ -1,7 +1,7 @@
 .First.lib <- function(lib=NULL, pkg=ks)
 {
   library.dynam("ks", pkg, lib)
-  cat("ks version 1.3.4 (2005) \n")
+  cat("ks version 1.3.5 (2005) \n")
 }  
 
 require(mvtnorm)
@@ -402,3 +402,20 @@ permute.mat <- function(order)
         storage.mode(q) <- "integer"
     q
 }
+
+##These function are courtesy of Matt Wand 2005
+
+spheres3d.rh <- function(x,y,z,radius,...)
+  return(spheres3d(x,z,-y,radius,...))
+
+texts3d.rh <- function(x,y,z,text,...)
+  return(texts3d(x,z,-y,text,...))
+
+triangles3d.rh <- function(x,y,z,...)
+  return(triangles3d(x,z,-y,...))
+
+quads3d.rh <- function(x,y,z,...)
+  return(quads3d(x,z,-y,...))
+
+points3d.rh <- function(x,y,z,...)
+  return(points3d(x,z,-y,...))

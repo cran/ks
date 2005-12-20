@@ -23,8 +23,9 @@ pre.scale(x)
   \eqn{\mathbf{S}^{-1/2}}{S^(-1/2)} and for pre-scaling, by
   \eqn{(\mathbf{S}_D)^{-1/2}}{S_D^(-1/2)} where
   \eqn{\mathbf{S}}{S} is the sample variance and \eqn{\mathbf{S}_D}{S_D}
-  is \eqn{\mathrm{diag} \, (S_1^2, S_2^2)}{diag (S_1^2, S_2^2)} and
-  \eqn{S_1^2, S_2^2}{S_1^2, S_2^2} are the marginal sample variances.
+  is \eqn{\mathrm{diag} \, (S_1^2, S_2^2, \dots, S_d^2)}{diag (S_1^2,
+    S_2^2, ..., S_d^2)} where
+  \eqn{S_i^2}{S_i^2} is the i-th marginal sample variance.
 
   If \eqn{\mathbf{H}^*}{H*} is the bandwidth matrix for the
   pre-transformed data and \eqn{\mathbf{H}}{H} is the bandwidth matrix for the

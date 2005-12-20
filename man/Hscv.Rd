@@ -35,9 +35,9 @@ selector is not available.
   Jones, M.C., Marron, J.~S. \& Park, B.U. (1991) A simple root n
   bandwidth selector. \emph{The Annals of Statistics} \bold{19}, 1919--1932.
 
-  Duong, T. \& Hazelton, M.L. (2004) \emph{Cross-validation bandwidth
+  Duong, T. \& Hazelton, M.L. (2005) \emph{Cross-validation bandwidth
     matrices for multivariate kernel density estimation}.  Scandinavian Journal 
-    of Statistics. In press. 
+  of Statistics. \bold{32}, 485-506.
 } 
 
 \seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}}

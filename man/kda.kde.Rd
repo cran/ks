@@ -22,7 +22,7 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
   \item{eval.points}{points that density estimate is evaluated at}
   \item{type}{\code{"line"} = linear discriminant, \code{"quad"} =
     quadratic discriminant}
-  \item{xlim, ylim, zlim}{x-axis, y-axis, z-axis limits}
+  \item{xlim, ylim, zlim}{x-axis, y-axis, z-axis limits (used only for plotting)}
 }
   
 
@@ -42,22 +42,16 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
 \details{
   The kernel density estimate is based on \code{\link{kde}}.
   
-  If \code{gridsize} is not set to a specific value, then it
-  defaults to 100 grid points in each co-ordinate direction
-  i.e. \code{rep(100, d)}. Not required
-  to be set if specifying \code{eval.points}.
-
-  If \code{eval.points} is not specified, then the
+  If \code{eval.points=NULL} (default) then the
   density estimate is automatically computed over a grid whose
-  resolution is controlled by \code{gridsize} (a grid is
-  required for plotting).
+  resolution is controlled by \code{gridsize} (default is
+  100 in each co-ordinate direction).
 
-  The parametric discriminant analysers use the code from the
-  \code{MASS} library namely \code{lda} and \code{qda} for linear and
-  quadratic discriminants. 
-
+  The linear and quadratic discriminant analysers are based on
+  \code{lda} and \code{qda} from the \code{MASS} library.
+  
   If \code{xlim} and \code{ylim} are not specified then they default to
-  be 10 \% bigger than the range of the data values.
+  be 10\% bigger than the range of the data values.
 }
 
 \references{

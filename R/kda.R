@@ -143,33 +143,47 @@ kda <- function(x, x.group, Hs, y, prior.prob=NULL)
 # Returns
 # List with components
 # comp - cross-classification table of groupings - true groups are the rows,
-#        estiamted groups are the columns
+#        estimated groups are the columns
 # error - total mis-classification rate
 ###############################################################################
 
-compare <- function(x.group, est.group)
+compare <- function(x.group, est.group, by.group=FALSE)
 {
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   comp <- matrix(0, nr=m, nc=m)
-
+  
   for (i in 1:m)
     for (j in 1:m)
-      comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))
+      comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))  
+
+  if (by.group)
+  {
+    er <- vector()
+    for (i in 1:m)
+      er[i] <- 1-comp[i,i]/rowSums(comp)[i]
+    er <- matrix(er, nc=1)
+    er <- rbind(er, 1 - sum(diag(comp))/sum(comp)) 
+    rownames(er) <- c(as.character(paste(grlab, "(true)")), "Total")
+    colnames(er) <- "error"
+    
+  }
+  else 
+    er <- 1 - sum(diag(comp))/sum(comp)
   
-  er <- 1 - sum(diag(comp))/sum(comp)
-  colnames(comp) <- as.character(paste(grlab, "(est.)"))
-  rownames(comp) <- as.character(paste(grlab, "(true)"))
   comp <- cbind(comp, rowSums(comp))
   comp <- rbind(comp, colSums(comp))
-  
+
+  colnames(comp) <- c(as.character(paste(grlab, "(est.)")), "Total")
+  rownames(comp) <- c(as.character(paste(grlab, "(true)")), "Total")
+
   return(list(cross=comp, error=er))
  
 }
 
 ###############################################################################
-# Computes cross-validated misclassification rates (for use when test data =
-# training data) for KDA
+# Computes cross-validated misclassification rates (for use when test data is
+# not independent of training data) for KDA
 #
 # Parameters
 # x - training data
@@ -181,11 +195,12 @@ compare <- function(x.group, est.group)
 # Returns
 # List with components
 # comp - cross-classification table of groupings - true groups are the rows,
-#        estiamted groups are the columns
+#        estimated groups are the columns
 # error - total mis-classification rate
 ###############################################################################
 
-compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, ...)
+compare.kda.cv <- function(x, x.group, bw="plugin",
+    prior.prob=NULL, Hstart, by.group=FALSE, trace=FALSE, ...)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -201,9 +216,10 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, ...
  
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
-
+  
   for (i in 1:n)
   {
+    H.mod <- H
     ### find group that x[i] belongs to 
     ind <- which(x.group[i]==gr)
     indx <- x.group==gr[ind]
@@ -231,20 +247,24 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, ...
         H.temp <- Hlscv(x[indx,], ...)
     }
       
-    H[((ind-1)*d+1):(ind*d),] <- H.temp
+    H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
 
     ### recompute KDA estimate of groups with x[i] excluded
-    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H, x, prior.prob=prior.prob)[i]  
+
+    if (trace)
+      cat(paste("Processing data item:", i, "\n"))
+    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H.mod, x, prior.prob=prior.prob)[i]
   }
   
-  return(compare(x.group, kda.cv.gr)) 
+  return(compare(x.group, kda.cv.gr, by.group=by.group)) 
 }
 
 ###############################################################################
 ### Same as compare.kda.cv except uses diagonal b/w matrices
 ###############################################################################
 
-compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, ...)
+compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
+   by.group=FALSE, trace=FALSE,...)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -258,6 +278,8 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, ...)
   
   for (i in 1:n)
   {
+    H.mod <- H
+
     ind <- which(x.group[i]==gr)
     indx <- x.group==gr[ind]
     indx[i] <- FALSE
@@ -266,10 +288,13 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, ...)
     else if (substr(bw,1,1)=="l")
       H.temp <- Hlscv.diag(x[indx,], ...)
     
-    H[((ind-1)*d+1):(ind*d),] <- H.temp
-    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H, x, prior.prob=prior.prob)[i]  
+    #H[((ind-1)*d+1):(ind*d),] <- H.temp
+    H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
+    if (trace)
+      cat(paste("Processing data item:", i, "\n"))
+    kda.cv.gr[i] <- kda(x[-i,], x.group[-i], H.mod, x, prior.prob=prior.prob)[i]  
   }
-  return(compare(x.group, kda.cv.gr)) 
+  return(compare(x.group, kda.cv.gr, by.group=by.group)) 
 }
 
 ###############################################################################
@@ -284,7 +309,8 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, ...)
 #      - "quad" - quadratic disc.
 ###############################################################################
 
-compare.pda.cv <- function(x, x.group, type="quad", prior.prob=NULL)
+compare.pda.cv <- function(x, x.group, type="quad", prior.prob=NULL,
+    by.group=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -297,7 +323,7 @@ compare.pda.cv <- function(x, x.group, type="quad", prior.prob=NULL)
     pda.cv.gr[i] <-
       as.vector(pda(x[-i,], x.group[-i], x, prior.prob=prior.prob, type=type))[i]
 
-  return(compare(x.group, pda.cv.gr)) 
+  return(compare(x.group, pda.cv.gr, by.group=by.group)) 
 }
 
 
@@ -343,24 +369,24 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
   
   for (j in 1:m)
   {
-    y <- x[x.group==grlab[j],]
+    xx <- x[x.group==grlab[j],]
     H <- Hs[((j-1)*d+1) : (j*d),]
 
     # compute individual density estimate
     if (is.null(eval.points))
     {
-      y.grid.pts <- list()
-      y.grid.pts$minx <- grid.pts$minx[x.group==grlab[j],]
-      y.grid.pts$maxx <- grid.pts$maxx[x.group==grlab[j],]
+      xx.grid.pts <- list()
+      xx.grid.pts$minx <- grid.pts$minx[x.group==grlab[j],]
+      xx.grid.pts$maxx <- grid.pts$maxx[x.group==grlab[j],]
       if (d==2)
-        fhat.temp <- kde.grid.2d(y, H, gridx=gridx, supp=supp, grid.pts=y.grid.pts)
+        fhat.temp <- kde.grid.2d(xx, H, gridx=gridx, supp=supp, grid.pts=xx.grid.pts)
       else if (d==3)
-        fhat.temp <- kde.grid.3d(y, H, gridx=gridx, supp=supp, grid.pts=y.grid.pts)
+        fhat.temp <- kde.grid.3d(xx, H, gridx=gridx, supp=supp, grid.pts=xx.grid.pts)
     }
     else
-      fhat.temp <- kde.points(y, H, eval.points=eval.points)
+      fhat.temp <- kde.points(xx, H, eval.points=eval.points)
 
-    fhat.list$x <- c(fhat.list$x, list(y))
+    fhat.list$x <- c(fhat.list$x, list(xx))
     fhat.list$eval.points <- fhat.temp$eval.points
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$est))
     fhat.list$H <- c(fhat.list$H, list(fhat.temp$H))
@@ -401,16 +427,15 @@ plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
     plotdade.2d(x, y, y.group, prior.prob=prior.prob, display=display,
                 cont=cont, ncont=ncont, ...)
   else if (d==3)
-    plotdade.3d(x, y, y.group, prior.prob=prior.prob,
+    plotdade.3d(x, y, y.group, prior.prob=prior.prob, display="rgl",
                 cont=cont, ...)
 }
 
 plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
     cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x", ylabs="y",
-    drawlabels=TRUE, cex=1, pch, lty, col, lcol, ...)
+    drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol="blue", ...)
 { 
   fhat <- x
-  rm(x)
   
   d <- 2
   m <- length(fhat$x)
@@ -423,13 +448,13 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
   if (missing(pch)) pch <- 1:m
   if (missing(lty)) lty <- 1:m
   if (missing(lcol)) lcol <- rep(1, m)
-  
+  if (missing(ptcol)) ptcol <- rep("blue", m)
+
   if (missing(y)) 
     plot(fhat$x[[1]], type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
   else
     plot(y,  type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
-
-
+  
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
   if (m != length(prior.prob))
@@ -449,9 +474,9 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
 
     }
     
-    if (missing(col)) col <- 2:(max(class.grid)+1)
-    image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim, ylim=ylim,
-          add=TRUE, ...)
+    if (missing(col)) col <- heat.colors(m)
+    image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim,
+          ylim=ylim, add=TRUE, ...)
   }
   
   dobs <- numeric(0)
@@ -472,13 +497,13 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
   for (j in 1:m)
   {
     if (missing(y))
-      points(fhat$x[[j]], cex=cex, pch=pch[j])
+      points(fhat$x[[j]], cex=cex, pch=pch[j], col=ptcol[1])
     else 
     {
       if (missing(y.group))
-        points(y, cex=cex)
+        points(y, cex=cex, col=ptcol[1])
       else
-        points(y[y.group==y.gr[j],], cex=cex, pch=pch[j])
+        points(y[y.group==y.gr[j],], cex=cex, pch=pch[j], col=ptcol[j])
     
     }
     if (type=="k")
@@ -520,8 +545,10 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
 
 
 
-plotdade.3d <- function(x, y, y.group, prior.prob=NULL, 
-    cont=c(25,50), colors, alphalo=0.2, alphahi=0.6, ...)
+plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
+    cont=c(25,50),  colors, alphavec, origin=c(0,0,0),
+    endpts, xlabs="x", ylabs="y", zlabs="z", drawpoints=TRUE, size=3,
+    ptcol="blue", ...)
 { 
   fhat <- x
   rm(x)
@@ -540,16 +567,25 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL,
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
     stop("Sum of prior weights not equal to 1")
 
+  if (missing(endpts))
+  {
+    endpts <- rep(0,3)
+    endpts[1] <-  max(fhat$eval.points[[1]])
+    endpts[2] <-  max(fhat$eval.points[[2]])
+    endpts[3] <-  max(fhat$eval.points[[3]])
+  }
+
   ncont <- length(cont)
-  alph <- seq(alphalo,alphahi,length=ncont)
- 
-  if (missing(colors))
-    colors <- heat.colors(m)
   
+  if (missing(alphavec)) alphavec <- seq(0.1,0.5,length=ncont)
+  if (missing(colors)) colors <- heat.colors(m)
+  if (missing(ptcol)) ptcol <- rep("blue", m)
+                 
   dobs <- numeric(0)
   xx <- numeric(0)
   S <- 0
   n <- 0 
+
   for (j in 1:m)
   {
     n <- nrow(fhat$x[[j]])
@@ -560,6 +596,7 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL,
 
   for (j in 1:m)
     xx <- rbind(xx, fhat$x[[j]])
+
   if (!missing(y.group)) y.gr <- sort(unique(y.group))
 
   for (j in 1:m)
@@ -586,16 +623,45 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL,
 
   rgl.clear()
   rgl.bg(color="white")
-  for (i in 1:ncont) 
+  
+  for (j in 1:m)
   {
-    for (j in 1:m)
+    for (i in 1:ncont) 
       contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
                 z=fhat$eval.points[[3]], f=fhat$estimate[[j]],
                 level=hts[ncont-i+1],
-                add=TRUE, alpha=alph[i], col=colors[j],...)
-    
+                add=TRUE, alpha=alphavec[i], col=colors[j],...)
+
+    if (drawpoints)   ## plot points
+    {
+      if (missing(y))
+        points3d.rh(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
+                    col=ptcol[j], size=size)
+      else
+      {
+        if (missing(y.group))
+          ppoints3d.rh(y[,1], y[,2], y[,3], col=ptcol[j], size=size)
+        else
+        {
+          y.temp <- y[y.group==y.gr[j],]
+          points3d.rh(y.temp[,1], y.temp[,2], y.temp[,3], col=ptcol[j], size=size)
+        }
+      }
+    }
   }
+  
+  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+          color="black", add=TRUE)
+  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+          color="black", add=TRUE)
+  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+          color="black",add=TRUE)
+
+  texts3d.rh(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
+  texts3d.rh(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
+  texts3d.rh(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
 }
+
 
 
 ###############################################################################
