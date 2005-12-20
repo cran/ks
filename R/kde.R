@@ -126,8 +126,7 @@ find.gridpts <- function(gridx, suppx)
 
 
 kde <- function(x, H, gridsize, supp=3.7, eval.points)
-{
-   
+{ 
   d <- ncol(x)
   if (is.data.frame(x)) x <- as.matrix(x)
   if (is.list(x))
@@ -473,11 +472,18 @@ plot.kde <- function(x, display="slice", ...)
 
 plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0.7, 
     xlabs="x", ylabs="y", zlabs="Density function", theta=-30, phi=40, d=4,
-    add=FALSE, drawlabels=TRUE, points.diff=TRUE, pch, ...)
+    add=FALSE, drawlabels=TRUE, points.diff=TRUE, pch, ptcol="blue", lcol="black",
+    ...)
 {
   disp <- substr(display,1,1)
   if (!is.list(fhat$eval.points))
-    stop("Need a grid of density estimates") 
+    stop("Need a grid of density estimates")
+
+  if (is.data.frame(fhat$x))
+  {
+    xlabs <- names(fhat$x)[1]
+    ylabs <- names(fhat$x)[2]
+  }
   
   # perspective/wire-frame plot
   if (disp=="p")
@@ -494,13 +500,17 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
         x.pc <- fhat$x
         d <- ncol(x.pc$x)
         nu <- length(x.pc$nclust)
+        
         if (missing(pch)) pch <- 1:nu
+
         dobs <- kde(x.pc, fhat$H, eval.points=x.pc$x)$estimate
         hts <- quantile(dobs, prob = (100 - cont)/100)
+
         if (add)
-          points(x.pc$x[,1], x.pc$x[,2], cex=cex, pch=pch[1])
+          points(x.pc$x[,1], x.pc$x[,2], cex=cex, pch=pch[1], col=ptcol)
         else
-          plot(x.pc$x[,1], x.pc$x[,2], type="n", xlab=xlabs, ylab=ylabs, ...)
+          plot(x.pc$x[,1], x.pc$x[,2], type="n", xlab=xlabs, ylab=ylabs,
+               col=ptcol,...)
       }
       # fixed bandwidth KDE
       else
@@ -508,8 +518,9 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
         if (missing(cex)) cex <- 0.7
         dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
         hts <- quantile(dobs, prob = (100 - cont)/100)
+
         if (add)
-          points(fhat$x[,1], fhat$x[,2], cex=cex)
+          points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
         else
           plot(fhat$x[,1], fhat$x[,2], type="n", xlab=xlabs, ylab=ylabs, ...)
       }
@@ -521,11 +532,11 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
           scale <- cont[i]/hts[i]
           contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
                   fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
-                  drawlabels=drawlabels, ...)
+                  drawlabels=drawlabels, col=lcol, ...)
         }
       else
         contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-                nlevel=ncont, add=TRUE, drawlabels=drawlabels, ...)
+                nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
       
       # add points 
       if (is.list(fhat$x))
@@ -534,14 +545,14 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
           for (j in 1:length(x.pc$nclust))
             if (is.vector(x.pc$x[x.pc$ind==j,]))
               points(x.pc$x[x.pc$ind==j,1], x.pc$x[x.pc$ind==j,2], cex=cex,
-                     pch=pch[j])
+                     pch=pch[j], col=ptcol[j])
             else
-              points(x.pc$x[x.pc$ind==j,], cex=cex, pch=pch[j])
+              points(x.pc$x[x.pc$ind==j,], cex=cex, pch=pch[j], col=ptcol[j])
         else
-          points(x.pc$x, cex=cex, pch=pch[1])
+          points(x.pc$x, cex=cex, pch=pch[1], col=ptcol[1])
       }
       else  
-        points(fhat$x[,1], fhat$x[,2], cex=cex)
+        points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
     }
     # image plot
     else if (disp=="i")
@@ -565,7 +576,8 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
 
 
 plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
-  alphalo=0.2, alphahi=0.6, size=3, col="blue", add=FALSE, ...)
+  alphavec, size=3, ptcol="blue", add=FALSE, origin=c(0,0,0),
+  endpts, xlabs="x", ylabs="y", zlabs="z", drawpoints=TRUE, ...)
 
 {
   dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
@@ -575,7 +587,25 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
   if (missing(colors))
     colors <- rev(heat.colors(nc))
 
-  alph <- seq(alphalo, alphahi, length=nc)
+  if (missing(endpts))
+  {
+    endpts <- rep(0,3)
+    endpts[1] <-  max(fhat$eval.points[[1]])
+    endpts[2] <-  max(fhat$eval.points[[2]])
+    endpts[3] <-  max(fhat$eval.points[[3]])
+  }
+
+  #if (missing(xlim))
+  #  xlim <- range(fhat$eval.points[[1]])
+  #if (missing(ylim))
+  #  ylim <- range(fhat$eval.points[[2]])
+  #if (missing(zlim))
+  #  zlim <- range(fhat$eval.points[[3]])
+
+  #alph <- seq(alphalo, alphahi, length=nc)
+  if (missing(alphavec))
+    alphavec <- seq(0.1,0.5,length=nc)
+
   if (!add)
   {
     rgl.clear()
@@ -583,7 +613,7 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
     for (i in 1:nc) 
       contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
                 fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
-                color=colors[i], alpha=alph[i], ...)
+                color=colors[i], alpha=alphavec[i], ...)
   }
   else
   {
@@ -591,10 +621,33 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
     for (i in 1:nc) 
       contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
                 fhat$eval.points[[2]], fhat$eval.points[[3]], add=add,
-                color=colors[i], alpha=alph[i], ...)
+                color=colors[i], alpha=alphavec[i], ...)
   }
    
-  rgl.points(fhat$x[,1],fhat$x[,3],-fhat$x[,2], size=size, col=col)
+  points3d.rh(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
+
+  
+  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+          color="black", add=TRUE)
+  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+          color="black", add=TRUE)
+  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+          color="black",add=TRUE)
+
+  texts3d.rh(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
+  texts3d.rh(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
+  texts3d.rh(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
+
+  ### add labels for origin and axis limits
+  #xlim.str <- toString(signif(xlim[2],3))
+  #ylim.str <- toString(signif(ylim[2],3))
+  #zlim.str <- toString(signif(zlim[2],3))
+  #org.str <- paste("(",toString(signif(origin,3)),")", sep="")
+   
+  #texts3d.rh(xlim[2],origin[2],origin[3],xlim.str,color="black",size=3)
+  #texts3d.rh(origin[1],ylim[2],origin[3],ylim.str,color="black",size=3)
+  #texts3d.rh(origin[1],origin[2],zlim[2],zlim.str,color="black",size=3)
+  #texts3d.rh(origin[1],origin[2],origin[2],org.str,color="black",size=3)
 }
 
 

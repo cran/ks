@@ -25,9 +25,9 @@ BCV bandwidth matrix.
   \emph{Cross-validation of multivariate densities}. Journal of the
   American Statistical Association. \bold{82}, 1131-1146.
   
-  Duong, T. \& Hazelton, M.L. (2004) \emph{Cross-validation bandwidth
+  Duong, T. \& Hazelton, M.L. (2005) \emph{Cross-validation bandwidth
     matrices for multivariate kernel density estimation}. Scandinavian Journal 
-    of Statistics. In press.
+    of Statistics. \bold{32}, 485-506.
   
 }
 

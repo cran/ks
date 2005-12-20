@@ -15,7 +15,7 @@ than 1000 US dollars per annum per capita.
 
 \usage{data(unicef)}
 
-\format{A matrix with 2 columns and 73 rows. Each row correspond to a country.
+\format{A matrix with 2 columns and 73 rows. Each row corresponds to a country.
 The first column is the under 5 mortality rate and the second is the average
 life expectancy.}
 

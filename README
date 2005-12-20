@@ -13,7 +13,9 @@ for 2-dimensions, these have not been implemented in the higher dimensions).
 2. RGL-type plots added for 3-d data. See `plot.kde' for kernel density estimates 
 and `plot.dade' for discriminant analysis (both kernel and parametric).   
 Note. in versions <=1.3.3, the specification of contours for 3-d was the reverse
-to that for 2-d. For v >=1.3.4, there are now the same. 
+to that for 2-d. For v >=1.3.4, there are now the same. 3-d axes added.
+
+3. Fixed small bug in compare.kda.cv() and compare.kda.diag.cv().
 
 New in v1.2
 

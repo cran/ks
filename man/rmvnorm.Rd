@@ -22,8 +22,9 @@ dmvnorm.mixt(x, mus, Sigmas, props)
 
 \value{Multivariate  normal mixture random vectors and density values.}
 
-\details{\code{rmvnorm.mixt} is based on the
-  \code{rmvnorm} function from the \code{mvtnorm} library.
+\details{
+  \code{rmvnorm.mixt} and \code{dmvnorm.mixt} are based on the
+  \code{rmvnorm} and \code{dmvnorm} functions from the \code{mvtnorm} library.
 }  
 
 \seealso{\code{\link{rmvt.mixt}}, \code{\link{dmvt.mixt}}}

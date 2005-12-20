@@ -79,6 +79,7 @@
 \alias{plotkde.3d}
 \alias{plotmixt.2d}
 \alias{plotmixt.3d}
+\alias{points3d.rh}
 \alias{pre.abram}
 \alias{pre.clust} 
 \alias{pre.sain}
@@ -118,9 +119,13 @@
 \alias{psins.6d.part82} 
 \alias{psins.6d.part83} 
 \alias{psins.6d.part84}
+\alias{quads3d.rh}
 \alias{scv.mat} 
+\alias{spheres3d.rh}
 \alias{ssq.decomp}
+\alias{texts3d.rh}
 \alias{tr}
+\alias{triangles3d.rh}
 \alias{vec}
 \alias{vech} 
 \alias{vech.cat} 

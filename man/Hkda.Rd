@@ -45,15 +45,18 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   \code{Hkda}.  These in turn call \code{\link{Hpi}},
   \code{\link{Hlscv}} and \code{\link{Hscv}}. For plugin selectors, all
   of \code{nstage}, \code{pilot} and \code{pre} need to be set. For SCV
-  selectors, currently \code{nstage} is always programmed to be one but
-  the other two need to be set.  For LSCV selectors, none of them are required. 
-
+  selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
+  need to be set.  For LSCV selectors, none of them are required. 
 
   For \code{Hkda.diag}, options are \code{"plugin"} or \code{"lscv"}
   which in turn call respectively \code{\link{Hpi.diag}} 
   and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
   \code{pre} are available for \code{Hpi.diag} but not required for
   \code{Hlscv.diag}.
+  
+  For details on the pre-transformations in \code{pre}, see
+  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
+  
 }
 
 \seealso{ \code{\link{kda.kde}}, \code{\link{Hpi}}, \code{\link{Hpi.diag}},
@@ -63,7 +66,7 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
 \examples{
 library(MASS)
 data(iris)
-ir <- iris[,c(1:4)]
+ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
 
 Hkda(ir, ir.gr, bw="scv", pre="scale")

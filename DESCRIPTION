@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.3.4
-Date: 2005/09/15
+Version: 1.3.5	
+Date: 2005/12/20
 Title: Kernel smoothing 
 Author: Tarn Duong <tduong@maths.unsw.edu.au>
 Maintainer: Tarn Duong <tduong@maths.unsw.edu.au> 
@@ -8,4 +8,4 @@ Depends: R (>= 0.99), mvtnorm, misc3d, rgl
 Description: Bandwidth matrices for kernel density estimators and kernel discriminant analysis for multivariate data
 License: GPL (version 2)
 URL: http://web.maths.unsw.edu.au/~tduong
-Packaged: Tue Nov  8 16:41:14 2005; tduong
+Packaged: Tue Dec 20 15:33:38 2005; tduong
