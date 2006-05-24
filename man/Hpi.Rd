@@ -6,8 +6,10 @@
 \description{
 Plug-in bandwidth matrix for for 2- to 6-dimensional data.}
 \usage{
-Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart)
-Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart)
+Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart,
+    binned=FALSE, bgridsize)
+Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
+    binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -18,6 +20,9 @@ Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart)
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
+  \item{binned}{if TRUE (default) used binned estimation otherwise use
+    exact kernel density estimation}
+  \item{bgridsize}{vector of binning grid sizes - required only if binned=TRUE}
 }
 
 \value{
@@ -48,12 +53,17 @@ Plug-in bandwidth matrix.
 
 
 \examples{
-###bivariate example
+### bivariate example
 
 data(unicef)
 Hpi(unicef, nstage=1, pilot="amse", pre="scale")
 Hpi(unicef, nstage=2, pilot="samse", pre="sphere")
 Hpi.diag(unicef, nstage=2, pilot="amse", pre="scale") 
+
+### large sample - 10000 sample from bivariate standard normal 
+
+x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
+Hpi(x, binned=TRUE)
 
 ### trivariate example
 
@@ -62,6 +72,6 @@ Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3)
 Sigmas <- rbind(Sigma, Sigma)
 x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=c(1/2, 1/2))
 Hpi(x)
-Hscv(x)
 }
+
 \keyword{ smooth }

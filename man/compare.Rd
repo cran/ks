@@ -99,6 +99,7 @@ compare.pda.cv(x, x.group, type="quad", prior.prob=NULL,
 
 \examples{
 ### bivariate example - restricted iris dataset  
+
 library(MASS)
 data(iris)
 ir <- iris[,c(1,2)]

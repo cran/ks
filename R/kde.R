@@ -185,6 +185,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
   if (is.null(gridx))
     gridx <- make.grid(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
   suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
+
   if (is.null(grid.pts))
     grid.pts <- find.gridpts(gridx, suppx)    
   fhat.grid <- matrix(0, nrow=length(gridx[[1]]), ncol=length(gridx[[2]]))
@@ -449,7 +450,6 @@ plot.kde <- function(x, display="slice", ...)
 { 
   fhat <- x
   d <- ncol(fhat$x)
-  rm(x)
 
   if (d==2) 
     plotkde.2d(fhat, display=display, ...)
@@ -471,7 +471,7 @@ plot.kde <- function(x, display="slice", ...)
 ###############################################################################
 
 plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0.7, 
-    xlabs="x", ylabs="y", zlabs="Density function", theta=-30, phi=40, d=4,
+    xlabs, ylabs, zlabs="Density function", theta=-30, phi=40, d=4,
     add=FALSE, drawlabels=TRUE, points.diff=TRUE, pch, ptcol="blue", lcol="black",
     ...)
 {
@@ -483,6 +483,20 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
   {
     xlabs <- names(fhat$x)[1]
     ylabs <- names(fhat$x)[2]
+  }
+
+  x.names <- colnames(fhat$x) 
+  if (!is.null(x.names))
+  {
+    if (missing(xlabs))
+      xlabs <- x.names[1]
+    if (missing(ylabs))
+      ylabs <- x.names[2]
+  }
+  else
+  {
+    xlabs="x"
+    ylabs="y"
   }
   
   # perspective/wire-frame plot
@@ -577,7 +591,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0
 
 plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
   alphavec, size=3, ptcol="blue", add=FALSE, origin=c(0,0,0),
-  endpts, xlabs="x", ylabs="y", zlabs="z", drawpoints=TRUE, ...)
+  endpts, xlabs, ylabs, zlabs, drawpoints=TRUE, ...)
 
 {
   dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
@@ -594,15 +608,23 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
     endpts[2] <-  max(fhat$eval.points[[2]])
     endpts[3] <-  max(fhat$eval.points[[3]])
   }
+  x.names <- colnames(fhat$x) 
+  if (!is.null(x.names))
+  {
+    if (missing(xlabs))
+      xlabs <- x.names[1]
+    if (missing(ylabs))
+      ylabs <- x.names[2]
+    if (missing(zlabs))
+      zlabs <- x.names[3]
+  }
+  else
+  {
+    xlabs="x"
+    ylabs="y"
+    zlabs="z"
+  }
 
-  #if (missing(xlim))
-  #  xlim <- range(fhat$eval.points[[1]])
-  #if (missing(ylim))
-  #  ylim <- range(fhat$eval.points[[2]])
-  #if (missing(zlim))
-  #  zlim <- range(fhat$eval.points[[3]])
-
-  #alph <- seq(alphalo, alphahi, length=nc)
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
@@ -624,8 +646,7 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
                 color=colors[i], alpha=alphavec[i], ...)
   }
    
-  points3d.rh(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
-
+  rhcs.points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
   
   lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
           color="black", add=TRUE)
@@ -634,20 +655,10 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
   lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
           color="black",add=TRUE)
 
-  texts3d.rh(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
-  texts3d.rh(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
-  texts3d.rh(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
+  rhcs.texts3d(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
+  rhcs.texts3d(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
+  rhcs.texts3d(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
 
-  ### add labels for origin and axis limits
-  #xlim.str <- toString(signif(xlim[2],3))
-  #ylim.str <- toString(signif(ylim[2],3))
-  #zlim.str <- toString(signif(zlim[2],3))
-  #org.str <- paste("(",toString(signif(origin,3)),")", sep="")
-   
-  #texts3d.rh(xlim[2],origin[2],origin[3],xlim.str,color="black",size=3)
-  #texts3d.rh(origin[1],ylim[2],origin[3],ylim.str,color="black",size=3)
-  #texts3d.rh(origin[1],origin[2],zlim[2],zlim.str,color="black",size=3)
-  #texts3d.rh(origin[1],origin[2],origin[2],org.str,color="black",size=3)
 }
 
 
