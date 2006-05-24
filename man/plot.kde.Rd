@@ -91,7 +91,7 @@
 \seealso{\code{\link{kde}}}
 
 \examples{
-### bivariate example
+## bivariate example
 data(unicef)
 H.scv <- Hscv(unicef)
 fhat <- kde(unicef, H.scv)
@@ -103,7 +103,7 @@ plot(fhat, display="persp")
 plot(fhat, display="image", col=rev(heat.colors(15)))
 layout(1)
 
-### 3-variate example
+## trivariate example
 \dontrun{
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 

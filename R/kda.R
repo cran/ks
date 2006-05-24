@@ -19,7 +19,7 @@
 ###############################################################################
 
 Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
-                 pre="sphere")
+                 pre="sphere", binned=FALSE)
 {
   d <- ncol(x)
   grlab <- sort(unique(x.group))
@@ -37,7 +37,8 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
       else if (bw=="s")
         H <- Hscv(y, pre=pre, Hstart=Hstarty)
       else if (bw=="p")
-          H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, Hstart=Hstarty)
+        H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, Hstart=Hstarty,
+                 binned=binned)
         
     }
     else
@@ -47,7 +48,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
       else if (bw=="s")
         H <- Hscv(y, pre=pre)
       else if (bw=="p")
-        H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre)
+        H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned)
     }
     Hs <- rbind(Hs, H)
   }
@@ -56,7 +57,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
 }
 
 Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
-                 pre="sphere")
+                 pre="sphere", binned=FALSE)
 {
   d <- ncol(x)
   grlab <- sort(unique(x.group))
@@ -69,7 +70,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
     if (bw=="l")
       H <- Hlscv.diag(y)
     else if (bw=="p") 
-      H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre)
+      H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned)
     Hs <- rbind(Hs, H)
   }
 
@@ -149,6 +150,9 @@ kda <- function(x, x.group, Hs, y, prior.prob=NULL)
 
 compare <- function(x.group, est.group, by.group=FALSE)
 {
+  if (length(x.group)!=length(est.group))
+    stop("Group label vectors not the same length")
+  
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   comp <- matrix(0, nr=m, nc=m)
@@ -419,20 +423,28 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
 
 
 plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
-    cont=c(25,50,75), ncont=NULL, ...)
+    cont=NULL, ncont=NULL, ...)
 {
   d <- ncol(x$x[[1]])
 
   if (d==2)
+  {
+    if (is.null(cont))
+      cont <- c(25,50,75)
     plotdade.2d(x, y, y.group, prior.prob=prior.prob, display=display,
                 cont=cont, ncont=ncont, ...)
+  }
   else if (d==3)
+  {
+    if (is.null(cont))
+      cont <- c(25,50)
     plotdade.3d(x, y, y.group, prior.prob=prior.prob, display="rgl",
                 cont=cont, ...)
+  }
 }
 
 plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
-    cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x", ylabs="y",
+    cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs, ylabs,
     drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol="blue", ...)
 { 
   fhat <- x
@@ -450,6 +462,20 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
   if (missing(lcol)) lcol <- rep(1, m)
   if (missing(ptcol)) ptcol <- rep("blue", m)
 
+  x.names <- colnames(fhat$x[[1]]) 
+  if (!is.null(x.names))
+  {
+    if (missing(xlabs))
+      xlabs <- x.names[1]
+    if (missing(ylabs))
+      ylabs <- x.names[2]
+  }
+  else
+  {
+    xlabs="x"
+    ylabs="y"
+  }
+  
   if (missing(y)) 
     plot(fhat$x[[1]], type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
   else
@@ -457,6 +483,7 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
   
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
+  
   if (m != length(prior.prob))
     stop("Prior prob. vector not same length as number of components in fhat")
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
@@ -533,7 +560,7 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
       for (j in 1:m)
         contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
                 fhat$estimate[[j]]*scale, level=hts[i]*scale, add=TRUE, 
-              drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
+                drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
     }
   else
     for (j in 1:m)
@@ -546,13 +573,12 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
 
 
 plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
-    cont=c(25,50),  colors, alphavec, origin=c(0,0,0),
-    endpts, xlabs="x", ylabs="y", zlabs="z", drawpoints=TRUE, size=3,
+    cont=c(25,50), colors, alphavec, origin=c(0,0,0),
+    endpts, xlabs, ylabs, zlabs, drawpoints=TRUE, size=3,
     ptcol="blue", ...)
 { 
   fhat <- x
-  rm(x)
-  
+   
   d <- 3
   m <- length(fhat$x)
   type <- substr(fhat$type,1,1)
@@ -574,7 +600,23 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
     endpts[2] <-  max(fhat$eval.points[[2]])
     endpts[3] <-  max(fhat$eval.points[[3]])
   }
-
+  x.names <- colnames(fhat$x[[1]]) 
+  if (!is.null(x.names))
+  {
+    if (missing(xlabs))
+      xlabs <- x.names[1]
+    if (missing(ylabs))
+      ylabs <- x.names[2]
+    if (missing(zlabs))
+      zlabs <- x.names[3]
+  }
+  else
+  {
+    xlabs="x"
+    ylabs="y"
+    zlabs="z"
+  }
+  
   ncont <- length(cont)
   
   if (missing(alphavec)) alphavec <- seq(0.1,0.5,length=ncont)
@@ -635,16 +677,16 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
     if (drawpoints)   ## plot points
     {
       if (missing(y))
-        points3d.rh(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
+        rhcs.points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
                     col=ptcol[j], size=size)
       else
       {
         if (missing(y.group))
-          ppoints3d.rh(y[,1], y[,2], y[,3], col=ptcol[j], size=size)
+          rhcs.points3d(y[,1], y[,2], y[,3], col=ptcol[j], size=size)
         else
         {
           y.temp <- y[y.group==y.gr[j],]
-          points3d.rh(y.temp[,1], y.temp[,2], y.temp[,3], col=ptcol[j], size=size)
+          rhcs.points3d(y.temp[,1], y.temp[,2], y.temp[,3], col=ptcol[j], size=size)
         }
       }
     }
@@ -657,9 +699,9 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
   lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
           color="black",add=TRUE)
 
-  texts3d.rh(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
-  texts3d.rh(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
-  texts3d.rh(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
+  rhcs.texts3d(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
+  rhcs.texts3d(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
+  rhcs.texts3d(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
 }
 
 

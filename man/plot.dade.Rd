@@ -11,7 +11,7 @@ for 2- and 3-dimensional data}
 
 \synopsis{
 plot.dade(x, y, y.group, prior.prob=NULL, display="part",
-    cont=c(25,50,75), ncont=NULL, ...)
+    cont=NULL, ncont=NULL, ...)
 }
 
 \usage{
@@ -52,7 +52,7 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
     (3-d plot)}
   \item{drawpoints}{if TRUE then data points are plotted (3-d plot)}
   \item{size}{size and of plotting symbol (3-d plot)}
-    \item{...}{other graphics parameters}
+  \item{...}{other graphics parameters}
 }
   
 
@@ -71,12 +71,12 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
   data points are plotted.  Otherwise, the test data \code{y} are plotted.
   The plotting symbols are set by \code{pch} (the default is 1 to
   \eqn{\nu}{nu}), one for each group, where \eqn{\nu}{nu} is the
-  number of groups, and the color by \code{ptcol}.
+  number of groups, and the colour by \code{ptcol}.
 
   For 2-d plots:
   
   If \code{display="part"} then a partition induced by the discriminant
-  analysis is also plotted. If this is not desired then set
+  analysis is also plotted. If this is not desired, set
   \code{display=""}. Its colours are controlled by \code{col}
   (the default is \code{heat.colors}). 
   
@@ -141,7 +141,6 @@ plot(qda.fhat, ncont=6, xlim=xlim, ylim=ylim,  xlab=xlab, ylab=ylab,
 layout(1)
 
 ## trivariate example
-\dontrun{
 ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
@@ -151,7 +150,6 @@ plot(fhat, cont=c(25,50))
 
 qda.fhat <- pda.pde(ir, ir.gr, type="quad")
 plot(qda.fhat, cont=c(25,50))
-}
 }
 \keyword{ hplot}
 

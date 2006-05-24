@@ -6,7 +6,7 @@
 \description{
 SCV bandwidth matrix for 2- to 6-dimensional data.}
 \usage{
-Hscv(x, pre="sphere", Hstart)
+Hscv(x, pre="sphere", Hstart, binned=FALSE)
 }
 
 \arguments{
@@ -14,6 +14,8 @@ Hscv(x, pre="sphere", Hstart)
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
+  \item{binned}{if TRUE (default) used binned estimation otherwise use
+    exact kernel density estimation}
 }
 
 \value{
