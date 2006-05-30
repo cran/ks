@@ -19,7 +19,7 @@
 # stepsize - vector of step sizes 
 ###############################################################################
 
-make.grid <- function(x, H, tol, gridsize)
+make.grid.ks <- function(x, H, tol, gridsize)
 {
   d <- ncol(x)
   tol.H <-  tol * (diag(H) + abs(H[1,2])) 
@@ -183,7 +183,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
   # initialise grid 
   n <- nrow(x)
   if (is.null(gridx))
-    gridx <- make.grid(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
+    gridx <- make.grid.ks(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
   suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
 
   if (is.null(grid.pts))
@@ -243,7 +243,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
   n <- nrow(x)
 
   if (is.null(gridx))
-    gridx <- make.grid(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
+    gridx <- make.grid.ks(x, matrix.sqrt(H), tol=supp, gridsize=gridsize) 
   suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
 
   if (is.null(grid.pts))
@@ -323,7 +323,7 @@ kde.pc.grid.2d <- function(x.pc, H.pc, gridsize, supp=3.7)
   Hmax <- H.pc[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
 
   # initialise grid 
-  gridx <- make.grid(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
+  gridx <- make.grid.ks(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
   fhat.grid <- array(0, dim = gridsize)
   n <- sum(nclust)
   
@@ -646,18 +646,18 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
                 color=colors[i], alpha=alphavec[i], ...)
   }
    
-  rhcs.points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
+  points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
   
   lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black", add=TRUE)
+          color="black")
   lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black", add=TRUE)
+          color="black")
   lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black",add=TRUE)
+          color="black")
 
-  rhcs.texts3d(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
-  rhcs.texts3d(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
-  rhcs.texts3d(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
+  texts3d(endpts[1],origin[2],origin[3],xlabs,color="black",size=3)
+  texts3d(origin[1],endpts[2],origin[3],ylabs,color="black",size=3)
+  texts3d(origin[1],origin[2],endpts[3],zlabs,color="black",size=3)
 
 }
 

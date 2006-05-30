@@ -365,12 +365,11 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
   Hmax <- Hs[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
 
   # initialise grid 
-  gridx <- make.grid(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
+  gridx <- make.grid.ks(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
   suppx <- make.supp(x, matrix.sqrt(Hmax), tol=supp)  
   grid.pts <- find.gridpts(gridx, suppx)
   fhat.list <- list()
-  
-  
+    
   for (j in 1:m)
   {
     xx <- x[x.group==grlab[j],]
@@ -395,7 +394,8 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$est))
     fhat.list$H <- c(fhat.list$H, list(fhat.temp$H))
   }
-  
+
+  fhat.list$x.group <- x.group
   pr <- rep(0, length(grlab))
   for (j in 1:length(grlab))
     pr[j] <- length(which(x.group==grlab[j]))
@@ -416,7 +416,7 @@ kda.kde <- function(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
 # fhat - output from `kda.kde'
 # y - data points (separate from training data inside fhat)
 # y.group - data group labels
-# prior.prob - vector of prior porbabilities
+# prior.prob - vector of prior probabilities
 # disp - "part" - plot partition
 #      - "" - don't plot partition
 ##############################################################################
@@ -445,7 +445,7 @@ plot.dade <- function(x, y, y.group, prior.prob=NULL, display="part",
 
 plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
     cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs, ylabs,
-    drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol="blue", ...)
+    drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol, ...)
 { 
   fhat <- x
   
@@ -575,7 +575,7 @@ plotdade.2d <- function(x, y, y.group, prior.prob=NULL, display="part",
 plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
     cont=c(25,50), colors, alphavec, origin=c(0,0,0),
     endpts, xlabs, ylabs, zlabs, drawpoints=TRUE, size=3,
-    ptcol="blue", ...)
+    ptcol, ...)
 { 
   fhat <- x
    
@@ -639,7 +639,8 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
   for (j in 1:m)
     xx <- rbind(xx, fhat$x[[j]])
 
-  if (!missing(y.group)) y.gr <- sort(unique(y.group))
+  #if (!missing(y.group))
+  x.gr <- sort(unique(fhat$x.group))
 
   for (j in 1:m)
   {
@@ -672,36 +673,37 @@ plotdade.3d <- function(x, y, y.group, prior.prob=NULL, display="rgl",
       contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
                 z=fhat$eval.points[[3]], f=fhat$estimate[[j]],
                 level=hts[ncont-i+1],
-                add=TRUE, alpha=alphavec[i], col=colors[j],...)
+                add=TRUE, alpha=alphavec[i], color=colors[j],...)
 
     if (drawpoints)   ## plot points
     {
       if (missing(y))
-        rhcs.points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
-                    col=ptcol[j], size=size)
+        points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
+                    color=ptcol[j], size=size)
       else
       {
         if (missing(y.group))
-          rhcs.points3d(y[,1], y[,2], y[,3], col=ptcol[j], size=size)
+          points3d(y[,1], y[,2], y[,3], color=ptcol, size=size)
         else
         {
-          y.temp <- y[y.group==y.gr[j],]
-          rhcs.points3d(y.temp[,1], y.temp[,2], y.temp[,3], col=ptcol[j], size=size)
+          y.temp <- y[y.group==x.gr[j],]
+          if (nrow(y.temp)>0)
+            points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=ptcol[j], size=size)
         }
       }
     }
   }
   
   lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black", add=TRUE)
+          color="black")
   lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black", add=TRUE)
+          color="black")
   lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black",add=TRUE)
+          color="black")
 
-  rhcs.texts3d(endpts[1]+0.1*abs(endpts[1]),origin[2],origin[3],xlabs,color="black",size=3)
-  rhcs.texts3d(origin[1],endpts[2]+0.1*abs(endpts[2]),origin[3],ylabs,color="black",size=3)
-  rhcs.texts3d(origin[1],origin[2],endpts[3]+0.1*abs(endpts[3]),zlabs,color="black",size=3)
+  texts3d(endpts[1],origin[2],origin[3],xlabs,color="black",size=3)
+  texts3d(origin[1],endpts[2],origin[3],ylabs,color="black",size=3)
+  texts3d(origin[1],origin[2],endpts[3],zlabs,color="black",size=3)
 }
 
 
@@ -845,6 +847,7 @@ pda.pde <- function(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
     }
   }
 
+  fhat$x.group <- x.group
   prior.prob <- rep(0, length(gr))
   for (j in 1:length(gr))
     prior.prob[j] <- length(which(x.group==gr[j]))
