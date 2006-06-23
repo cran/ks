@@ -1,13 +1,3 @@
-.First.lib <- function(lib=NULL, pkg=ks)
-{
-  library.dynam("ks", pkg, lib)
-  cat("ks version 1.4.0  (2006) \n")
-  require(mvtnorm)
-  require(misc3d)
-  require(rgl)
-  #require(feature)
-}  
-
 
 ###############################################################################
 # Basic operators and functions
@@ -406,33 +396,3 @@ permute.mat <- function(order)
 
 
 
-########## R functions: rhcs.xxxx ##########
-
-# Transformations of rgl functions for compatibility
-# with misc3d function
-
-# Last changed: 15 SEP 2005
-
-
-rhcs.spheres3d <- function(x,y,z,radius,...)
-  return(spheres3d(x,z,-y,radius,...))
-
-rhcs.texts3d <- function(x,y,z,text,...)
-  return(texts3d(x,z,-y,text,...))
-
-rhcs.triangles3d <- function(x,y,z,...)
-  return(triangles3d(x,z,-y,...))
-
-rhcs.points3d <- function(x,y,z,...)
-  return(points3d(x,z,-y,...))
-
-rhcs.quads3d <- function(x,y,z,...)
-  return(quads3d(x,z,-y,...))
-    
-rhcs.clear3d <- function(type="shapes")
-{
-  rgl.viewpoint(theta=135)
-  return(rgl.clear(type))
-}
-
-########## End of rhcs.xxxx ##########

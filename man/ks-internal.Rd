@@ -67,7 +67,7 @@
 \alias{lscv.mat} 
 \alias{lscv.mat.ab}
 \alias{lscv.mat.pc} 
-\alias{make.grid} 
+\alias{make.grid.ks} 
 \alias{make.supp} 
 \alias{matrix.sqrt} 
 \alias{mise.mixt.pc}

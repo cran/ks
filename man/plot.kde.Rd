@@ -112,7 +112,7 @@ props <- c(1/2, 1/2)
 x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x)
 fhat <- kde(x, H.pi)  
-plot(fhat)
+plot(fhat, origin=c(-3,-3,-3))
 }
 }
 \keyword{ hplot}

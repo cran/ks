@@ -19,13 +19,13 @@ plot.dade(x, y, y.group, prior.prob=NULL, display="part",
 \method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="part",
     cont=c(25,50,75), ncont=NULL, xlim, ylim, xlabs="x",
     ylabs="y", drawlabels=TRUE, cex=1, pch, lty, col,
-    lcol, ptcol="blue", ...)
+    lcol, ptcol, ...)
 
 ## trivariate
 \method{plot}{dade}(x, y, y.group, prior.prob=NULL, display="rgl",
     cont=c(25,50), colors, alphavec, origin=c(0,0,0), endpts,
     xlabs="x", ylabs="y", zlabs="z", drawpoints=TRUE, size=3,
-    ptcol="blue", ...)
+    ptcol, ...)
 
 }
 

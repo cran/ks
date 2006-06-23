@@ -221,9 +221,9 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
     psi <- c(psi08 + psi26, psi17 + psi35, psi26 + psi44, psi53 + psi35, 
              psi62 + psi44, psi71 + psi53, psi62 + psi80)
   }
-  
+ 
   # see thesis for formula
-  A1 <- sum(RK)
+  A1 <- sum(RK)*psi00
   A2 <- sum(K^2)
   A3 <- sum(K * psi)  
   A4 <- sum(psi^2)
@@ -318,7 +318,7 @@ gsamse.3d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
     }
   }
   
-  
+  psi00 <- psins.2d(r=rep(0,d), Sigma=Sigma.star)
   # see thesis for formula
   #A0 <- sum(RK)
   A1 <- sum(K^2)
