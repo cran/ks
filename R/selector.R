@@ -2115,8 +2115,8 @@ Hlscv <- function(x, Hstart)
     H <- invvech(vechH) %*% invvech(vechH)
     return(lscv.mat(x, H))
   }
-  result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead",
-                  control=list(abstol=n^(-10*d)))    
+  result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead")
+                  #control=list(abstol=n^(-10*d)))    
   
   return(invvech(result$par) %*% invvech(result$par))
 }
@@ -2147,9 +2147,8 @@ Hlscv.diag <- function(x, Hstart)
 
     return(lscv.mat(x, H))
   }
-  result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead",
-                  control=list(abstol=n^(-10*d)))   
-  
+  result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead")
+                  #control=list(abstol=n^(-10*d)))   
   return(diag(result$par^2))
 }
 
