@@ -1,269 +1,413 @@
-RDA1
-4 0
-5 class
-9 row.names
-5 names
-6 unicef
-2 0 0
-1 0 0
-4
--1
-19 0 1
+RDA2
+A
 2
-13 0 0
+131584
+66560
+1026
+1
+4105
+6
+unicef
+787
+2
+13
 73
- 257
- 260
- 35
- 105
- 77
- 158
- 95
- 77
- 197
- 190
- 138
- 155
- 180
- 200
- 39
- 79
- 108
- 205
- 175
- 143
- 153
- 111
- 172
- 126
- 29
- 100
- 169
- 211
- 72
- 123
- 38
- 93
- 45
- 122
- 55
- 61
- 100
- 132
- 235
- 136
- 183
- 231
- 183
- 32
- 76
- 197
- 109
- 91
- 43
- 265
- 183
- 109
- 94
- 183
- 138
- 316
- 24
- 225
- 19
- 107
- 28
- 72
- 165
- 141
- 99
- 124
- 20
- 68
- 38
- 107
- 19
- 202
- 123
--1
-
-13 0 0
+257
+260
+35
+105
+77
+158
+95
+77
+197
+190
+138
+155
+180
+200
+39
+79
+108
+205
+175
+143
+153
+111
+172
+126
+29
+100
+169
+211
+72
+123
+38
+93
+45
+122
+55
+61
+100
+132
+235
+136
+183
+231
+183
+32
+76
+197
+109
+91
+43
+265
+183
+109
+94
+183
+138
+316
+24
+225
+19
+107
+28
+72
+165
+141
+99
+124
+20
+68
+38
+107
+19
+202
+123
+13
 73
- 43
- 45
- 73
- 72
- 60
- 54
- 62
- 63
- 47
- 41
- 56
- 50
- 44
- 46
- 71
- 60
- 51
- 52
- 48
- 42
- 51
- 52
- 44
- 47
- 73
- 57
- 48
- 45
- 63
- 53
- 66
- 64
- 67
- 50
- 65
- 68
- 54
- 44
- 53
- 53
- 40
- 52
- 52
- 67
- 63
- 39
- 56
- 59
- 69
- 46
- 52
- 60
- 57
- 40
- 54
- 40
- 69
- 48
- 72
- 56
- 71
- 68
- 51
- 52
- 67
- 45
- 68
- 69
- 69
- 61
- 73
- 42
- 43
--1
-
-2 0 0
-1 0 0
+43
+45
+73
+72
+60
+54
+62
+63
+47
+41
+56
+50
+44
+46
+71
+60
+51
+52
+48
+42
+51
+52
+44
+47
+73
+57
+48
+45
+63
+53
+66
+64
+67
+50
+65
+68
+54
+44
+53
+53
+40
+52
+52
+67
+63
+39
+56
+59
+69
+46
+52
+60
+57
+40
+54
+40
+69
+48
+72
+56
+71
+68
+51
+52
+67
+45
+68
+69
+69
+61
+73
+42
+43
+1026
+1
+4105
+5
+names
+16
+2
+9
 3
--1
-16 0 0
-2
- 3 GNI
- 12 Ave\040life\040exp
--1
-2 0 0
-1 0 0
-2
--1
-16 0 0
+GNI
+9
+12
+Ave\040life\040exp
+1026
+1
+4105
+9
+row.names
+16
 73
- 11 Afghanistan
- 6 Angola
- 7 Armenia
- 10 Azerbaijan
- 10 Bangladesh
- 5 Benin
- 6 Bhutan
- 7 Bolivia
- 12 Burkina_Faso
- 7 Burundi
- 8 Cambodia
- 8 Cameroon
- 12 Centrafrique
- 4 Chad
- 5 China
- 7 Comoros
- 5 Congo
- 8 Congo_DR
- 13 Cote_d\'Ivoire
- 8 Djibouti
- 17 Equatorial_Guinea
- 7 Eritrea
- 8 Ethiopia
- 6 Gambia
- 7 Georgia
- 5 Ghana
- 6 Guinea
- 13 Guinea-Bissau
- 6 Guyana
- 5 Haiti
- 8 Honduras
- 5 India
- 9 Indonesia
- 5 Kenya
- 11 North_Korea
- 10 Kyrgyzstan
- 4 Laos
- 7 Lesotho
- 7 Liberia
- 10 Madagascar
- 6 Malawi
- 4 Mali
- 10 Mauritania
- 7 Moldova
- 8 Mongolia
- 10 Mozambique
- 7 Myanmar
- 5 Nepal
- 9 Nicaragua
- 5 Niger
- 7 Nigeria
- 8 Pakistan
- 16 Papua_New_Guinea
- 6 Rwanda
- 7 Senegal
- 12 Sierra_Leone
- 15 Solomon_Islands
- 7 Somalia
- 9 Sri_Lanka
- 5 Sudan
- 5 Syria
- 10 Tajikistan
- 8 Tanzania
- 4 Togo
- 12 Turkmenistan
- 6 Uganda
- 7 Ukraine
- 10 Uzbekistan
- 7 Vietnam
- 5 Yemen
- 10 Yugoslavia
- 6 Zambia
- 8 Zimbabwe
--1
-2 0 0
-1 0 0
+9
+11
+Afghanistan
+9
+6
+Angola
+9
+7
+Armenia
+9
+10
+Azerbaijan
+9
+10
+Bangladesh
+9
+5
+Benin
+9
+6
+Bhutan
+9
+7
+Bolivia
+9
+12
+Burkina_Faso
+9
+7
+Burundi
+9
+8
+Cambodia
+9
+8
+Cameroon
+9
+12
+Centrafrique
+9
+4
+Chad
+9
+5
+China
+9
+7
+Comoros
+9
+5
+Congo
+9
+8
+Congo_DR
+9
+13
+Cote_d\'Ivoire
+9
+8
+Djibouti
+9
+17
+Equatorial_Guinea
+9
+7
+Eritrea
+9
+8
+Ethiopia
+9
+6
+Gambia
+9
+7
+Georgia
+9
+5
+Ghana
+9
+6
+Guinea
+9
+13
+Guinea-Bissau
+9
+6
+Guyana
+9
+5
+Haiti
+9
+8
+Honduras
+9
+5
+India
+9
+9
+Indonesia
+9
+5
+Kenya
+9
+11
+North_Korea
+9
+10
+Kyrgyzstan
+9
+4
+Laos
+9
+7
+Lesotho
+9
+7
+Liberia
+9
+10
+Madagascar
+9
+6
+Malawi
+9
+4
+Mali
+9
+10
+Mauritania
+9
+7
+Moldova
+9
+8
+Mongolia
+9
+10
+Mozambique
+9
+7
+Myanmar
+9
+5
+Nepal
+9
+9
+Nicaragua
+9
+5
+Niger
+9
+7
+Nigeria
+9
+8
+Pakistan
+9
+16
+Papua_New_Guinea
+9
+6
+Rwanda
+9
+7
+Senegal
+9
+12
+Sierra_Leone
+9
+15
+Solomon_Islands
+9
+7
+Somalia
+9
+9
+Sri_Lanka
+9
+5
+Sudan
+9
+5
+Syria
+9
+10
+Tajikistan
+9
+8
+Tanzania
+9
+4
+Togo
+9
+12
+Turkmenistan
+9
+6
+Uganda
+9
+7
+Ukraine
+9
+10
+Uzbekistan
+9
+7
+Vietnam
+9
+5
+Yemen
+9
+10
+Yugoslavia
+9
+6
+Zambia
+9
+8
+Zimbabwe
+1026
 1
--1
-16 0 0
+4105
+5
+class
+16
 1
- 10 data.frame
--1
--1
--1
--1
--1
--1
--1
+9
+10
+data.frame
+254
+254

@@ -39,8 +39,11 @@ LSCV bandwidth matrix.
 \seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}
 
 \examples{
-data(unicef)
-Hlscv(unicef)
-Hlscv.diag(unicef)
+mus <- rbind(c(-3/2,0), c(3/2,0))
+Sigmas <- rbind(diag(c(1/16, 1)), rbind(c(1/16, 1/18), c(1/18, 1/16)))
+props <- c(2/3, 1/3)
+x <- rmvnorm.mixt(100, mus, Sigmas, props)
+Hlscv(x)
+Hlscv.diag(x)
 }
 \keyword{ smooth }
