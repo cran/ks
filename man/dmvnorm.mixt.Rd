@@ -1,6 +1,7 @@
-\name{rmvnorm.mixt, dmvnorm.mixt}
+\name{dmvnorm.mixt, rmvnorm.mixt}
 \alias{rmvnorm.mixt}
 \alias{dmvnorm.mixt}
+
 
 \title{Multivariate normal mixture distribution}
 \description{

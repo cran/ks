@@ -702,7 +702,7 @@ psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
     G.star <- g.star[k]^2 * diag(c(1,1))
     if (binned)
      {
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.star[k] <- psihat/(n^2)
@@ -790,7 +790,7 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
 
     if (binned)
     { 
-      fhat6 <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g6.star[k],d),binned=TRUE,
+      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star[k],d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat6 <- sum(gcounts.star * n * fhat6)
       psihat6.star[k] <- psihat6/(n^2)
@@ -820,7 +820,7 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
       else
         g.star[k] <- gamse.even.2d(r, n, psi1, psi2)
     }
-  
+
   for (k in 1:nrow(derivt))
   {
     r <- derivt[k,]
@@ -828,7 +828,7 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
     
     if (binned)
     { 
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.star[k] <- psihat/(n^2)
@@ -879,7 +879,7 @@ psifun1.3d <- function(x.star, pilot="samse", binned, bin.par)
     r <- derivt[k,]
     if (binned)
     {
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.star[k] <- psihat/(n^2)
@@ -954,7 +954,7 @@ psifun2.3d <- function(x.star, pilot="samse", binned, bin.par)
 
     if (binned)
     {
-      fhat6 <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
+      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat6 <- sum(gcounts.star * n * fhat6)
       psihat6.star[k] <- psihat6/(n^2)
@@ -984,7 +984,7 @@ psifun2.3d <- function(x.star, pilot="samse", binned, bin.par)
       gcounts.star <- bin.par$counts
       range.x.star <- bin.par$range.x
       
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.list.star[k] <- psihat/(n^2)
@@ -1046,7 +1046,7 @@ psifun1.4d <- function(x.star, pilot="samse", binned, bin.par)
     
     if (binned)
     {
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.star[k] <- psihat/(n^2)
@@ -1117,7 +1117,7 @@ psifun2.4d <- function(x.star, pilot="samse", binned, bin.par)
     G6.star <- g6.star^2 * diag(d)
     if (binned)
     {
-      fhat6 <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
+      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat6 <- sum(gcounts.star * n * fhat6)
       psihat6.star[k] <- psihat6/(n^2)
@@ -1148,7 +1148,7 @@ psifun2.4d <- function(x.star, pilot="samse", binned, bin.par)
       gcounts.star <- bin.par$counts
       range.x.star <- bin.par$range.x
       
-      fhat <- drvkde(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
+      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
                      range.x=range.x.star, se=FALSE)$est
       psihat <- sum(gcounts.star * n * fhat)
       psihat.list.star[k] <- psihat/(n^2)
@@ -1885,7 +1885,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
     ## linear binning
-    bin.par <- dfltCounts(x, bgridsize, sqrt(diag(H.max)))
+    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H.max)))
   }
 
   ## psi.mat is on pre-transformed data scale
@@ -1971,7 +1971,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
     ## linear binning
-    bin.par <- dfltCounts(x, bgridsize, sqrt(diag(H.max)))
+    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H.max)))
   }
   
   ## pre-transform data 

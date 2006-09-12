@@ -14,8 +14,8 @@ Hscv(x, pre="sphere", Hstart, binned=FALSE)
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{if TRUE (default) used binned estimation otherwise use
-    exact kernel density estimation}
+  \item{binned}{if TRUE use binned pilot estimation otherwise use
+    exact pilot estimation}
 }
 
 \value{

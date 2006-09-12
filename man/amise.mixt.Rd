@@ -1,4 +1,4 @@
-\name{ise, mise, amise}
+\name{amise.mixt, ise.mixt, mise.mixt}
 \alias{ise.mixt}
 \alias{mise.mixt}
 \alias{amise.mixt}

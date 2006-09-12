@@ -1,3 +1,67 @@
+
+###############################################################################
+# Univariate mixture normal densities
+###############################################################################
+
+
+rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1)
+{
+  if (!(identical(all.equal(sum(props), 1), TRUE)))
+    stop("Proportions don't sum to one\n")
+
+  ### single component mixture
+  if (identical(all.equal(props[1], 1), TRUE))
+    rand <- rnorm(n=n, mean=mus, sd=sigmas)
+
+  ### multiple component mixture
+  else
+  {
+    k <- length(props)
+    n.samp <- sample(1:k, n, replace=TRUE, prob=props) 
+    n.prop <- numeric(0)
+
+    # compute number taken from each mixture
+    for (i in 1:k)
+      n.prop <- c(n.prop, sum(n.samp == i))
+    
+    rand <- numeric(0)
+    
+    for (i in 1:k)
+    {
+      # compute random sample from normal mixture component
+      if (n.prop[i] > 0)
+          rand <- c(rand, rnorm(n=n.prop[i], mean=mus[i], sd=sigmas[i]))        
+    }
+  }
+
+  return(rand[sample(n)])
+}
+
+
+dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
+{
+  if (!(identical(all.equal(sum(props), 1), TRUE)))
+    stop("Proportions don't sum to one\n")
+
+  # single component mixture
+  if (identical(all.equal(props[1], 1), TRUE))
+    dens <- dnorm(x, mean=mus, sd=sigmas)
+
+  # multiple component mixture
+  else   
+  {   
+    k <- length(props)
+    dens <- 0
+
+    # sum of each normal density value from each component at x  
+    for (i in 1:k)
+      dens <- dens + props[i]*dnorm(x, mean=mus[i], sd=sigmas[i])
+  }
+  
+  return(dens)
+}   
+
+
 ###############################################################################
 # Multivariate normal densities and derivatives
 ###############################################################################
@@ -23,6 +87,9 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
 
+  #if (is.vector(Sigmas))
+  #  return(rnorm.mixt(n=n, mus=mus, sigmas=Sigmas, props=props))
+  
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
     rand <- rmvnorm(n=n, mean=mus, sigma=Sigmas)
@@ -72,6 +139,9 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props)
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
 
+  #if (is.vector(Sigmas))
+  #  return(dnorm.mixt(x=x, mus=mus, sigmas=Sigmas, props=props))
+  
   # single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
     dens <- dmvnorm(x, mean=mus, sigma=Sigmas)
@@ -131,11 +201,14 @@ dmvnorm.1d.sum <- function(x, sigma, inc=1)
 {
   n <- length(x)
   
-  val <- 0
+  sumval <- 0
   for (i in 1:n)
-    val <- val + sum(dnorm(x[i] - x, mean=0, sd=sigma))
+    sumval <- sumval + sum(dnorm(x[i] - x, mean=0, sd=sigma))
 
-  return(val)
+  if (inc == 0) 
+    sumval <- sumval - n*dnorm(0, mean=0, sd=sigma)
+
+  return(sumval)
 }
 
 ###############################################################################

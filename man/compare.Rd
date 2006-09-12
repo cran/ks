@@ -1,22 +1,19 @@
-\name{compare, compare.kda.diag.cv, compare.kda.cv, compare.pda.cv}
+\name{compare, compare.kda.diag.cv, compare.kda.cv}
 
 \alias{compare}
 \alias{compare.kda.diag.cv}
 \alias{compare.kda.cv}
-\alias{compare.pda.cv}
 
-\title{Comparisons for kernel and parametric discriminant analysis}
+\title{Comparisons for kernel discriminant analysis}
 \description{
-  Comparisons for kernel and parametric discriminant analysis.
+  Comparisons for kernel discriminant analysis.
 }
 \usage{
 compare(x.group, est.group, by.group=FALSE)
 compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
-    by.group=FALSE, trace=FALSE,...)
+    by.group=FALSE, trace=FALSE, ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
     by.group=FALSE, trace=FALSE, ...)
-compare.pda.cv(x, x.group, type="quad", prior.prob=NULL,
-    by.group=FALSE)
 }
 
 \arguments{
@@ -29,9 +26,7 @@ compare.pda.cv(x, x.group, type="quad", prior.prob=NULL,
   \item{by.group}{if set to TRUE then results are given for each group
     as well}
   \item{trace}{if set to TRUE then message is printed in command line to
-  trace the execution of the function}
-  \item{type}{\code{"line"} = linear discriminant, \code{"quad"} =
-    quadratic discriminant}
+  trace the execution}
   \item{...}{other optional parameters for bandwidth selection, see
     \code{\link{Hpi}}, \code{\link{Hlscv}}, \code{\link{Hscv}}} 
 }
@@ -45,21 +40,18 @@ compare.pda.cv(x, x.group, type="quad", prior.prob=NULL,
   \item{error}{misclassification rate (MR)}
     
   In the case where we have test data that is independent of the
-  training data, we supply the estimated group labels \code{ext.group}
-  and   
+  training data, \code{compare} computes    
     \deqn{\textrm{MR} = \frac{\textrm{number of points wrongly
 	  classified}}{\textrm{total number of
-	  points}}}{MR = (number of points wrongly classified) / (total number of
-      points)}
+	  points}}.}{MR = (number of points wrongly classified) / (total number of
+      points).}
     
   In the case where we don't have independent test data e.g.
-  we are classifying the
-  training data set itself, then the cross validated estimate is more
-  appropriate.  See Silverman (1986). These are implemented as for
-  kernel discriminant analysis as \code{compare.kda.cv} (full bandwidth
+  we are classifying the training data set itself, then the cross
+  validated estimate of MR is more appropriate.  See Silverman (1986). These
+  are implemented as \code{compare.kda.cv} (full bandwidth
   selectors) and \code{compare.kda.diag.cv} (for diagonal bandwidth
-  selectors), and \code{compare.pda.cv} for parametric discriminant
-  analysis.
+  selectors). These functions are only available for d > 1.
 
   If \code{by.group=FALSE} then only the total MR rate is given. If it
   is set to TRUE, then the MR rates for each class are also given
@@ -89,24 +81,30 @@ compare.pda.cv(x, x.group, type="quad", prior.prob=NULL,
   indicating that it's processing the i-th data item. This can be
   helpful since the cross-validated estimates may take a long time to
   execute completely.
-
-  The linear and quadratic discriminant analysers are based on
-  \code{lda} and \code{qda} from the \code{MASS} library.
 }
 
-\seealso{  \code{\link{kda.kde}}, \code{\link{pda.pde}}
+\seealso{  \code{\link{kda.kde}}}
 }
 
 \examples{
-### bivariate example - restricted iris dataset  
+### univariate example -- independent test data
+x <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
+       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+x.gr <- rep(c(1,2), times=c(100,100))
+y <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
+       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
 
+kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
+compare(x.gr, kda.gr)
+compare(x.gr, kda.gr, by.group=TRUE) 
+
+### bivariate example - restricted iris dataset, dependent test data
 library(MASS)
 data(iris)
 ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
 
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse")
-compare.pda.cv(ir, ir.gr, type="quad")
 }
 
 \keyword{ smooth }

@@ -1,0 +1,14 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Optimal bandwidth matrices}{}
+\BOOKMARK [1][-]{section.3}{Plug-in bandwidth selectors}{}
+\BOOKMARK [2][-]{subsection.3.1}{AMSE pilot bandwidth selectors}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{SAMSE pilot bandwidth selectors}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{R examples}{section.3}
+\BOOKMARK [1][-]{section.4}{Cross validation bandwidth selectors}{}
+\BOOKMARK [2][-]{subsection.4.1}{Least squares cross validation}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Biased cross validation}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Smoothed cross validation}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{R examples}{section.4}
+\BOOKMARK [1][-]{section.5}{More graphics}{}
+\BOOKMARK [1][-]{section.6}{Pre-transformations}{}
+\BOOKMARK [1][-]{section.7}{General recommendations}{}

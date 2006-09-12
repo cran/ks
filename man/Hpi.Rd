@@ -20,8 +20,8 @@ Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{if TRUE (default) used binned estimation otherwise use
-    exact kernel density estimation}
+  \item{binned}{if TRUE use binned pilot estimation otherwise use
+    exact pilot estimation}
   \item{bgridsize}{vector of binning grid sizes - required only if binned=TRUE}
 }
 
@@ -42,8 +42,7 @@ Plug-in bandwidth matrix.
   For AMSE pilot bandwidths, see Wand \& Jones (1994). For
   SAMSE pilot bandwidths, see Duong \& Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
-  with non-positive definiteness. Both of these
-  pilot bandwidths require numerical optimisation. 
+  with non-positive definiteness. 
 
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
