@@ -125,25 +125,26 @@ find.gridpts <- function(gridx, suppx)
 ###############################################################################
 
 
-kde <- function(x, H, gridsize, supp=3.7, eval.points)
-{ 
-  d <- ncol(x)
-  if (is.data.frame(x)) x <- as.matrix(x)
-  if (is.list(x))
+kde <- function(x, H, h, gridsize, supp=3.7, eval.points)
+{
+  if (is.vector(x))
   {
     if (missing(gridsize))
-      gridsize <- rep(50, d)
-
-    if (missing(eval.points))
-      fhat <- kde.pc.grid.2d(x, H, gridsize, supp)
-    else
-      fhat <- kde.pc.points(x, H, eval.points)
+      gridsize <- 101
+    if (!missing(h))
+      fhat <- kde.1d(x=x, h=h, gridsize=gridsize, eval.points=eval.points)
+    else if (!missing(H))
+      fhat <- kde.1d(x=x, h=sqrt(H), gridsize=gridsize, eval.points=eval.points)
   }
   else
-  {
+  {  
+    d <- ncol(x)
+    if (is.data.frame(x)) x <- as.matrix(x)
+    
     if (missing(gridsize))
-      gridsize <- rep(50, d)
-
+      gridsize <- rep(51, d)
+      #else if (d==3) gridsize <- rep(51, d)
+    
     if (missing(eval.points))
     {
       if (d == 2)
@@ -155,7 +156,24 @@ kde <- function(x, H, gridsize, supp=3.7, eval.points)
     }
     else
       fhat <- kde.points(x, H, eval.points)
+  
+    class(fhat) <- "kde"
   }
+  
+  return(fhat)
+}
+
+kde.1d <- function(x, h, gridsize, eval.points)
+{
+ 
+  if (missing(eval.points))
+  {
+    fhat <- bkde(x=x, bandwidth=h, gridsize=gridsize)
+    fhat <- list(x=x, eval.points=fhat$x, estimate=fhat$y, h=h)
+  }
+  else
+    fhat <- kde.points.1d(x=x, h=h, eval.points=eval.points)
+
   class(fhat) <- "kde"
 
   return(fhat)
@@ -290,79 +308,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 }
 
 
-###############################################################################
-# Pre-clustered bivariate kernel density estimate using normal kernels
-#
-# Parameters
-# x.pc - pre-clustered data points 
-# H.pc - bandwidth matrices, stacked into a matrix
-# gridsize - number of interval points in grid
-# supp - effective support of kernel 
-#
-# Returns
-# list with fields
-# x - pre-clustered data points
-# eval.points - points that KDE is evaluated at
-# estimate - KDE evaluated at eval.points 
-# H - bandwidth matrices
-###############################################################################
 
-kde.pc.grid.2d <- function(x.pc, H.pc, gridsize, supp=3.7)
-{
-  d <- ncol(x.pc$x)
-  nu <- length(x.pc$nclust)
-  x <- x.pc$x
-  clust.ind <- x.pc$ind
-  nclust <- x.pc$nclust
-
-  # find largest bandwidth matrix to initialise grid
-  detH <- vector() 
-  for (j in 1:nu)
-    detH[j] <- det(H.pc[((j-1)*d+1) : (j*d),])  
-  Hmax.ind <- which.max(detH)
-  Hmax <- H.pc[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
-
-  # initialise grid 
-  gridx <- make.grid.ks(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
-  fhat.grid <- array(0, dim = gridsize)
-  n <- sum(nclust)
-  
-  for (j in 1:nu)
-  {       
-    xj <- x[clust.ind==j,]  # points in cluster j 
-    if (is.vector(xj))
-      xj <- t(matrix(xj))
-    nj <- nclust[j]
-    Hj <- H.pc[((j-1)*d+1) : (j*d),] 
-    rectxj <- make.supp(xj, matrix.sqrt(Hj), tol=supp)
-    grid.ptsj <- find.gridpts(gridx, rectxj)
-
-    for (i in 1:nj)
-    {
-      # compute evaluation points
-      eval.xj <- seq(gridx[[1]][grid.ptsj$minx[i,1]], 
-                     gridx[[1]][grid.ptsj$maxx[i,1]], by=gridx$stepsize[1])
-      eval.yj <- seq(gridx[[2]][grid.ptsj$minx[i,2]], 
-                     gridx[[2]][grid.ptsj$maxx[i,2]], by=gridx$stepsize[2])
-      eval.xj.ind <- c(grid.ptsj$minx[i,1]:grid.ptsj$maxx[i,1])
-      eval.yj.ind <- c(grid.ptsj$minx[i,2]:grid.ptsj$maxx[i,2])
-      eval.xj.len <- length(eval.xj)
-      eval.pts <- permute(list(eval.xj, eval.yj))
-      fhat <- dmvnorm(eval.pts, xj[i,], Hj) 
-
-      # place vector of density estimate values `fhat' onto grid 'fhat.grid'
-      for (k in 1:length(eval.yj))
-        fhat.grid[eval.xj.ind, eval.yj.ind[k]] <- 
-          fhat.grid[eval.xj.ind, eval.yj.ind[k]] + 
-            fhat[((k-1) * eval.xj.len + 1):(k * eval.xj.len)]      
-    }
-  }
-
-  fhat.grid <- fhat.grid/n
-  gridx1 <- list(gridx[[1]], gridx[[2]])
-    
-  return(list(x=x.pc, eval.points=gridx1, estimate=fhat.grid, H=H.pc))
-}      
 
 
 ###############################################################################
@@ -394,49 +340,14 @@ kde.points <- function(x, H, eval.points)
     return(list(x=x, eval.points=eval.points, estimate=fhat, H=H))
 }
 
-
-###############################################################################
-# Preclustered multivariate kernel density estimate using normal kernels,
-# evaluated at each sample point
-#
-# Parameters
-# x.pc - pre-clustered data points
-# Hs - bandwidth matrices
-# eval.points - points where to evaluate density estimate
-#
-# Returns
-# list with fields
-# x - pre-clustered data points
-# eval.points - points that KDE is evaluated at
-# estimate - KDE evaluated at eval.points 
-# H - bandwidth matrices  
-###############################################################################
-
-kde.pc.points <- function(x.pc, Hs, eval.points) 
+kde.points.1d <- function(x, h, eval.points) 
 {
-  fhat <- 0
-  d <- ncol(x.pc$x)
-  nu <- length(x.pc$nclust)
-  x <- x.pc$x
-  clust.ind <- x.pc$ind
-  nclust <- x.pc$nclust
-  n <- sum(nclust)
-  
-  for (j in 1:nu)
-  {  
-    xj <- x[clust.ind==j,] # points in cluster j
-    nj <- nclust[j]
-    Hj <- Hs[((j-1)*d+1) : (j*d),]
-    Hjs <- numeric(0)
-    for (i in 1:nj) Hjs <- rbind(Hjs, Hj) # concatenate b/w matrices 
-     
-    fhat <- fhat + nj* dmvnorm.mixt(x=eval.points, mus=xj, Sigmas=Hjs,
-                                    props=rep(1, nj)/nj)
-  } 
-  fhat <- fhat/n 
-  
-  return(list(x=x.pc, eval.points=eval.points, estimate=fhat, H=Hs))
+    n <- length(x)
+    fhat <- dnorm.mixt(x=eval.points, mus=x, sigmas=rep(h, n), props=rep(1, n)/n)
+
+    return(list(x=x, eval.points=eval.points, estimate=fhat, h=h))
 }
+
 
 
 ###############################################################################
@@ -446,18 +357,37 @@ kde.pc.points <- function(x.pc, Hs, eval.points)
 # fhat - output from call to `kde'
 ###############################################################################
 
-plot.kde <- function(x, display="slice", ...)
+plot.kde <- function(x, drawpoints=TRUE, ...)
 { 
   fhat <- x
-  d <- ncol(fhat$x)
 
-  if (d==2) 
-    plotkde.2d(fhat, display=display, ...)
-  else if (d== 3)
-    plotkde.3d(fhat, display="rgl", ...)
-  else 
-    stop ("Plot function only available for 2 or 3-dimensional data")
+  if (is.vector(fhat$x))
+    plotkde.1d(fhat, ...)
+  else
+  {
+    d <- ncol(fhat$x)
+
+    if (d==2) 
+      plotkde.2d.temp(fhat, drawpoints=drawpoints, ...)
+    else if (d==3)
+      plotkde.3d(fhat, ...)
+    else 
+      stop ("Plot function only available for 1, 2 or 3-dimensional data")
+  }
 }
+
+plotkde.1d <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
+  drawpoints=TRUE, ptcol="blue", lcol="black", ...)
+{
+  if (add)
+    lines(fhat$eval.points, fhat$estimate, col=lcol, xlab=xlab, ylab=ylab, ...)
+  else
+    plot(fhat$eval.points, fhat$estimate, col=lcol, type="l", xlab=xlab, ylab=ylab, ...)
+
+  if (drawpoints)
+    rug(fhat$x, col=ptcol)
+}
+
 
 ###############################################################################
 # Display bivariate kernel density estimate
@@ -470,128 +400,156 @@ plot.kde <- function(x, display="slice", ...)
 # cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL,cex=0.7, 
-    xlabs, ylabs, zlabs="Density function", theta=-30, phi=40, d=4,
-    add=FALSE, drawlabels=TRUE, points.diff=TRUE, pch, ptcol="blue", lcol="black",
+plotkde.2d.temp <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, cex=0.7, 
+    xlab, ylab, zlab="Density function", theta=-30, phi=40, d=4,
+    add=FALSE, drawpoints, drawlabels=TRUE, pch, ptcol="blue", lcol="black",
     ...)
 {
-  disp <- substr(display,1,1)
+  disp1 <- substr(display,1,1)
   if (!is.list(fhat$eval.points))
     stop("Need a grid of density estimates")
 
   if (is.data.frame(fhat$x))
   {
-    xlabs <- names(fhat$x)[1]
-    ylabs <- names(fhat$x)[2]
+    xlab <- names(fhat$x)[1]
+    ylab <- names(fhat$x)[2]
   }
 
   x.names <- colnames(fhat$x) 
   if (!is.null(x.names))
   {
-    if (missing(xlabs))
-      xlabs <- x.names[1]
-    if (missing(ylabs))
-      ylabs <- x.names[2]
+    if (missing(xlab)) xlab <- x.names[1]
+    if (missing(ylab)) ylab <- x.names[2]
   }
   else
   {
-    xlabs="x"
-    ylabs="y"
+    xlab <- "x"
+    ylab <- "y"
   }
   
-  # perspective/wire-frame plot
-  if (disp=="p")
+  eval1 <- fhat$eval.points[[1]]
+  eval2 <- fhat$eval.points[[2]]
+  
+  ##if (missing(xlim)) xlim <- range(eval1)
+  ##if (missing(ylim)) ylim <- range(eval2)
+  ##if (missing(zlim)) zlim <- range(fhat$estimate)
+
+  ## perspective/wire-frame plot
+  if (disp1=="p")
     persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-          theta=theta, phi=phi, d=d, xlab=xlabs, ylab=ylabs, zlab=zlabs, ...)
+          theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  
+  else if (disp1=="s")
+  {
+    if (!add)
+      plot(fhat$x[,1], fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
+    #if (missing(cex)) cex <- 0.7
+    dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
+    hts <- quantile(dobs, prob = (100 - cont)/100)
+    
+    ## compute and draw contours
+    if (is.null(ncont))
+      for (i in 1:length(cont)) 
+      {
+        scale <- cont[i]/hts[i]
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
+                drawlabels=drawlabels, col=lcol, ...)
+      }
+    else
+      contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
+              nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
+    
+    ## add points 
+    if (drawpoints)
+      points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
+  }
+  ## image plot
+  else if (disp1=="i")
+    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
+            xlab=xlab, ylab=ylab, ...)
+}
+  
+plotkde.2d.old <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, cex=0.7, 
+    xlab, ylab, zlab="Density function", theta=-30, phi=40, d=4,
+    add=FALSE, drawpoints=TRUE, drawlabels=TRUE, pch, ptcol="blue", lcol="black",
+    ...)
+
+{
+  disp1 <- substr(display,1,1)
+  if (!is.list(fhat$eval.points))
+    stop("Need a grid of density estimates")
+
+  if (is.data.frame(fhat$x))
+  {
+    xlab <- names(fhat$x)[1]
+    ylab <- names(fhat$x)[2]
+  }
+
+  x.names <- colnames(fhat$x) 
+  if (!is.null(x.names))
+  {
+    if (missing(xlab)) xlab <- x.names[1]
+    if (missing(ylab)) ylab <- x.names[2]
+  }
   else
   {
-    # slice/contour plot
-    if (disp=="s")
-    {
-      # pre-clustered KDE
-      if (is.list(fhat$x))
+    xlab <- "x"
+    ylab <- "y"
+  }
+  
+  eval1 <- fhat$eval.points[[1]]
+  eval2 <- fhat$eval.points[[2]]
+  
+  ##if (missing(xlim)) xlim <- range(eval1)
+  ##if (missing(ylim)) ylim <- range(eval2)
+  ##if (missing(zlim)) zlim <- range(fhat$estimate)
+
+  ## perspective/wire-frame plot
+  if (disp1=="p")
+    persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
+          theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  ## slice/contour plot
+  else if (disp1=="s")
+  {
+    #if (missing(cex)) cex <- 0.7
+    dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
+    hts <- quantile(dobs, prob = (100 - cont)/100)
+    
+    ## compute and draw contours
+    if (is.null(ncont))
+      for (i in 1:length(cont)) 
       {
-        x.pc <- fhat$x
-        d <- ncol(x.pc$x)
-        nu <- length(x.pc$nclust)
-        
-        if (missing(pch)) pch <- 1:nu
-
-        dobs <- kde(x.pc, fhat$H, eval.points=x.pc$x)$estimate
-        hts <- quantile(dobs, prob = (100 - cont)/100)
-
-        if (add)
-          points(x.pc$x[,1], x.pc$x[,2], cex=cex, pch=pch[1], col=ptcol)
-        else
-          plot(x.pc$x[,1], x.pc$x[,2], type="n", xlab=xlabs, ylab=ylabs,
-               col=ptcol,...)
+        scale <- cont[i]/hts[i]
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate*scale, level=hts[i]*scale, add=(add & i>1), 
+                drawlabels=drawlabels, col=lcol, ...)
       }
-      # fixed bandwidth KDE
-      else
-      {
-        if (missing(cex)) cex <- 0.7
-        dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
-        hts <- quantile(dobs, prob = (100 - cont)/100)
-
-        if (add)
-          points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
-        else
-          plot(fhat$x[,1], fhat$x[,2], type="n", xlab=xlabs, ylab=ylabs, ...)
-      }
-
-      # compute and draw contours
-      if (is.null(ncont))
-        for (i in 1:length(cont)) 
-        {
-          scale <- cont[i]/hts[i]
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                  fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
-                  drawlabels=drawlabels, col=lcol, ...)
-        }
-      else
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-                nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
-      
-      # add points 
-      if (is.list(fhat$x))
-      {
-        if (points.diff)
-          for (j in 1:length(x.pc$nclust))
-            if (is.vector(x.pc$x[x.pc$ind==j,]))
-              points(x.pc$x[x.pc$ind==j,1], x.pc$x[x.pc$ind==j,2], cex=cex,
-                     pch=pch[j], col=ptcol[j])
-            else
-              points(x.pc$x[x.pc$ind==j,], cex=cex, pch=pch[j], col=ptcol[j])
-        else
-          points(x.pc$x, cex=cex, pch=pch[1], col=ptcol[1])
-      }
-      else  
-        points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
-    }
-    # image plot
-    else if (disp=="i")
-      image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
-            xlab=xlabs, ylab=ylabs, ...)
-  }   
+    else
+      contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
+              nlevel=ncont, add=add, drawlabels=drawlabels, col=lcol, ...)
+    
+    ## add points 
+    if (drawpoints)
+      points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
+  }
+  ## image plot
+  else if (disp1=="i")
+    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
+            xlab=xlab, ylab=ylab, ...)
+    
 }
 
 
 
 ###############################################################################
-# Display trivariate kernel density estimate
-#
-# Parameters 
-# fhat - output from 'kde.grid'
-# display - "persp" - perspective plot
-#         - "slice" - contour plot
-#         - "image" image plot
-# cont - vector of contours to be plotted
+## Display trivariate kernel density estimate
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
+plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   alphavec, size=3, ptcol="blue", add=FALSE, origin=c(0,0,0),
-  endpts, xlabs, ylabs, zlabs, drawpoints=TRUE, ...)
+  endpts, xlab, ylab, zlab, drawpoints=TRUE, ...)
 
 {
   dobs <- kde(fhat$x, fhat$H, eval.points=fhat$x)$estimate 
@@ -611,18 +569,15 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
   x.names <- colnames(fhat$x) 
   if (!is.null(x.names))
   {
-    if (missing(xlabs))
-      xlabs <- x.names[1]
-    if (missing(ylabs))
-      ylabs <- x.names[2]
-    if (missing(zlabs))
-      zlabs <- x.names[3]
+    if (missing(xlab)) xlab <- x.names[1]
+    if (missing(ylab)) ylab <- x.names[2]
+    if (missing(zlab)) zlab <- x.names[3]
   }
   else
   {
-    xlabs="x"
-    ylabs="y"
-    zlabs="z"
+    xlab="x"
+    ylab="y"
+    zlab="z"
   }
 
   if (missing(alphavec))
@@ -646,18 +601,19 @@ plotkde.3d <- function(fhat, display="rgl", cont=c(25,50,75), colors,
                 color=colors[i], alpha=alphavec[i], ...)
   }
    
-  points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol)
+  if (drawpoints)
+    points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1)
   
   lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black")
+          color="black", alpha=1)
   lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black")
+          color="black", alpha=1)
   lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black")
+          color="black", alpha=1)
 
-  texts3d(endpts[1],origin[2],origin[3],xlabs,color="black",size=3)
-  texts3d(origin[1],endpts[2],origin[3],ylabs,color="black",size=3)
-  texts3d(origin[1],origin[2],endpts[3],zlabs,color="black",size=3)
+  texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
+  texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
+  texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
 
 }
 

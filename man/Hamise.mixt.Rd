@@ -1,4 +1,4 @@
-\name{Hmise.mixt, Hamise.mixt}
+\name{Hamise.mixt, Hmise.mixt}
 \alias{Hmise.mixt}
 \alias{Hamise.mixt}
 
@@ -6,7 +6,7 @@
 \title{MISE- and AMISE-optimal bandwidth matrix selectors for normal
   mixture densities}
 \description{
-  For normal mixture densities, we have a closed form for the MISE and
+  Normal mixture densities have closed form expressions for the MISE and
   AMISE. So in these cases, we can numerically minimise these criteria
  to find MISE- and AMISE-optimal matrices. }
 \usage{

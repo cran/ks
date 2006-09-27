@@ -1,26 +1,19 @@
-\name{kda, pda, Hkda, Hkda.diag, kda.kde, pda.pde}
+\name{kda, Hkda, Hkda.diag}
 \alias{Hkda}
 \alias{Hkda.diag}
 \alias{kda}
-\alias{pda}
-\alias{kda.kde}
-\alias{pda.pde}
 
-\title{Kernel and parametric discriminant analysis}
+\title{Kernel discriminant analysis for multivariate data}
 \description{
-  Kernel and parametric discriminant analysis.
+  Kernel discriminant analysis for 1- to 6-dimensional data.
 }
 \usage{
+kda(x, x.group, Hs, hs, y, prior.prob=NULL)
+
 Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
      pre="sphere", binned=FALSE)
 Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
      pre="sphere", binned=FALSE)
-
-kda(x, x.group, Hs, y, prior.prob=NULL)
-pda(x, x.group, y, prior.prob=NULL, type="quad")
-
-kda.kde(x, x.group, Hs, gridsize, supp=3.7, eval.points=NULL)
-pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
 }
 
 \arguments{
@@ -28,10 +21,8 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
   \item{x.group}{vector of group labels for training data}
   \item{y}{matrix of test data} 
   \item{Hs}{(stacked) matrix of bandwidth matrices}
+  \item{hs}{vector of scalar bandwidths}
   \item{prior.prob}{vector of prior probabilities}
-  \item{type}{\code{"line"} = linear discriminant, \code{"quad"} =
-    quadratic discriminant}
-
   \item{bw}{bandwidth: \code{"plugin"} = plug-in, \code{"lscv"} = LSCV, 
     \code{"scv"} = SCV} 
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
@@ -43,17 +34,16 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
     numerical optimisation}
   \item{binned}{if TRUE (default) used binned estimation otherwise use
     exact kernel density estimation}
-
-  \item{gridsize}{vector of number of grid points}
-  \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
-  \item{eval.points}{points that density estimate is evaluated at}
-  \item{xlim, ylim, zlim}{x-axis, y-axis, z-axis limits (used only for plotting)}
 }
 
 \value{
+  -- The result from \code{kda} is a vector of group labels
+  estimated via the kernel discriminant rule.  If the test data \code{y} are
+  given then these are classified. Otherwise the training data \code{x}
+  are classified.
+
   -- The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
-  of bandwidth matrices for each training data group. This is then
-  suitable to passed as the \code{Hs} argument in \code{kda}.
+  of bandwidth matrices for each training data group. 
 
   The values that valid for \code{bw} are \code{"plugin", "lscv"} and
   \code{"scv"} for \code{Hkda}.  These in turn call \code{\link{Hpi}},
@@ -71,22 +61,7 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
   
-  -- The result from \code{kda} and \code{pda} is a vector of group labels
-  estimated via a discriminant (or classification) 
-  rule.  If the test data \code{y} are given then these are
-  classified. Otherwise the training data \code{x} are classified.
 
-  -- The result from \code{kda.kde} and \code{pda.pde} is a density estimate
-  for discriminant analysis is an object of  class \code{dade} which is a
-  list with 6 fields
-  \item{x}{data points - same as input}
-  \item{eval.points}{points that density estimate is evaluated at}
-  \item{estimate}{density estimate at \code{eval.points}}
-  \item{H}{bandwidth matrices}
-  \item{prior.prob}{sample proportions of each group}
-  \item{type}{one of \code{"kernel", "linear", "quadratic"} indicating
-      the type of discriminant analyser used.}
-  
 }
 
 \references{
@@ -108,9 +83,6 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
   Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
   proportions as estimates of the prior probabilities.
 
-  The linear and quadratic discriminant analysers are based on
-  \code{lda} and \code{qda} from the \code{MASS} library.
-
   -- The values that valid for \code{bw} are \code{"plugin", "lscv"} and
   \code{"scv"} for
   \code{Hkda}.  These in turn call \code{\link{Hpi}},
@@ -124,26 +96,25 @@ pda.pde(x, x.group, gridsize, type="quad", xlim, ylim, zlim)
   and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
   \code{pre} are available for \code{Hpi.diag} but not required for
   \code{Hlscv.diag}.
-
-  -- The kernel density estimate is based on \code{\link{kde}}.
-  
-  If \code{eval.points=NULL} (default) then the
-  density estimate is automatically computed over a grid whose
-  resolution is controlled by \code{gridsize} (default is
-  100 in each co-ordinate direction).
-  
-  If \code{xlim} and \code{ylim} are not specified then they default to
-  be 10\% bigger than the range of the data values.
   
 }
 
 \seealso{
   \code{\link{compare}}, 
   \code{\link{compare.kda.cv}},
-  \code{\link{compare.pda.cv}} 
+  \code{\link{kda.kde}}
 }
 
 \examples{
+### univariate example -- independent test data
+x <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
+       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+x.gr <- rep(c(1,2), times=c(100,100))
+y <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
+       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+
+kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
+
 
 ### bivariate example - restricted iris dataset  
 library(MASS)
@@ -152,9 +123,8 @@ ir <- iris[,1:2]
 ir.gr <- iris[,5]
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.gr <- kda(ir, ir.gr, H, ir)
-lda.gr <- pda(ir, ir.gr, ir, type="line")
-qda.gr <- pda(ir, ir.gr, ir, type="quad")
+kda.gr <- kda(ir, ir.gr, Hs=H, y=ir)
+
 
 \dontrun{
 ### multivariate example - full iris dataset
@@ -162,9 +132,7 @@ ir <- iris[,1:4]
 ir.gr <- iris[,5]
 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.gr <- kda(ir, ir.gr, H, ir)
-lda.gr <- pda(ir, ir.gr, ir, type="line")
-qda.gr <- pda(ir, ir.gr, ir, type="quad")
+kda.gr <- kda(ir, ir.gr, Hs=H, y=ir)
 }
 }
 \keyword{ smooth }

@@ -1,0 +1,58 @@
+\begin{thebibliography}{}
+
+\bibitem[Bowman, 1984]{bowman84}
+Bowman, A.~W. (1984).
+\newblock An alternative method of cross-validation for the smoothing of
+  density estimates.
+\newblock {\em Biometrika}, 71:353--360.
+
+\bibitem[Duong and Hazelton, 2003]{duong03}
+Duong, T. and Hazelton, M.~L. (2003).
+\newblock Plug-in bandwidth matrices for bivariate kernel density estimation.
+\newblock {\em Journal of Nonparametric Statistics}, 15:17--30.
+
+\bibitem[Duong and Hazelton, 2005]{duong05}
+Duong, T. and Hazelton, M.~L. (2005).
+\newblock Cross-validation bandwidth matrices for multivariate kernel density
+  estimation.
+\newblock {\em Scandinavian Journal of Statistics}, 32:485--506.
+
+\bibitem[Hall et~al., 1992]{hall92}
+Hall, P., Marron, J.~S., and Park, B.~U. (1992).
+\newblock Smoothed cross-validation.
+\newblock {\em Probability Theory and Related Fields}, 92:1--20.
+
+\bibitem[Jones et~al., 1991]{jones91b}
+Jones, M.~C., Marron, J.~S., and Park, B.~U. (1991).
+\newblock A simple root $n$ bandwidth selector.
+\newblock {\em The Annals of Statistics}, 19:1919--1932.
+
+\bibitem[Rudemo, 1982]{rudemo82}
+Rudemo, M. (1982).
+\newblock Empirical choice of histograms and kernel density estimators.
+\newblock {\em Scandinavian Journal of Statistics. Theory and Applications},
+  9:65--78.
+
+\bibitem[Sain et~al., 1994]{sain94}
+Sain, S.~R., Baggerly, K.~A., and Scott, D.~W. (1994).
+\newblock Cross-validation of multivariate densities.
+\newblock {\em Journal of the American Statistical Association}, 89:807--817.
+
+\bibitem[Sheather and Jones, 1991]{sheather91}
+Sheather, S.~J. and Jones, M.~C. (1991).
+\newblock A reliable data-based bandwidth selection method for kernel density
+  estimation.
+\newblock {\em Journal of the Royal Statistical Society. Series B.
+  Methodological}, 53:683--690.
+
+\bibitem[Simonoff, 1996]{simonoff96}
+Simonoff, J.~S. (1996).
+\newblock {\em Smoothing Methods in Statistics}.
+\newblock Springer-Verlag, New York.
+
+\bibitem[Wand and Jones, 1994]{wand94}
+Wand, M.~P. and Jones, M.~C. (1994).
+\newblock Multivariate plug-in bandwidth selection.
+\newblock {\em Computational Statistics}, 9:97--116.
+
+\end{thebibliography}

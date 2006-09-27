@@ -1,4 +1,4 @@
-\name{rmvt.mixt, dmvt.mixt}
+\name{dmvt.mixt, rmvt.mixt}
 \alias{rmvt.mixt}
 \alias{dmvt.mixt}
 
@@ -30,13 +30,10 @@ dmvt.mixt(x, mus, Sigmas, dfs, props)
   The formula for a d-variate t density with location vector
   \eqn{\bold{\mu}}{mu}, dispersion matrix
   \eqn{\bold{\Sigma}}{Sigma} and df degrees of freedom is
-  \deqn{k\left[ 1 +  \frac{1}{df} (\bold{x} - \bold{\mu})^T
+  \deqn{\frac{\Gamma((df+d)/2)}{(df\pi)^{d/2} \Gamma(df/2)
+      |\bold{\Sigma}^{1/2}|}\left[ 1 +  \frac{1}{df} (\bold{x} - \bold{\mu})^T
     \bold{\Sigma}^{-1}(\bold{x} - \bold{\mu})
-    \right]^{-(d+df)/2}}{k *
-    (1 + 1/df * (x-mu)^T * Sigma^(-1) (x-mu))^(-(d+df)/2)}
-  where
-  \deqn{k =\frac{\Gamma((df+d)/2)}{(df\pi)^{d/2} \Gamma(df/2)
-      |\bold{\Sigma}^{1/2}|}.}{k = gamma((df+d)/2) / ((df*pi)^(d/2) * gamma(df/2)* det(Sigma)^(1/2).}  
+    \right]^{-(d+df)/2}.}{gamma((df+d)/2) / ((df*pi)^(d/2) * gamma(df/2)* det(Sigma)^(1/2) * (1 + 1/df * (x-mu)^T * Sigma^(-1) (x-mu))^(-(d+df)/2).} 
 }
 
 

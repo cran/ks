@@ -5,32 +5,27 @@
 ks
 }
 \description{
-  Kernel density estimators and kernel discriminant analysis for
-  multivariate data (2- to 6-dimensions) with display functions.
+  Kernel density estimation and kernel discriminant analysis for
+  multivariate data (1- to 6-dimensions) with display functions.
   
 }
 \details{
   There are three main types of functions in this package: (a) bandwidth
-  selectors, (b) kernel density estimators and (c) display.
+  selectors, (b) kernel estimators and (c) display.
 
-  For the bandwidth matrix selectors, there are several varieties: (a) plug-in
-  \code{\link{Hpi}}, (b) least squares (or unbiased) cross validation
+  (a) For the bandwidth matrix selectors, there are several varieties: (i) plug-in
+  \code{\link{Hpi}}, (ii) least squares (or unbiased) cross validation
   (LSCV or UCV)
-  \code{\link{Hlscv}}, (c) biased cross validation (BCV)
-  \code{\link{Hbcv}} and (d) smoothed cross validation (SCV)
-  \code{\link{Hscv}}.
+  \code{\link{Hlscv}}, (iii) biased cross validation (BCV)
+  \code{\link{Hbcv}} and (iv) smoothed cross validation (SCV)
+  \code{\link{Hscv}}.  Scalar bandwidth selectors are not provided - see
+  \code{sm} or \code{KernSmooth} packages. 
 
-  For kernel density estimation, the main function is
-  \code{\link{kde}}. For kernel discriminant analysis, it's \code{\link{kda}}.
+  (b) For kernel density estimation, the main function is
+  \code{\link{kde}}. For kernel discriminant analysis, it's \code{\link{kda.kde}}.
 
-  For display, versions of \code{plot} send to a graphics window (the
-  usual one for 2-dimensions or an RGL window for 3-dimensions)
+  (c) For display, versions of \code{plot} send to a graphics window 
   the results of density estimation or discriminant analysis.
-
-  For 1- to 4-dimensional data, binned versions of the kernel density
-  estimators are also available, adapted from the
-  \code{\link[KernSmooth]{KernSmooth}} library. These binned estimators are 
-  useful for large sample sizes. 
   
 }
 \author{

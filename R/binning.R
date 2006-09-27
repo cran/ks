@@ -5,7 +5,7 @@
 
 # Last changed: 18 JUL 2005
 
-dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
+dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
 {
    x <- as.matrix(x)
    d <- ncol(x)
@@ -24,16 +24,16 @@ dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
    if ((d!=1)&(d!=2)&(d!=3)&(d!=4)) stop("currently only for d=1,2,3,4")
 
    if (d==1)
-      gcounts <- linbin(x,gpoints[[1]])
+      gcounts <- linbin.ks(x,gpoints[[1]])
 
    if (d==2)
-      gcounts <- linbin2D(x,gpoints[[1]],gpoints[[2]])
+      gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
 
    if (d==3)
-      gcounts <- linbin3D(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
+      gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
    
    if (d==4)
-      gcounts <- linbin4D(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+      gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
    
    return(list(counts=gcounts,range.x=range.x))
 }
@@ -48,8 +48,7 @@ dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
 
 # Last changed: 28 OCT 2005
 
-drvkde <- function(x,drv,bandwidth,gridsize,range.x,
-                   binned=FALSE,se=TRUE)
+drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
 {  
    d <- length(drv)
 
@@ -95,13 +94,13 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,
    if (binned==FALSE)
    {
       if (d==1) 
-        gcounts <- linbin(x,gpoints[[1]])
+        gcounts <- linbin.ks(x,gpoints[[1]])
       if (d==2) 
-        gcounts <- linbin2D(x,gpoints[[1]],gpoints[[2]])
+        gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
       if (d==3) 
-        gcounts <- linbin3D(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
+        gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
       if (d==4)
-        gcounts <- linbin4D(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+        gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
    }
    else
       gcounts <- x      
@@ -162,12 +161,12 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,
 
    if (d==2) 
    {     
-     est <- symconv2D(kappam,gcounts,skewflag=(-1)^drv)
+     est <- symconv2D.ks(kappam,gcounts,skewflag=(-1)^drv)
 
      if (!se)
        return(list(x.grid=gpoints,est=est))
      
-     est.var <- ((symconv2D((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
+     est.var <- ((symconv2D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
      est.var[est.var<0] <- 0
      return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
    }
@@ -175,24 +174,24 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,
 
    if (d==3)
    {
-     est <- symconv3D(kappam,gcounts,skewflag=(-1)^drv) 
+     est <- symconv3D.ks(kappam,gcounts,skewflag=(-1)^drv) 
  
      if (!se)
        return(list(x.grid=gpoints,est=est))
      
-     est.var <- ((symconv3D((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
+     est.var <- ((symconv3D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
      est.var[est.var<0] <- 0
      return(list(x.grid=gpoints,est=est,se=sqrt(est.var))) 
    }
      
    if (d==4)
    {
-     est <- symconv4D(kappam,gcounts,skewflag=(-1)^drv) 
+     est <- symconv4D.ks(kappam,gcounts,skewflag=(-1)^drv) 
 
      if (!se)
        return(list(x.grid=gpoints,est=est))
      
-     est.var <- ((symconv4D((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
+     est.var <- ((symconv4D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
      est.var[est.var<0] <- 0
      return(list(x.grid=gpoints,est=est,se=sqrt(est.var))) 
    }
@@ -207,7 +206,7 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,
 
 # Last changed: 16 JUNE 1995
 
-linbin <- function(X,gpoints,truncate=TRUE)
+linbin.ks <- function(X,gpoints,truncate=TRUE)
 
 {
    n <- length(X)
@@ -235,7 +234,7 @@ linbin <- function(X,gpoints,truncate=TRUE)
 
 # Last changed: 25 AUG 1995
 
-linbin2D <- function(X,gpoints1,gpoints2)
+linbin2D.ks <- function(X,gpoints1,gpoints2)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2]) 
@@ -263,7 +262,7 @@ linbin2D <- function(X,gpoints1,gpoints2)
 
 # Last changed: 27 JUL 2005
 
-linbin3D <- function(X,gpoints1,gpoints2,gpoints3)
+linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2],X[,3]) 
@@ -295,7 +294,7 @@ linbin3D <- function(X,gpoints1,gpoints2,gpoints3)
 
 # Last changed: 31 AUG 2005
 
-linbin4D  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
+linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2],X[,3],X[,4]) 
@@ -337,7 +336,7 @@ linbin4D  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
 
 # Last changed: 03 AUG 2005
  
-symconv  <- function(r,s,skewflag=1)
+symconv.ks  <- function(r,s,skewflag=1)
 
 { 
    L <- length(r)-1
@@ -361,7 +360,7 @@ symconv  <- function(r,s,skewflag=1)
 
 # Last changed: 20 MAY 2005
  
-symconv2D <- function(rr,ss,skewflag=rep(1,2))
+symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
 
 {  
    L <- dim(rr)-1
@@ -401,7 +400,7 @@ symconv2D <- function(rr,ss,skewflag=rep(1,2))
 
 # Last changed: 01 JUN 2005
  
-symconv3D <- function(rr,ss,skewflag=rep(1,3))
+symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
 
 {  
    L <- dim(rr) - 1
@@ -445,7 +444,7 @@ symconv3D <- function(rr,ss,skewflag=rep(1,3))
 
 # Last changed: 01 SEP 2005
  
-symconv4D <- function(rr,ss,skewflag=rep(1,4))
+symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
 
 {  
    L <- dim(rr) - 1
