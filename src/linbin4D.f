@@ -8,8 +8,8 @@ c Last changed: 31 AUG 2005
 
       subroutine lbfoud(X,n,a1,a2,a3,a4,b1,b2,b3,b4,M1,M2,M3,M4,gcounts)  
       integer n,M1,M2,M3,M4,i,li1,li2,li3,li4,ind1,ind2,ind3,ind4
-      integer ind5,ind6,ind7,ind8,in9,ind10,ind11,ind12,ind13,ind14
-      integer in15,ind16
+      integer ind5,ind6,ind7,ind8,ind9,ind10,ind11,ind12,ind13,ind14
+      integer ind15,ind16
       double precision X(*),a1,a2,a3,a4,b1,b2,b3,b4,gcounts(*)
       double precision lxi1,lxi2,lxi3,lxi4,delta1,delta2,delta3,delta4
       double precision rem1,rem2,rem3,rem4
