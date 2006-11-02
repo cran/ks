@@ -1456,8 +1456,8 @@ psifun1.6d <- function(x.star, pilot="samse")
 
   psihat.star <- vector()
   g.star <- vector()
-  
 
+  
   # compute 1 pilot for SAMSE
   g.star <- gsamse.6d(S.star, n, 4, nstage=1)
   G.star <- g.star^2 * diag(d)
@@ -1770,14 +1770,14 @@ psimat.4d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
 }
 
 
-psimat.5d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
+psimat.5d <- function(x.star, nstage=1, pilot="samse")#, binned, bin.par)
 {
   d <- 5
 
   if (nstage==1)
-    psi.fun <- psifun1.5d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun1.5d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   else if (nstage==2)
-    psi.fun <- psifun2.5d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun2.5d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   
   coeff <- Psi4.list(d)$coeff
 
@@ -1786,28 +1786,28 @@ psimat.5d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
 
 ### psimat.diag.5d is more efficient than psimat.5d for diagonal selectors
 
-psimat.diag.5d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
+psimat.diag.5d <- function(x.star, nstage=1, pilot="samse")#, binned, bin.par)
 {
   d <- 5
  
   if (nstage==1)
-    psi.fun <- psifun1.diag.5d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun1.diag.5d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   else if (nstage==2)
-    psi.fun <- psifun2.diag.5d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun2.diag.5d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
 
   coeff <- Psi4.list(d)$coeff
 
   return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
-psimat.6d <- function(x, nstage=1, pilot="samse", binned, bin.par)
+psimat.6d <- function(x.star, nstage=1, pilot="samse")#, binned, bin.par)
 {
   d <- 6
   
   if (nstage==1)
-    psi.fun <- psifun1.6d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun1.6d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   else if (nstage==2)
-    psi.fun <- psifun2.6d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun2.6d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   
   coeff <- Psi4.list(d)$coeff
 
@@ -1816,14 +1816,14 @@ psimat.6d <- function(x, nstage=1, pilot="samse", binned, bin.par)
 
 ### psimat.diag.6d is more efficient than psimat.6d for diagonal selectors
 
-psimat.diag.6d <- function(x, nstage=1, pilot="samse", binned, bin.par)
+psimat.diag.6d <- function(x.star, nstage=1, pilot="samse")#, binned, bin.par)
 {
   d <- 6
  
   if (nstage==1)
-    psi.fun <- psifun1.diag.6d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun1.diag.6d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
   else if (nstage==2)
-    psi.fun <- psifun2.diag.6d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun2.diag.6d(x.star, pilot=pilot)#, binned=binned, bin.par=bin.par)
 
   coeff <- Psi4.list(d)$coeff
 
@@ -1862,9 +1862,9 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   if(!is.matrix(x)) x <- as.matrix(x)
 
   if (substr(pre,1,2)=="sc")
-      x.star <- pre.scale(x)
-    else if (substr(pre,1,2)=="sp")
-      x.star <- pre.sphere(x)
+    x.star <- pre.scale(x)
+  else if (substr(pre,1,2)=="sp")
+    x.star <- pre.sphere(x)
 
   if (substr(pilot,1,1)=="a")
     pilot <- "amse"
@@ -1902,7 +1902,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   
   ## use normal reference bandwidth as initial condition
   if (missing(Hstart)) 
-    Hstart <- matrix.sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
+    Hstart <- matrix.sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x.star))
   
   ## PI is estimate of AMISE
   pi.temp <- function(vechH)
@@ -2005,16 +2005,16 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
  
     ## use normal reference bandwidth as initial condition
     if (missing(Hstart)) 
-      Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
+      Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x.star))
  
     if (d==3)
-      psi.mat <- psimat.3d(x, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)    
+      psi.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)    
     else if (d==4)
-      psi.mat <- psimat.4d(x, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)
+      psi.mat <- psimat.4d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)
     else if (d==5)
-      psi.mat <- psimat.diag.5d(x, nstage=nstage, pilot=pilot, pre=pre)
+      psi.mat <- psimat.diag.5d(x.star, nstage=nstage, pilot=pilot)
     else if (d==6)
-      psi.mat <- psimat.diag.6d(x, nstage=nstage, pilot=pilot, pre=pre)
+      psi.mat <- psimat.diag.6d(x.star, nstage=nstage, pilot=pilot)
 
    
     ## PI is estimate of AMISE
@@ -2740,7 +2740,6 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
 
   S12inv <- chol2inv(chol(S12))
   Hamise <- S12inv %*% Hpi(x=x,nstage=1,pilot="samse", pre="sphere",binned=binned) %*% S12inv
-
   
   if (d==2)
     gamse <- gamse.scv.2d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
@@ -2757,7 +2756,7 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
   
   # use normal reference b/w matrix for initial condition
   if (missing(Hstart)) 
-    Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
+    Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x.star))
 
   scv.mat.temp <- function(vechH)
   {
@@ -2768,7 +2767,8 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
   
   # back-transform
   result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
-                  #control=list(abstol=n^(-10*d)))  
+                  #control=list(abstol=n^(-10*d)))
+ 
   H <-invvech(result$par) %*% invvech(result$par)
   H <- S12 %*% H %*% S12
   
