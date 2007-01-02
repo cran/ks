@@ -273,10 +273,13 @@ is to find a smooth estimate of the distribution of this data.
 \begin{Sinput}
 > library(ks)
 > data(unicef)
-> plot(unicef)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{kde-001}
+\begin{Schunk}
+\begin{Sinput}
+> plot(unicef, cex = 1.6, cex.lab = 1.6, cex.axis = 1.6)
+\end{Sinput}
+\end{Schunk}
 %\caption{Scatter plot for unicef data}
 %\label{fig:unicef}
 \end{center}
@@ -347,10 +350,10 @@ kernel density estimates. %The plots are in Figure \ref{fig:pi}.
 \end{Schunk}
 \setkeys{Gin}{width=0.35\textwidth}
 \begin{center}
-\includegraphics{kde-005}
 \includegraphics{kde-006}
 \includegraphics{kde-007}
 \includegraphics{kde-008}
+\includegraphics{kde-009}
 %\caption{Kernel density estimates with plug-in selectors for unicef data}
 %\label{fig:pi}
 \end{center}
@@ -531,10 +534,10 @@ in Section \ref{sec:pi_eg}.
 \end{Sinput}
 \end{Schunk}
 \begin{center}
-\includegraphics{kde-012}
-\includegraphics{kde-013}
 \includegraphics{kde-014}
 \includegraphics{kde-015}
+\includegraphics{kde-016}
+\includegraphics{kde-017}
 \end{center}
 
 %\caption{Cross validation selectors for unicef data}
@@ -585,14 +588,59 @@ image or contour plots.
 \end{Sinput}
 \end{Schunk}
 \begin{center}
-\includegraphics{kde-017}
-\includegraphics{kde-018}
 \includegraphics{kde-019}
 \includegraphics{kde-020}
+\includegraphics{kde-021}
+\includegraphics{kde-022}
 %\caption{Graphics options for KDE plots}
 %\label{fig:kde} 
 \end{center}
 %\end{figure}
+
+
+\section{Large sample sizes and binned kernel estimation}
+\label{sec:binned}
+
+For large sample sizes, direct computation of kernel estimates becomes 
+computationally difficult. One common technique for increasing computational
+speed for these large samples is binned kernel estimation, 
+see \citet*[Appendix~D]{wand94}. Unfortunately binned estimation is only defined 
+with diagonal bandwidth matrices. So appilcable cases include 
+computing the pilot bandwidth matrices
+(which are parameterised as $g^2 \mat{I}$) for general plug-in and SCV selectors;
+and for kernel density estimators with diagonal bandwidth matrices. 
+
+
+\begin{Schunk}
+\begin{Sinput}
+> mus <- rbind(c(-2, 2), c(0, 0), c(2, -2))
+> Sigmas <- rbind(diag(2), 0.8 * invvech(c(1, -0.9, 1)), diag(2))
+> cwt <- 3/11
+> props <- c((1 - cwt)/2, cwt, (1 - cwt)/2)
+> plotmixt(mus, Sigmas, props, display = "image", col = rev(heat.colors(100)))
+> x <- rmvnorm.mixt(10000, mus, Sigmas, props)
+> H.pidiag <- Hpi.diag(x, binned = TRUE)
+> H.pi <- Hpi(x, binned = TRUE)
+\end{Sinput}
+\end{Schunk}
+For large sample sizes, we don't recommend plotting with slice/contour plots
+because computing the relative contour heights is computationally intensive.
+Instead, image or perspective plots are more efficient.
+\begin{Schunk}
+\begin{Sinput}
+> fhat.diag <- kde(x, H = H.pidiag, binned = TRUE)
+> plot(fhat.diag, display = "image", col = rev(heat.colors(100)))
+\end{Sinput}
+\end{Schunk}
+\begin{center}
+\includegraphics{kde-025}
+\includegraphics{kde-026}
+\end{center}
+
+%fhat <- kde(x, H=H.pi)
+%plot(fhat, display="image", col=rev(heat.colors(100)))
+%fhat <- kde(x, H=H.pi, gridsize=rep(51,2))
+%plot(fhat, display="image", col=rev(heat.colors(100)), cex.lab=1.6, cex.axis=1.6) 
 
 \section{Pre-transformations}
 \label{sec:pre}

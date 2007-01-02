@@ -11,9 +11,9 @@
 kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 
 Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
-     pre="sphere", binned=FALSE)
+     pre="sphere", binned=FALSE, bgridsize)
 Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
-     pre="sphere", binned=FALSE)
+     pre="sphere", binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -32,8 +32,9 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
     pre-sphering}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
     numerical optimisation}
-  \item{binned}{if TRUE (default) used binned estimation otherwise use
-    exact kernel density estimation}
+    \item{binned}{flag for binned kernel estimation}
+  \item{bgridsize}{vector of binning grid sizes - 
+  required only if \code{binned=TRUE}}
 }
 
 \value{
@@ -43,24 +44,7 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   are classified.
 
   -- The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
-  of bandwidth matrices for each training data group. 
-
-  The values that valid for \code{bw} are \code{"plugin", "lscv"} and
-  \code{"scv"} for \code{Hkda}.  These in turn call \code{\link{Hpi}},
-  \code{\link{Hlscv}} and \code{\link{Hscv}}. For plugin selectors, all
-  of \code{nstage}, \code{pilot} and \code{pre} need to be set. For SCV
-  selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
-  need to be set.  For LSCV selectors, none of them are required. 
-
-  For \code{Hkda.diag}, options are \code{"plugin"} or \code{"lscv"}
-  which in turn call respectively \code{\link{Hpi.diag}} 
-  and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
-  \code{pre} are available for \code{Hpi.diag} but not required for
-  \code{Hlscv.diag}.
-  
-  For details on the pre-transformations in \code{pre}, see
-  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
-  
+  of bandwidth matrices, one for each training data group. 
 
 }
 
@@ -96,7 +80,22 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
   \code{pre} are available for \code{Hpi.diag} but not required for
   \code{Hlscv.diag}.
+
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is not specified, then the
+  density estimate is computed over a grid 
+  defined by \code{gridsize} (if \code{binned=FALSE}) or
+  by \code{bgridsize} (if \code{binned=TRUE}).
   
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is specified, then the
+  density estimate is computed exactly at \code{eval.points}.
+  
+  For d > 4, the kernel density estimate is computed exactly 
+  and \code{eval.points} must be specified.
+  
+  For details on the pre-transformations in \code{pre}, see
+  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
 }
 
 \seealso{
@@ -105,34 +104,6 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   \code{\link{kda.kde}}
 }
 
-\examples{
-### univariate example -- independent test data
-x <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
-       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
-x.gr <- rep(c(1,2), times=c(100,100))
-y <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
-       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+\examples{ ### See examples in ? compare } 
 
-kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
-
-
-### bivariate example - restricted iris dataset  
-library(MASS)
-data(iris)
-ir <- iris[,1:2]
-ir.gr <- iris[,5]
-
-H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.gr <- kda(ir, ir.gr, Hs=H, y=ir)
-
-
-\dontrun{
-### multivariate example - full iris dataset
-ir <- iris[,1:4]
-ir.gr <- iris[,5]
-
-H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.gr <- kda(ir, ir.gr, Hs=H, y=ir)
-}
-}
 \keyword{ smooth }

@@ -7,7 +7,7 @@
 }
 \usage{
 kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
-        eval.points=NULL)
+        eval.points=NULL, binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -18,7 +18,9 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   \item{prior.prob}{vector of prior probabilities}
   \item{gridsize}{vector of number of grid points}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
-  \item{eval.points}{points that density estimate is evaluated at}
+  \item{eval.points}{points at which density estimate is evaluated}
+  \item{binned}{flag for binned kernel estimation}
+  \item{bgridsize}{vector of binning grid sizes - only required if \code{binned=TRUE}}
 }
   
 
@@ -33,7 +35,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   \item{x.group}{group labels - same as input}
   \item{eval.points}{points that density estimate is evaluated at}
   \item{estimate}{density estimate at \code{eval.points}}  
-  \item{prior.prob}{sample proportions of each group}
+  \item{prior.prob}{prior probabilities}
   \item{H}{bandwidth matrices (>1-d only)  or } 
   \item{h}{bandwidths (1-d only)}
 }
@@ -43,16 +45,18 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
   proportions as estimates of the prior probabilities.
 
-  For d > 1, the kernel density estimate is computed exactly i.e. binning
-  is not used. For d = 1, the binned estimator from the
-  \code{KernSmooth} library is used.
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is not specified, then the
+  density estimate is computed over a grid 
+  defined by \code{gridsize} (if \code{binned=FALSE}) or
+  by \code{bgridsize} (if \code{binned=TRUE}).
 
-  For d = 1, 2, 3, if \code{eval.points} is not specified, then the
-  density estimate is automatically computed over a grid whose
-  resolution is controlled by \code{gridsize} (default is 101, 51 x 51
-  and 51 x 51 x 51 respectively).
-
-  For d > 3, \code{eval.points} must be specified.
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is specified, then the
+  density estimate is computed is computed exactly at \code{eval.points}.
+  
+  For d > 4, the kernel density estimate is computed exactly 
+  and \code{eval.points} must be specified.
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
@@ -61,13 +65,6 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
 \seealso{\code{\link{plot.kda.kde}}}
 
 \examples{
-### bivariate example - restricted iris dataset  
-library(MASS)
-data(iris)
-ir <- iris[,1:2]
-ir.gr <- iris[,5]
-
-H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.fhat <- kda.kde(ir, ir.gr, H=H)
+### See examples in ? plot.kda.kde
 }
 \keyword{smooth}

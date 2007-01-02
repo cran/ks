@@ -6,9 +6,10 @@
   Kernel density estimate plot for 1- to 3-dimensional data.
 }
 
-\synopsis{\method{plot}{kde}(x, drawpoints=TRUE, ...)}
+\synopsis{\method{plot}{kde}(x, drawpoints=FALSE, ...)}
 
 \usage{
+
 ## univariate
 \method{plot}{kde}(fhat, xlab, ylab="Density function", add=FALSE,
   ptcol="blue", lcol="black", drawpoints=TRUE, ...)
@@ -16,18 +17,18 @@
 ## bivariate
 \method{plot}{kde}(fhat, display="slice", cont=c(25,50,75), ncont=NULL,
     cex=0.7, xlab, ylab, zlab="Density function", theta=-30,
-    phi=40, d=4, add=FALSE, drawlabels=TRUE, pch,
+    phi=40, d=4, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, pch,
     ptcol="blue", lcol="black", ...)
 
 ## trivariate
 \method{plot}{kde}(fhat, cont=c(25,50,75), colors, alphavec,
     size=3, ptcol="blue", add=FALSE, origin=c(0,0,0), endpts,
-    xlab, ylab, zlab, drawpoints=TRUE, ...)
+    xlab, ylab, zlab, drawpoints=FALSE, ...)
 }
 
 \arguments{
-  \item{fhat}{an object of class \code{kde} i.e. output from
-    \code{\link{kde}} function}
+  \item{fhat}{an object of class \code{kde} (output from
+    \code{\link{kde}} function)}
   \item{display}{type of display, "slice" for contour plot, "persp" for
     perspective plot, "image" for image plot (2-d plot)}
   \item{cont}{vector of percentages (of maximum height) for contour
@@ -80,11 +81,8 @@
   the range of the z values i.e. default from the usual \code{persp} command.
   
   If \code{display="image"} then an image plot
-  is generated. The colours are the default from the usual
+  is generated. Default colours are the default from the usual
   \code{image} command.
-
-  Note the \code{drawpoints} argument fails with 2-d plots. If the data
-  points shouldn't be added to the plot, set \code{cex=0}.
 
   -- For 3-dimensional data, the interactive plot is a series of nested 3-d contours.
   The default contours are \code{cont=c(25,50)}, the
@@ -118,16 +116,22 @@ plot(fhat, display="persp")
 plot(fhat, display="image", col=rev(heat.colors(100)))
 layout(1)
 
+## large sample - 10000 sample from bivariate standard normal 
+x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
+H.pi <- Hpi.diag(x, binned=TRUE)
+fhat <- kde(x, H=H.pi, binned=TRUE) 
+plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20))
+
 ## trivariate example
-\dontrun{
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
-x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
-H.pi <- Hpi(x)
-fhat <- kde(x, H=H.pi)  
+
+x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
+H.pi <- Hpi.diag(x, binned=TRUE, pilot="samse")
+fhat <- kde(x, H=H.pi, binned=TRUE)  
 plot(fhat, origin=c(-3,-3,-3))
 }
-}
+
 \keyword{ hplot}

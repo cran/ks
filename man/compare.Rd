@@ -11,9 +11,11 @@
 \usage{
 compare(x.group, est.group, by.group=FALSE)
 compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
-    by.group=FALSE, trace=FALSE, ...)
+    by.group=FALSE, trace=FALSE, binned=FALSE, bgridsize,
+    recompute=FALSE, ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
-    by.group=FALSE, trace=FALSE, ...)
+    by.group=FALSE, trace=FALSE, binned=FALSE, bgridsize,
+    recompute=FALSE, ...)
 }
 
 \arguments{
@@ -26,7 +28,12 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   \item{by.group}{if set to TRUE then results are given for each group
     as well}
   \item{trace}{if set to TRUE then message is printed in command line to
-  trace the execution}
+    trace the execution}
+  \item{binned}{flag for binned kernel estimation}
+  \item{bgridsize}{vector of binning grid sizes - only required if
+    \code{binned=TRUE}}
+  \item{recompute}{flag for recomputing the bandwidth matrix after
+    excluding the i-th data item}
   \item{...}{other optional parameters for bandwidth selection, see
     \code{\link{Hpi}}, \code{\link{Hlscv}}, \code{\link{Hscv}}} 
 }
@@ -105,6 +112,12 @@ ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
 
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse")
+compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse", binned=TRUE)
+
+\dontrun{
+compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse", recompute=TRUE)
+}
+
 }
 
 \keyword{ smooth }

@@ -19,19 +19,19 @@ for 1- to 3-dimensional data}
 
 ## bivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    ncont=NULL, xlim, ylim, xlab="x", ylab="y", drawpoints=TRUE,
+    ncont=NULL, xlim, ylim, xlab="x", ylab="y", drawpoints=FALSE,
     drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol, ...)
 
 ## trivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50), colors,
    alphavec, origin=c(0,0,0), endpts, xlab="x", ylab="y",
-   zlab="z", drawpoints=TRUE, size=3, ptcol, ...)
+   zlab="z", drawpoints=FALSE, size=3, ptcol, ...)
 
 }
 
 \arguments{
-  \item{x}{an object of class \code{kda.kde} i.e. output from
-    \code{\link{kda.kde}}}
+  \item{x}{an object of class \code{kda.kde} (output from
+    \code{\link{kda.kde}})}
   \item{y}{matrix of test data points}
   \item{y.group}{vector of group labels for test data points}
   \item{prior.prob}{vector of prior probabilities}  
@@ -91,7 +91,7 @@ for 1- to 3-dimensional data}
 
   -- For 3-d plots:
   
-  Default contours are \code{cont=c(25,50)}. Colors are
+  Default contours are \code{cont=c(25,50)}. \code{colors} are
   set one per group - default is \code{heat.colors}. The transparency of
   each contour (within each group) is \code{alphavec}. Default range is
   0.1 to 0.5. \code{origin} is the point where
@@ -113,7 +113,6 @@ for 1- to 3-dimensional data}
 \seealso{\code{\link{kda.kde}}, \code{\link{kda}}}
 
 \examples{
-
 library(MASS)
 data(iris)
 
@@ -140,7 +139,6 @@ plot(kda.fhat, ncont=6, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim,
      col=c("transparent", "grey", "#8f8f8f"), drawlabels=FALSE,
      pch=c(1,5,10))
 
-
 ## trivariate example
 ir <- iris[,1:3]
 ir.gr <- iris[,5] 
@@ -148,9 +146,6 @@ H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
 plot(kda.fhat)
    ## colour indicates species, transparency indicates density heights
-
-
-
 }
 \keyword{ hplot}
 

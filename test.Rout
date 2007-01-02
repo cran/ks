@@ -1,0 +1,139 @@
+
+R : Copyright 2006, The R Foundation for Statistical Computing
+Version 2.3.1 (2006-06-01)
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Library `sm', version 2.1;  Copyright (C) 1997, 2000, 2005 A.W.Bowman & A.Azzalini
+type help(sm) for summary information
+KernSmooth 2.22 installed
+Copyright M. P. Wand 1997
+Loading required package: mvtnorm
+Loading required package: misc3d
+Loading required package: rgl
+ks 1.4.5 (2006)
+> invisible(options(echo = TRUE))
+> 
+> 
+> 
+> for (ff in system("ls R/*.R", intern=TRUE)) source(ff)
+> 
+> mu1 <- rep(0,5)
+> mu2 <- rep(1,5,5)
+> Sigma1 <- 0.16*diag(c(1,2, 1,2,1))
+> Sigma2 <- 0.16*diag(5)
+> props <- c(1,1)/2
+> 
+> set.seed(8192)
+> y <- rmvnorm.mixt(n=1000, mus=rbind(mu1, mu2), Sigmas=rbind(Sigma1, Sigma2), props=props)
+> 
+> #unix.time(H <- Hpi(y[,1:2], nstage=1, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:2], nstage=1, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi(y[,1:3], nstage=1, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:3], nstage=1, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi(y[,1:4], nstage=1, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:4], nstage=1, binned=TRUE)); print(H)
+> 
+> #unix.time(H <- Hpi(y[,1:2], nstage=2, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:2], nstage=2, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi(y[,1:3], nstage=2, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:3], nstage=2, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi(y[,1:4], nstage=2, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi(y[,1:4], nstage=2, binned=TRUE)); print(H)
+> 
+> #unix.time(H <- Hpi.diag(y[,1:2], nstage=1, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:2], nstage=1, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:3], nstage=1, pilot="samse", binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:3], nstage=1, pilot="samse", binned=TRUE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:4], nstage=1, pilot="samse", binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:4], nstage=1, pilot="samse", binned=TRUE)); print(H)
+> 
+> #unix.time(H <- Hpi.diag(y[,1:2], nstage=2, binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:2], nstage=2, binned=TRUE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:3], nstage=2, pilot="samse", binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:3], nstage=2, pilot="samse", binned=TRUE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:4], nstage=2, pilot="samse", binned=FALSE)); print(H)
+> #unix.time(H <- Hpi.diag(y[,1:4], nstage=2, pilot="samse", binned=TRUE)); print(H)
+> 
+> 
+> #unix.time(H <- Hscv(y[,1:2], binned=FALSE)); print(H)
+> #unix.time(H <- Hscv(y[,1:2], binned=TRUE)); print(H)
+> #unix.time(H <- Hscv(y[,1:3], binned=FALSE)); print(H)
+> #unix.time(H <- Hscv(y[,1:3], binned=TRUE)); print(H)
+> #unix.time(H <- Hscv(y[,1:4], binned=FALSE)); print(H)
+> #unix.time(H <- Hscv(y[,1:4], binned=TRUE)); print(H)
+> 
+> 
+> unix.time(H <- Hlscv(y[,1:2])); print(H)
+[1] 41.425  0.053 41.824  0.000  0.000
+             [,1]         [,2]
+[1,]  0.022166696 -0.003324787
+[2,] -0.003324787  0.032654190
+> unix.time(H <- Hlscv(y[,1:3])); print(H)
+[1] 304.003   0.456 319.364   0.000   0.000
+              [,1]         [,2]         [,3]
+[1,]  0.0241281347 -0.007433583 0.0003292988
+[2,] -0.0074335834  0.046486869 0.0045588951
+[3,]  0.0003292988  0.004558895 0.0218426010
+> unix.time(H <- Hlscv(y[,1:4])); print(H)
+[1] 372.279   0.517 380.236   0.000   0.000
+             [,1]         [,2]        [,3]         [,4]
+[1,]  0.032715320  0.003601412 0.014572687 -0.009526037
+[2,]  0.003601412  0.043273656 0.007969034 -0.002069230
+[3,]  0.014572687  0.007969034 0.031903370  0.011741567
+[4,] -0.009526037 -0.002069230 0.011741567  0.046244170
+> 
+> 
+> unix.time(H <- Hlscv.diag(y[,1:2], binned=FALSE)); print(H)
+[1] 20.787  0.020 20.923  0.000  0.000
+           [,1]       [,2]
+[1,] 0.02289309 0.00000000
+[2,] 0.00000000 0.03230151
+> unix.time(H <- Hlscv.diag(y[,1:2], binned=TRUE)); print(H)
+[1] 28.290  1.143 37.048  0.000  0.000
+           [,1]       [,2]
+[1,] 0.02323315 0.00000000
+[2,] 0.00000000 0.03295444
+> unix.time(H <- Hlscv.diag(y[,1:3], binned=FALSE)); print(H)
+[1] 45.863  0.158 53.223  0.000  0.000
+           [,1]       [,2]       [,3]
+[1,] 0.02363785 0.00000000 0.00000000
+[2,] 0.00000000 0.04673555 0.00000000
+[3,] 0.00000000 0.00000000 0.02172188
+> unix.time(H <- Hlscv.diag(y[,1:3], binned=TRUE)); print(H)
+[1] 265.253  12.791 379.074   0.000   0.000
+           [,1]       [,2]       [,3]
+[1,] 0.03411385 0.00000000 0.00000000
+[2,] 0.00000000 0.04963076 0.00000000
+[3,] 0.00000000 0.00000000 0.02838473
+> unix.time(H <- Hlscv.diag(y[,1:4], binned=FALSE)); print(H)
+[1] 101.466   0.253 115.533   0.000   0.000
+           [,1]       [,2]       [,3]       [,4]
+[1,] 0.03025035 0.00000000 0.00000000 0.00000000
+[2,] 0.00000000 0.04691843 0.00000000 0.00000000
+[3,] 0.00000000 0.00000000 0.02728716 0.00000000
+[4,] 0.00000000 0.00000000 0.00000000 0.04449999
+> unix.time(H <- Hlscv.diag(y[,1:4], binned=TRUE)); print(H)
+[1] 638.053  27.912 830.865   0.000   0.000
+           [,1]       [,2]       [,3]       [,4]
+[1,] 0.05526874 0.00000000 0.00000000 0.00000000
+[2,] 0.00000000 0.08010508 0.00000000 0.00000000
+[3,] 0.00000000 0.00000000 0.04916279 0.00000000
+[4,] 0.00000000 0.00000000 0.00000000 0.06775337
+> 
+> proc.time()
+[1] 1820.866   43.394 2186.117    0.004    0.004
+> 

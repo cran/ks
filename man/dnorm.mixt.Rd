@@ -7,7 +7,8 @@
 Random generation and density values from univariate normal mixture
 distribution.}
 \usage{
-
+dnorm.mixt(x, mus=0, sigmas=1, props=1)
+rnorm.mixt(n=100, mus=0, sigmas=1, props=1)
 }
 
 \arguments{

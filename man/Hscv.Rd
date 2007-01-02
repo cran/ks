@@ -6,7 +6,7 @@
 \description{
 SCV bandwidth matrix for 2- to 6-dimensional data.}
 \usage{
-Hscv(x, pre="sphere", Hstart, binned=FALSE)
+Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -14,8 +14,9 @@ Hscv(x, pre="sphere", Hstart, binned=FALSE)
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{if TRUE use binned pilot estimation otherwise use
-    exact pilot estimation}
+  \item{binned}{flag for binned kernel estimation}
+  \item{bgridsize}{vector of binning grid sizes - 
+  required only if \code{binned=TRUE}}
 }
 
 \value{
@@ -27,6 +28,10 @@ selector is not available.
 \details{ This SCV selector is a generalisation of the univariate SCV
   selector of Jones, Marron \& Park (1991).
 
+  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
+  the density estimate is computed over a binning grid defined 
+  by \code{bgridsize}. Otherwise it's computed exactly.
+  
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
   
@@ -47,5 +52,6 @@ selector is not available.
 \examples{
 data(unicef)
 Hscv(unicef)
+Hscv(unicef, binned=TRUE)
 }
 \keyword{ smooth }
