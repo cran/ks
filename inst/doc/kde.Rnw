@@ -268,11 +268,13 @@ is to find a smooth estimate of the distribution of this data.
 \setkeys{Gin}{width=0.4\textwidth}
 %\begin{figure}[!htp]
 \begin{center}
-<<fig=TRUE,results=hide,print=FALSE>>=
+<<fig=FALSE,results=hide,print=FALSE>>=
 library(ks)
 data(unicef)
-plot(unicef)
 @
+<<<fig=TRUE,results=hide,print=FALSE>>=
+plot(unicef, cex=1.6, cex.lab=1.6, cex.axis=1.6)
+@ 
 %\caption{Scatter plot for unicef data}
 %\label{fig:unicef}
 \end{center}
@@ -450,6 +452,10 @@ fhat2 <- kde(unicef, Hlscv2)
 fhat3 <- kde(unicef, Hbcv1)
 fhat4 <- kde(unicef, Hscv1)
 @ 
+<<print=FALSE,echo=FALSE>>=
+gs <- rep(51,2)
+fhat4 <- kde(unicef, Hscv1, gridsize=gs)
+@
 <<eval=FALSE>>=
 plot(fhat1, main="LSCV")
 plot(fhat2, main="LSCV diag")
@@ -509,7 +515,7 @@ image or contour plots.
 
 %\begin{figure}[!htp]
 
-<<fig=FALSE>>=
+<<eval=FALSE>>=
 plot(fhat4, lcol="blue", ptcol="black", cont=seq(10,90, by=20))
 plot(fhat4, ncont=8, drawlabels=FALSE, drawpoints=FALSE)
 plot(fhat4, display="image", col=rev(heat.colors(100)))
@@ -532,6 +538,53 @@ plot(fhat4, display="persp")
 %\label{fig:kde} 
 \end{center}
 %\end{figure}
+
+
+\section{Large sample sizes and binned kernel estimation}
+\label{sec:binned}
+
+For large sample sizes, direct computation of kernel estimates becomes 
+computationally difficult. One common technique for increasing computational
+speed for these large samples is binned kernel estimation, 
+see \citet*[Appendix~D]{wand94}. Unfortunately binned estimation is only defined 
+with diagonal bandwidth matrices. So appilcable cases include 
+computing the pilot bandwidth matrices
+(which are parameterised as $g^2 \mat{I}$) for general plug-in and SCV selectors;
+and for kernel density estimators with diagonal bandwidth matrices. 
+
+
+<<fig=FALSE>>=
+mus <- rbind(c(-2,2), c(0,0), c(2,-2))
+Sigmas <- rbind(diag(2), 0.8*invvech(c(1, -0.9, 1)), diag(2))
+cwt <- 3/11
+props <- c((1-cwt)/2, cwt, (1-cwt)/2)
+plotmixt(mus, Sigmas, props, display="image", col=rev(heat.colors(100)))
+
+x <- rmvnorm.mixt(10000, mus, Sigmas, props) 
+H.pidiag <- Hpi.diag(x, binned=TRUE)
+H.pi <- Hpi(x, binned=TRUE) 
+@
+For large sample sizes, we don't recommend plotting with slice/contour plots
+because computing the relative contour heights is computationally intensive.
+Instead, image or perspective plots are more efficient.
+<<eval=FALSE>>=
+fhat.diag <- kde(x, H=H.pidiag, binned=TRUE)
+plot(fhat.diag, display="image", col=rev(heat.colors(100))) 
+@
+\begin{center}
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plotmixt(mus, Sigmas, props, display="image", col=rev(heat.colors(100)), cex.axis=1.6, cex.lab=1.6)
+@ 
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+fhat.diag <- kde(x, H=H.pidiag, binned=TRUE, bgridsize=rep(51,2))
+plot(fhat.diag, display="image", col=rev(heat.colors(100)), cex.axis=1.6, cex.lab=1.6)
+@ 
+\end{center}
+
+%fhat <- kde(x, H=H.pi)
+%plot(fhat, display="image", col=rev(heat.colors(100)))
+%fhat <- kde(x, H=H.pi, gridsize=rep(51,2))
+%plot(fhat, display="image", col=rev(heat.colors(100)), cex.lab=1.6, cex.axis=1.6) 
 
 \section{Pre-transformations}
 \label{sec:pre}

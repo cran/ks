@@ -28,7 +28,8 @@ dmvnorm.mixt(x, mus, Sigmas, props)
   \code{rmvnorm} and \code{dmvnorm} functions from the \code{mvtnorm} library.
 }  
 
-\seealso{\code{\link{rmvt.mixt}}, \code{\link{dmvt.mixt}}}
+\seealso{\code{\link{rmvt.mixt}}, \code{\link{dmvt.mixt}},
+  \code{\link{dnorm.mixt}}, \code{\link{rnorm.mixt}}}
 
 \examples{
 mus <- rbind(c(-3/2,0), c(3/2,0))

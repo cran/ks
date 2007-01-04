@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  2 NOV 2006 13:03
+This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  4 JAN 2007 18:10
  file:line:error style messages enabled.
 **\nonstopmode \input /c/tduong/net/personal/tduong/research/kernel/library/ks/
 inst/doc/kde.tex
@@ -259,75 +259,78 @@ LaTeX Font Info:    Try loading font information for T1+aett on input line 75.
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 ) [1
 
-{/var/lib/texmf/dvips/config/pdftex.map}] [2] [3] <kde-001.pdf, id=68, 433.62pt
+{/var/lib/texmf/dvips/config/pdftex.map}] [2] [3] <kde-006.pdf, id=68, 433.62pt
  x 433.62pt>
-File: kde-001.pdf Graphic file (type pdf)
- <use kde-001.pdf>
-[4 <./kde-001.pdf>] <kde-005.pdf, id=80, 433.62pt x 433.62pt>
-File: kde-005.pdf Graphic file (type pdf)
-
-<use kde-005.pdf> <kde-006.pdf, id=81, 433.62pt x 433.62pt>
 File: kde-006.pdf Graphic file (type pdf)
  <use kde-006.pdf>
-<kde-007.pdf, id=82, 433.62pt x 433.62pt>
+<kde-007.pdf, id=69, 433.62pt x 433.62pt>
 File: kde-007.pdf Graphic file (type pdf)
  <use kde-007.pdf>
-<kde-008.pdf, id=83, 433.62pt x 433.62pt>
+<kde-008.pdf, id=70, 433.62pt x 433.62pt>
 File: kde-008.pdf Graphic file (type pdf)
- <use kde-008.pdf> [5 <./kde-005.pdf> <./kde-006.pdf> <./kde-007.pdf> <./kde-00
-8.pdf>] [6] [7]
-<kde-012.pdf, id=118, 433.62pt x 433.62pt>
-File: kde-012.pdf Graphic file (type pdf)
- <use kde-012.pdf>
-<kde-013.pdf, id=119, 433.62pt x 433.62pt>
-File: kde-013.pdf Graphic file (type pdf)
- <use kde-013.pdf>
-<kde-014.pdf, id=120, 433.62pt x 433.62pt>
+ <use kde-008.pdf>
+<kde-009.pdf, id=71, 433.62pt x 433.62pt>
+File: kde-009.pdf Graphic file (type pdf)
+ <use kde-009.pdf> [4] [5 <./kde-006.pdf> <./kde-007.pdf> <./kde-008.pdf> <./kd
+e-009.pdf>] [6]
+<kde-014.pdf, id=108, 433.62pt x 433.62pt>
 File: kde-014.pdf Graphic file (type pdf)
  <use kde-014.pdf>
-<kde-015.pdf, id=121, 433.62pt x 433.62pt>
+<kde-015.pdf, id=109, 433.62pt x 433.62pt>
 File: kde-015.pdf Graphic file (type pdf)
- <use kde-015.pdf> [8 <./kde-012.pdf> <./kde-013.pdf> <./kde-014.pdf> <./kde-01
-5.pdf>]
-<kde-017.pdf, id=149, 433.62pt x 433.62pt>
+ <use kde-015.pdf>
+<kde-016.pdf, id=110, 433.62pt x 433.62pt>
+File: kde-016.pdf Graphic file (type pdf)
+ <use kde-016.pdf>
+<kde-017.pdf, id=111, 433.62pt x 433.62pt>
 File: kde-017.pdf Graphic file (type pdf)
- <use kde-017.pdf>
-<kde-018.pdf, id=150, 433.62pt x 433.62pt>
-File: kde-018.pdf Graphic file (type pdf)
- <use kde-018.pdf>
-<kde-019.pdf, id=151, 433.62pt x 433.62pt>
+ <use kde-017.pdf> [7] [8 <./kde-014.pdf> <./kde-015.pdf> <./kde-016.pdf> <./kd
+e-017.pdf>]
+<kde-019.pdf, id=143, 433.62pt x 433.62pt>
 File: kde-019.pdf Graphic file (type pdf)
  <use kde-019.pdf>
-<kde-020.pdf, id=152, 433.62pt x 433.62pt>
+<kde-020.pdf, id=144, 433.62pt x 433.62pt>
 File: kde-020.pdf Graphic file (type pdf)
- <use kde-020.pdf> [9 <./kde-017.pdf> <./kde-018.pdf> <./kde-019.pdf> <./kde-02
-0.pdf>] [10] [11] (./kde.aux) ) 
+ <use kde-020.pdf>
+<kde-021.pdf, id=145, 433.62pt x 433.62pt>
+File: kde-021.pdf Graphic file (type pdf)
+ <use kde-021.pdf>
+<kde-022.pdf, id=146, 433.62pt x 433.62pt>
+File: kde-022.pdf Graphic file (type pdf)
+ <use kde-022.pdf> [9 <./kde-019.pdf> <./kde-020.pdf> <./kde-021.pdf> <./kde-02
+2.pdf>]
+<kde-025.pdf, id=170, 433.62pt x 433.62pt>
+File: kde-025.pdf Graphic file (type pdf)
+ <use kde-025.pdf>
+<kde-026.pdf, id=171, 433.62pt x 433.62pt>
+File: kde-026.pdf Graphic file (type pdf)
+ <use kde-026.pdf> [10 <./kde-025.pdf> <./kde-026.pdf>] [11] (./kde.aux) ) 
 Here is how much of TeX's memory you used:
- 3389 strings out of 95437
- 41900 string characters out of 1190247
- 88836 words of memory out of 1000001
- 6307 multiletter control sequences out of 10000+50000
+ 3395 strings out of 95437
+ 41986 string characters out of 1190247
+ 88845 words of memory out of 1000001
+ 6312 multiletter control sequences out of 10000+50000
  34524 words of font info for 84 fonts, out of 500000 for 1000
  14 hyphenation exceptions out of 1000
- 35i,13n,24p,337b,396s stack positions out of 1500i,500n,5000p,200000b,5000s
- 181 PDF objects out of 300000
+ 35i,13n,24p,337b,393s stack positions out of 1500i,500n,5000p,200000b,5000s
+ 187 PDF objects out of 300000
  0 named destinations out of 131072
- 65 words of extra memory for PDF output out of 65536
-{/usr/share/texmf/dvips/tetex/09fbbfac.enc}</usr
-/share/texmf/fonts/type1/bluesky/cm/cmsltt10.pfb>{/usr/share/texmf/dvips/tetex/
-aae443f0.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmmi6.pfb>{/usr/share/tex
-mf/dvips/tetex/f7b6d320.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmr6.pfb><
-/usr/share/texmf/fonts/type1/bluesky/symbols/msbm7.pfb></usr/share/texmf/fonts/
-type1/bluesky/symbols/msbm10.pfb>{/usr/share/texmf/dvips/tetex/74afc74c.enc}</u
-sr/share/texmf/fonts/type1/bluesky/cm/cmti10.pfb>{/usr/share/texmf/dvips/tetex/
-bbad153f.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmsy10.pfb></usr/share/te
-xmf/fonts/type1/bluesky/cm/cmbx8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/c
-mex10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf/
-fonts/type1/bluesky/cm/cmbx10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi
-8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fon
-ts/type1/bluesky/cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmib10.p
-fb></usr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/fonts/
-type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx12.pfb>
-</usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/share/texmf/fonts/type
-1/bluesky/cm/cmr17.pfb>
-Output written on kde.pdf (11 pages, 615848 bytes).
+ 70 words of extra memory for PDF output out of 65536
+{/usr
+/share/texmf/dvips/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/
+cmsltt10.pfb>{/usr/share/texmf/dvips/tetex/aae443f0.enc}</usr/share/texmf/fonts
+/type1/bluesky/cm/cmmi6.pfb>{/usr/share/texmf/dvips/tetex/f7b6d320.enc}</usr/sh
+are/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr/share/texmf/fonts/type1/bluesky
+/symbols/msbm7.pfb></usr/share/texmf/fonts/type1/bluesky/symbols/msbm10.pfb>{/u
+sr/share/texmf/dvips/tetex/74afc74c.enc}</usr/share/texmf/fonts/type1/bluesky/c
+m/cmti10.pfb>{/usr/share/texmf/dvips/tetex/bbad153f.enc}</usr/share/texmf/fonts
+/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx8.pfb
+></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf/fonts/ty
+pe1/bluesky/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></
+usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb></usr/share/texmf/fonts/type1/
+bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr8.pfb></usr/s
+hare/texmf/fonts/type1/bluesky/cm/cmmib10.pfb></usr/share/texmf/fonts/type1/blu
+esky/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/sha
+re/texmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesk
+y/cm/cmr12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
+Output written on kde.pdf (11 pages, 908066 bytes).

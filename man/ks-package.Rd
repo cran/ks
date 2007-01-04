@@ -26,7 +26,12 @@ ks
 
   (c) For display, versions of \code{plot} send to a graphics window 
   the results of density estimation or discriminant analysis.
-  
+
+  For d = 1, 2, 3, 4, binned kernel estimation is available from the
+  \code{KernSmooth} library.
+
+  For an overview of this package with 2-dim density estimation, see 
+  \code{vignette("kde")}. 
 }
 \author{
 Tarn Duong <tduong@maths.unsw.edu.au>
@@ -51,7 +56,7 @@ Tarn Duong <tduong@maths.unsw.edu.au>
   American Statistical Association. \bold{82}, 1131-1146.
 
   Scott, D.W. (1992) \emph{Multivariate Density Estimation: Theory,
-    Practice, and Visualization}. John Wiley \& Sons. Mew York.
+    Practice, and Visualization}. John Wiley \& Sons. New York.
   
   Simonoff, J. S. (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.

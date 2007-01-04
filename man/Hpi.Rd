@@ -20,8 +20,7 @@ Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{if TRUE use binned pilot estimation otherwise use
-    exact pilot estimation}
+  \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - required only if binned=TRUE}
 }
 
@@ -44,33 +43,32 @@ Plug-in bandwidth matrix.
   modification of the former, in order to remove any possible problems
   with non-positive definiteness. 
 
+  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
+  the density estimate is computed over a binning grid defined 
+  by \code{bgridsize}. Otherwise it's computed exactly.
+  
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
 
   If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data.}
+  \code{k*var(x)} where k =
+  \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+
+    4))}, n = sample size, d = dimension of data.
+}
 
 
 \examples{
-### bivariate example
-
+## bivariate example
 data(unicef)
-Hpi(unicef, nstage=1, pilot="amse", pre="scale")
 Hpi(unicef, nstage=2, pilot="samse", pre="sphere")
-Hpi.diag(unicef, nstage=2, pilot="amse", pre="scale") 
+Hpi(unicef, nstage=2, pilot="samse", pre="sphere", binned=TRUE)
 
-### large sample - 10000 sample from bivariate standard normal 
-
-x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
-Hpi(x, binned=TRUE)
-
-### trivariate example
-
-mus <- rbind(c(0,0,0), c(2,2,2))
-Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
-Sigmas <- rbind(Sigma, Sigma)
-x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=c(1/2, 1/2))
-Hpi(x)
+\dontrun{
+## 4-variate example
+x <- rmvnorm.mixt(n=1000, mus=rep(0,4), diag(4))
+Hpi.diag(x, nstage=1, pilot="samse", pre="scale") 
+Hpi.diag(x, nstage=1, pilot="samse", pre="scale", binned=TRUE)
+} 
 }
 
 \keyword{ smooth }

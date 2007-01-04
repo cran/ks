@@ -700,18 +700,10 @@ psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt[k,]
     G.star <- g.star[k]^2 * diag(c(1,1))
-    if (binned)
-     {
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.star[k] <- psihat/(n^2)
-    }
-    else
-    {  
-      psihat <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G.star, inc=1)  
-      psihat.star[k] <- psihat/(n^2)
-    }
+    
+    psihat <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par)  
+    psihat.star[k] <- psihat/(n^2)
+  
   }
   
   return(psihat.star)
@@ -788,18 +780,9 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
     r <- derivt6[k,]
     G6.star <- g6.star[k]^2 * diag(c(1,1))
 
-    if (binned)
-    { 
-      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star[k],d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat6 <- sum(gcounts.star * n * fhat6)
-      psihat6.star[k] <- psihat6/(n^2)
-    }
-    else
-    {  
-      psihat6 <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G6.star, inc=1)
-      psihat6.star[k] <- psihat6/(n^2)
-    }    
+    psihat6 <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)
+    psihat6.star[k] <- psihat6/(n^2)
+        
   }
   
   ## pilots are based on 4th order derivatives using 6th order psi functionals
@@ -826,18 +809,8 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
     r <- derivt[k,]
     G.star <- g.star[k]^2 * diag(c(1,1))
     
-    if (binned)
-    { 
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star[k],d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.star[k] <- psihat/(n^2)
-    }
-    else
-    {  
-      psihat <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G.star, inc=1)  
-      psihat.star[k] <- psihat/(n^2)
-    }
+    psihat <- dmvnorm.deriv.2d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par)  
+    psihat.star[k] <- psihat/(n^2)
   }    
 
   return(psihat.star)
@@ -877,18 +850,9 @@ psifun1.3d <- function(x.star, pilot="samse", binned, bin.par)
   for (k in 1:nrow(derivt))
   {
     r <- derivt[k,]
-    if (binned)
-    {
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.star[k] <- psihat/(n^2)
-    }
-    else
-    { 
-      psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1)  
-      psihat.star[k] <- psihat/(n^2)      
-    }
+   
+    psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par)  
+    psihat.star[k] <- psihat/(n^2)      
   }
   
   return(psihat.star)
@@ -951,19 +915,9 @@ psifun2.3d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt6[k,]
     G6.star <- g6.star^2 * diag(d)
-
-    if (binned)
-    {
-      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat6 <- sum(gcounts.star * n * fhat6)
-      psihat6.star[k] <- psihat6/(n^2)
-    }
-    else
-    {
-      psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1)
-      psihat6.star[k] <- psihat6/(n^2)
-    }    
+   
+    psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)
+    psihat6.star[k] <- psihat6/(n^2)       
   }
   
   ## pilots are based on 4th order derivatives using 6th order psi functionals
@@ -978,22 +932,9 @@ psifun2.3d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt[k,] 
     G.star <- g.star^2 * diag(d)
-    
-    if (binned)
-    {
-      gcounts.star <- bin.par$counts
-      range.x.star <- bin.par$range.x
       
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.list.star[k] <- psihat/(n^2)
-    }
-    else
-    { 
-      psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1)  
-      psihat.list.star[k] <- psihat/(n^2)
-    }
+    psihat <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par)  
+    psihat.list.star[k] <- psihat/(n^2)
   }  
 
   derivt.mat <- Psi4.list(d)$psi
@@ -1044,18 +985,9 @@ psifun1.4d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt[k,]
     
-    if (binned)
-    {
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.star[k] <- psihat/(n^2)
-    }
-    else
-    {  
-      psihat <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G.star, inc=1)
-      psihat.star[k] <- psihat/(n^2)
-    }
+    psihat <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par)
+    psihat.star[k] <- psihat/(n^2)
+    
   }
   return(psihat.star)
 }
@@ -1115,18 +1047,10 @@ psifun2.4d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt6[k,]
     G6.star <- g6.star^2 * diag(d)
-    if (binned)
-    {
-      fhat6 <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g6.star,d),binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat6 <- sum(gcounts.star * n * fhat6)
-      psihat6.star[k] <- psihat6/(n^2)
-    }
-    else
-    {
-      psihat6 <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G6.star, inc=1)
-      psihat6.star[k] <- psihat6/(n^2)
-    }    
+    
+    psihat6 <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)
+    psihat6.star[k] <- psihat6/(n^2)
+       
   }
   
   ## pilots are based on 4th order derivatives using 6th order psi functionals
@@ -1142,22 +1066,9 @@ psifun2.4d <- function(x.star, pilot="samse", binned, bin.par)
   {
     r <- derivt[k,] 
     G.star <- g.star^2 * diag(d)
-
-    if (binned)
-    {
-      gcounts.star <- bin.par$counts
-      range.x.star <- bin.par$range.x
-      
-      fhat <- drvkde.ks(x=gcounts.star,drv=r,bandwidth=rep(g.star,d), binned=TRUE,
-                     range.x=range.x.star, se=FALSE)$est
-      psihat <- sum(gcounts.star * n * fhat)
-      psihat.list.star[k] <- psihat/(n^2)
-    }
-    else
-    {
-      psihat <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G.star, inc=1) 
-      psihat.list.star[k] <- psihat/(n^2)
-    }  
+  
+    psihat <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G.star, inc=1, binned=binned, bin.par=bin.par) 
+    psihat.list.star[k] <- psihat/(n^2)  
   }
   
   derivt.mat <- Psi4.list(d)$psi
@@ -1883,9 +1794,9 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   
   if (binned)
   {
-    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
+    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
     ## linear binning
-    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H.max)))
+    bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(H.max)))
   }
 
   ## psi.mat is on pre-transformed data scale
@@ -1899,7 +1810,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
     psi.mat <- psimat.5d(x.star, nstage=nstage, pilot=pilot)
   else if (d==6)
     psi.mat <- psimat.6d(x.star, nstage=nstage, pilot=pilot)
-  
+
   ## use normal reference bandwidth as initial condition
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x.star))
@@ -1965,13 +1876,20 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   s2 <- sd(x[,2])
 
   if (missing(bgridsize) & binned)
-    bgridsize <- rep(64,d)
+    if (d==2)
+      bgridsize <- rep(151,d)
+    else if (d==3)
+      bgridsize <- rep(51, d)
+    else if (d==4)
+      bgridsize <- rep(21, d)
+
+  if (d > 4) binned <- FALSE
   
   if (binned)
   {
-    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
+    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
     ## linear binning
-    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H.max)))
+    bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(H.max)))
   }
   
   ## pre-transform data 
@@ -2054,25 +1972,26 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
 # LSCV(H)
 ###############################################################################
 
-lscv.mat <- function(x, H)
+lscv.mat <- function(x, H, binned=FALSE, bin.par)
 {
   n <- nrow(x)
   d <- ncol(x)
 
+  h <- sqrt(diag(H))
   if (d==2)
   {
-    lscv1 <- dmvnorm.2d.sum(x, 2*H, inc=1)
-    lscv2 <- dmvnorm.2d.sum(x, H, inc=0)
+    lscv1 <- dmvnorm.2d.sum(x, 2*H, inc=1, binned=binned, bin.par=bin.par)
+    lscv2 <- dmvnorm.2d.sum(x, H, inc=0, binned=binned, bin.par=bin.par)
   }
   else if (d==3)
   {
-    lscv1 <- dmvnorm.3d.sum(x, 2*H, inc=1)
-    lscv2 <- dmvnorm.3d.sum(x, H, inc=0)
+    lscv1 <- dmvnorm.3d.sum(x, 2*H, inc=1, binned=binned, bin.par=bin.par)
+    lscv2 <- dmvnorm.3d.sum(x, H, inc=0, binned=binned, bin.par=bin.par)
   }
   else if (d==4)
   {
-    lscv1 <- dmvnorm.4d.sum(x, 2*H, inc=1)
-    lscv2 <- dmvnorm.4d.sum(x, H, inc=0)
+    lscv1 <- dmvnorm.4d.sum(x, 2*H, inc=1, binned=binned, bin.par=bin.par)
+    lscv2 <- dmvnorm.4d.sum(x, H, inc=0, binned=binned, bin.par=bin.par)
   }
   else if (d==5)
   {
@@ -2104,19 +2023,21 @@ Hlscv <- function(x, Hstart)
 {
   n <- nrow(x)
   d <- ncol(x)
-
+  RK <- (4*pi)^(-d/2)
+  
   # use normal reference selector as initial condn
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
-  
+
+ 
   lscv.mat.temp <- function(vechH)
   {
-    #  ensures that H is positive definite
+    ##  ensures that H is positive definite
     H <- invvech(vechH) %*% invvech(vechH)
-    return(lscv.mat(x, H))
+    return(lscv.mat(x=x, H=H, binned=FALSE))
   }
   result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead")
-                  #control=list(abstol=n^(-10*d)))    
+                                        #control=list(abstol=n^(-10*d)))    
   
   return(invvech(result$par) %*% invvech(result$par))
 }
@@ -2132,20 +2053,38 @@ Hlscv <- function(x, Hstart)
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize)
 {
   n <- nrow(x)
   d <- ncol(x)
-
+  RK <- (4*pi)^(-d/2)
+  
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
+
+  if (missing(bgridsize) & binned)
+    if (d==2)
+      bgridsize <- rep(151,d)
+    else if (d==3)
+      bgridsize <- rep(51, d)
+    else if (d==4)
+      bgridsize <- rep(21, d)
+
+  if (d > 4) binned <- FALSE
+
+  if (binned)
+  {
+    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
+    ## linear binning
+    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H.max)))
+  }
   
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    # ensures that H is positive definite
+    ## ensures that H is positive definite
 
-    return(lscv.mat(x, H))
+    return(lscv.mat(x, H, binned=binned, bin.par=bin.par))
   }
   result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead")
                   #control=list(abstol=n^(-10*d)))   
@@ -2356,7 +2295,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart)
 # SCV(H)
 ###############################################################################
 
-scv.mat <- function(x, H, G, binned, bin.par)
+scv.mat <- function(x, H, G)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -2437,22 +2376,25 @@ Theta6.elem <- function(d)
 # g_AMSE pilot bandwidth
 ###############################################################################
 
-gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n)
+gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n, binned=FALSE, bgridsize)
 {
   d <- 2
   derivt6 <- cbind((3*d) - 0:(3*d), 0:(3*d))
   g6.star <- gsamse.2d(Sigma.star, n, 6) 
   G6.star <- g6.star^2 * diag(c(1,1))
 
-  # required psi functionals
-  
-  psi60 <- dmvnorm.deriv.2d.sum(x.star, r=c(6,0), Sigma=G6.star, inc=1)/n^2
-  psi51 <- dmvnorm.deriv.2d.sum(x.star, r=c(5,1), Sigma=G6.star, inc=1)/n^2
-  psi42 <- dmvnorm.deriv.2d.sum(x.star, r=c(4,2), Sigma=G6.star, inc=1)/n^2
-  psi33 <- dmvnorm.deriv.2d.sum(x.star, r=c(3,3), Sigma=G6.star, inc=1)/n^2
-  psi24 <- dmvnorm.deriv.2d.sum(x.star, r=c(2,4), Sigma=G6.star, inc=1)/n^2
-  psi15 <- dmvnorm.deriv.2d.sum(x.star, r=c(1,5), Sigma=G6.star, inc=1)/n^2
-  psi06 <- dmvnorm.deriv.2d.sum(x.star, r=c(0,6), Sigma=G6.star, inc=1)/n^2
+  ## required psi functionals
+
+  if (binned)
+    bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(G6.star)))
+        
+  psi60 <- dmvnorm.deriv.2d.sum(x.star, r=c(6,0), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi51 <- dmvnorm.deriv.2d.sum(x.star, r=c(5,1), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi42 <- dmvnorm.deriv.2d.sum(x.star, r=c(4,2), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi33 <- dmvnorm.deriv.2d.sum(x.star, r=c(3,3), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi24 <- dmvnorm.deriv.2d.sum(x.star, r=c(2,4), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi15 <- dmvnorm.deriv.2d.sum(x.star, r=c(1,5), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
+  psi06 <- dmvnorm.deriv.2d.sum(x.star, r=c(0,6), Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)/n^2
   
   Theta6 <- invvech(c(psi60 + 2*psi42 + psi24, psi51 + 2*psi33 + psi15,
                      psi42 + 2*psi24 + psi06))
@@ -2464,7 +2406,6 @@ gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n)
   Cmu1 <- 1/2*t(D2) %*% vec(Theta6 %*% Hamise)
   Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D2)%*% vec(Hamise)
                                + trHamise * t(D2) %*% vec(eye2))
-
   num <- 2 * (d+4) * sum(Cmu2*Cmu2)
   den <- -(d+2) * sum(Cmu1*Cmu2) +
     sqrt((d+2)^2 * sum(Cmu1*Cmu2)^2 + 8*(d+4)*sum(Cmu1*Cmu1) * sum(Cmu2*Cmu2))
@@ -2474,15 +2415,17 @@ gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n)
 }
 
 
-gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n)
+gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n, binned=FALSE, bgridsize)
 {
   d <- 3
   psi.fun6 <- vector()
   g6.star <- gsamse.3d(Sigma.star, n, 6) 
   G6.star <- g6.star^2 * diag(d)
   
-  # required psi functionals
-
+  ## required psi functionals
+  if (binned)
+    bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(G6.star)))
+  
   d1 <- 6
   derivt6 <- numeric()
   for (j1 in d1:0)
@@ -2494,7 +2437,7 @@ gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n)
   {
     r <- derivt6[k,]
     G6.star <- g6.star^2 * diag(d)
-    psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psihat6 <- dmvnorm.deriv.3d.sum(x.star, r=r, Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)
     psi.fun6[k] <- psihat6/(n^2)
   }    
   
@@ -2516,7 +2459,7 @@ gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n)
   D4 <- dupl(d)$d
   trHamise <- Hamise[1,1] + Hamise[2,2] + Hamise[3,3] 
 
-  # required constants - see thesis
+  ## required constants - see thesis
   Cmu1 <- 1/2*t(D4) %*% vec(Theta6.mat %*% Hamise)
   Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D4)%*% vec(Hamise)
                                + trHamise * t(D4) %*% vec(eye3))
@@ -2531,14 +2474,17 @@ gamse.scv.3d <- function(x.star, Sigma.star, Hamise, n)
 
 
 
-gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n)
+gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n, binned=FALSE, bgridsize)
 {
   d <- 4
   psi.fun6 <- vector()
   g6.star <- gsamse.4d(Sigma.star, n, 6) 
   G6.star <- g6.star^2 * diag(d)
+
+  if (binned)
+    bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(G6.star)))
   
-  # required psi functionals
+  ## required psi functionals
 
   d1 <- 6
   derivt6 <- numeric()
@@ -2552,7 +2498,7 @@ gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n)
   {
     r <- derivt6[k,]
     G6.star <- g6.star^2 * diag(d)
-    psihat6 <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G6.star, inc=1)
+    psihat6 <- dmvnorm.deriv.4d.sum(x.star, r=r, Sigma=G6.star, inc=1, binned=binned, bin.par=bin.par)
     psi.fun6[k] <- psihat6/(n^2)
   }    
   
@@ -2578,7 +2524,7 @@ gamse.scv.4d <- function(x.star, Sigma.star, Hamise, n)
   Cmu1 <- 1/2*t(D4) %*% vec(Theta6.mat %*% Hamise)
   Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D4)%*% vec(Hamise)
                                + trHamise * t(D4) %*% vec(eye4))
-
+  
   num <- 2 * (d+4) * sum(Cmu2*Cmu2)
   den <- -(d+2) * sum(Cmu1*Cmu2) +
     sqrt((d+2)^2 * sum(Cmu1*Cmu2)^2 + 8*(d+4)*sum(Cmu1*Cmu1) * sum(Cmu2*Cmu2))
@@ -2636,7 +2582,7 @@ gamse.scv.5d <- function(x.star, Sigma.star, Hamise, n)
   Cmu1 <- 1/2*t(D6) %*% vec(Theta6.mat %*% Hamise)
   Cmu2 <- 1/8*(4*pi)^(-d/2) * (2*t(D6)%*% vec(Hamise)
                                + trHamise * t(D6) %*% vec(eye5))
-
+ 
   num <- 2 * (d+4) * sum(Cmu2*Cmu2)
   den <- -(d+2) * sum(Cmu1*Cmu2) +
     sqrt((d+2)^2 * sum(Cmu1*Cmu2)^2 + 8*(d+4)*sum(Cmu1*Cmu1) * sum(Cmu2*Cmu2))
@@ -2718,16 +2664,18 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
 # H_SCV
 ###############################################################################
 
-Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
+Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 {
   d <- ncol(x)
+  RK <- (4*pi)^(-d/2)
+
   if (substr(pre,1,2)=="sc")
     pre <- "scale"
   else if (substr(pre,1,2)=="sp")
     pre <- "sphere"
   if(!is.matrix(x)) x <- as.matrix(x)
 
-  # pre-transform data
+  ## pre-transform data
   if (pre=="sphere")
     x.star <- pre.sphere(x)
   else if (pre=="scale")
@@ -2735,18 +2683,41 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
+  if (missing(bgridsize) & binned)
+    if (d==2)
+      bgridsize <- rep(151,d)
+    else if (d==3)
+      bgridsize <- rep(51, d)
+    else if (d==4)
+      bgridsize <- rep(21, d)
+
+  if (d > 4) binned <- FALSE
+ 
+  ##if (binned)
+  ##{
+  ## H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+    ## linear binning
+  ##  bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(H.max)))
+  ##}
+  
   if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
   else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
 
   S12inv <- chol2inv(chol(S12))
-  Hamise <- S12inv %*% Hpi(x=x,nstage=1,pilot="samse", pre="sphere",binned=binned) %*% S12inv
-  
+  Hamise <- S12inv %*% Hpi(x=x,nstage=1,pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize) %*% S12inv
+
+  if (any(is.na(Hamise)))
+  {
+    warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
+    Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+  }
+
   if (d==2)
-    gamse <- gamse.scv.2d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+    gamse <- gamse.scv.2d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
   else if (d==3)
-    gamse <- gamse.scv.3d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+    gamse <- gamse.scv.3d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
   else if (d==4)
-    gamse <- gamse.scv.4d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+    gamse <- gamse.scv.4d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
   else if (d==5)
     gamse <- gamse.scv.5d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
   else if (d==6)
@@ -2754,20 +2725,20 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE)
   
   G.amse <- gamse^2 * diag(d)
   
-  # use normal reference b/w matrix for initial condition
+  ## use normal reference b/w matrix for initial condition
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x.star))
 
   scv.mat.temp <- function(vechH)
   {
-    # ensures that H is positive definite
+    ## ensures that H is positive definite
     H <- invvech(vechH) %*% invvech(vechH)
     return(scv.mat(x.star, H, G.amse))
   }
   
-  # back-transform
+  ## back-transform
   result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
-                  #control=list(abstol=n^(-10*d)))
+                                        #control=list(abstol=n^(-10*d)))
  
   H <-invvech(result$par) %*% invvech(result$par)
   H <- S12 %*% H %*% S12

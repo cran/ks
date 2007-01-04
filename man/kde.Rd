@@ -6,16 +6,19 @@
   Kernel density estimate for 1- to 6-dimensional data.
 }
 \usage{
- kde(x, H, h, gridsize, supp=3.7, eval.points)
+ kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7, eval.points)
 }
 
 \arguments{
   \item{x}{matrix of data values}
   \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth}
-  \item{gridsize}{vector of number of grid points}
+  \item{gridsize}{vector of number of grid points - used for display and
+    binning}
+  \item{binned}{flag for binned estimation (default is FALSE)}
+  \item{bgridsize}{vector of binning grid sizes - only required if \code{binned=TRUE}}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
-  \item{eval.points}{points that density estimate is evaluated at} 
+  \item{eval.points}{points at which density estimate is evaluated} 
 }
   
 
@@ -23,23 +26,25 @@
   Kernel density estimate is an object of class \code{kde} which is a
   list with 4 fields
   \item{x}{data points - same as input}
-  \item{eval.points}{points that density estimate is evaluated at}
+  \item{eval.points}{points at which the density estimate is evaluated}
   \item{estimate}{density estimate at \code{eval.points}}
   \item{H}{bandwidth matrix (>1-d only) or}
   \item{h}{scalar bandwidth (1-d only)}
 }
 
 \details{
-  For d > 1, the kernel density estimate is computed exactly i.e. binning
-  is not used. For d = 1, the binned estimator from the
-  \code{KernSmooth} library is used.
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is not specified, then the
+  density estimate is computed over a grid 
+  defined by \code{gridsize} (if \code{binned=FALSE}) or
+  by \code{bgridsize} (if \code{binned=TRUE}).
 
-  For d = 1, 2, 3, if \code{eval.points} is not specified, then the
-  density estimate is automatically computed over a grid whose
-  resolution is controlled by \code{gridsize} (default is 101, 51 x 51
-  and 51 x 51 x 51 respectively).
-
-  For d > 3, \code{eval.points} must be specified.
+  For d = 1, 2, 3, 4, 
+  and if \code{eval.points} is specified, then the
+  density estimate is computed exactly at \code{eval.points}.
+  
+  For d > 4, the kernel density estimate is computed exactly
+  and \code{eval.points} must be specified.
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
@@ -48,21 +53,6 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-### univariate example
-data(unicef)
-fhat <- kde(unicef[,1], h=sqrt(944))
-fhat <- kde(unicef[,1], H=944) ## same as above
-
-### bivariate example
-data(unicef)
-H.pi <- Hpi(unicef, nstage=1)
-fhat <- kde(unicef, H=H.pi)
-
-### 4-variate example
-library(MASS)
-data(iris)
-ir <- iris[,1:4][iris[,5]=="setosa",]
-H.scv <- Hscv(ir)
-fhat <- kde(ir, H=H.scv, eval.points=ir)  
+### See examples in ? plot.kde  
 }
 \keyword{smooth}

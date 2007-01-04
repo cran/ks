@@ -197,17 +197,28 @@ moments.mixt <- function (mus, Sigmas, props)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.1d.sum <- function(x, sigma, inc=1)
+dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
 {
   n <- length(x)
+  d <- 1
+  if (binned)
+  {
+    fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sigma,
+                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    sumval <- sum(bin.par$counts * n * fhatr)
+    if (inc == 0) 
+      sumval <- sumval - n*dmvnorm.deriv.1d(x=rep(0,d), r=rep(0,d), Sigma)
+  }
+  else
+  {  
+    sumval <- 0
+    for (i in 1:n)
+      sumval <- sumval + sum(dnorm(x[i] - x, mean=0, sd=sigma))
+    
+    if (inc == 0) 
+      sumval <- sumval - n*dnorm(0, mean=0, sd=sigma)
+   } 
   
-  sumval <- 0
-  for (i in 1:n)
-    sumval <- sumval + sum(dnorm(x[i] - x, mean=0, sd=sigma))
-
-  if (inc == 0) 
-    sumval <- sumval - n*dnorm(0, mean=0, sd=sigma)
-
   return(sumval)
 }
 
@@ -224,7 +235,7 @@ dmvnorm.1d.sum <- function(x, sigma, inc=1)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.2d.sum <- function(x, Sigma, inc=1)
+dmvnorm.2d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -232,22 +243,34 @@ dmvnorm.2d.sum <- function(x, Sigma, inc=1)
   }
   else
   {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
+    n <- nrow(x); d <- 2; x1 <- x[,1]; x2 <- x[,2]
   }
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_2d_sum", as.double(x1), as.double(x2),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[6]]
 
-  # above C function mvnorm_2d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
+  if (binned)
+  {
+    fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    sumval <- sum(bin.par$counts * n * fhatr)
+    if (inc == 0) 
+      sumval <- sumval - n*dmvnorm.deriv.2d(x=rep(0,d), r=rep(0,d), Sigma)
+  }
+  else
+  { 
+    viSigma <- vec(chol2inv(chol(Sigma)))
+    result <- .C("dmvnorm_2d_sum", as.double(x1), as.double(x2),
+                 as.double(viSigma), as.double(det(Sigma)), as.integer(n),
+                 as.double(0), PACKAGE="ks")
+    sumval <- result[[6]]
+    
+    ## above C function mvnorm_2d_sum only computes the upper triangular half
+    ## so need to reflect along the diagonal and then subtract appropriate
+    ## amount to compute whole sum 
   
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(c(0,0), c(0,0), Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(c(0,0), c(0,0), Sigma) 
+    if (inc == 0) 
+      sumval <- 2*sumval - 2*n*dmvnorm(c(0,0), c(0,0), Sigma)
+    else if (inc == 1)
+      sumval <- 2*sumval - n*dmvnorm(c(0,0), c(0,0), Sigma) 
+  }
   
   return(sumval)
 }
@@ -309,29 +332,29 @@ dmvnorm.2d.sum.pc <- function(x, y, Sigma, inc=1)
 dmvnorm.deriv.1d <- function(x, sigma, r)
 {
 
-phi <- dnorm(x, mean=0, sd=sigma) 
-if (r==0)
-  return(phi)
-else if (r==1)
-  derivt <- x*phi
-else if (r==2)
-  derivt <- (x^2-1)*phi
-else if (r==3)
-  derivt <- (x^3 - x)*phi
-else if (r==4)
-  derivt <- (x^4 - 6*x^2 + 3)*phi
-else if (r==5)
-  derivt <- (x^5 - 10*x^3 + 15*x)*phi
-else if (r==6)
-  derivt <- (x^6 - 15*x^4 + 45*x^2 -15)*phi
-else if (r==7)
-  derivt <- (x^7 - 21*x^5 + 105*x^3 - 105*x)*phi
-else if (r==8)
-  derivt <- (x^8 - 28*x^6 + 210*x^4 - 420*x^2 + 105)*phi
-else
+  phi <- dnorm(x, mean=0, sd=sigma) 
+  if (r==0)
+    return(phi)
+  else if (r==1)
+    derivt <- x*phi
+  else if (r==2)
+    derivt <- (x^2-1)*phi
+  else if (r==3)
+    derivt <- (x^3 - x)*phi
+  else if (r==4)
+    derivt <- (x^4 - 6*x^2 + 3)*phi
+  else if (r==5)
+    derivt <- (x^5 - 10*x^3 + 15*x)*phi
+  else if (r==6)
+    derivt <- (x^6 - 15*x^4 + 45*x^2 -15)*phi
+  else if (r==7)
+    derivt <- (x^7 - 21*x^5 + 105*x^3 - 105*x)*phi
+  else if (r==8)
+    derivt <- (x^8 - 28*x^6 + 210*x^4 - 420*x^2 + 105)*phi
+  else
     stop("Only works for up to 8th order partial derivatives")
- 
-return(derivt)  
+  
+  return(derivt)  
 }
 
 ###############################################################################
@@ -410,7 +433,7 @@ dmvnorm.deriv.2d <- function(x, Sigma, r)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1)
+dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -420,55 +443,67 @@ dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1)
   {
     n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
   }
-
-  if (sum(r)==0)
+  
+  if (binned)
+  {
+    ## drvkde computes include-diagonals estimate
+    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    sumval <- sum(bin.par$counts * n * fhatr)
+    if (inc == 0) 
+      sumval <- sumval - n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma)
+  }
+  else  
+  {
+    if (sum(r)==0)
     return(dmvnorm.2d.sum(x, Sigma, inc=inc))
-  # 1st order derivatives
-  else if (sum(r)==1)
-    derivt <- .C("dmvnormd1_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
-                 PACKAGE="ks")
-  # 2nd order derivativeselse if (sum(r)==2)
-  else if (sum(r)==2)
-    derivt <- .C("dmvnormd2_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
-                 PACKAGE="ks")
-  # 3rd order derivativeselse if (sum(r)==3)
-  else if (sum(r)==3)
-    derivt <- .C("dmvnormd3_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
-                 PACKAGE="ks")
-  # fourth order derivatives
-  else if (sum(r) == 4)
-    derivt <- .C("dmvnormd4_2d_sum", as.double(x1), as.double(x2), 
+    ## 1st order derivatives
+    else if (sum(r)==1)
+      derivt <- .C("dmvnormd1_2d_sum", as.double(x1), as.double(x2), 
+                   as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
+                   PACKAGE="ks")
+    ## 2nd order derivativeselse if (sum(r)==2)
+    else if (sum(r)==2)
+      derivt <- .C("dmvnormd2_2d_sum", as.double(x1), as.double(x2), 
+                   as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
+                   PACKAGE="ks")
+    ## 3rd order derivativeselse if (sum(r)==3)
+    else if (sum(r)==3)
+      derivt <- .C("dmvnormd3_2d_sum", as.double(x1), as.double(x2), 
+                   as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0),
+                   PACKAGE="ks")
+    ## fourth order derivatives
+    else if (sum(r) == 4)
+      derivt <- .C("dmvnormd4_2d_sum", as.double(x1), as.double(x2), 
+                   as.double(vec(Sigma)), as.integer(r), as.integer(n),
+                   as.double(0), PACKAGE="ks")
+    ## fifth order derivatives
+    else if (sum(r) == 5)
+      derivt <- .C("dmvnormd5_2d_sum", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n),
                  as.double(0), PACKAGE="ks")
-  # fifth order derivatives
-  else if (sum(r) == 5)
-    derivt <- .C("dmvnormd5_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n),
-                 as.double(0), PACKAGE="ks")
-  # sixth order derivatives
-  else if (sum(r) == 6)
-    derivt <- .C("dmvnormd6_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n),
-                 as.double(0), PACKAGE="ks")
-  else
-    stop("Only works for up to 6th order partial derivatives")
+    ## sixth order derivatives
+    else if (sum(r) == 6)
+      derivt <- .C("dmvnormd6_2d_sum", as.double(x1), as.double(x2), 
+                   as.double(vec(Sigma)), as.integer(r), as.integer(n),
+                   as.double(0), PACKAGE="ks")
+    else
+      stop("Only works for up to 6th order partial derivatives")
   
-  if (sum(r)==0)
-    sumval <- derivt
-  else
-    sumval <- derivt[[6]]
+    if (sum(r)==0)
+      sumval <- derivt
+    else
+      sumval <- derivt[[6]]
   
-  # above C functions mvnorm?_2d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma) 
-  
+    ## above C functions mvnorm?_2d_sum only computes the upper triangular half
+    ## so need to reflect along the diagonal and then subtract appropriate
+    ## amount to compute whole sum 
+    if (inc == 0) 
+      sumval <- 2*sumval - 2*n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma)
+    else if (inc == 1)
+      sumval <- 2*sumval - n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma) 
+  }
+      
   return(sumval)
 }         
 
@@ -521,7 +556,7 @@ dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.3d.sum <- function(x, Sigma, inc=1)
+dmvnorm.3d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -531,20 +566,32 @@ dmvnorm.3d.sum <- function(x, Sigma, inc=1)
   {
     n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3];
   }
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_3d_sum", as.double(x1), as.double(x2), as.double(x3), 
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[7]]
 
-  # above C function mvnorm_3d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
+  if (binned)
+  {
+     fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+     sumval <- sum(bin.par$counts * n * fhatr)
+     if (inc == 0) 
+       sumval <- sumval - n*dmvnorm.deriv.3d(x=rep(0,d), r=rep(0,d), Sigma)
+  }
+  else
+  {  
+    viSigma <- vec(chol2inv(chol(Sigma)))
+    result <- .C("dmvnorm_3d_sum", as.double(x1), as.double(x2), as.double(x3), 
+                 as.double(viSigma), as.double(det(Sigma)), as.integer(n),
+                 as.double(0), PACKAGE="ks")
+    sumval <- result[[7]]
+
+    ## above C function mvnorm_3d_sum only computes the upper triangular half
+    ## so need to reflect along the diagonal and then subtract appropriate
+    ## amount to compute whole sum 
   
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
+    if (inc == 0) 
+      sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
+    else if (inc == 1)
+      sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
+  }
   
   return(sumval)
 }
@@ -611,7 +658,7 @@ dmvnorm.deriv.3d <- function(x, Sigma, r)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1)
+dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -625,17 +672,30 @@ dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1)
   d <- 3
   sumval <- 0
 
-  for (j in 1:n)
-  {  
-    y1 <- x1 - x1[j]
-    y2 <- x2 - x2[j]
-    y3 <- x3 - x3[j]
-    sumval <- sumval + sum(dmvnorm.deriv.3d(cbind(y1, y2, y3), Sigma, r))
+  if (binned)
+  {
+    ## drvkde computes include-diagonals estimate
+    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    sumval <- sum(bin.par$counts * n * fhatr)
+    if (inc == 0) 
+      sumval <- sumval - n*dmvnorm.deriv.3d(x=rep(0,d), r=r, Sigma)
   }
-  
-  if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv.3d(rep(0,d), Sigma, r)
+  else
+  {  
+    for (j in 1:n)
+    {  
+      y1 <- x1 - x1[j]
+      y2 <- x2 - x2[j]
+      y3 <- x3 - x3[j]
+      sumval <- sumval + sum(dmvnorm.deriv.3d(cbind(y1, y2, y3), Sigma, r))
+    }
     
+    if (inc==0)
+      sumval <- sumval - n*dmvnorm.deriv.3d(rep(0,d), Sigma, r)
+  }
+
+  
   return(sumval)
 }
 
@@ -655,7 +715,7 @@ dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.4d.sum <- function(x, Sigma, inc=1)
+dmvnorm.4d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -665,22 +725,34 @@ dmvnorm.4d.sum <- function(x, Sigma, inc=1)
   {
     n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
   }
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_4d_sum", as.double(x1), as.double(x2),
-               as.double(x3), as.double(x4),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[8]]
 
-  # above C function mvnorm_2d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
+  if (binned)
+  {
+     fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+     sumval <- sum(bin.par$counts * n * fhatr)
+     if (inc == 0) 
+       sumval <- sumval - n*dmvnorm.deriv.4d(x=rep(0,d), r=rep(0,d), Sigma)
+  }
+  else
+  {
+    viSigma <- vec(chol2inv(chol(Sigma)))
+    result <- .C("dmvnorm_4d_sum", as.double(x1), as.double(x2),
+                 as.double(x3), as.double(x4),
+                 as.double(viSigma), as.double(det(Sigma)), as.integer(n),
+                 as.double(0), PACKAGE="ks")
+    sumval <- result[[8]]
+    
+    ## above C function mvnorm_2d_sum only computes the upper triangular half
+    ## so need to reflect along the diagonal and then subtract appropriate
+    ## amount to compute whole sum 
   
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
-  
+    if (inc == 0) 
+      sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
+    else if (inc == 1)
+      sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
+  }
+
   return(sumval)
 }
 
@@ -744,7 +816,7 @@ dmvnorm.deriv.4d <- function(x, Sigma, r)
 # Double sum at x
 ###############################################################################
 
-dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1)
+dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 {
   if (is.vector(x))
   {
@@ -758,18 +830,31 @@ dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1)
   d <- 4
   sumval <- 0
 
-  for (j in 1:n)
+  
+  if (binned)
+  {
+    ## drvkde computes include-diagonals estimate
+    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    sumval <- sum(bin.par$counts * n * fhatr)
+    if (inc == 0) 
+      sumval <- sumval - n*dmvnorm.deriv.4d(x=rep(0,d), r=r, Sigma)
+  }
+  else
   {  
-    y1 <- x1 - x1[j]
-    y2 <- x2 - x2[j]
-    y3 <- x3 - x3[j]
-    y4 <- x4 - x4[j]
-    sumval <- sumval + sum(dmvnorm.deriv.4d(cbind(y1, y2, y3, y4), Sigma, r))
+    for (j in 1:n)
+    {  
+      y1 <- x1 - x1[j]
+      y2 <- x2 - x2[j]
+      y3 <- x3 - x3[j]
+      y4 <- x4 - x4[j]
+      sumval <- sumval + sum(dmvnorm.deriv.4d(cbind(y1, y2, y3, y4), Sigma, r))
+    }
+  
+    if (inc==0)
+      sumval <- sumval - n*dmvnorm.deriv.4d(rep(0,d), Sigma, r)
   }
   
-  if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv.4d(rep(0,d), Sigma, r)
-    
   return(sumval)
 }
 
@@ -1198,16 +1283,38 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 ###############################################################################
 
 
+plotmixt <- function(mus, Sigmas, props, ...)
+{
+  if (ncol(Sigmas)==2)
+    plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, ...)
+  else if (ncol(Sigmas)==3)
+    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, ...) 
+}
+
+
 plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
-    xlim=c(-3,3), ylim=c(-3,3), gridsize=c(100,100), display="slice",
-    cont=c(25,50,75), lty,
+    xlim, ylim, gridsize, display="slice", cont=c(25,50,75), lty,
     ncont=NULL, xlabs="x", ylabs="y", zlabs="Density function",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, ...){
-  x <- seq(1.1*xlim[1], 1.1*xlim[2], length=gridsize[1])
-  y <- seq(1.1*ylim[1], 1.1*ylim[2], length=gridsize[2])
+    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, ...)
+{
+  maxSigmas <- 4*max(Sigmas)
+  if (is.vector(mus))
+    mus <- as.matrix(t(mus))
+
+  if (missing(xlim))
+    xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
+  if (missing(ylim))
+    ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
+
+  if (missing(gridsize))
+    gridsize <- rep(51,2)
+              
+  x <- seq(xlim[1], xlim[2], length=gridsize[1])
+  y <- seq(ylim[1], ylim[2], length=gridsize[2])
   xy <- permute(list(x, y))
 
   d <- ncol(Sigmas)
+
   if(!separate)
   {  
     if (dist=="normal")
@@ -1284,13 +1391,46 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
 }
 
 plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal",
-    gridsize=c(50,50,50), xlim=c(-3,3), ylim=c(-3,3), zlim=c(-3,3),
-    alphalo=0.2, alphahi=0.4, colors=rev(heat.colors(length(cont))))
+    gridsize, xlim, ylim, zlim, alphavec, colors, add=FALSE, origin=c(0,0,0),
+    endpts, xlab, ylab, zlab)
 {
   d <- 3
-  x <- seq(1.1*xlim[1], 1.1*xlim[2], length=gridsize[1])
-  y <- seq(1.1*ylim[1], 1.1*ylim[2], length=gridsize[2])
-  z <- seq(1.1*zlim[1], 1.1*zlim[2], length=gridsize[3])
+  maxSigmas <- 3.7*max(Sigmas)
+  if (is.vector(mus))
+    mus <- as.matrix(t(mus))
+  
+  if (missing(xlim))
+    xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
+  if (missing(ylim))
+    ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
+  if (missing(zlim))
+    zlim <- c(min(mus[,3]) - maxSigmas, max(mus[,3]) + maxSigmas)
+  
+  if (missing(gridsize))
+    gridsize <- rep(51,d)
+
+  if (missing(colors))
+    colors <- rev(heat.colors(length(cont)))
+
+  if (missing(alphavec))
+    alphavec <- seq(0.1,0.5,length=length(cont))
+
+
+  if (missing(endpts))
+  {
+    endpts <- rep(0,3)
+    endpts[1] <-  xlim[2]
+    endpts[2] <-  ylim[2]
+    endpts[3] <-  zlim[2]
+  }
+  
+  if (missing(xlab)) xlab <- "x"
+  if (missing(ylab)) ylab <- "y"
+  if (missing(zlab)) zlab <- "z"
+  
+  x <- seq(xlim[1], xlim[2], length=gridsize[1])
+  y <- seq(ylim[1], ylim[2], length=gridsize[2])
+  z <- seq(zlim[1], zlim[2], length=gridsize[3])
   xy <- permute(list(x,y))
  
   dens.array <- array(0, dim=gridsize)
@@ -1307,15 +1447,34 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal"
   }
 
   hts <- quantile(apply(dens.array, 3, max), prob = (100 - cont)/100)
-  alph <- seq(alphalo, alphahi, length=length(cont))
-  rgl.bg(col="white")
+
   
-  for (i in 1:length(cont)) 
-  {
-    scale <- cont[i]/hts[i]
-    contour3d(dens.array, level=hts[i],x, y, z, add=(i>1), color=colors[i],
-              alpha=alph[i])
-  }    
+ 
+  if (!add)
+    for (i in 1:length(cont)) 
+    {
+      scale <- cont[i]/hts[i]
+      contour3d(dens.array, level=hts[i],x, y, z, add=(i>1), color=colors[i],
+                alpha=alphavec[i])
+    }
+  else
+    for (i in 1:length(cont)) 
+    {
+      scale <- cont[i]/hts[i]
+      contour3d(dens.array, level=hts[i],x, y, z, add=TRUE, color=colors[i],
+                alpha=alphavec[i])
+    }
+  
+  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+          color="black", alpha=1)
+  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+          color="black", alpha=1)
+  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+          color="black", alpha=1)
+
+  texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
+  texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
+  texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
 }
 
 

@@ -5,15 +5,18 @@
 
 # Last changed: 18 JUL 2005
 
-dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
+dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=1.5, range.x)
 {
    x <- as.matrix(x)
    d <- ncol(x)
 
-   range.x <- list()
-   for (id in 1:d)
-      range.x[[id]] <- c(min(x[,id])-1.5*h[id],max(x[,id])+1.5*h[id])  
-
+   if (missing(range.x))
+   {
+     range.x <- list()
+     for (id in 1:d)
+       range.x[[id]] <- c(min(x[,id])-supp*h[id],max(x[,id])+supp*h[id])  
+   }
+       
    a <- unlist(lapply(range.x,min))
    b <- unlist(lapply(range.x,max))
 
@@ -48,7 +51,7 @@ dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)))
 
 # Last changed: 28 OCT 2005
 
-drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
+drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimate.positive=FALSE)
 {  
    d <- length(drv)
 
@@ -151,24 +154,16 @@ drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
       kappam <- as.vector(kappam)
       est <- symconv(kappam,gcounts,skewflag=(-1)^drv)
       
-      if (!se)
-        return(list(x.grid=gpoints,est=est))
-      
-      est.var <- ((symconv((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-      est.var[est.var<0] <- 0
-      return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
+      if (se)
+        est.var <- ((symconv((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
    }
 
    if (d==2) 
    {     
      est <- symconv2D.ks(kappam,gcounts,skewflag=(-1)^drv)
 
-     if (!se)
-       return(list(x.grid=gpoints,est=est))
-     
-     est.var <- ((symconv2D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-     est.var[est.var<0] <- 0
-     return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
+     if (se)   
+       est.var <- ((symconv2D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)     
    }
      
 
@@ -176,25 +171,28 @@ drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
    {
      est <- symconv3D.ks(kappam,gcounts,skewflag=(-1)^drv) 
  
-     if (!se)
-       return(list(x.grid=gpoints,est=est))
-     
-     est.var <- ((symconv3D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-     est.var[est.var<0] <- 0
-     return(list(x.grid=gpoints,est=est,se=sqrt(est.var))) 
+     if (se)
+       est.var <- ((symconv3D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)    
    }
      
    if (d==4)
    {
      est <- symconv4D.ks(kappam,gcounts,skewflag=(-1)^drv) 
 
-     if (!se)
-       return(list(x.grid=gpoints,est=est))
-     
-     est.var <- ((symconv4D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-     est.var[est.var<0] <- 0
-     return(list(x.grid=gpoints,est=est,se=sqrt(est.var))) 
+     if (se)
+       est.var <- ((symconv4D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
    }
+   
+   if (estimate.positive)
+     est[est<0] <- 0
+   
+   if (se)
+   {
+     est.var[est.var<0] <- 0
+     return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
+   }
+   else if (!se)
+     return(list(x.grid=gpoints,est=est))
 }
 
 ########## End of drvkde #########
