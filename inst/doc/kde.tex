@@ -54,8 +54,8 @@ November\or December\fi
 \DeclareMathOperator{\dg}{dg}
 \DeclareMathOperator{\diag}{diag}
 
-%\VignetteIndexEntry{ks} 
-%\SweaveOpts{}
+%\VignetteIndexEntry{kde} 
+
 
 \title{Using ks for bivariate kernel density estimation}
 \author{Tarn Duong \\Department of Statistics, University of New South Wales\\ Sydney Australia}
@@ -576,6 +576,12 @@ called by \texttt{display="persp"}. This is an attempt
 to capture the three-dimensional structure more directly than the 
 image or contour plots.
 
+Another possibility is \texttt{display="filled"} for a filled contour plot.
+This is a hybrid of contour and image plots where each contour level is filled
+with a single colour, implemented as \texttt{filled.contour()}. A nice
+feature is that it automatically provides a legend with density estimate heights
+and their corresponding colours.  
+
 %\begin{figure}[!htp]
 
 \begin{Schunk}
@@ -605,7 +611,7 @@ For large sample sizes, direct computation of kernel estimates becomes
 computationally difficult. One common technique for increasing computational
 speed for these large samples is binned kernel estimation, 
 see \citet*[Appendix~D]{wand94}. Unfortunately binned estimation is only defined 
-with diagonal bandwidth matrices. So appilcable cases include 
+with diagonal bandwidth matrices. So applicable cases include 
 computing the pilot bandwidth matrices
 (which are parameterised as $g^2 \mat{I}$) for general plug-in and SCV selectors;
 and for kernel density estimators with diagonal bandwidth matrices. 
@@ -617,7 +623,6 @@ and for kernel density estimators with diagonal bandwidth matrices.
 > Sigmas <- rbind(diag(2), 0.8 * invvech(c(1, -0.9, 1)), diag(2))
 > cwt <- 3/11
 > props <- c((1 - cwt)/2, cwt, (1 - cwt)/2)
-> plotmixt(mus, Sigmas, props, display = "image", col = rev(heat.colors(100)))
 > x <- rmvnorm.mixt(10000, mus, Sigmas, props)
 > H.pidiag <- Hpi.diag(x, binned = TRUE)
 > H.pi <- Hpi(x, binned = TRUE)
@@ -625,16 +630,18 @@ and for kernel density estimators with diagonal bandwidth matrices.
 \end{Schunk}
 For large sample sizes, we don't recommend plotting with slice/contour plots
 because computing the relative contour heights is computationally intensive.
-Instead, image or perspective plots are more efficient.
+Instead, image, perspective or filled contour plots are more efficient.
+%On the left is the true density function from \texttt{plotmixt()} and 
+%on the right is the density estimate.
 \begin{Schunk}
 \begin{Sinput}
 > fhat.diag <- kde(x, H = H.pidiag, binned = TRUE)
-> plot(fhat.diag, display = "image", col = rev(heat.colors(100)))
+> plot(fhat.diag, display = "filled", col = rev(heat.colors(30)))
 \end{Sinput}
 \end{Schunk}
-\begin{center}
+%\setkeys{Gin}{width=0.7\textwidth}
+\begin{center}  
 \includegraphics{kde-025}
-\includegraphics{kde-026}
 \end{center}
 
 %fhat <- kde(x, H=H.pi)

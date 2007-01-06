@@ -584,6 +584,9 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, 
   else if (disp1=="i")
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
             xlab=xlab, ylab=ylab, ...)
+  else if (disp1=="f")
+    filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
+                   xlab=xlab, ylab=ylab, ...)
 }
   
 
@@ -646,10 +649,11 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
+  
   if (!add)
   {
-    rgl.clear()
-    rgl.bg(col="white")
+    clear3d()
+    bg3d(col="white")
     for (i in 1:nc) 
       contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
                 fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
@@ -657,7 +661,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   }
   else
   {
-    rgl.bg(col="white")
+    bg3d(col="white")
     for (i in 1:nc) 
       contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
                 fhat$eval.points[[2]], fhat$eval.points[[3]], add=add,

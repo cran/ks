@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  4 JAN 2007 18:10
+This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  7 FEB 2007 14:28
  file:line:error style messages enabled.
 **\nonstopmode \input /c/tduong/net/personal/tduong/research/kernel/library/ks/
 inst/doc/kde.tex
@@ -301,36 +301,33 @@ File: kde-022.pdf Graphic file (type pdf)
 2.pdf>]
 <kde-025.pdf, id=170, 433.62pt x 433.62pt>
 File: kde-025.pdf Graphic file (type pdf)
- <use kde-025.pdf>
-<kde-026.pdf, id=171, 433.62pt x 433.62pt>
-File: kde-026.pdf Graphic file (type pdf)
- <use kde-026.pdf> [10 <./kde-025.pdf> <./kde-026.pdf>] [11] (./kde.aux) ) 
+ <use kde-025.pdf> [10 <./kde-025.pdf>] [11] (./kde.aux) ) 
 Here is how much of TeX's memory you used:
- 3395 strings out of 95437
- 41986 string characters out of 1190247
+ 3390 strings out of 95437
+ 41912 string characters out of 1190247
  88845 words of memory out of 1000001
- 6312 multiletter control sequences out of 10000+50000
+ 6308 multiletter control sequences out of 10000+50000
  34524 words of font info for 84 fonts, out of 500000 for 1000
  14 hyphenation exceptions out of 1000
  35i,13n,24p,337b,393s stack positions out of 1500i,500n,5000p,200000b,5000s
- 187 PDF objects out of 300000
+ 181 PDF objects out of 300000
  0 named destinations out of 131072
- 70 words of extra memory for PDF output out of 65536
-{/usr
-/share/texmf/dvips/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/
-cmsltt10.pfb>{/usr/share/texmf/dvips/tetex/aae443f0.enc}</usr/share/texmf/fonts
-/type1/bluesky/cm/cmmi6.pfb>{/usr/share/texmf/dvips/tetex/f7b6d320.enc}</usr/sh
-are/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr/share/texmf/fonts/type1/bluesky
-/symbols/msbm7.pfb></usr/share/texmf/fonts/type1/bluesky/symbols/msbm10.pfb>{/u
-sr/share/texmf/dvips/tetex/74afc74c.enc}</usr/share/texmf/fonts/type1/bluesky/c
-m/cmti10.pfb>{/usr/share/texmf/dvips/tetex/bbad153f.enc}</usr/share/texmf/fonts
-/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx8.pfb
-></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf/fonts/ty
-pe1/bluesky/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></
-usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb></usr/share/texmf/fonts/type1/
-bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr8.pfb></usr/s
-hare/texmf/fonts/type1/bluesky/cm/cmmib10.pfb></usr/share/texmf/fonts/type1/blu
-esky/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/sha
-re/texmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesk
-y/cm/cmr12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
-Output written on kde.pdf (11 pages, 908066 bytes).
+ 65 words of extra memory for PDF output out of 65536
+{/usr/share/texmf/dvi
+ps/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmsltt10.pfb>{/u
+sr/share/texmf/dvips/tetex/aae443f0.enc}</usr/share/texmf/fonts/type1/bluesky/c
+m/cmmi6.pfb>{/usr/share/texmf/dvips/tetex/f7b6d320.enc}</usr/share/texmf/fonts/
+type1/bluesky/cm/cmr6.pfb></usr/share/texmf/fonts/type1/bluesky/symbols/msbm7.p
+fb></usr/share/texmf/fonts/type1/bluesky/symbols/msbm10.pfb>{/usr/share/texmf/d
+vips/tetex/74afc74c.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmti10.pfb>{/u
+sr/share/texmf/dvips/tetex/bbad153f.enc}</usr/share/texmf/fonts/type1/bluesky/c
+m/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx8.pfb></usr/share/tex
+mf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/c
+msy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></usr/share/texmf/
+fonts/type1/bluesky/cm/cmmi8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi1
+0.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr8.pfb></usr/share/texmf/fonts
+/type1/bluesky/cm/cmmib10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmtt10.p
+fb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/t
+ype1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb><
+/usr/share/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
+Output written on kde.pdf (11 pages, 1074038 bytes).

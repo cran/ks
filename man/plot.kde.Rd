@@ -30,7 +30,8 @@
   \item{fhat}{an object of class \code{kde} (output from
     \code{\link{kde}} function)}
   \item{display}{type of display, "slice" for contour plot, "persp" for
-    perspective plot, "image" for image plot (2-d plot)}
+    perspective plot, "image" for image plot, "filled" for filled
+    contyour plot (2-d plot)}
   \item{cont}{vector of percentages (of maximum height) for contour
     level curves (2-d plot)}
   \item{ncont}{number of contour level curves (2-d plot)}
@@ -116,6 +117,10 @@ plot(fhat, display="persp")
 plot(fhat, display="image", col=rev(heat.colors(100)))
 layout(1)
 
+plot(fhat, display="filled")
+  ## filled contour plot not compatible with layout()
+
+
 ## large sample - 10000 sample from bivariate standard normal 
 x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
 H.pi <- Hpi.diag(x, binned=TRUE)
@@ -131,7 +136,13 @@ props <- c(1/2, 1/2)
 x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi.diag(x, binned=TRUE, pilot="samse")
 fhat <- kde(x, H=H.pi, binned=TRUE)  
+
+#ifdef unix
 plot(fhat, origin=c(-3,-3,-3))
+#endif
+#ifdef windows
+plot(fhat, origin=c(-3,-3,-3))
+#endif
 }
 
 \keyword{ hplot}
