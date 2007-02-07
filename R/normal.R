@@ -1387,6 +1387,8 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
   }
   else if (disp=="i")
     image(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, ...)
+  else if (disp=="f")
+    filled.contour(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, ...)
     
 }
 

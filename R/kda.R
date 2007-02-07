@@ -852,8 +852,8 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   
   hts <- quantile(dobs, prob = (100-cont)/100)
 
-  rgl.clear()
-  rgl.bg(color="white")
+  clear3d()
+  bg3d(color="white")
   
   for (j in 1:m)
   {
