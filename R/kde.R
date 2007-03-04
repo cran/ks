@@ -617,7 +617,6 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   }
   else
     dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x)$estimate 
- 
   
   hts <- quantile(dobs, prob = (100-cont)/100)
   nc <- length(cont)

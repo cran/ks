@@ -1283,12 +1283,12 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 ###############################################################################
 
 
-plotmixt <- function(mus, Sigmas, props, ...)
+plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", ...)
 {
   if (ncol(Sigmas)==2)
-    plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, ...)
+    plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, ...)
   else if (ncol(Sigmas)==3)
-    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, ...) 
+    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, ...) 
 }
 
 
@@ -1297,6 +1297,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
     ncont=NULL, xlabs="x", ylabs="y", zlabs="Density function",
     theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, ...)
 {
+  dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
   if (is.vector(mus))
     mus <- as.matrix(t(mus))
@@ -1317,10 +1318,10 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
 
   if(!separate)
   {  
-    if (dist=="normal")
+    if (dist=="n")
       dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
     else if (dist=="t")
-      dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs)
+      dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
     dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
   }
   else
@@ -1392,12 +1393,14 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
     
 }
 
-plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal",
+plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal",
     gridsize, xlim, ylim, zlim, alphavec, colors, add=FALSE, origin=c(0,0,0),
     endpts, xlab, ylab, zlab)
 {
   d <- 3
+  dist <- tolower(substr(dist,1,1))
   maxSigmas <- 3.7*max(Sigmas)
+
   if (is.vector(mus))
     mus <- as.matrix(t(mus))
   
@@ -1411,11 +1414,12 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal"
   if (missing(gridsize))
     gridsize <- rep(51,d)
 
+  nc <- length(cont)
   if (missing(colors))
-    colors <- rev(heat.colors(length(cont)))
-
+    colors <- rev(heat.colors(nc))
+  
   if (missing(alphavec))
-    alphavec <- seq(0.1,0.5,length=length(cont))
+    alphavec <- seq(0.1,0.5,length=nc)
 
 
   if (missing(endpts))
@@ -1439,7 +1443,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal"
   
   for (i in 1:length(z))
   {
-    if (dist=="normal")
+    if (dist=="n")
       dens <- dmvnorm.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, props=props)
     else if (dist=="t")
       dens <- dmvt.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, dfs=dfs, props=props)
@@ -1450,33 +1454,34 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(75,50,25), dist="normal"
 
   hts <- quantile(apply(dens.array, 3, max), prob = (100 - cont)/100)
 
-  
- 
   if (!add)
-    for (i in 1:length(cont)) 
+    for (i in 1:nc) 
     {
       scale <- cont[i]/hts[i]
-      contour3d(dens.array, level=hts[i],x, y, z, add=(i>1), color=colors[i],
+      contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=(i>1), color=colors[i],
                 alpha=alphavec[i])
     }
   else
-    for (i in 1:length(cont)) 
+    for (i in 1:nc) 
     {
       scale <- cont[i]/hts[i]
-      contour3d(dens.array, level=hts[i],x, y, z, add=TRUE, color=colors[i],
+      contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
                 alpha=alphavec[i])
     }
-  
-  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black", alpha=1)
 
-  texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-  texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-  texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
+  if (!add)
+  { 
+    lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+            color="black", alpha=1)
+    lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+            color="black", alpha=1)
+    lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+            color="black", alpha=1)
+   
+    texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
+    texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
+    texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
+  }
 }
 
 

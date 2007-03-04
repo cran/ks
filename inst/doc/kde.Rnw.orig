@@ -1,8 +1,14 @@
 \documentclass[a4paper,11pt]{article}
 
-\usepackage{amsmath,amssymb,amsthm,amsopn}%,anysize}
-\usepackage{/c/tduong/home/tex/harvard/harvard}
-%\marginsize{3cm}{3cm}{2.5cm}{2.5cm}
+\usepackage{amsmath,amssymb,amsthm,amsopn,natbib,anysize}
+\marginsize{2.5cm}{2.5cm}{2.5cm}{2.5cm}
+
+
+\renewcommand{\today}{\begingroup
+\number \day\space  \ifcase \month \or January\or February\or March\or 
+April\or May\or June\or July\or August\or September\or October\or 
+November\or December\fi 
+\space  \number \year \endgroup}
 
 \renewcommand{\vec}[1]{\boldsymbol{#1}}
 \newcommand{\gvec}[1]{\boldsymbol{#1}}
@@ -47,11 +53,15 @@
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\dg}{dg}
 \DeclareMathOperator{\diag}{diag}
+\let\code=\texttt
+\let\proglang=\textsf
 
+%\VignetteIndexEntry{kde} 
+\SweaveOpts{eps=FALSE}
 
-%\VignetteIndexEntry{ks} 
 \title{Using ks for bivariate kernel density estimation}
-\author{Tarn Duong}
+\author{Tarn Duong \\Department of Statistics, University of New South Wales\\ Sydney Australia}
+
 
 \begin{document}
 
@@ -60,296 +70,198 @@
 \section{Introduction}
   
 Kernel density estimation has become a popular tool for visualising 
-the distribution of univariate data. 
-See \cite{simonoff96}, for example, for an overview. 
-However, the use of high-dimensional 
-density estimation as a tool for exploratory data analysis 
-appears relatively uncommon amongst practitioners. 
+the distribution of data. See \citet*{simonoff1996}, for example, for
+an overview.
 When multivariate kernel density estimation is considered it is usually
-in the constrained context with diagonal bandwidth matrices, as 
-implemented in \proglang{R} packages (e.g. \pkg{sm} and \pkg{KernSmooth}) for 
-kernel smoothing.  
-We introduce a new pakcage \pkg{ks} for kernel smoothing i 
-$\ks$ is an \texttt{R} package for 
-kernel smoothing for 1- to 6-dimensional data with unconstrained bandwidth
-matrices. 
-Currently kernel density estimation (KDE) and kernel discriminant
-analysis (KDA) are available.  
-This vignette focuses on KDE for the 2-dimensional case.
+in the constrained context with diagonal bandwidth matrices, e.g. 
+in the \proglang{R} packages \pkg{sm} \citep*{sm} and \pkg{KernSmooth} 
+\citep*{KernSmooth}.  
+We introduce a new \proglang{R} package \pkg{ks} for kernel smoothing
+which implements diagonal and unconstrained data-driven bandwidth matrices.
+The main theoretical advances are in the development of new methods
+for the latter.
+It is able to analyse 1- to 6-dimensional
+data with graphical visualisation for 1- to 3-dimensional data.  
+Currently it is the most comprehensive kernel density estimation package 
+available in \proglang{R}.
+This vignette focuses on kernel density estimation for the 2-dimensional case.
 
+The \code{unicef} dataset is included in the \pkg{ks} package. 
+It contains the number of deaths of children under 5 years of age 
+per 1000 live births and the average life expectancy
+(in years) at birth for 73 countries with GNI (Gross National
+Income) less than 1000 US dollars per annum per capita.
+The scatterplot is in Figure \ref{fig:unicef_scatter}. A major goal of kernel density
+estimation is to find a description which summarises
+the important characteristics of the data.
+
+
+<<results=hide,print=FALSE>>=
+library(ks)
+data(unicef)
+plot(unicef)
+@
+\setkeys{Gin}{width=0.4\textwidth}
+%\begin{figure}[!htp]
+\begin{center}
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(unicef, cex=1.6, cex.lab=1.6, cex.axis=1.6)
+@ 
+\end{center}
 
 
 \section{Kernel density estimation}
 
-Univariate kernel density estimation has received considerable 
-attention in the literature, partly because of its practical utility, and 
-partly because 
-it provides a simple testing ground for learning about nonparametric smoothing.
-Kernel density estimation for multivariate data has received significantly 
-less attention. The lower level of interest in the multivariate context may be 
-explained, to some extent, by the difficulties in viewing high dimensional density 
-functions. For this reason, if no other,
-the use of high-dimensional density estimation as a tool for exploratory 
-data analysis  appears relatively uncommon amongst practitioners. 
-
-Bivariate kernel density estimation sits at an important junction between 
-the univariate and high-dimensional multivariate cases. From a 
-practical standpoint, 
-bivariate density  estimates have a utility and accessibility that 
-is akin to that of their univariate cousins,
-largely because they can be viewed using familiar perspective (`wire-frame') 
-or contour plots. From a theoretical viewpoint, bivariate density estimation is an 
-excellent setting for understanding aspects of multivariate 
-kernel smoothing. There are 
-important aspects of bivariate kernel estimation that have no 
-univariate analogue (such as 
-the orientation of the kernel functions) yet can be generalised 
-to higher dimensional cases with relatively little effort.
- 
-For a bivariate sample $\vecX_1, \ldots, \vecX_n$ drawn from a density $f$, 
-the kernel density estimate is defined by
-$$ 
+For a bivariate sample $\vecX_1, \vecX_2, \ldots, \vecX_n$ drawn from a density $f$, 
+the kernel density estimate is 
+\begin{equation}
 \hat{f} (\vecx; \HH) = n^{-1}\sum_{i=1}^n K_{\HH} ( \vecx - \vec{X}_i)
-$$
+\label{eq:kde}
+\end{equation}
 where $\vecx = (x_1, x_2)^T$ and $\vec{X}_i = (X_{i1}, X_{i2})^T, i = 1, 2,  
 \ldots, n$.  
 Here 
 $K(\vecx)$ is the bivariate kernel (which we assume to be a probability density 
-function); $\HH$ 
+function); $\HH = \begin{bmatrix}h_1^2 & h_{12} \\ h_{12}& h_2^2 \end{bmatrix}$ 
 is the bandwidth matrix which is symmetric and positive-definite; 
 and $K_{\HH}(\vecx) = |\HH|^{-1/2} 
-K( \HH^{-1/2} \vecx)$. The choice of $\HH$ is crucially important in determining 
-the performance
-of $\hat f$. Bivariate bandwidth selection is a difficult problem which may be 
-simplified (at
-the expense of flexibility) by imposing constraints on $\HH$. For example, 
-$\HH$ may be restricted to the class of diagonal (positive-definite) matrices, or to 
-the class of (positive) multiples
-of the identity matrix. The merits of imposing restrictions on $\HH$ have 
-been investigated by 
-\citeasnoun{wand93}. These authors conclude that choosing a 
-diagonal bandwidth matrix will sometimes 
-be adequate, but that in other cases there is much to be gained by 
-selecting a full (i.e.~unconstrained) 
-bandwidth matrix. While the use of a full bandwidth matrix requires 
-an additional smoothing parameter 
-(in comparison to diagonal $\HH$), it permits arbitrary orientation of 
-the kernel function. 
+K( \HH^{-1/2} \vecx)$. 
+The choice of $K$ is not crucial -- we take 
+$K(\vecx) = (2\pi)^{-1} \exp(-\tfrac{1}{2} \vecx^T \vecx)$ the standard normal
+throughout.  
+On the other hand, the choice of $\HH$ \emph{is} crucial in determining 
+the performance of $\hat f$. 
 
-
-\section{Optimal bandwidth matrices}
-
-In order to measure the performance of $\hat f$ we will (in common with the 
-great majority of
-researchers in this field) use the mean integrated squared error (MISE) criterion, 
+We measure the performance of $\hat f$ (in common with the 
+majority of researchers in this field) 
+using the Mean Integrated Squared Error (MISE) criterion, 
 $$
-\MISE \, \hat{f}(\cdot; \HH)
+\MISE \, (\HH)
 = \E \int_{\mathbb{R}^2} [ \hat{f}(\vecx; \HH) - f(\vecx) ] ^2
 \ d \vecx.
 $$
-Here $f$ denotes the target density, from which $\vec{X}_1, \ldots, \vec{X}_n$ are 
-assumed to
-be a random sample. Our aim in bandwidth selection is to estimate
+Our aim in bandwidth selection is to estimate
 $$\HH_\MISE = \underset{\HH}{\mathrm{argmin}} \
-\MISE \,\hat{f}(\cdot; \HH),
+\MISE \,(\HH),
 $$
 over the space of all symmetric, positive definite $2 \times 2$ 
 matrices. It is
 well known that the optimal bandwidth $\HH_{\MISE}$ does not have a closed form. 
-In order to
-make progress it is usual to employ an asymptotic analysis. It can be shown 
-that (under conditions to be specified)
+To make progress it is usual to employ an asymptotic approximation, known 
+as the AMISE (Asymptotic MISE): 
 \begin{equation}
-\MISE \, \hat{f}(\cdot; \HH) = \AMISE \, \hat{f}(\cdot; \HH) + o(n^{-1}
-|\HH|^{-1/2} + \tr^2 \HH)
-\label{eq:mise}
-\end{equation}
-where
-\begin{equation}
-\AMISE \,\hat{f}(\cdot; \HH) = n^{-1} |\HH| ^{-1/2}
-R(K) + \tfrac{1}{4} \mu_2(K)^2 (\VECH^T \HH) \gmat{\Psi}_4(\VECH \, \HH)
+\AMISE \,(\HH) =  n^{-1}  (4\pi)^{-1}  |\HH| ^{-1/2}
+ + \tfrac{1}{4} (\VECH^T \HH) \gmat{\Psi}_4(\VECH \, \HH)
 \label{eq:amise}
 \end{equation}
-where $R(K) = \int_{\mathbb{R}^2} K(\vecx)^2 \ d \vecx$, $\mu_2(K) 
-\mat{I} = \int_{\mathbb{R}^2} \vecx 
-\vecx^T K(\vecx) \ d \vecx$ with $\mu_2(K) < \infty$ and $\mat{I}$ is the
-$2 \times 2$ identity matrix; and vech is the vector half 
-operator (see 
-\citeasnoun[chapter 4]{wand95}). The $\gmat{\Psi}_4$ matrix is 
-the $3 \times 3$ matrix 
-given by
-$$
-\gmat{\Psi}_4 = \int_{\mathbb{R}^2} \VECH  (2D^2 f(\vecx) -
-\mathrm{dg} \, D^2 f(\vecx)) \ \VECH^T (2D^2 f(\vecx) -
-\mathrm{dg} \, D^2 f(\vecx)) \ d \vecx
-$$ 
-where $D^2 f(\vecx)$ is the Hessian matrix of $f$ with respect to $\vecx$ 
-and $\mathrm{dg} \, \mat{A}$ is
- matrix
-$\mat{A}$ with all of its non-diagonal elements set to zero. Sufficient conditions 
-for 
-the validity of the expansions defined by Equations (\ref{eq:mise}) and 
-(\ref{eq:amise}) are
-that all entries in $D^2 f(\vecx)$ are square integrable and all entries of 
-$\HH \rightarrow 0$ 
-and $n^{-1} |\HH|^{-1/2} \rightarrow 0,$ as $n \rightarrow \infty.$
-
-
-If we introduce some more notation, we can explicitly state an expression for 
-the matrix $\gmat{\Psi}_4$ in terms of its individual elements. Let $\vec{r} = 
-(r_1, r_2)$ where the $r_1, r_2$ are non-negative integers. Let
-$|\vec{r}| = r_1 + r_2,$ then the $\vecr$-th partial derivative of $f$ can 
-be written as 
-$$
-f^{(\vec{r})} (\vecx) =
-\frac{\partial^{|\vec{r}|}} {\partial^{r_1}_{x_1} \partial^{r_2}_{x_2}} f(\vecx)
-$$
-and the integrated density derivative functional is
-$$
-\psi_{\vec{r}} = \int_{\mathbb{R}^2} f^{(\vec{r})} (\vecx)
-f(\vecx)\ d \vecx.
-$$ 
-Then we can show that 
+where $R(K) = \intr2 K(\vecx)^2 \ d\vecx = (4\pi)^{-1}$ and
+vech is the vector half 
+operator i.e.
+$$\VECH \HH = \VECH \begin{bmatrix} h_1^2  & h_{12} \\ h_{12} & h_2^2 \end{bmatrix}
+= \begin{bmatrix} h_1^2 \\ h_{12} \\ h_2^2 \end{bmatrix}.$$ 
+See \citet*[p.~98]{wand1995} for the general expression of 
+the $\frac{1}{2}d(d+1) \times \frac{1}{2}d(d+1)$ matrix $\gmat{\Psi}_4$. 
+For $d=2$, we 
+can show that
 \begin{equation}
 \gmat{\Psi}_4 =
 \begin{bmatrix}\psi_{40} & 2\psi_{31} & \psi_{22} \\
 2\psi_{31} & 4\psi_{22} & 2\psi_{13} \\
 \psi_{22} & 2\psi_{13} & \psi_{04}
-\end{bmatrix}.
+\end{bmatrix}
 \label{Psi}
 \end{equation}
-(Note that the subscript 4 on $\gmat{\Psi}$ relates to the order of the 
-derivatives involved.)
-
-Equations (\ref{eq:amise}) and (\ref{Psi}) combine to give a 
-tractable approximation,
-AMISE, to the MISE.
-We  make use of 
-the tractability of AMISE by seeking
+where the integrated density derivative functional is
+$$
+\psi_{r_1, r_2} = \int_{\mathbb{R}^2} 
+f^{(r_1, r_2)} (\vecx) f(\vecx)\ d \vecx
+$$
+and the partial derivatives of $f$ are $$
+f^{(r_1, r_2)} (\vecx) =  \frac{\partial^{4}} 
+{\partial^{r_1}_{x_1} \partial^{r_2}_{x_2}} f(\vecx). 
+$$
+Note that the subscript 4 on $\gmat{\Psi}$ relates to the order of the 
+derivatives involved.
+We make use of the tractability of AMISE by seeking
 $$
 \HH_\AMISE = \underset{\HH}{\mathrm{argmin}} \ \AMISE \,
-\hat{f}(\cdot; \HH)
-$$
-rather than $\HH_\MISE$. Of course, the AMISE is a functional of the unknown
-target density, through $\gmat{\Psi}_4$ and so remains unknown.
-
-
+(\HH).
+$$ 
+For the next step we estimate the MISE or AMISE. A data-driven bandwidth selector
+is either \begin{equation} 
+\hat{\HH} = \underset{\HH}{\mathrm{argmin}} \ \widehat{\MISE} \,
+(\HH) \quad \mathrm{or} \quad 
+\hat{\HH} = \underset{\HH}{\mathrm{argmin}} \ \widehat{\AMISE} \,
+(\HH) \quad
+\end{equation}
+Different selectors arise from the different methods used in the estimation
+step.
 
 \section{Plug-in bandwidth selectors}
 \label{sec:plugin}
-Plug-in methods of selecting the bandwidth matrix are based on the AMISE. In
-particular, we require pilot estimates of the
-$\psi_{\vec{r}}$ functionals that can be `plugged-in' to provide an estimate
-$\hat{\gmat{\Psi}}_4$. This in turn produces an estimate 
+
+The most well-known univariate plug-in selector is due to
+\citet*{sheather91}.
+Plug-in selectors require pilot estimates of the
+$\psi_{r_, r_2}$ functionals which comprise 
+$\hat{\gmat{\Psi}}_4$. This in turn produces an estimate of the AMISE
 \begin{equation}
-\PI (\HH) = n^{-1} |\HH| ^{-1/2}
-R(K) + \tfrac{1}{4} \mu_2(K)^2 (\VECH^T \HH) \hat{\gmat{\Psi}} _4(\VECH \HH)
+\PI (\HH) = n^{-1} (4\pi)^{-1} |\HH| ^{-1/2}
+ + \tfrac{1}{4}  (\VECH^T \HH) \hat{\gmat{\Psi}}_4(\VECH \HH)
 \label{eq:api}
 \end{equation}
 that can be numerically minimised to give the plug-in bandwidth matrix, 
-$\hat{\HH}_\PI$.
-
-
-In order to implement plug-in selection of $\HH$ we require pilot estimates of
-the integrated density derivative functionals, $\psi_{\vec{r}}$. If we note that 
-$\psi_{\vec{r}}= \E f^{(\vec{r})}(\vec{X})$ where $\vec{X}$ has density $f$,
-then a natural estimator of $\psi_{\vec{r}}$ is
+$\hat{\HH}_\PI$.  
+To compute $\hat{\gmat{\Psi}}_4$ we need to use a helper or `pilot' bandwidth
+matrix $\G$. Like $\HH$, we need to choose a sensible value for $\G$.  
+If we note that 
+$\psi_{r_1, r_2}= \E f^{(r_1, r_2)}(\vec{X})$ where $\vecX \sim f$,
+then a natural estimator of $\psi_{r_1, r_2}$ is
 \begin{equation}
-\hat{\psi}_{\vec{r}} (\G) = n^{-1}
-\sum_{i=1}^n \hat{f}^{(\vec{r})} (\vec{X}_i; \G) =
-n^{-2}\sum_{i=1}^{n}\sum_{j=1}^{n} K^{(\vec{r})}_{\G} (\vec{X}_i -
-\vec{X}_j)
+\hat{\psi}_{r_1, r_2} (\G) = n^{-1}
+\sum_{i=1}^n \hat{f}^{(r_1, r_2)} (\vec{X}_i; \G) =
+n^{-2}\sum_{i=1}^{n}\sum_{j=1}^{n} K^{(r_1, r_2)}_{\G} (\vec{X}_i -
+\vec{X}_j).
 \label{psir} 
 \end{equation}
-where $\G$ is a pilot bandwidth matrix (usually different to $\HH$). 
-This is known as the 
-leave-in-diagonals estimator as it includes the non-stochastic $i = j$  terms. 
-An important aspect of this pilot estimation is the choice of $\G$. The
-finite sample properties of $\psi_{\vec{r}}$ as a function of $\G$ 
-are intractable, but we can again make progress through asymptotic expansions.
+
 
 \subsection{AMSE pilot bandwidth selectors}
 
-
-
 We consider pilot bandwidth matrices of the form 
-$\G = g^2 \mat{I}$. While this form of $\G$ may appear 
-very restrictive
-and, moreover, inappropriate for many data sets, the deficiencies of this 
-approach are 
-perhaps less extreme than might appear at first sight. In the first place, 
-the data may be 
-pre-transformed so as to improve the applicability of this form of  $\G$
-(we return to this topic in Section \ref{sec:pre}). 
-Secondly this choice of $\G$ does not affect 
-convergence rates for 
-the estimates $\hat{\psi}_{\vec{r}}$. 
+$\G = g^2 \mat{I}$. It may appear that we are contradicting
+ourselves since we advocate using unconstrained matrices for $\HH$.
+It turns out that a restricted form on $\G$ has less effect on the
+performance of $\hat{f}$ than a restricted form on $\HH$. We can 
+reduce the effect of the restricted form of $\G$ by using
+an appropriate pre-transformation 
+(we return to this topic in Section \ref{sec:pre}).
 
-Setting $\G = g^2 \mat{I}$, an asymptotic form for the mean square 
-error (MSE) of $\hat{\psi}_{\vec{r}}$, from \citeasnoun{wand94}, is 
-\begin{align*}
-\AMSE \,\hat{\psi}_{\vec{r}}(g) &= 2n^{-2}
-g^{-2|\vecr|-2} \psi_{\vec{0}}R(K^{(\vec{r})}) 
-+ \bigg[ n^{-1} g^{-|\vecr|-2} K^{(\vec{r})}(\vec{0}) +
-\frac{1}{2} g^2\mu_2(K) \sum_{i=1}^2 \psi_{\vec{r}+2\vec{e}_i}
-\bigg]^2.
-\label{psi-amse} 
-\end{align*}
-Thus we are seeking 
-$$g_{\vecr, \AMSE} = \argmin{g>0} \AMSE \, \hat{\psi}_{\vec{r}}(g).$$
-
-For most common kernels, including the normal kernel, if all the
-elements of $\vecr$ are even then
-$K^{(\vec{r})}(\vec{0})$ and $\psi_{\vec{r}+2\vec{e}_i}$ will be
-of opposite sign, for $i = 1, 2$.  Then the bias terms
-will cancel each other if $g$ is equal to
+The AMSE-optimal pilot bandwidths (i.e. optimal for the Asymptotic
+Mean Squared Error) are 
+(a) if both $r_1$ and $r_2$ are even then
 \begin{equation}
-\label{eq:gamse_even} g_{\vec{r}, \AMSE} = \bigg[ \frac{-2
-K^{(\vec{r})}(\vec{0})} { \mu_2(K) \big( \sum_{i=1}^2
-\psi_{\vec{r}+2\vec{e}_i}\big) n} \bigg]^{1/(j+4)}.
+\label{eq:gamse_even} g_{r_1, r_2, \AMSE} = \bigg[ \frac{A_{r_1, r_2}}{n} 
+\bigg]^{1/8}
 \end{equation}
-If at least one of the elements of $\vecr$ is odd then $K^{(\vec{r})}
-(\vec{0}) = 0.$ In this case, we can find the minimum AMSE if $g$ is
-equal to
+and (b) if at least one of $r_1$ and $r_2$ is odd then 
 \begin{equation}
-\label{eq:gamse_odd} g_{\vec{r}, \AMSE} = \bigg[ \frac{2
-\psi_{\vec{0}} (2 |\vec{r}| + 2) R(K^{(\vec{r})})} { \mu_2(K)^2
-\big( \sum_{i=1}^2 \psi_{\vec{r}+2\vec{e}_i}\big)^2 n^2}
-\bigg]^{1/(2j + 6)}.
+\label{eq:gamse_odd} g_{r_1, r_2, \AMSE} = \bigg[ \frac{B_{r_1, r_2}}{n} 
+\bigg]^{1/7}.
 \end{equation}
+See \citet*{wand94} for explicit expressions for $A_{r_1, r_2}$ and
+$B_{r_1, r_2}$. 
+We can use 1 or 2 stages to estimation these pilot bandwidths. 
+Intuitively we can think of 2 estimation stages as a strategy to reduce
+the dependence on the normality assumptions for 1 stage estimation. 
 
-
-These expressions for the AMSE pilot bandwidths
-$g_{\vecr, \AMSE}$ involve higher order $\psi_{\vecr}$
-functionals.  This dependency continues for all $\vecr$ so we need
-a way to resolve this problem. One convenient way is to use normal
-reference approximations. This is just
-\begin{equation}
-\label{eq:psi-ns} \hat{\psi}_{\vec{r}}^{\NR} = (-1)^{|\vec{r}|}
-\phi_{2\mat{S}}^{(\vec{r})} (\vec{0}).
-\end{equation}
-where $\mat{S}$ is the sample variance and $\phi_{\gmat{\Sigma}}(\cdot - \gvec{\mu})$
-is the normal density with mean $\gvec{\mu}$ and variance $\gmat{\Sigma}$.   
-So starting with
-normal reference approximations of all $\psi_{\vecr}$ functionals for
-a given order, we can proceed to find estimates of the lower
-order $\psi_{\vecr}$ functionals.
-
-This method of computing $\hat{\psi}_{\vecr}$ thus requires one pilot 
-bandwidth for each functional.  This means that computing $\hat{\gmat{\Psi}}_4$
-requires many separate 
-pilot bandwidths.  The 
-$\hat{\gmat{\Psi}}_4$ estimated in this element-wise 
-way is not guaranteed to be positive
-definite.   This estimator could be negative definite and
- would lead to no solution to the optimisation of the
-$\PI(\HH)$ or it could be nearly singular and would lead
-to numerical instabilities. Hence using appropriate estimators of each element
+The $\hat{\gmat{\Psi}}_4$ estimated in this element-wise 
+way uses a different pilot bandwidth for each unique element 
+(5 in total). Then $\hat{\gmat{\Psi}}_4$ is not guaranteed to be positive
+definite.  Hence using appropriate estimators of each element
 of a matrix will not necessarily lead to an appropriate estimator
 of the matrix as a whole.
-Positive-definiteness can be guaranteed by using a single, common pilot bandwidth
-for all $\psi_{\vecr}$ functionals. 
-
+Positive-definiteness can be guaranteed by using a single, common pilot bandwidth. 
 
 \subsection{SAMSE pilot bandwidth selectors}
 Modifying AMSE pilot selectors, we derive
@@ -360,50 +272,26 @@ crucial to the numerical minimisation of the plug-in criterion PI. This
 method is also simpler and more parsimonious than AMSE
 selectors.
 
-Let  the $j$-th order SAMSE be 
+Let  the fourth order SAMSE be 
 \begin{align}
-\SAMSE_j(g) 
-= \sum_{\vecr: |\vecr| = j} \AMSE \,\hat{\psi}_{\vec{r}}(g) =  n^{-2}g^{-2j-4} A_1+
-n^{-1}g^{-j} A_2 + \tfrac{1}{4} g^4 A_3
+\SAMSE_4(g) = n^{-2}g^{-12} A_1 + n^{-1} g^{-4} A_2 + \tfrac{1}{4} g^4 A_3
 \end{align}
 where $A_1$ and $A_3$ are positive constants and 
-$A_2$ is a negative constant. 
-This has a minimum at 
+$A_2$ is a negative constant.  This has a minimum at 
 \begin{equation} 
 \label{eq:gsamse} 
-g_{j, \SAMSE} =
-\bigg[ \frac{(4j + 8) A_2} {\big( -j A_2 
-+ \sqrt{ j^2 A_2^2  + 
-(8j + 16) A_1 A_3}\big)n}\bigg]^{1/(j+4)}.
+g_{4, \SAMSE} =
+\bigg[ \frac{6 A_2} {\big( - A_2 
++ \sqrt{ A_2^2  +  3 A_1 A_3}\big)n}\bigg]^{1/8}.
 \end{equation}
-This is the $j$-th order SAMSE pilot bandwidth. The computation of
-$A_1, A_2$ and $A_3$ can be found in \citeasnoun{duong03}. 
+This is the SAMSE optimal pilot bandwidth. Note that only one pilot bandwidth
+is required to compute $\hat{\gmat{\Psi}}_4$. Explicit expressions for 
+$A_1, A_2$ and $A_3$ can be found in \citet*{duong03}.  Again we have the choice of
+either 1 or 2 stages for estimating the pilot bandwidth.
 
-
+ 
 \subsection{R examples}
  
-The \texttt{unicef} data set contains the number of deaths of children under 5
-years of age per 1000 live births and the average life expectancy
-(in years) at birth for 73 countries with GNI (Gross National
-Income) less than 1000 US dollars per annum per capita. The scatter plot
-is in Figure \ref{fig:unicef}. The aim of kernel density estimation
-is to find a smooth estimate of the distribution of this data.
-
-\setkeys{Gin}{width=0.4\textwidth}
-\begin{figure}[!htp]
-\begin{center}
-<<fig=TRUE>>=
-library(ks)
-data(unicef)
-plot(unicef)
-@
-\caption{Scatter plot for unicef data}
-\label{fig:unicef}
-\end{center}
-\end{figure}
-\setkeys{Gin}{width=0.7\textwidth}
-
-\newpage
 Use \texttt{Hpi} for 
 full plug-in selectors and \texttt{Hpi.diag} for diagonal plug-in selectors.
 There are two arguments which further specify the plug-in selector
@@ -411,126 +299,109 @@ used: \texttt{nstage} is the number of pilot estimation stages (1 or 2)
 and \texttt{pilot} is the type of pilot estimation (``amse" or ``samse").
 The other argument \texttt{pre} involves the pre-transformations outlined
 in Section \ref{sec:pre}. 
-<<>>=
-(Hpi1 <- Hpi(x=unicef, nstage=1, pilot="amse", pre="scale"))
-(Hpi2 <- Hpi(x=unicef, nstage=2, pilot="samse", pre="sphere"))
-(Hpi3 <- Hpi.diag(x=unicef, nstage=2, pilot="amse", pre="scale")) 
+<<print=TRUE>>=
+Hpi1 <- Hpi(x=unicef, nstage=1, pilot="amse", pre="scale")
+Hpi2 <- Hpi(x=unicef, nstage=2, pilot="samse", pre="sphere")
+Hpi3 <- Hpi.diag(x=unicef, nstage=2, pilot="amse", pre="scale")
+Hpi4 <- Hpi.diag(x=unicef, nstage=2, pilot="samse", pre="scale")
 @
-To compute a kernel density estimate over grid for display, the 
+To compute a kernel density estimate (Equation (\ref{eq:kde})), the 
 command is \texttt{kde}.  
 <<>>=
 fhat1 <- kde(x=unicef, H=Hpi1)
 fhat2 <- kde(x=unicef, H=Hpi2)
 fhat3 <- kde(x=unicef, H=Hpi3)
+fhat4 <- kde(x=unicef, H=Hpi4)
 @
-
-\newpage
-We can use the generic \texttt{plot} command to plot these
-kernel density estimates. The plots are in Figure \ref{fig:pi}.
- 
-\begin{figure}[!htp]
-\begin{center}
-<<fig=TRUE>>=
-layout(rbind(c(1,2), c(3,4)))
+We can use the \texttt{plot} command to display these
+kernel density estimates. %The plots are in Figure \ref{fig:pi}.
+%\begin{figure}[!htp]
+<<eval=FALSE>>=
 plot(fhat1, main="Plug-in: 1-stage, AMSE pilot")
 plot(fhat2, main="Plug-in: 2-stage, SAMSE pilot")
 plot(fhat3, main="Plug-in diag: 2-stage, AMSE pilot")
-layout(1)
+plot(fhat4, main="Plug-in diag: 2-stage, SAMSE pilot")
 @
-\caption{Kernel density estimates with plug-in selectors for unicef data}
-\label{fig:pi}
+\setkeys{Gin}{width=0.35\textwidth}
+\begin{center}
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat1, main="Plug-in: 1-stage, AMSE pilot", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@ 
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat2, main="Plug-in: 2-stage, SAMSE pilot", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat3, main="Plug-in diag: 2-stage, AMSE pilot", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, main="Plug-in diag: 2-stage, SAMSE pilot", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+%\caption{Kernel density estimates with plug-in selectors for unicef data}
+%\label{fig:pi}
 \end{center}
-\end{figure}
+%\end{figure}
 
-%\clearpage
+%\newpage
 
 \section{Cross validation bandwidth selectors}
 
 Cross-validation selectors are the main alternative to plug-in selectors.
 There are three main types of cross-validation selectors: 
 least squares, biased and smoothed. 
-To generalise least squares and biased cross-validation from one dimension
-to multi-dimensions is fairly straightforward.  They are straightforward
-primarily because they do not require pilot bandwidths. 
-However smoothed cross-validation selectors \emph{do} require pilot bandwidths and 
-to generalise the selection of these pilot bandwidths is not trivial.
 
 \subsection{Least squares cross validation}
 \label{sec:lscv}
 The bivariate version of 
 the least squares cross validation (LSCV) criterion of
-\citeasnoun{rudemo82} and \citeasnoun{bowman84} is 
+\citet*{rudemo82} and \citet*{bowman84} is 
 $$\LSCV (\HH) = \intr2 \hat{f}(\vec{x}; \HH)^2 \ d \vecx - 2n^{-1} \sum_{i=1}^n 
-\hat{f}_{-i} (\vec{X}_i; \HH).$$
-Here the leave-one-out estimator is 
+\hat{f}_{-i} (\vec{X}_i; \HH),$$
+where the leave-one-out estimator is 
 $$\hat{f}_{-i} (\vec{x}; \HH) = (n-1)^{-1} 
-\sum_{\jneqi}^n K_\HH (\vec{x} - \vec{X}_j) $$ 
-and the LSCV selector $\hat{\HH}_\LSCV$ 
-is the minimiser of $\LSCV(\HH)$.
-This criterion attempts to estimate the MISE in a fairly directly manner since 
-$\E \LSCV(\HH) =\MISE \,$ $\hat{f}(\cdot; \HH) - R(f).$   
-Due to its unbiasedness, the LSCV selector is sometimes called
-the unbiased cross validation (UCV) selector. 
-
-The LSCV can be expanded to give:
-$$
-\LSCV(\HH) = n^{-1} R(K) |\HH|^{-1/2} + n^{-1} (n-1)^{-1} 
-\sum_{i=1}^n \sum_{\jneqi}^n 
-( K_\HH * K_\HH - 2K_\HH) (\vec{X}_i - \vec{X}_j) 
-$$
-where $*$ is the convolution operator.
-For normal kernels, this expression simplifies further since 
-$\phi_\HH * \phi_\HH = \phi_{2\HH}:$
-\begin{equation}
+\sum_{\jneqi}^n K_\HH (\vec{x} - \vec{X}_j).$$ 
+The LSCV selector $\hat{\HH}_\LSCV$ 
+is the minimiser of $\LSCV(\HH)$. We can rewrite LSCV as
+\begin{align}
 \label{eq:lscv2}
-\LSCV(\HH) = n^{-1} R(K) |\HH|^{-1/2} + n^{-1} (n-1)^{-1} 
+\LSCV(\HH) & = n^{-1}  (4\pi)^{-1} |\HH|^{-1/2} + n^{-1} (n-1)^{-1} 
 \sum_{i=1}^n \sum_{\jneqi}^n 
-(\phi_{2\HH} - 2\phi_\HH) (\vec{X}_i - \vec{X}_j). 
-\end{equation}
-
+(K_{2\HH} - 2K_\HH) (\vec{X}_i - \vec{X}_j). 
+\end{align}
+We can show that $\E \LSCV (\HH) = \MISE(\HH) - R(f)$. 
 
 \subsection{Biased cross validation}
-The LSCV selector relies on estimating the MISE.  The approach taken by the
-biased cross validation (BCV) selector relies on estimating the AMISE.
-So likewise for the plug-in selectors in Section \ref{sec:plugin}, we need to
-estimate $\gmat{\Psi}_4.$  Plug-in methods use a pilot bandwidth matrix/matrices 
-that is/are independent of $\HH.$ 
-For BCV, we set $\G = \HH$ and use slightly
-different estimators.    
-   
+Plug-in methods use a pilot bandwidth matrix $\G$, 
+which is independent of $\HH$, to estimate $\gmat{\Psi}_4$.
+For BCV, we set $\G = \HH$ and use slightly different estimators.    
 There are two versions of BCV, depending on the 
-estimator of $\psi_{\vecr}, |\vecr| = 4,$  see \citeasnoun{sain94}. We can use
+estimator of $\psi_{r_1, r_2}$ with $r_1 + r_2 = 4,$  see \citet*{sain94}. 
+We can use
 \begin{equation}
 \label{eq:leave-out1}
-\check{\psi}_{\vec{r}} (\HH) =
+\check{\psi}_{r_1, r_2} (\HH) =
 n^{-2} \sum_{i=1}^{n}\sum_{\jneqi}^{n} 
-(K^{(\vec{r})}_\HH *  K_{\HH}) (\vec{X}_i - \vec{X}_j)
+K^{(r_1, r_2)}_{2\HH} (\vec{X}_i - \vec{X}_j)
 \end{equation}
 or we could use 
 \begin{equation}
-\label{eq:leave-out2} \tilde{\psi}_{\vec{r}} (\HH) = n^{-1}
-\sum_{i=1}^n \hat{f}_{-i}^{(\vec{r})} (\vec{X}_i; \HH) =
+\label{eq:leave-out2} \tilde{\psi}_{r_1, r_2} (\HH) = n^{-1}
+\sum_{i=1}^n \hat{f}_{-i}^{(r_1, r_2)} (\vec{X}_i; \HH) =
 n^{-1} (n-1)^{-1} \sum_{i=1}^{n}\sum_{\jneqi}^{n} 
-K^{(\vec{r})}_{\HH} (\vec{X}_i - \vec{X}_j).
+K^{(r_1, r_2)}_{\HH} (\vec{X}_i - \vec{X}_j).
 \end{equation}
-We use these, rather than the leave-in-diagonals estimator of Section
-\ref{sec:plugin}, as we no longer seek to annihilate the contribution
-from the non-stochastic terms with the leading term of the 
-leave-out-diagonals double sum.  
 The estimates $\check{\gmat{\Psi}}_4$ and
 $\tilde{\gmat{\Psi}}_4$ are obtained from $\gmat{\Psi}_4$ by substituting
-$\check{\psi}_{\vecr}$ and $\tilde{\psi}_{\vecr}$  for $\psi_{\vecr}.$
-
+$\check{\psi}_{r_1, r_2}$ and $\tilde{\psi}_{r_1, r_2}$  for $\psi_{r_1, r_2}.$
 The BCV1 function is the version of BCV with $\check{\gmat{\Psi}}_4$ 
 \begin{equation}
 \label{eq:bcv1}
-\BCV 1 (\HH) =  n^{-1} R(K)|\HH|^{-1/2} + \tfrac{1}{4} \mu_2(K)^2 (\VECH^T \HH)
+\BCV 1 (\HH) = n^{-1} (4\pi)^{-1} |\HH|^{-1/2} + \tfrac{1}{4} (\VECH^T \HH)
 \check{\gmat{\Psi}}_4  (\VECH \HH)
 \end{equation}
 and the BCV2 function is the version with $\tilde{\gmat{\Psi}}_4$ 
 \begin{equation}
 \label{eq:bcv2}
-\BCV 2 (\HH) =  n^{-1} R(K)|\HH|^{-1/2} + \tfrac{1}{4} \mu_2(K)^2 (\VECH^T \HH)
+\BCV 2 (\HH) = n^{-1} (4\pi)^{-1} |\HH|^{-1/2} + \tfrac{1}{4} (\VECH^T \HH)
 \tilde{\gmat{\Psi}}_4  (\VECH \HH).
 \end{equation}
 The BCV selectors $\hat{\HH}_\BCV$ are the minimisers of the appropriate 
@@ -538,123 +409,101 @@ BCV function.
 
 \subsection{Smoothed cross validation}
 \label{sec:scv}
-Smoothed cross validation (SCV), introduced by \citeasnoun{hall92}, 
+Smoothed cross validation (SCV), introduced by \citet*{hall92}, 
 can be thought of as a hybrid of LSCV and BCV.  The SCV 
 criterion takes the asymptotic integrated variance from the BCV but attempts
 to estimate the integrated squared bias exactly rather than using its asymptotic
-form:
-\begin{align*}
-\SCV (\HH) &= n^{-1}R(K) |\HH|^{-1/2} + n^{-2} \sum_{i=1}^n
-\sum_{j=1}^n (K_\HH * K_\HH * L_\G * L_\G \\
-&\quad -  2K_\HH * L_\G * L_\G + L_\G * L_\G)  (\vec{X}_i - \vec{X}_j)
-\end{align*}
-where $L_\G(\cdot)$ is the pilot kernel with pilot bandwidth matrix $\G.$
-The SCV selector $\hat{\HH}_\SCV$ is the minimiser of $ \SCV(\HH).$
-If $K = L = \phi$ then the SCV has a simpler form:
-\begin{equation}
+form
+\begin{align}
 \label{eq:scv_norm}
-\SCV (\HH) = n^{-1}|\HH|^{-1/2} (4\pi)^{-d/2} + n^{-2} \sum_{i=1}^n
-\sum_{j=1}^n (\phi_{2\HH + 2\G} - 2\phi_{\HH + 2\G} + \phi_{2\G})
+\SCV (\HH) &=  n^{-1}(4\pi)^{-1} |\HH|^{-1/2} 
++ n^{-2} \sum_{i=1}^n
+\sum_{j=1}^n (K_{2\HH + 2\G} - 2K_{\HH + 2\G} + K_{2\G})
 (\vec{X}_i - \vec{X}_j). 
-\end{equation}
+\end{align}
+The SCV selector $\hat{\HH}_\SCV$ is the minimiser of $ \SCV(\HH).$
 
-
-Now we have a similar problem to plug-in selectors: how to select
-the pilot bandwidth $\G$. \citeasnoun{sain94} set the pilot to be equal to the
-final bandwidth $\HH$.  This circumvents the need to select a separate pilot
-bandwidth but this is sub-optimal. 
-We generalise the process of \citeasnoun{jones91b} to find an optimal 
+Again, we consider pilot bandwidth matrices of the form  $\G = g^2 \mat{I}$.
+We generalise the process of \citet*{jones91b} to find an optimal 
 pilot bandwidth selector.
-
-
-The criterion that we use to measure the discrepancy between $\hat{\HH}_\SCV$
-and $\HH_\AMISE$ is  
-$$\tr \MSE(\VECH \hat{\HH}_\SCV; \G) = \sum_{i=1}^d \E ( \hat{h}^2_{\SCV, i}
-- h^2_{\AMISE, i})^2 $$
-where $\hat{h}^2_{\SCV, i}$ is the $i$-th diagonal element of $\hat{\HH}_\SCV$
-and $h^2_{\AMISE, i}$ is the $i$-th diagonal element of $\HH_\AMISE$.
-This is a multivariate extension of the univariate $\MSE (\hat{h}) = 
-\E (\hat{h} - h_\AMISE)^2$. 
-
-As in Section \ref{sec:plugin}, we will use the parameterisation 
-$g^2 \mat{I}$ for the pilot bandwidth matrix $\G$ i.e.  we
-wish to find $$ g_\AMSE = \argmin{g>0} \tr \AMSE(\VECH \hat{\HH}_\SCV; g).$$  
-We can show, after considerable effort, that for $d > 1$, 
+We can show that the AMSE optimal pilot selector is
 \begin{equation}
 g_\AMSE = \left[ \frac{12 C_{\mu_2}}
- { (-4 C_{\mu_1} + C_{\mu_0}^{1/2}) n }\right] ^{1/6}
+ { (-4 C_{\mu_1} + \sqrt{C_{\mu_0}}) n }\right] ^{1/8}
 \label{eq:gamse}
 \end{equation}
 where $C_{\mu_0}, C_{\mu_1}, C_{\mu_2}$ are constants.  The details of the derivation
-of this pilot bandwidth is available in \citeasnoun{duong05}.
+of this pilot bandwidth is available in \citet*{duong05}.
 
 \subsection{R examples}
+\label{sec:cv_eg}
+
 We continue with the \texttt{unicef} data. 
 \texttt{Hlscv} and \texttt{Hlscv.diag} are the full and diagonal
 LSCV selectors. (The \texttt{Hstart} argument in the below code specifies the initial
 value for the numerical minimisation - it can be specified
-for any of the bandwidths in \ks). 
-\texttt{Hbcv} implements both versions (BCV1 and BCV2), the
-default is BCV1. TO use BCV2, we set \texttt{whichbcv=2}.
-Their diagonal counterparts is \texttt{Hbcv.diag}. 
+for any of the bandwidth selector functions). 
+\texttt{Hbcv} implements both BCV1 and BCV2. The
+default is BCV1; set \texttt{whichbcv=2} to use BCV2.
+Their diagonal counterpart is \texttt{Hbcv.diag}. 
 \texttt{Hscv} is the full SCV selector (no diagonal version is available).
-
+Its argument \texttt{pre} is the same as for \texttt{Hpi} and \texttt{Hpi.diag}
+in Section \ref{sec:pi_eg}.  
+<<print=TRUE>>=
+Hlscv1 <- Hlscv(unicef)
+Hlscv2 <- Hlscv.diag(unicef, Hstart=Hlscv1)
+Hbcv1 <- Hbcv(unicef)
+Hbcv2 <- Hbcv.diag(unicef, whichbcv=2)
+Hscv1 <- Hscv(unicef, pre="sphere")
+Hscv2 <- Hscv(unicef, pre="scale")
+@ 
 <<>>=
-(Hlscv1 <- Hlscv(unicef))
-(Hlscv2 <- Hlscv.diag(unicef, Hstart=Hlscv1))
-(Hbcv1 <- Hbcv(unicef))
-(Hbcv2 <- Hbcv(unicef, whichbcv=2))
-(Hscv1 <- Hscv(unicef, pre="sphere"))
-(Hscv2 <- Hscv(unicef, pre="scale"))
-
 fhat1 <- kde(unicef, Hlscv1)
 fhat2 <- kde(unicef, Hlscv2)
 fhat3 <- kde(unicef, Hbcv1)
 fhat4 <- kde(unicef, Hscv1)
 @ 
-
-The plots are in Figure \ref{fig:cv}.
-\begin{figure}[!htp]
-\begin{center}
-<<fig=TRUE>>=
-layout(rbind(c(1,2), c(3,4)))
+<<print=FALSE,echo=FALSE>>=
+gs <- rep(51,2)
+fhat4 <- kde(unicef, Hscv1, gridsize=gs)
+@
+<<eval=FALSE>>=
 plot(fhat1, main="LSCV")
 plot(fhat2, main="LSCV diag")
 plot(fhat3, main="BCV")
 plot(fhat4, main="SCV")
-layout(1)
 @
-\caption{Cross validation selectors for unicef data}
-\label{fig:cv}
-\end{center}
-\end{figure}
-
-
-\newpage
-\section{More graphics}
-There are many options with plotting KDEs, as illustrated in Figure \ref{fig:kde}.
-
-\begin{figure}[!htp]
 \begin{center}
-<<fig=TRUE>>=
-layout(rbind(c(1,2), c(3,4)))
-plot(fhat4, display="slice", lcol="blue", ptcol="black", cont=seq(10,90, by=20), cex=0.3)
-plot(fhat4, display="slice", ncont=8, drawlabels=FALSE, drawpoints=FALSE)
-plot(fhat4, display="image", col=rev(heat.colors(100)))
-plot(fhat4, display="persp")
-layout(1)
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat1, main="LSCV", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
 @
-\caption{Graphics options for KDE plots}
-\label{fig:kde} 
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat2, main="LSCV diag", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@ 
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat3, main="BCV", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@ 
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, main="SCV", cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
 \end{center}
-\end{figure}
 
+%\caption{Cross validation selectors for unicef data}
+%\label{fig:cv}
+
+%\end{figure}
+
+\section{More graphics}
+There are many options with plotting kernel density estimates. 
+%as illustrated in Figure \ref{fig:kde}.
 Slice or contour plots are the default or can be explicitly called by setting
-\texttt{display="slice"}. The type of contours plotted is controlled by
+\texttt{display="slice"}. The way the contours are plotted is controlled by
 \texttt{cont} or \texttt{ncont}: only one of these needs to be set. 
+The argument 
 \texttt{cont} takes a vector of percentages and produces a set of contours
 at the levels corresponding to the percentages of the maximum height of the 
-density estimate. \texttt{ncont} takes a number and \texttt{R} tries to 
+density estimate. The argument 
+\texttt{ncont} takes a number and \texttt{R} tries to 
 compute a pretty set of \texttt{ncont} contours.  
 The colour(s) of the contour lines is \texttt{lcol} and
 the colour(s) of the plotting symbols is \texttt{ptcol}.
@@ -666,7 +515,7 @@ called by \texttt{display="image"}.  These
 are similar to contour plots except that the heights of the density 
 estimate are represented by different colours rather than with
 different level curves. The default colours is \texttt{heat.colors}
-but we use instead \texttt{rev(heat.colors} which gives us the high 
+but we use instead \texttt{rev(heat.colors)} which gives us the high 
 values as red and the low values (close to zero) as white with
 yellow/orange as intermediate. 
 
@@ -675,16 +524,93 @@ called by \texttt{display="persp"}. This is an attempt
 to capture the three-dimensional structure more directly than the 
 image or contour plots.
 
+Another possibility is \texttt{display="filled"} for a filled contour plot.
+This is a hybrid of contour and image plots where each contour level is filled
+with a single colour, implemented as \texttt{filled.contour()}. A nice
+feature is that it automatically provides a legend with density estimate heights
+and their corresponding colours.  
+
+%\begin{figure}[!htp]
+
+<<eval=FALSE>>=
+plot(fhat4, lcol="blue", ptcol="black", cont=seq(10,90, by=20))
+plot(fhat4, ncont=8, drawlabels=FALSE, drawpoints=FALSE)
+plot(fhat4, display="image", col=rev(heat.colors(100)))
+plot(fhat4, display="persp")
+@
+\begin{center}
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, display="slice", lcol="blue", ptcol="black", cont=seq(10,90, by=20), cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, display="slice", ncont=8, drawlabels=FALSE, drawpoints=FALSE, cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, display="image", col=rev(heat.colors(100)), cex.main=1.6, cex.lab=1.6, cex.axis=1.6)
+@
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+plot(fhat4, display="persp")
+@
+%\caption{Graphics options for KDE plots}
+%\label{fig:kde} 
+\end{center}
+%\end{figure}
+
+
+\section{Large sample sizes and binned kernel estimation}
+\label{sec:binned}
+
+For large sample sizes, direct computation of kernel estimates becomes 
+computationally difficult. One common technique for increasing computational
+speed for these large samples is binned kernel estimation, 
+see \citet*[Appendix~D]{wand94}. Unfortunately binned estimation is only defined 
+with diagonal bandwidth matrices. So applicable cases include 
+computing the pilot bandwidth matrices
+(which are parameterised as $g^2 \mat{I}$) for general plug-in and SCV selectors;
+and for kernel density estimators with diagonal bandwidth matrices. 
+
+
+<<fig=FALSE>>=
+mus <- rbind(c(-2,2), c(0,0), c(2,-2))
+Sigmas <- rbind(diag(2), 0.8*invvech(c(1, -0.9, 1)), diag(2))
+cwt <- 3/11
+props <- c((1-cwt)/2, cwt, (1-cwt)/2)
+##clevels <- seq(0, 0.14, length=30)
+##plotmixt(mus, Sigmas, props, display="filled", levels=clevels, col=rev(heat.colors(30)))
+
+x <- rmvnorm.mixt(10000, mus, Sigmas, props) 
+H.pidiag <- Hpi.diag(x, binned=TRUE)
+H.pi <- Hpi(x, binned=TRUE) 
+@
+For large sample sizes, we don't recommend plotting with slice/contour plots
+because computing the relative contour heights is computationally intensive.
+Instead, image, perspective or filled contour plots are more efficient.
+%On the left is the true density function from \texttt{plotmixt()} and 
+%on the right is the density estimate.
+<<eval=FALSE>>=
+fhat.diag <- kde(x, H=H.pidiag, binned=TRUE)
+plot(fhat.diag, display="filled", col=rev(heat.colors(30))) 
+@
+%\setkeys{Gin}{width=0.7\textwidth}
+\begin{center}  
+<<fig=TRUE,echo=FALSE,print=FALSE>>=
+fhat.diag <- kde(x, H=H.pidiag, binned=TRUE, bgridsize=rep(51,2))
+plot(fhat.diag, display="filled", col=rev(heat.colors(30)), cex.axis=1.6, cex.lab=1.6)
+@ 
+\end{center}
+
+%fhat <- kde(x, H=H.pi)
+%plot(fhat, display="image", col=rev(heat.colors(100)))
+%fhat <- kde(x, H=H.pi, gridsize=rep(51,2))
+%plot(fhat, display="image", col=rev(heat.colors(100)), cex.lab=1.6, cex.axis=1.6) 
 
 \section{Pre-transformations}
 \label{sec:pre}
 The plug-in and SCV selector functions use pilot bandwidths of the 
 form $\mat{G} = g^2 \mat{I}$ which will be 
-clearly inappropriate if the dispersion of the data differs 
+inappropriate if the dispersion of the data differs 
 markedly between the two coordinate 
-directions. Therefore the data should be pre-transformed before the 
-algorithm is employed. More 
-specifically, we propose that the algorithm is applied to transformed data 
+directions. We estimate using the transformed data 
 $\vec{X}_1^*, \vec{X}_2^*, 
 \dots, \vec{X}_n^*$, where the transformation is either {\em sphering} 
 $$\vec{X}^*= \mat{S}^{-1/2} \vec{X}$$
@@ -692,8 +618,7 @@ where $\mat{S}$ is the sample covariance matrix of the untransformed data;
 or {\em scaling}
 $$\vec{X}^*= \mat{S}_D^{-1/2} \vec{X}$$
 where $\mat{S}_D = {\rm diag}(s_{1}^2, s_{2}^2)$ and $s_1^2, s_2^2$ are 
-the diagonal elements
-of $\mat{S}$ (i.e.~marginal sample variances). The plug-in 
+the marginal sample variances. The  
 bandwidth matrix $\hat{\HH}^*$
 for the sphered or scaled data can be back transformed to the original scale by 
 $\hat{\HH} = \mat{S}^{1/2} \hat{\HH}^* \mat{S}^{1/2}$ or 
@@ -703,80 +628,97 @@ $\hat{\HH} =
 
 \section{General recommendations}
 
-Like with most other statistical techniques, it is advisable to try a few 
+It is generally advisable to try a few 
 different selectors and visually examine the resulting density estimates. 
-One of the primary motivations of the \ks \ package 
+One of the primary motivations for the author to write the \ks \ package 
 is to make visualising kernel density estimates easy.
-
 There are many different bandwidth selectors available in \ks: they may
 now pose a problem of \emph{too} much choice.
 The full bandwidth selectors will be better than their diagonal counterparts
 when the data have large mass oriented obliquely to the co-ordinate axes 
 (as is the case for the \texttt{unicef} data). 
-Amongst the full selectors there is still a range of performance. In general,
-the 2-stage plug-in and the SCV selectors are more stable than the 
-1-stage plug-in, BCV and LSCV selectors. The 2-stage plug-in and the SCV selectors
+Amongst the full selectors, we advise against using the BCV selector. 
+The LSCV selector is useful in some cases though its performance is 
+known to be highly variable. The 2-stage plug-in and the SCV selectors
 can be viewed as generally recommended bandwidth selectors.
 
 
 
-\bibliographystyle{agsm}
+\bibliographystyle{apalike} %%apsrmp or apalike
+%\bibliography{/c/tduong/home/research/references}
 
-\begin{thebibliography}{xx}
+\begin{thebibliography}{}
 
-\harvarditem{Bowman}{1984}{bowman84}
-Bowman, A.~W.  \harvardleft 1984\harvardright , `An alternative method of
-  cross-validation for the smoothing of density estimates', {\em Biometrika}
-  {\bf 71},~353--360.
+\bibitem[Bowman and Azzalini, 2005]{sm}
+Bowman A.~W., Azzalini A. (2005).
+\newblock \emph{sm: Kernel Smoothing Methods: Bowman and Azzalini (1997)}.
+\newblock R package version 2.0-14. Ported to R by B. D. Ripley.
 
-\harvarditem{Duong \harvardand\ Hazelton}{2003}{duong03}
-Duong, T. \harvardand\ Hazelton, M.~L.  \harvardleft 2003\harvardright ,
-  `Plug-in bandwidth matrices for bivariate kernel density estimation', {\em
-  Journal of Nonparametric Statistics} {\bf 15},~17--30.
+\bibitem[Bowman, 1984]{bowman84}
+Bowman, A.~W. (1984).
+\newblock An alternative method of cross-validation for the smoothing of
+  density estimates.
+\newblock {\em Biometrika}, \textbf{71}, 353--360.
 
-\harvarditem{Duong \harvardand\ Hazelton}{2005}{duong05}
-Duong, T. \harvardand\ Hazelton, M.~L.  \harvardleft 2005\harvardright ,
-  `Cross-validation bandwidth matrices for multivariate kernel density
-  estimation', {\em Scandinavian Journal of Statistics} {\bf 32},~485--506.
+\bibitem[Duong and Hazelton, 2003]{duong03}
+Duong, T. and Hazelton, M.~L. (2003).
+\newblock Plug-in bandwidth matrices for bivariate kernel density estimation.
+\newblock {\em Journal of Nonparametric Statistics}, \textbf{15}, 17--30.
 
-\harvarditem[Hall et~al.]{Hall, Marron \harvardand\ Park}{1992}{hall92}
-Hall, P., Marron, J.~S. \harvardand\ Park, B.~U.  \harvardleft
-  1992\harvardright , `Smoothed cross-validation', {\em Probability Theory and
-  Related Fields} {\bf 92},~1--20.
+\bibitem[Duong and Hazelton, 2005]{duong05}
+Duong, T. and Hazelton, M.~L. (2005).
+\newblock Cross-validation bandwidth matrices for multivariate kernel density
+  estimation.
+\newblock {\em Scandinavian Journal of Statistics}, \textbf{32}, 485--506.
 
-\harvarditem[Jones et~al.]{Jones, Marron \harvardand\ Park}{1991}{jones91b}
-Jones, M.~C., Marron, J.~S. \harvardand\ Park, B.~U.  \harvardleft
-  1991\harvardright , `A simple root $n$ bandwidth selector', {\em The Annals
-  of Statistics} {\bf 19},~1919--1932.
+\bibitem[Hall et~al., 1992]{hall92}
+Hall, P., Marron, J.~S., and Park, B.~U. (1992).
+\newblock Smoothed cross-validation.
+\newblock {\em Probability Theory and Related Fields}, \textbf{92}, 1--20.
 
-\harvarditem{Rudemo}{1982}{rudemo82}
-Rudemo, M.  \harvardleft 1982\harvardright , `Empirical choice of histograms
-  and kernel density estimators', {\em Scandinavian Journal of Statistics.
-  Theory and Applications} {\bf 9},~65--78.
+\bibitem[Jones et~al., 1991]{jones91b}
+Jones, M.~C., Marron, J.~S., and Park, B.~U. (1991).
+\newblock A simple root $n$ bandwidth selector.
+\newblock {\em The Annals of Statistics}, \textbf{19}, 1919--1932.
 
-\harvarditem[Sain et~al.]{Sain, Baggerly \harvardand\ Scott}{1994}{sain94}
-Sain, S.~R., Baggerly, K.~A. \harvardand\ Scott, D.~W.  \harvardleft
-  1994\harvardright , `Cross-validation of multivariate densities', {\em
-  Journal of the American Statistical Association} {\bf 89},~807--817.
+\bibitem[Rudemo, 1982]{rudemo82}
+Rudemo, M. (1982).
+\newblock Empirical choice of histograms and kernel density estimators.
+\newblock {\em Scandinavian Journal of Statistics. Theory and Applications},
+  \textbf{9}, 65--78.
 
-\harvarditem{Simonoff}{1996}{simonoff96}
-Simonoff, J.~S.  \harvardleft 1996\harvardright , {\em Smoothing Methods in
-  Statistics}, Springer-Verlag, New York.
+\bibitem[Sain et~al., 1994]{sain94}
+Sain, S.~R., Baggerly, K.~A., and Scott, D.~W. (1994).
+\newblock Cross-validation of multivariate densities.
+\newblock {\em Journal of the American Statistical Association}, \textbf{89}, 807--817.
 
-\harvarditem{Wand \harvardand\ Jones}{1993}{wand93}
-Wand, M.~P. \harvardand\ Jones, M.~C.  \harvardleft 1993\harvardright ,
-  `Comparison of smoothing parameterizations in bivariate kernel density
-  estimation', {\em Journal of the American Statistical Association} {\bf
-  88},~520--528.
+\bibitem[Sheather and Jones, 1991]{sheather91}
+Sheather, S.~J. and Jones, M.~C. (1991).
+\newblock A reliable data-based bandwidth selection method for kernel density
+  estimation.
+\newblock {\em Journal of the Royal Statistical Society. Series B.
+  Methodological}, \textbf{53}, 683--690.
 
-\harvarditem{Wand \harvardand\ Jones}{1994}{wand94}
-Wand, M.~P. \harvardand\ Jones, M.~C.  \harvardleft 1994\harvardright ,
-  `Multivariate plug-in bandwidth selection', {\em Computational Statistics}
-  {\bf 9},~97--116.
+\bibitem[Simonoff, 1996]{simonoff96}
+Simonoff, J.~S. (1996).
+\newblock {\em Smoothing Methods in Statistics}.
+\newblock Springer-Verlag, New York.
 
-\harvarditem{Wand \harvardand\ Jones}{1995}{wand95}
-Wand, M.~P. \harvardand\ Jones, M.~C.  \harvardleft 1995\harvardright , {\em
-  Kernel Smoothing}, Chapman and Hall Ltd., London.
+\bibitem[Wand, 2006]{KernSmooth}
+Wand, M.~P. (2006).
+\newblock \emph{KernSmooth: Functions for kernel smoothing for Wand \& Jones
+  (1995)}.
+\newblock R package version 2.22-19. R port by Brian Ripley.
+
+\bibitem[Wand and Jones, 1994]{wand94}
+Wand, M.~P. and Jones, M.~C. (1994).
+\newblock Multivariate plug-in bandwidth selection.
+\newblock {\em Computational Statistics}, \textbf{9}, 97--116.
+
+\bibitem[Wand and Jones, 1995]{wand1995}
+Wand, M.~P. and Jones, M.~C. (1995).
+\newblock {\em Kernel Smoothing}.
+\newblock Chapman \& Hall/CRC, London.
 
 \end{thebibliography}
 
