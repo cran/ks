@@ -1,20 +1,22 @@
 \name{plotmixt}
 \alias{plotmixt}
 
-\title{Plot for 2- and 3-dimensional normal mixture density functions.}
+\title{Plot for 2- and 3-dimensional normal and t-mixture density functions.}
 \description{
-  Plot for 2- and 3-dimensional normal mixture density functions.
+  Plot for 2- and 3-dimensional normal and t-mixture density functions.
 }
 
 
 \usage{
-plotmixt(mus, Sigmas, props, ...)
+plotmixt(mus, Sigmas, props, dfs, dist="normal", ...)
 }
 
 \arguments{
   \item{mus}{(stacked) matrix of mean vectors}
   \item{Sigmas}{(stacked) matrix of variance matrices}
   \item{props}{vector of mixing proportions}
+  \item{dfs}{vector of degrees of freedom}
+  \item{dist}{"normal" - normal mixture, "t" - t-mixture}
   \item{...}{other graphics parameters}
   }
 
@@ -36,6 +38,7 @@ Sigma <- matrix(c(1, 0.7, 0.7, 1), nr=2, nc=2)
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus, Sigmas, props, ncont=6, drawlabels=FALSE)
+plotmixt(mus, Sigmas, props, ncont=6, dfs=c(3,8), dist="t", drawlabels=FALSE)
 
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
@@ -43,7 +46,7 @@ Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3)
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus, Sigmas, props, origin=c(-3,-3,-3))
-
+plotmixt(mus, Sigmas, props, origin=c(-3,-3,-3),  dfs=c(3,8), dist="t")
 }
 
 \keyword{ hplot}

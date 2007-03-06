@@ -1,45 +1,60 @@
 This is BibTeX, Version 0.99c (Web2C 7.4.5)
 The top-level auxiliary file: kde.aux
 The style file: apalike.bst
-Database file #1: /c/tduong/home/research/references.bib
-You've used 10 entries,
+I found no \bibdata command---while reading file kde.aux
+Warning--I didn't find a database entry for "simonoff1996"
+Warning--I didn't find a database entry for "sm"
+Warning--I didn't find a database entry for "KernSmooth"
+Warning--I didn't find a database entry for "wand1995"
+Warning--I didn't find a database entry for "sheather91"
+Warning--I didn't find a database entry for "wand1994"
+Warning--I didn't find a database entry for "duong2003"
+Warning--I didn't find a database entry for "rudemo82"
+Warning--I didn't find a database entry for "bowman84"
+Warning--I didn't find a database entry for "sain94"
+Warning--I didn't find a database entry for "hall92"
+Warning--I didn't find a database entry for "jones1991b"
+Warning--I didn't find a database entry for "duong2005"
+Warning--I didn't find a database entry for "wand94"
+You've used 0 entries,
             1935 wiz_defined-function locations,
-            536 strings with 5034 characters,
-and the built_in function-call counts, 3838 in all, are:
-= -- 393
-> -- 127
-< -- 7
-+ -- 46
-- -- 40
-* -- 318
-:= -- 671
-add.period$ -- 30
-call.type$ -- 10
-change.case$ -- 69
-chr.to.int$ -- 10
-cite$ -- 10
-duplicate$ -- 140
-empty$ -- 279
-format.name$ -- 58
-if$ -- 739
+            485 strings with 3780 characters,
+and the built_in function-call counts, 17 in all, are:
+= -- 0
+> -- 0
+< -- 0
++ -- 0
+- -- 0
+* -- 0
+:= -- 7
+add.period$ -- 0
+call.type$ -- 0
+change.case$ -- 0
+chr.to.int$ -- 0
+cite$ -- 0
+duplicate$ -- 0
+empty$ -- 1
+format.name$ -- 0
+if$ -- 1
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 11
-newline$ -- 53
-num.names$ -- 30
-pop$ -- 47
+missing$ -- 0
+newline$ -- 3
+num.names$ -- 0
+pop$ -- 0
 preamble$ -- 1
-purify$ -- 70
+purify$ -- 0
 quote$ -- 0
-skip$ -- 107
+skip$ -- 1
 stack$ -- 0
-substring$ -- 333
-swap$ -- 10
+substring$ -- 0
+swap$ -- 0
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 58
+type$ -- 0
 warning$ -- 0
-while$ -- 38
+while$ -- 0
 width$ -- 0
-write$ -- 132
+write$ -- 2
+(There was 1 error message)

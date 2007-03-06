@@ -32,7 +32,7 @@
   \item{display}{type of display, "slice" for contour plot, "persp" for
     perspective plot, "image" for image plot, "filled" for filled
     contyour plot (2-d plot)}
-  \item{cont}{vector of percentages (of maximum height) for contour
+  \item{cont}{vector of percentiles of density estimate heights for contour
     level curves (2-d plot)}
   \item{ncont}{number of contour level curves (2-d plot)}
   \item{ptcol}{plotting colour for data points}
