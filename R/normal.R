@@ -1292,13 +1292,14 @@ plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", ...)
 }
 
 
-plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
+plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
     xlim, ylim, gridsize, display="slice", cont=c(25,50,75), lty,
     ncont=NULL, xlabs="x", ylabs="y", zlabs="Density function",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, ...)
+    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e6, ...)
 {
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
+
   if (is.vector(mus))
     mus <- as.matrix(t(mus))
 
@@ -1316,25 +1317,19 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
 
   d <- ncol(Sigmas)
 
-  if(!separate)
-  {  
-    if (dist=="n")
-      dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
-    else if (dist=="t")
-      dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
-    dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
-  }
-  else
+  
+  if (dist=="n")
   {
-    dens.vec <- list()
-    dens.mat <- list()
-    if (missing(lty)) lty <- 1:nrow(mus)
-    for (j in 1:nrow(mus))
-    {
-      dens.vec[[j]] <- props[j]*dmvnorm.mixt(xy, mus[j,], Sigmas[((j-1)*d+1):(j*d),],
-                                             props=1)
-      dens.mat[[j]] <- matrix(dens.vec[[j]], nc=length(x), byrow=FALSE)
-    }
+    dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
+    x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
+    dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
+  }
+  else if (dist=="t")
+  {
+    dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
+    dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
+    x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+    dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
   }
   
   disp <- substr(display,1,1)
@@ -1345,47 +1340,24 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
 
   else if (disp=="s")
   {
-    if (!separate)
-    {
-      if (missing(lty)) lty <- 1
-      hts <- quantile(dens, prob=(100 - cont)/100)
-      if (!add)
-        plot(x, y, type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
-      
-      if (is.null(ncont))
-        for (i in 1:length(cont)) 
-        {
-          scale <- cont[i]/hts[i]
-          contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE,
+
+    if (missing(lty)) lty <- 1
+    hts <- quantile(dens.rand, prob=(100 - cont)/100)
+    if (!add)
+      plot(x, y, type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
+    
+    if (is.null(ncont))
+      for (i in 1:length(cont)) 
+      {
+        scale <- cont[i]/hts[i]
+        contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE,
                 drawlabels=drawlabels, lty=lty, ...)
-        }
+      }
       else
         contour(x, y, dens.mat, nlevel=ncont,add=TRUE, drawlabels=drawlabels,
                 lty=lty, ...)
-    }
-    else
-    {
-      dens <- numeric()
-      for (j in 1:nrow(mus))
-        dens <- c(dens, dens.vec[[j]])
-      hts <- quantile(dens, prob=(100 - cont)/100)
-      plot(x, y, type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
-      
-      for (j in 1:nrow(mus))
-      {
-        if (is.null(ncont))
-          for (i in 1:length(cont)) 
-          {
-            scale <- cont[i]/hts[i]
-            contour(x, y, dens.mat[[j]]*scale, level=hts[i]*scale, add=TRUE,
-                    drawlabels=drawlabels, lty=lty[j], ...)
-          }
-        else
-          contour(x, y, dens.mat[[j]], level=pretty(dens, ncont), add=TRUE,
-                  drawlabels=drawlabels, lty=lty[j],...)
-      }
-    }
   }
+   
   else if (disp=="i")
     image(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, ...)
   else if (disp=="f")
@@ -1395,7 +1367,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, separate=FALSE, dist="normal",
 
 plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal",
     gridsize, xlim, ylim, zlim, alphavec, colors, add=FALSE, origin=c(0,0,0),
-    endpts, xlab, ylab, zlab)
+    endpts, xlab, ylab, zlab, nrand=1e6)
 {
   d <- 3
   dist <- tolower(substr(dist,1,1))
@@ -1451,8 +1423,19 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal"
     dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
     dens.array[,,i] <- dens.mat
   }
+  
+  if (dist=="n")
+  {  
+    x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
+    dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
+  }
+  else if (dist=="t")
+  {
+    x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+    dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+  }
 
-  hts <- quantile(apply(dens.array, 3, max), prob = (100 - cont)/100)
+  hts <- quantile(dens.rand, prob = (100 - cont)/100)
 
   if (!add)
     for (i in 1:nc) 
