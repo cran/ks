@@ -141,19 +141,13 @@ plot(kda.fhat, ncont=6, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim,
 
 ## trivariate example
 
+\dontrun{
 ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-
-#ifdef unix
-plot(kda.fhat)
-   ## colour indicates species, transparency indicates density heights
-#endif
-#ifdef windows
-plot(kda.fhat)
-   ## colour indicates species, transparency indicates density heights
-#endif
+## colour indicates species, transparency indicates density heights
+}
 }
 \keyword{ hplot}
 

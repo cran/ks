@@ -1295,7 +1295,7 @@ plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", ...)
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
     xlim, ylim, gridsize, display="slice", cont=c(25,50,75), lty,
     ncont=NULL, xlabs="x", ylabs="y", zlabs="Density function",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e6, ...)
+    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e5, ...)
 {
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
@@ -1319,19 +1319,13 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
 
   
   if (dist=="n")
-  {
     dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
-    x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
-    dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
-  }
-  else if (dist=="t")
-  {
-    dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
-    dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
-    x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
-    dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
-  }
   
+  else if (dist=="t")
+    dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
+
+  dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
+   
   disp <- substr(display,1,1)
 
   if (disp=="p")
@@ -1340,7 +1334,17 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
 
   else if (disp=="s")
   {
-
+    if (dist=="n")
+    {
+      x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
+      dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
+    }
+    else if (dist=="t")
+    {
+      x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+      dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+    }
+    
     if (missing(lty)) lty <- 1
     hts <- quantile(dens.rand, prob=(100 - cont)/100)
     if (!add)
@@ -1367,7 +1371,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
 
 plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal",
     gridsize, xlim, ylim, zlim, alphavec, colors, add=FALSE, origin=c(0,0,0),
-    endpts, xlab, ylab, zlab, nrand=1e6)
+    endpts, xlab, ylab, zlab, nrand=1e5)
 {
   d <- 3
   dist <- tolower(substr(dist,1,1))
