@@ -40,6 +40,7 @@ props <- c(1/2, 1/2)
 plotmixt(mus, Sigmas, props, ncont=6, drawlabels=FALSE)
 plotmixt(mus, Sigmas, props, ncont=6, dfs=c(3,8), dist="t", drawlabels=FALSE)
 
+\dontrun{
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
@@ -47,6 +48,7 @@ Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus, Sigmas, props, origin=c(-3,-3,-3))
 plotmixt(mus, Sigmas, props, origin=c(-3,-3,-3),  dfs=c(3,8), dist="t")
+}
 }
 
 \keyword{ hplot}

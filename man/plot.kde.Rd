@@ -127,6 +127,7 @@ H.pi <- Hpi.diag(x, binned=TRUE)
 fhat <- kde(x, H=H.pi, binned=TRUE) 
 plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20))
 
+\dontrun{
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
@@ -137,12 +138,8 @@ x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi.diag(x, binned=TRUE, pilot="samse")
 fhat <- kde(x, H=H.pi, binned=TRUE)  
 
-#ifdef unix
 plot(fhat, origin=c(-3,-3,-3))
-#endif
-#ifdef windows
-plot(fhat, origin=c(-3,-3,-3))
-#endif
+}
 }
 
 \keyword{ hplot}
