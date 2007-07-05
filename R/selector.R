@@ -1811,10 +1811,19 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   else if (d==6)
     psi.mat <- psimat.6d(x.star, nstage=nstage, pilot=pilot)
 
+  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
+  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
+ 
+  Sinv12 <- chol2inv(chol(S12))
+
   ## use normal reference bandwidth as initial condition
   if (missing(Hstart)) 
-    Hstart <- matrix.sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x.star))
-  
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+  else    
+    Hstart <- Sinv12 %*% Hstart %*% Sinv12
+
+  Hstart <- matrix.sqrt(Hstart)
+
   ## PI is estimate of AMISE
   pi.temp <- function(vechH)
   { 
@@ -1835,9 +1844,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
     H <- matrix(NA, nc=d, nr=d) 
   }    
 
-  # back-transform
-  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
-  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
+  ## back-transform
   H <- S12 %*% H %*% S12
   
   return(H)
@@ -1860,10 +1867,14 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
                      bgridsize)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
+  
   if (substr(pre,1,2)=="sc")
     x.star <- pre.scale(x)
   else if (substr(pre,1,2)=="sp")
     x.star <- pre.sphere(x)
+
+  if (substr(pre,1,2)=="sp")
+    stop("Using pre-sphering won't give diagonal bandwidth matrix\n")
 
   if (substr(pilot,1,1)=="a")
     pilot <- "amse"
@@ -1892,13 +1903,6 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
     bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(H.max)))
   }
   
-  ## pre-transform data 
-  if (pre=="sphere")
-    x.star <- pre.sphere(x)
-  else if (pre=="scale")
-    x.star <- pre.scale(x)
-
-  
   if (d==2)
   {
     if (nstage == 1)
@@ -1922,8 +1926,13 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
       stop("Use SAMSE pilot selectors for higher dimensions")
  
     ## use normal reference bandwidth as initial condition
+
     if (missing(Hstart)) 
-      Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x.star))
+       Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+    else    
+       Hstart <- Sinv12 %*% Hstart %*% Sinv12
+
+    Hstart <- matrix.sqrt(Hstart)
  
     if (d==3)
       psi.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)    
@@ -2154,7 +2163,7 @@ Hbcv <- function(x, whichbcv=1, Hstart)
   lo.bound <- -Hmax
   
   if (missing(Hstart))
-    Hstart <- 0.9*matrix.sqrt(Hmax)
+    Hstart <- matrix.sqrt(0.9*Hmax)
 
   bcv1.mat.temp <- function(vechH)
   {
@@ -2725,9 +2734,13 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
   
   G.amse <- gamse^2 * diag(d)
   
-  ## use normal reference b/w matrix for initial condition
+  ## use normal reference bandwidth as initial condition
   if (missing(Hstart)) 
-    Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x.star))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+  else    
+    Hstart <- S12inv %*% Hstart %*% S12inv
+
+  Hstart <- matrix.sqrt(Hstart)
 
   scv.mat.temp <- function(vechH)
   {
@@ -2740,7 +2753,93 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
   result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
                                         #control=list(abstol=n^(-10*d)))
  
-  H <-invvech(result$par) %*% invvech(result$par)
+  H <- invvech(result$par) %*% invvech(result$par)
+  H <- S12 %*% H %*% S12
+  
+  
+  return(H)
+}
+
+
+Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize)
+{
+  if(!is.matrix(x)) x <- as.matrix(x)
+  d <- ncol(x)
+  RK <- (4*pi)^(-d/2)
+  
+  ## pre-transform data
+  
+  if (substr(pre,1,2)=="sc")
+    pre <- "scale"
+  else if (substr(pre,1,2)=="sp")
+    pre <- "sphere"
+
+  if (pre=="sphere")
+     stop("Using pre-sphering doesn't give a diagonal bandwidth matrix\n")
+  
+  if (pre=="sphere")
+    x.star <- pre.sphere(x)
+  else if (pre=="scale")
+    x.star <- pre.scale(x)
+  
+  S.star <- var(x.star)
+  n <- nrow(x.star)
+
+  if (missing(bgridsize) & binned)
+    if (d==2)
+      bgridsize <- rep(151,d)
+    else if (d==3)
+      bgridsize <- rep(51, d)
+    else if (d==4)
+      bgridsize <- rep(21, d)
+
+  if (d > 4) binned <- FALSE
+   
+  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
+  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
+
+  S12inv <- chol2inv(chol(S12))
+  Hamise <- S12inv %*% Hpi(x=x,nstage=1,pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize) %*% S12inv
+
+  if (any(is.na(Hamise)))
+  {
+    warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
+    Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+  }
+
+  if (d==2)
+    gamse <- gamse.scv.2d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
+  else if (d==3)
+    gamse <- gamse.scv.3d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
+  else if (d==4)
+    gamse <- gamse.scv.4d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize)
+  else if (d==5)
+    gamse <- gamse.scv.5d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+  else if (d==6)
+    gamse <- gamse.scv.6d(x.star=x.star, Sigma.star=S.star, H=Hamise, n=n)
+  
+  G.amse <- gamse^2 * diag(d)
+  
+  ## use normal reference bandwidth as initial condition
+  if (missing(Hstart)) 
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+  else    
+    Hstart <- S12inv %*% Hstart %*% S12inv
+
+  Hstart <- matrix.sqrt(Hstart)
+
+  scv.mat.temp <- function(diagH)
+  {
+    ## ensures that H is positive definite
+    H <- diag(diagH) %*% diag(diagH)
+    return(scv.mat(x.star, H, G.amse))
+  }
+  
+  ## back-transform
+  result <- optim(diag(Hstart), scv.mat.temp, method= "Nelder-Mead")
+                                        #control=list(abstol=n^(-10*d)))
+ 
+  H <- diag(result$par) %*% diag(result$par)
   H <- S12 %*% H %*% S12
   
   

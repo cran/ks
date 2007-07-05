@@ -12,7 +12,7 @@
 
 vec <- function(x)
 {
-    d <- nrow(x)
+    d <- ncol(x)
     vecx <- vector()
     for (j in 1:d)
         vecx <- c(vecx, x[,j])

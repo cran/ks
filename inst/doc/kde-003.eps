@@ -1,0 +1,370 @@
+%!PS-Adobe-3.0
+%%DocumentNeededResources: font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Helvetica-Oblique
+%%+ font Helvetica-BoldOblique
+%%+ font Symbol
+%%DocumentMedia: special 432 432 0 () ()
+%%Title: R Graphics Output
+%%Creator: R Software
+%%Pages: (atend)
+%%BoundingBox: 0 0 432 432
+%%EndComments
+%%BeginProlog
+/bp  { gs gs } def
+% begin .ps.prolog
+/gs  { gsave } def
+/gr  { grestore } def
+/ep  { showpage gr gr } def
+/m   { moveto } def
+/l  { rlineto } def
+/np  { newpath } def
+/cp  { closepath } def
+/f   { fill } def
+/o   { stroke } def
+/c   { newpath 0 360 arc } def
+/r   { 4 2 roll moveto 1 copy 3 -1 roll exch 0 exch rlineto 0 rlineto -1 mul 0 exch rlineto closepath } def
+/p1  { stroke } def
+/p2  { gsave bg setrgbcolor fill grestore newpath } def
+/p3  { gsave bg setrgbcolor fill grestore stroke } def
+/t   { 6 -2 roll moveto gsave rotate
+       ps mul neg 0 2 1 roll rmoveto
+       1 index stringwidth pop
+       mul neg 0 rmoveto show grestore } def
+/cl  { grestore gsave newpath 3 index 3 index moveto 1 index
+       4 -1 roll lineto  exch 1 index lineto lineto
+       closepath clip newpath } def
+/rgb { setrgbcolor } def
+/s   { scalefont setfont } def
+% end   .ps.prolog
+%%IncludeResource: font Helvetica
+/Helvetica findfont
+dup length dict begin
+  {1 index /FID ne {def} {pop pop} ifelse} forall
+  /Encoding ISOLatin1Encoding def
+  currentdict
+  end
+/Font1 exch definefont pop
+%%IncludeResource: font Helvetica-Bold
+/Helvetica-Bold findfont
+dup length dict begin
+  {1 index /FID ne {def} {pop pop} ifelse} forall
+  /Encoding ISOLatin1Encoding def
+  currentdict
+  end
+/Font2 exch definefont pop
+%%IncludeResource: font Helvetica-Oblique
+/Helvetica-Oblique findfont
+dup length dict begin
+  {1 index /FID ne {def} {pop pop} ifelse} forall
+  /Encoding ISOLatin1Encoding def
+  currentdict
+  end
+/Font3 exch definefont pop
+%%IncludeResource: font Helvetica-BoldOblique
+/Helvetica-BoldOblique findfont
+dup length dict begin
+  {1 index /FID ne {def} {pop pop} ifelse} forall
+  /Encoding ISOLatin1Encoding def
+  currentdict
+  end
+/Font4 exch definefont pop
+%%IncludeResource: font Symbol
+/Symbol findfont
+dup length dict begin
+  {1 index /FID ne {def} {pop pop} ifelse} forall
+  currentdict
+  end
+/Font5 exch definefont pop
+%%EndProlog
+%%Page: 1 1
+bp
+59.04 73.44 401.76 372.96 cl
+0 0 0 rgb
+0.75 setlinewidth
+[] 0 setdash
+1 setlinecap
+1 setlinejoin
+10.00 setmiterlimit
+87.73 311.67 2.70 c p1
+199.32 286.06 2.70 c p1
+364.20 191.22 2.70 c p1
+223.42 210.51 2.70 c p1
+254.71 193.55 2.70 c p1
+107.65 269.06 2.70 c p1
+261.39 213.22 2.70 c p1
+189.29 321.72 2.70 c p1
+165.53 308.99 2.70 c p1
+131.16 306.37 2.70 c p1
+201.25 340.52 2.70 c p1
+244.38 218.01 2.70 c p1
+296.13 139.39 2.70 c p1
+297.66 199.28 2.70 c p1
+160.17 293.10 2.70 c p1
+274.77 203.70 2.70 c p1
+171.38 275.81 2.70 c p1
+296.74 93.74 2.70 c p1
+204.15 256.57 2.70 c p1
+321.28 176.15 2.70 c p1
+272.31 119.21 2.70 c p1
+141.63 301.47 2.70 c p1
+314.18 154.98 2.70 c p1
+265.15 213.10 2.70 c p1
+384.73 184.92 2.70 c p1
+82.03 319.62 2.70 c p1
+264.05 140.24 2.70 c p1
+125.05 293.68 2.70 c p1
+289.60 142.45 2.70 c p1
+143.46 282.78 2.70 c p1
+182.85 264.38 2.70 c p1
+110.44 276.92 2.70 c p1
+194.08 254.18 2.70 c p1
+232.60 266.66 2.70 c p1
+316.21 102.81 2.70 c p1
+195.58 255.13 2.70 c p1
+185.05 226.65 2.70 c p1
+331.92 227.96 2.70 c p1
+269.22 259.23 2.70 c p1
+157.75 257.16 2.70 c p1
+325.23 173.81 2.70 c p1
+123.71 294.34 2.70 c p1
+254.02 186.72 2.70 c p1
+298.54 154.98 2.70 c p1
+280.37 168.38 2.70 c p1
+168.05 256.15 2.70 c p1
+339.85 121.79 2.70 c p1
+290.60 142.60 2.70 c p1
+171.33 239.84 2.70 c p1
+206.59 314.40 2.70 c p1
+241.29 206.06 2.70 c p1
+256.99 159.12 2.70 c p1
+109.70 314.09 2.70 c p1
+137.20 255.67 2.70 c p1
+129.15 257.14 2.70 c p1
+216.87 291.46 2.70 c p1
+255.41 148.05 2.70 c p1
+209.23 238.37 2.70 c p1
+215.06 235.40 2.70 c p1
+109.12 284.65 2.70 c p1
+336.71 185.29 2.70 c p1
+378.84 164.21 2.70 c p1
+342.13 126.77 2.70 c p1
+132.70 272.07 2.70 c p1
+192.14 260.79 2.70 c p1
+219.84 212.68 2.70 c p1
+288.02 156.84 2.70 c p1
+190.04 266.67 2.70 c p1
+140.95 302.94 2.70 c p1
+289.67 98.67 2.70 c p1
+298.68 163.62 2.70 c p1
+133.44 322.60 2.70 c p1
+295.19 166.95 2.70 c p1
+324.97 183.15 2.70 c p1
+298.16 174.23 2.70 c p1
+264.11 150.13 2.70 c p1
+287.20 191.71 2.70 c p1
+201.18 246.49 2.70 c p1
+273.55 254.82 2.70 c p1
+180.89 341.44 2.70 c p1
+297.26 143.05 2.70 c p1
+77.15 305.44 2.70 c p1
+176.03 302.43 2.70 c p1
+117.15 344.47 2.70 c p1
+341.36 193.84 2.70 c p1
+161.77 273.53 2.70 c p1
+300.71 160.63 2.70 c p1
+297.48 133.51 2.70 c p1
+173.53 332.25 2.70 c p1
+177.07 287.79 2.70 c p1
+162.06 269.39 2.70 c p1
+291.44 157.51 2.70 c p1
+288.77 144.18 2.70 c p1
+128.82 246.59 2.70 c p1
+107.07 314.16 2.70 c p1
+200.03 338.33 2.70 c p1
+253.39 195.06 2.70 c p1
+230.77 220.20 2.70 c p1
+212.47 245.71 2.70 c p1
+69.52 240.03 2.70 c p1
+351.83 132.99 2.70 c p1
+156.38 318.95 2.70 c p1
+82.92 290.21 2.70 c p1
+348.79 176.40 2.70 c p1
+121.56 269.74 2.70 c p1
+302.66 125.85 2.70 c p1
+340.56 191.50 2.70 c p1
+321.35 157.23 2.70 c p1
+292.55 147.75 2.70 c p1
+123.87 281.86 2.70 c p1
+224.80 230.02 2.70 c p1
+199.29 304.40 2.70 c p1
+127.67 314.51 2.70 c p1
+148.80 299.38 2.70 c p1
+187.66 293.21 2.70 c p1
+310.37 177.81 2.70 c p1
+192.85 284.27 2.70 c p1
+246.40 194.13 2.70 c p1
+263.10 204.87 2.70 c p1
+277.45 188.31 2.70 c p1
+290.93 136.09 2.70 c p1
+386.42 157.40 2.70 c p1
+187.91 169.45 2.70 c p1
+252.94 214.77 2.70 c p1
+289.53 175.61 2.70 c p1
+307.92 145.80 2.70 c p1
+246.25 202.38 2.70 c p1
+227.06 237.63 2.70 c p1
+258.91 131.27 2.70 c p1
+302.71 152.17 2.70 c p1
+118.61 256.73 2.70 c p1
+207.77 299.01 2.70 c p1
+155.13 206.22 2.70 c p1
+280.26 155.83 2.70 c p1
+251.38 209.11 2.70 c p1
+217.80 355.70 2.70 c p1
+199.06 355.16 2.70 c p1
+179.97 214.58 2.70 c p1
+301.35 83.32 2.70 c p1
+195.97 245.46 2.70 c p1
+136.70 278.46 2.70 c p1
+302.23 184.09 2.70 c p1
+201.42 226.43 2.70 c p1
+329.24 117.83 2.70 c p1
+289.45 144.64 2.70 c p1
+281.35 201.83 2.70 c p1
+96.15 334.12 2.70 c p1
+136.70 252.10 2.70 c p1
+204.62 235.72 2.70 c p1
+236.45 212.47 2.70 c p1
+117.80 295.30 2.70 c p1
+157.49 268.44 2.70 c p1
+154.33 268.30 2.70 c p1
+210.72 229.62 2.70 c p1
+134.06 301.96 2.70 c p1
+238.88 230.24 2.70 c p1
+277.44 192.07 2.70 c p1
+114.35 305.45 2.70 c p1
+319.70 184.71 2.70 c p1
+411.62 168.83 2.70 c p1
+314.52 123.17 2.70 c p1
+112.96 295.78 2.70 c p1
+293.42 143.76 2.70 c p1
+161.85 237.17 2.70 c p1
+340.20 98.58 2.70 c p1
+229.13 224.74 2.70 c p1
+263.47 133.21 2.70 c p1
+177.98 244.20 2.70 c p1
+245.23 124.32 2.70 c p1
+217.73 241.59 2.70 c p1
+142.34 312.53 2.70 c p1
+279.82 196.13 2.70 c p1
+216.80 261.10 2.70 c p1
+166.53 280.23 2.70 c p1
+280.27 209.04 2.70 c p1
+275.34 203.32 2.70 c p1
+297.14 212.12 2.70 c p1
+332.97 123.40 2.70 c p1
+353.69 198.16 2.70 c p1
+200.78 239.22 2.70 c p1
+340.01 140.20 2.70 c p1
+302.84 138.94 2.70 c p1
+263.34 148.59 2.70 c p1
+171.98 288.83 2.70 c p1
+211.24 146.86 2.70 c p1
+173.05 249.22 2.70 c p1
+203.23 274.31 2.70 c p1
+293.36 202.06 2.70 c p1
+259.69 130.21 2.70 c p1
+78.42 273.56 2.70 c p1
+105.39 301.58 2.70 c p1
+159.26 305.34 2.70 c p1
+364.88 144.53 2.70 c p1
+213.83 214.07 2.70 c p1
+350.81 219.27 2.70 c p1
+128.73 194.37 2.70 c p1
+180.72 256.53 2.70 c p1
+344.38 187.15 2.70 c p1
+333.05 169.93 2.70 c p1
+133.32 302.45 2.70 c p1
+0.00 0.00 432.00 432.00 cl
+0 0 0 rgb
+0.75 setlinewidth
+[] 0 setdash
+1 setlinecap
+1 setlinejoin
+10.00 setmiterlimit
+np
+71.73 73.44 m
+317.34 0 l
+o
+np
+71.73 73.44 m
+0 -7.20 l
+o
+np
+151.07 73.44 m
+0 -7.20 l
+o
+np
+230.40 73.44 m
+0 -7.20 l
+o
+np
+309.73 73.44 m
+0 -7.20 l
+o
+np
+389.07 73.44 m
+0 -7.20 l
+o
+/ps 12 def /Font1 findfont 12 s
+71.73 47.52 (-4) .5 0 0 t
+151.07 47.52 (-2) .5 0 0 t
+230.40 47.52 (0) .5 0 0 t
+309.73 47.52 (2) .5 0 0 t
+389.07 47.52 (4) .5 0 0 t
+np
+59.04 84.53 m
+0 277.34 l
+o
+np
+59.04 84.53 m
+-7.20 0 l
+o
+np
+59.04 153.87 m
+-7.20 0 l
+o
+np
+59.04 223.20 m
+-7.20 0 l
+o
+np
+59.04 292.53 m
+-7.20 0 l
+o
+np
+59.04 361.87 m
+-7.20 0 l
+o
+41.76 84.53 (-4) .5 0 90 t
+41.76 153.87 (-2) .5 0 90 t
+41.76 223.20 (0) .5 0 90 t
+41.76 292.53 (2) .5 0 90 t
+41.76 361.87 (4) .5 0 90 t
+np
+59.04 73.44 m
+342.72 0 l
+0 299.52 l
+-342.72 0 l
+0 -299.52 l
+o
+0.00 0.00 432.00 432.00 cl
+/ps 12 def /Font1 findfont 12 s
+0 0 0 rgb
+230.40 18.72 (x) .5 0 0 t
+12.96 223.20 (y) .5 0 90 t
+ep
+%%Trailer
+%%Pages: 1
+%%EOF

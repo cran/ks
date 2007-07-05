@@ -104,6 +104,6 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   \code{\link{kda.kde}}
 }
 
-\examples{ ### See examples in ? compare } 
+\examples{ ### See examples in ? plot.kda.kde } 
 
 \keyword{ smooth }

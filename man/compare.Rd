@@ -112,7 +112,7 @@ ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
 
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse")
-compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse", binned=TRUE)
+compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse", pre="scaled",binned=TRUE)
 
 \dontrun{
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse", recompute=TRUE)
