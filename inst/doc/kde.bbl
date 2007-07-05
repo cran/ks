@@ -1,3 +1,25 @@
 \begin{thebibliography}{}
 
+\bibitem[Bowman and Azzalini, 2005]{sm}
+Bowman, A.~W. and Azzalini, A. (2005).
+\newblock {\em sm: kernel smoothing methods: Bowman and Azzalini (1997)}.
+\newblock R package version 2.0-14. Ported to R by B. D. Ripley.
+
+\bibitem[Duong, 2007]{duong2007c}
+Duong, T. (2007).
+\newblock ks: {K}ernel density estimation and kernel discriminant analysis for
+  multivariate data in {R}.
+\newblock Submitted.
+
+\bibitem[Simonoff, 1996]{simonoff1996}
+Simonoff, J.~S. (1996).
+\newblock {\em Smoothing Methods in Statistics}.
+\newblock Springer-Verlag, New York.
+
+\bibitem[Wand, 2006]{KernSmooth}
+Wand, M.~P. (2006).
+\newblock {\em KernSmooth: Functions for kernel smoothing for Wand \& Jones
+  (1995)}.
+\newblock R package version 2.22-19. R port by B.D. Ripley.
+
 \end{thebibliography}

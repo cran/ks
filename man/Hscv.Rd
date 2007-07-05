@@ -1,12 +1,14 @@
-\name{Hscv}
+\name{Hscv,Hscv.diag}
 \alias{Hscv}
+\alias{Hscv.diag}
 
 \title{Smoothed cross-validation (SCV) bandwidth matrix selector
-  for bivariate data}
+  for 2- to 6-dimensional data}
 \description{
 SCV bandwidth matrix for 2- to 6-dimensional data.}
 \usage{
 Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
+Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -20,8 +22,7 @@ Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 }
 
 \value{
-Full SCV bandwidth matrix.  Please note that a diagonal version of this
-selector is not available. 
+SCV bandwidth matrix.  
 }
 
 
@@ -53,5 +54,6 @@ selector is not available.
 data(unicef)
 Hscv(unicef)
 Hscv(unicef, binned=TRUE)
+Hscv.diag(unicef)
 }
 \keyword{ smooth }

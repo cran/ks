@@ -260,8 +260,33 @@ Hmise.mixt <- function(mus, Sigmas, props, samp, Hstart)
     return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp))
   }
 
-  result <- optim(Hstart, mise.mixt.temp, method = "BFGS")
+  result <- optim(Hstart, mise.mixt.temp, method="BFGS")
   Hmise <- invvech(result$par) %*% invvech(result$par) 
+  
+  return(Hmise)
+}   
+
+Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart)
+{   
+  if (is.vector(mus)) d <- length(mus)
+  else d <- ncol(mus) 
+  seed <- 8326
+
+  set.seed(seed)
+  x <- rmvnorm.mixt(1000, mus, Sigmas, props)
+  if (missing(Hstart))
+    Hstart <- (4/(samp*(d + 2)))^(2/(d + 4)) * var(x)
+    
+  Hstart <- diag(matrix.sqrt(Hstart))
+
+  mise.mixt.temp <- function(diagH)
+  {  
+    H <- diag(diagH) %*% diag(diagH)
+    return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp))
+  }
+
+  result <- optim(Hstart, mise.mixt.temp, method = "BFGS")
+  Hmise <- diag(result$par) %*% diag(result$par) 
   
   return(Hmise)
 }   
@@ -379,19 +404,19 @@ ise.mixt <- function(x, H, mus, Sigmas, props)
 
 
 ###############################################################################
-# ISE for t mixtures (numerical computation)
-# 
-# Parameters
-# x - data values
-# H - bandwidth matrices
-# mus - matrix of means 
-# Sigmas - matrix of covariance matrices 
-# props - mixing proportions
-# dfs - degrees of freedom
-# lower, upper - lower and upper limits for integration
-#
-# Returns
-# ISE  
+## ISE for t mixtures (numerical computation)
+## 
+## Parameters
+## x - data values
+## H - bandwidth matrices
+## mus - matrix of means 
+## Sigmas - matrix of covariance matrices 
+## props - mixing proportions
+## dfs - degrees of freedom
+## lower, upper - lower and upper limits for integration
+##
+## Returns
+## ISE  
 ###############################################################################
 
 iset.mixt <- function(x, H, mus, Sigmas, dfs, props, lower,
@@ -406,7 +431,7 @@ iset.mixt <- function(x, H, mus, Sigmas, dfs, props, lower,
   if (missing(gridsize))
      gridsize <- rep(250, d) 
 
-  # pre-clustered KDE
+  ## pre-clustered KDE
   if (is.list(x))
   {
     x1 <- x
@@ -421,7 +446,7 @@ iset.mixt <- function(x, H, mus, Sigmas, dfs, props, lower,
       Hs <- rbind(Hs, H1)
     }
   }
-  # fixed KDE
+  ## fixed KDE
   else
   {
     n <-  nrow(x)
@@ -450,3 +475,371 @@ iset.mixt <- function(x, H, mus, Sigmas, dfs, props, lower,
 
   return(ise)
 }
+
+###############################################################################
+# Exact MISE for derivatives of normal density
+###############################################################################
+
+
+Hnr <- function(x, Hstart, deriv=0, pre="scale")   
+{
+  if(!is.matrix(x)) x <- as.matrix(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  pre1 <- substr(pre,1,2) 
+  Sigma <- var(x)
+  
+  if (pre1=="sc") 
+  {
+     x.star <- pre.scale(x)
+     S12 <- diag(sqrt(diag(var(x))))
+  } 
+  if (pre1=="sp") 
+  {  
+     x.star <- pre.sphere(x)
+     S12 <- matrix.sqrt(var(x))
+  }
+     
+  Sinv12 <- chol2inv(chol(S12))
+  Sigma.star <- var(x.star)
+ 
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma.star
+  else
+    Hstart <- Sinv12 %*% Hstart %*% Sinv12 
+ 
+  if (deriv==0)
+     H <- Hnr.dens(x=x.star, Hstart=Hstart)
+  else if (deriv==1)
+     H <- Hnr.grad(x=x.star, Hstart=Hstart)
+  else if (deriv==2)
+     H <- Hnr.curv(x=x.star, Hstart=Hstart)
+
+      
+  return(S12 %*% H %*% S12)
+}
+
+
+Hnr.diag <- function(x, Hstart, deriv=0, pre="scale")   
+{
+  if(!is.matrix(x)) x <- as.matrix(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  pre1 <- substr(pre,1,2) 
+  if (pre1=="sp")
+    stop("Using pre-sphering won't give a diagonal bandwidth matrix")
+
+  Sigma <- var(x)
+  
+  if (pre1=="sc") 
+  {
+     x.star <- pre.scale(x)
+     S12 <- diag(sqrt(diag(var(x))))
+  }
+  else if (pre1=="sp")
+  {
+     x.star <- pre.sphere(x)
+     S12 <- matrix.sqrt(var(x))
+  }
+     
+  Sinv12 <- chol2inv(chol(S12))
+  Sigma.star <- var(x.star)
+ 
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma.star
+  else
+    Hstart <- Sinv12 %*% Hstart %*% Sinv12 
+ 
+  if (deriv==0)
+     H <- Hnr.dens.diag(x=x.star, Hstart=Hstart)
+  else if (deriv==1)
+     H <- Hnr.grad.diag(x=x.star, Hstart=Hstart)
+  else if (deriv==2)
+     H <- Hnr.curv.diag(x=x.star, Hstart=Hstart)
+      
+  return(S12 %*% H %*% S12)
+}
+
+
+### Exact mise for density
+
+mise.nr <- function(Sigma, d, n, H)
+{  
+  m.var <- n^(-1)*(4*pi)^(-d/2)*det(H)^(-1/2)
+  m.bias1 <- (1-n^(-1)) * det(2*H + 2*Sigma)^(-1/2) 
+  m.bias2 <- det(H + 2*Sigma)^(-1/2) 
+  m.bias3 <- det(2*Sigma)^(-1/2) 
+
+  return(m.var + (2*pi)^(-d/2)*(m.bias1 - 2*m.bias2 + m.bias3))
+}
+
+
+Hnr.dens <- function(x, Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+
+  mise.nr.temp <- function(vechH)
+  {
+    H <- invvech(vechH) %*% invvech(vechH)
+    return(mise.nr(Sigma=Sigma, d=d, n=n, H=H))
+  }
+
+  result <- optim(vech(Hstart), mise.nr.temp, method="Nelder-Mead") 
+  H <- invvech(result$par) %*% invvech(result$par)
+  
+  return(H)
+}
+
+
+Hnr.dens.diag <- function(x, Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+
+  mise.nr.temp <- function(diagH)
+  {
+    H <- diag(diagH) %*% diag(diagH)
+    return(mise.nr(Sigma=Sigma, d=d, n=n, H=H))
+  }
+
+  result <- optim(diag(Hstart), mise.nr.temp, method="Nelder-Mead") 
+  H <- diag(result$par) %*% diag(result$par)
+  
+  return(H)
+}
+
+
+### Exact MISE for gradient
+
+mise.nr.grad <- function(Sigma, d, n, H)
+{  
+  mg.var <- 1/2*n^(-1)*(4*pi)^(-d/2)*det(H)^(-1/2) * chol2inv(chol(H))
+
+  H2S2inv <- chol2inv(chol(2*H + 2*Sigma)) 
+  HS2inv <- chol2inv(chol(H + 2*Sigma)) 
+  S2inv <- chol2inv(chol(2*Sigma))
+  mg.bias1 <- (1-n^(-1)) * det(2*H + 2*Sigma)^(-1/2) * H2S2inv
+  mg.bias2 <- det(H + 2*Sigma)^(-1/2) * HS2inv
+  mg.bias3 <- det(2*Sigma)^(-1/2) * S2inv
+
+  return(tr(mg.var + (2*pi)^(-d/2)*(mg.bias1 - 2*mg.bias2 + mg.bias3)))
+}
+
+
+Hnr.grad <- function(x, Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+
+  mise.nr.grad.temp <- function(vechH)
+  {
+    H <- invvech(vechH) %*% invvech(vechH)
+    return(mise.nr.grad(Sigma=Sigma, d=d, n=n, H=H))
+  }
+
+  result <- optim(vech(Hstart), mise.nr.grad.temp, method="Nelder-Mead") #, control=list(trace=2))
+  H <- invvech(result$par) %*% invvech(result$par)
+  
+  return(H)
+}
+
+Hnr.grad.diag <- function(x, Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 6)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+ 
+  mise.nr.grad.temp <- function(diagH)
+  { 
+    H <- diag(diagH) %*% diag(diagH)
+    return(mise.nr.grad(Sigma=Sigma, d=d, n=n, H=H))  
+  } 
+
+  result <- optim(diag(Hstart), mise.nr.grad.temp, method="Nelder-Mead")
+  H <- diag(result$par) %*% diag(result$par)
+ 
+  return(H)
+}
+
+### Exact MISE for curvature
+
+mise.nr.curv <- function(Sigma, d, n, H, R, D)
+{  
+  Hinv <- chol2inv(chol(H))
+  if (missing(D))
+  {
+     Dd <- dupl(order=d)$d
+     Dinv <- chol2inv(chol((t(Dd) %*% Dd)))
+     D <- Dd %*% Dinv %*% Dinv %*% t(Dd)
+  } 
+  
+  if (missing(R))
+     R <- Rvec.D2(d=d)
+  
+  ##mc.var <- n^(-1)*det(H)^(-1/2) * (Hinv %x% Hinv) %*% R %*% D
+  mc.var1 <- 2* tr((Hinv %x% Hinv) %*% D)
+  mc.var2 <- t(vech(Hinv)) %*% vech(Hinv)  
+
+  H2S2inv <- chol2inv(chol(2*H + 2*Sigma)) 
+  HS2inv <- chol2inv(chol(H + 2*Sigma)) 
+  S2inv <- chol2inv(chol(2*Sigma)) 
+
+  mc.bias1 <- (1-n^(-1)) * det(2*H + 2*Sigma)^(-1/2) * (H2S2inv %x% H2S2inv) %*% D
+  mc.bias2 <- det(H + 2*Sigma)^(-1/2) * (HS2inv %x% HS2inv) %*% D
+  mc.bias3 <- det(2*Sigma)^(-1/2) * (S2inv %x% S2inv) %*% D
+
+  return(1/4*(4*pi)^(-d/2)*n^(-1)*det(H)^(-1/2) * (mc.var1 + mc.var2) + tr(3*(2*pi)^(-d/2)*(mc.bias1 - 2*mc.bias2 + mc.bias3)))
+}
+
+Hnr.curv <- function(x, pre="scale", Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  Dd <- dupl(order=d)$d
+  Dinv <- chol2inv(chol((t(Dd) %*% Dd)))
+  D <- Dd %*% Dinv %*% Dinv %*% t(Dd)
+  #R <- Rvec.D2(d=d)
+ 
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+
+  mise.nr.curv.temp <- function(vechH)
+  {
+    H <- invvech(vechH) %*% invvech(vechH)
+    return(mise.nr.curv(Sigma=Sigma, d=d, n=n, H=H, D=D))
+  }
+
+  result <- optim(vech(Hstart), mise.nr.curv.temp, method="Nelder-Mead")
+  H <- invvech(result$par) %*% invvech(result$par)
+  
+  return(H)
+}
+
+Hnr.curv.diag <- function(x, Hstart)
+{
+  Sigma <- var(x)
+  d <- ncol(x)
+  n <- nrow(x)
+
+  Dd <- dupl(order=d)$d
+  Dinv <- chol2inv(chol((t(Dd) %*% Dd)))
+  D <- Dd %*% Dinv %*% Dinv %*% t(Dd)
+  #R <- Rvec.D2(d=d)
+
+  if (missing(Hstart))
+    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * Sigma
+
+  Hstart <- matrix.sqrt(Hstart)
+   
+  mise.nr.curv.temp <- function(diagH)
+  { 
+    H <- diag(diagH) %*% diag(diagH)
+    return(mise.nr.curv(Sigma=Sigma, d=d, n=n, H=H, D=D))  
+  } 
+
+  result <- optim(diag(Hstart), mise.nr.curv.temp, method="Nelder-Mead")# control=list(trace=2))
+  H <- diag(result$par) %*% diag(result$par)
+ 
+  return(H)
+}
+
+### list element [[i]][[j]] is vector of indices for (i,j)-th element of x x^T
+### e.g. x = (x1, x2)
+### [[1]][[1]] = (2,0) <-> x1^2
+### [[1]][[2]] = (1,1) <-> x1 * x2
+### [[2]][[1]] = (1,1) <-> x1 * x2
+### [[2]][[2]] = (0,2) <-> x2^2
+
+xxt.index <- function(d)
+{
+  ind <- vector("list", d)
+  for (i in 1:d)
+     ind[[i]] <-  vector("list", d)
+  
+  for (i in 1:d)
+   for (j in 1:d)
+      ind[[i]][[j]] <- elem(i, d) + elem(j,d)
+        
+  return(ind)
+}
+
+### list element [[i]][[j]] is vector of indices for (i,j)-th element of
+### x x^T kronecker x x^T 
+### e.g. x = (x1, x2)
+### [[1]][[1]] = (4,0) <-> x1^4
+### [[1]][[2]] = (3,1) <-> x1^3 * x2
+### [[1]][[3]] = (3,1) <-> x1^3 * x2
+### [[1]][[4]] = (2,2) <-> x1^2 * x2^2 etc.
+
+xxtxxt.index <- function(d)
+{
+  ind <- vector("list", d^2)
+  for (i in 1:d^2)
+    ind[[i]] <-  vector("list", d^2)
+  
+  xxt.ind <- xxt.index(d=d)
+  
+  for (i in 1:d)
+    for (j in 1:d)
+      for (k in 1:d)
+        for (ell in 1:d)
+          ind[[(i-1)*d + k]][[(j-1)*d + ell]] <- xxt.ind[[i]][[j]] + xxt.ind[[k]][[ell]]
+  return(ind)   
+}
+
+
+### R (vec del^(2) f) where f is standard normal - used in mise.curv
+### This is a d^2 x d^2 matrix
+
+Rvec.D2 <- function(d)
+{
+  ind.coeff <- xxtxxt.index(d=d)
+  mat.coeff <- matrix(0, ncol=d^2, nrow=d^2)
+  
+  for (i in 1:d^2)
+    for (j in 1:d^2)
+    {
+      indij <- ind.coeff[[i]][[j]]
+      ind.coeff[[i]][[j]][indij==4]  <- 3/4*(4*pi)^(-1/2)
+      ind.coeff[[i]][[j]][indij==3]  <- 0
+      ind.coeff[[i]][[j]][indij==2]  <- 1/2*(4*pi)^(-1/2)
+      ind.coeff[[i]][[j]][indij==1]  <- 0
+      ind.coeff[[i]][[j]][indij==0]  <- 1*(4*pi)^(-1/2)
+      
+      mat.coeff[i,j] <- prod(ind.coeff[[i]][[j]])
+    }    
+  
+  return(mat.coeff)     
+}
+
+

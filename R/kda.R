@@ -88,6 +88,8 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
       H <- Hlscv.diag(y, binned=binned, bgridsize=bgridsize)
     else if (bw=="p") 
       H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
+    else if (bw=="s")
+      H <- Hscv.diag(y, pre=pre, binned=binned, bgridsize=bgridsize)
     Hs <- rbind(Hs, H)
   }
 

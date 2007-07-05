@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.4.9	
-Date: 2007/03/19
+Version: 1.4.10	
+Date: 2007/07/05
 Title: Kernel smoothing 
 Author: Tarn Duong <tduong@maths.unsw.edu.au>
 Maintainer: Tarn Duong <tduong@maths.unsw.edu.au> 
@@ -9,4 +9,4 @@ Suggests: sm
 Description: Kernel density estimators and kernel discriminant analysis for multivariate data
 License: GPL (version 2)
 URL: http://web.maths.unsw.edu.au/~tduong
-Packaged: Mon Mar 19 10:49:00 2007; tduong
+Packaged: Thu Jul  5 11:59:28 2007; tduong

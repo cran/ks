@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  19 MAR 2007 10:48
+This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  5 JUL 2007 11:59
  file:line:error style messages enabled.
 **\nonstopmode \input /c/tduong/net/personal/tduong/research/kernel/library/ks/
 inst/doc/kde.tex
@@ -196,25 +196,25 @@ File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 )))) (./kde.aux)
 \openout1 = `kde.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 68.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 68.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 70.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 70.
 
 (/usr/share/texmf/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 68.
+LaTeX Font Info:    ... okay on input line 70.
 
 (/usr/share/texmf/tex/context/base/supp-pdf.tex
 (/usr/share/texmf/tex/context/base/supp-mis.tex
@@ -244,100 +244,64 @@ loading : Context Support Macros / PDF
 \nofMParguments=\count111
 \everyMPtoPDFconversion=\toks29
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 70.
+LaTeX Font Info:    Try loading font information for U+msa on input line 72.
  (/usr/share/texmf/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2002/01/19 v2.2g AMS font definitions
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 70.
+LaTeX Font Info:    Try loading font information for U+msb on input line 72.
 
 (/usr/share/texmf/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2002/01/19 v2.2g AMS font definitions
 )
-LaTeX Font Info:    Try loading font information for T1+aess on input line 79.
-
-(/usr/share/texmf/tex/latex/ae/t1aess.fd
-File: t1aess.fd 1997/11/16 Font definitions for T1/aess.
-)
-LaTeX Font Info:    Try loading font information for T1+aett on input line 91.
+LaTeX Font Info:    Try loading font information for T1+aett on input line 80.
 
 (/usr/share/texmf/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
-)
-<kde-002.pdf, id=1, 433.62pt x 433.62pt>
-File: kde-002.pdf Graphic file (type pdf)
- <use kde-002.pdf> [1
+) [1
 
-{/var/lib/texmf/dvips/config/pdftex.map} <./kde-002.pdf>] [2] [3] [4]
-<kde-006.pdf, id=89, 433.62pt x 433.62pt>
-File: kde-006.pdf Graphic file (type pdf)
- <use kde-006.pdf>
-<kde-007.pdf, id=90, 433.62pt x 433.62pt>
+{/var/lib/texmf/dvips/config/pdftex.map}] <kde-002.pdf, id=44, 433.62pt x 433.6
+2pt>
+File: kde-002.pdf Graphic file (type pdf)
+ <use kde-002.pdf>
+<kde-003.pdf, id=45, 433.62pt x 433.62pt>
+File: kde-003.pdf Graphic file (type pdf)
+ <use kde-003.pdf> [2 <./kde-002.pdf> <./kde-003.pdf>] <kde-007.pdf, id=62, 433
+.62pt x 433.62pt>
 File: kde-007.pdf Graphic file (type pdf)
  <use kde-007.pdf>
-<kde-008.pdf, id=91, 433.62pt x 433.62pt>
+<kde-008.pdf, id=63, 433.62pt x 433.62pt>
 File: kde-008.pdf Graphic file (type pdf)
  <use kde-008.pdf>
-<kde-009.pdf, id=92, 433.62pt x 433.62pt>
-File: kde-009.pdf Graphic file (type pdf)
- <use kde-009.pdf> [5 <./kde-006.pdf> <./kde-007.pdf> <./kde-008.pdf> <./kde-00
-9.pdf>] [6] [7]
-<kde-014.pdf, id=127, 433.62pt x 433.62pt>
-File: kde-014.pdf Graphic file (type pdf)
- <use kde-014.pdf>
-<kde-015.pdf, id=128, 433.62pt x 433.62pt>
-File: kde-015.pdf Graphic file (type pdf)
- <use kde-015.pdf>
-<kde-016.pdf, id=129, 433.62pt x 433.62pt>
-File: kde-016.pdf Graphic file (type pdf)
- <use kde-016.pdf>
-<kde-017.pdf, id=130, 433.62pt x 433.62pt>
-File: kde-017.pdf Graphic file (type pdf)
- <use kde-017.pdf> [8] [9 <./kde-014.pdf> <./kde-015.pdf> <./kde-016.pdf> <./kd
-e-017.pdf>]
-<kde-019.pdf, id=161, 433.62pt x 433.62pt>
-File: kde-019.pdf Graphic file (type pdf)
- <use kde-019.pdf>
-<kde-020.pdf, id=162, 433.62pt x 433.62pt>
-File: kde-020.pdf Graphic file (type pdf)
- <use kde-020.pdf>
-<kde-021.pdf, id=163, 433.62pt x 433.62pt>
-File: kde-021.pdf Graphic file (type pdf)
- <use kde-021.pdf>
-<kde-022.pdf, id=164, 433.62pt x 433.62pt>
-File: kde-022.pdf Graphic file (type pdf)
- <use kde-022.pdf> [10 <./kde-019.pdf> <./kde-020.pdf> <./kde-021.pdf> <./kde-0
-22.pdf>]
-<kde-026.pdf, id=188, 433.62pt x 433.62pt>
-File: kde-026.pdf Graphic file (type pdf)
- <use kde-026.pdf> [11 <./kde-026.pdf>] [12] (./kde.aux) ) 
+<kde-011.pdf, id=64, 433.62pt x 433.62pt>
+File: kde-011.pdf Graphic file (type pdf)
+ <use kde-011.pdf>
+<kde-012.pdf, id=65, 433.62pt x 433.62pt>
+File: kde-012.pdf Graphic file (type pdf)
+ <use kde-012.pdf> [3 <./kde-007.pdf> <./kde-008.pdf>] [4 <./kde-011.pdf> <./kd
+e-012.pdf>] [5] (./kde.aux) ) 
 Here is how much of TeX's memory you used:
- 3430 strings out of 95437
- 42523 string characters out of 1190247
- 88965 words of memory out of 1000001
- 6340 multiletter control sequences out of 10000+50000
- 38007 words of font info for 88 fonts, out of 500000 for 1000
+ 3333 strings out of 95437
+ 41135 string characters out of 1190247
+ 88507 words of memory out of 1000001
+ 6259 multiletter control sequences out of 10000+50000
+ 29513 words of font info for 76 fonts, out of 500000 for 1000
  14 hyphenation exceptions out of 1000
- 35i,13n,24p,337b,338s stack positions out of 1500i,500n,5000p,200000b,5000s
- 199 PDF objects out of 300000
+ 35i,7n,24p,337b,345s stack positions out of 1500i,500n,5000p,200000b,5000s
+ 104 PDF objects out of 300000
  0 named destinations out of 131072
- 70 words of extra memory for PDF output out of 65536
-</usr/share/texmf/fon
-ts/type1/bluesky/cmextra/cmmib7.pfb>{/usr/share/texmf/dvips/tetex/aae443f0.enc}
-</usr/share/texmf/fonts/type1/bluesky/cm/cmmi6.pfb>{/usr/share/texmf/dvips/tete
-x/f7b6d320.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr/share/te
-xmf/fonts/type1/bluesky/symbols/msbm7.pfb></usr/share/texmf/fonts/type1/bluesky
-/symbols/msbm10.pfb>{/usr/share/texmf/dvips/tetex/74afc74c.enc}</usr/share/texm
-f/fonts/type1/bluesky/cm/cmti10.pfb>{/usr/share/texmf/dvips/tetex/bbad153f.enc}
-</usr/share/texmf/fonts/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/typ
-e1/bluesky/cm/cmbx8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.pfb></u
-sr/share/texmf/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/b
-luesky/cm/cmbx10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb></usr/s
-hare/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/blue
-sky/cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmib10.pfb>{/usr/shar
-e/texmf/dvips/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmslt
-t10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/f
-onts/type1/bluesky/cm/cmb10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmss10
-.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts
-/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb
-></usr/share/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
-Output written on kde.pdf (12 pages, 1094484 bytes).
+ 30 words of extra memory for PDF output out of 65536
+{/usr/share/texmf/dvips/tetex/74afc74c.enc}</usr/s
+hare/texmf/fonts/type1/bluesky/cm/cmti10.pfb>{/usr/share/texmf/dvips/tetex/f7b6
+d320.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmbx12.pfb>{/usr/share/texmf/
+dvips/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmsltt10.pfb>
+{/usr/share/texmf/dvips/tetex/bbad153f.enc}</usr/share/texmf/fonts/type1/bluesk
+y/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx8.pfb></usr/share/
+texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf/fonts/type1/bluesky/c
+m/cmsy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb>{/usr/share/tex
+mf/dvips/tetex/aae443f0.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb>
+</usr/share/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/typ
+e1/bluesky/cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmib10.pfb></u
+sr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/
+bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/s
+hare/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
+Output written on kde.pdf (5 pages, 272820 bytes).
