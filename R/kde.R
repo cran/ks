@@ -474,7 +474,7 @@ plot.kde <- function(x, drawpoints=FALSE, ...)
     if (d==2) 
       plotkde.2d.new(fhat, drawpoints=drawpoints, ...)
     else if (d==3)
-      plotkde.3d(fhat, drawpoints=drawpoints, ...)
+      warning("RGL 3-d plotting temporarily disabled")  ##plotkde.3d(fhat, drawpoints=drawpoints, ...)
     else 
       stop ("Plot function only available for 1, 2 or 3-dimensional data")
   }
@@ -603,6 +603,8 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   endpts, xlab, ylab, zlab, drawpoints=TRUE, ...)
 
 {
+  ##require(rgl); require(misc3d) 
+
   n <- nrow(fhat$x)
   RK <- (4*pi)^(-3/2)
   bgridsize <- dim(fhat$estimate)

@@ -596,7 +596,7 @@ plot.kda.kde <- function(x, y, y.group, ...)
     if (d==2)
       plotkda.kde.2d(x=x, y=y, y.group=y.group, ...) 
     else if (d==3)
-      plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
+      warning("RGL 3-d plotting temporarily disabled")  ## plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
   }
 }
 
@@ -783,6 +783,8 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
                            endpts, xlab, ylab, zlab, drawpoints=FALSE, size=3,
                            ptcol, ...)
 { 
+  ##require(rgl); require(misc3d)
+   
   fhat <- x
    
   d <- 3
