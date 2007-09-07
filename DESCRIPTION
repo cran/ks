@@ -1,12 +1,11 @@
 Package: ks
-Version: 1.4.11	
-Date: 2007/08/01
+Version: 1.4.12	
+Date: 2007/09/07
 Title: Kernel smoothing 
-Author: Tarn Duong <tduong@maths.unsw.edu.au>
-Maintainer: Tarn Duong <tduong@maths.unsw.edu.au> 
-Depends: R (>= 1.4.0), KernSmooth, mvtnorm, misc3d (>= 0.4), rgl (>= 0.66)
-Suggests: sm
+Author: Tarn Duong <tduong@pasteur.fr>
+Maintainer: Tarn Duong <tduong@pasteur.fr> 
+Depends: R (>= 1.4.0), KernSmooth, mvtnorm
 Description: Kernel density estimators and kernel discriminant analysis for multivariate data
 License: GPL (version 2)
 URL: http://web.maths.unsw.edu.au/~tduong
-Packaged: Wed Aug  1 17:57:17 2007; tduong
+Packaged: Fri Sep  7 19:24:18 2007; tduong

@@ -56,7 +56,8 @@ for 1- to 3-dimensional data}
 
 \value{
   Plot of 1-d and 2-d density estimates for discriminant analysis is
-  sent to graphics window. Plot for 3-d is sent to RGL window.
+  sent to graphics window. Plot for 3-d is sent to RGL window (TEMPORARILY 
+  DISABLED UNTIL rgl COMPILES AGAIN).
 }
 
 \details{

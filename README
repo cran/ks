@@ -1,6 +1,20 @@
 README file for ks 
 
 
+
+New in v1.4
+
+1. Hscv.diag() and Hbcv.diag() added for completeness.
+
+2. compare.kda.cv() and compare.cv() modified to improve speed.
+
+3. Filled contour plots added as disp=filled option in plot.kde().
+
+4. Binned estimation implemented for KDE with diagonal selectors and pilot functional 
+estimation with diagonal selectors.
+
+5. Vignette illustrating 2-d KDE added.
+
 New in v1.3
 
 1. Multivariate (for 3 to 6 dimensions inclusive) bandwidth selectors added 
