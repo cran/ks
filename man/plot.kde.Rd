@@ -22,8 +22,8 @@
 
 ## trivariate
 \method{plot}{kde}(fhat, cont=c(25,50,75), colors, alphavec,
-    size=3, ptcol="blue", add=FALSE, origin=c(0,0,0), endpts,
-    xlab, ylab, zlab, drawpoints=FALSE, ...)
+    size=3, ptcol="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE,
+    ...)
 }
 
 \arguments{
@@ -42,8 +42,6 @@
   \item{drawpoints}{if TRUE then draw data points on density estimate}
   \item{drawlabels}{if TRUE then draw contour labels (2-d plot)}
   \item{colors}{vector of colours for each contour (3-d plot)}
-  \item{origin}{origin vector (3-d plot)}
-  \item{endpts}{vector of end points for each of the 3 axes (3-d plot)}
   \item{alphavec}{vector of transparency values (3-d plot)}
   \item{size}{size of plotting symbol (3-d plot)}
   \item{...}{other graphics parameters}
@@ -89,10 +87,6 @@
   The default contours are \code{cont=c(25,50)}, the
   default \code{colors} are \code{heat.colors} and the
   default opacity \code{alphavec} ranges from 0.1 to 0.5.
-  \code{origin} is the point where
-  the three axes meet. \code{endpts} is the vector of the 
-  maximum axis values to be plotted.  Default \code{endpts} is the
-  maxima for the plotting grid from \code{x}.
 }
  
 
@@ -127,7 +121,7 @@ H.pi <- Hpi.diag(x, binned=TRUE)
 fhat <- kde(x, H=H.pi, binned=TRUE) 
 plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20))
 
-\dontrun{
+%\dontrun{
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
@@ -135,11 +129,10 @@ Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 
 x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
-H.pi <- Hpi.diag(x, binned=TRUE, pilot="samse")
-fhat <- kde(x, H=H.pi, binned=TRUE)  
-
-plot(fhat, origin=c(-3,-3,-3))
-}
+H.pi <- Hpi(x, pilot="samse")
+fhat <- kde(x, H=H.pi)  
+plot(fhat)
+%}
 }
 
 \keyword{ hplot}

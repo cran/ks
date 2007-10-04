@@ -596,7 +596,8 @@ plot.kda.kde <- function(x, y, y.group, ...)
     if (d==2)
       plotkda.kde.2d(x=x, y=y, y.group=y.group, ...) 
     else if (d==3)
-      warning("RGL 3-d plotting temporarily disabled")  ## plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
+      ##warning("RGL 3-d plotting temporarily disabled")  
+       plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
   }
 }
 
@@ -694,22 +695,20 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
   else
     plot(y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
   
-  #if (display=="part")
-  #{
-    class.grid <- array(0, dim=dim(fhat$est[[1]]))
-    temp <- matrix(0, ncol=length(fhat$est), nrow=nrow(fhat$est[[1]]))
-    for (j in 1:ncol(fhat$est[[1]]))
-    {
-      for (k in 1:length(fhat$est))
-        temp[,k] <- fhat$est[[k]][,j]* prior.prob[k]
-      class.grid[,j] <- max.col(temp)
-
-    }
+ 
+  class.grid <- array(0, dim=dim(fhat$est[[1]]))
+  temp <- matrix(0, ncol=length(fhat$est), nrow=nrow(fhat$est[[1]]))
+  for (j in 1:ncol(fhat$est[[1]]))
+  {
+    for (k in 1:length(fhat$est))
+      temp[,k] <- fhat$est[[k]][,j]* prior.prob[k]
+    class.grid[,j] <- max.col(temp)
     
-    if (missing(col)) col <- heat.colors(m)
-    image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim,
-          ylim=ylim, add=TRUE, ...)
-  #}
+  }
+  
+  if (missing(col)) col <- heat.colors(m)
+  image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim,
+        ylim=ylim, add=TRUE, ...)
   
   dobs <- numeric(0)
   xx <- numeric(0)
@@ -754,9 +753,8 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
     }
     else
       dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
-    ##dobs <- c(dobs, kde(fhat$x[[j]], fhat$H[[j]], eval.points=xx)$estimate
-                ##* prior.prob[j])
   }
+  
   hts <- quantile(dobs, prob = (100 - cont)/100)
   
   if (is.null(ncont))
@@ -779,12 +777,9 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 
 
 plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
-                           cont=c(25,50), colors, alphavec, origin=c(0,0,0),
-                           endpts, xlab, ylab, zlab, drawpoints=FALSE, size=3,
-                           ptcol, ...)
-{ 
-  ##require(rgl); require(misc3d)
-   
+    cont=c(25,50), colors, alphavec, xlab, ylab, zlab,
+    drawpoints=FALSE, size=3, ptcol="blue", ...)
+{   
   fhat <- x
    
   d <- 3
@@ -801,40 +796,36 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
     stop("Sum of prior weights not equal to 1")
 
-  if (missing(endpts))
-  {
-    endpts <- rep(0,3)
-    endpts[1] <-  max(fhat$eval.points[[1]])
-    endpts[2] <-  max(fhat$eval.points[[2]])
-    endpts[3] <-  max(fhat$eval.points[[3]])
-  }
-  x.names <- colnames(fhat$x[[1]]) 
-  if (!is.null(x.names))
-  {
-    if (missing(xlab)) xlab <- x.names[1]
-    if (missing(ylab)) ylab <- x.names[2]
-    if (missing(zlab)) zlab <- x.names[3]
-  }
-  else
-  {
-    xlab="x"
-    ylab="y"
-    zlab="z"
-  }
+  ##if (missing(endpts))
+  ##{
+  ##  endpts <- rep(0,3)
+  ##  endpts[1] <-  max(fhat$eval.points[[1]])
+  ##  endpts[2] <-  max(fhat$eval.points[[2]])
+  ##  endpts[3] <-  max(fhat$eval.points[[3]])
+  ##}
+
+  x.names <- colnames(fhat$x[[1]])
+
+  if (missing(xlab))
+    if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
+  if (missing(ylab))
+    if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
+  if (missing(zlab))
+    if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
   
   ncont <- length(cont)
   
   if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=ncont)
-  if (missing(colors)) colors <- heat.colors(m)
+  if (missing(colors)) colors <- rainbow(m)
   if (missing(ptcol)) ptcol <- rep("blue", m)
-                 
+  if (length(ptcol)==1) ptcol <- rep(ptcol, m)
+             
   dobs <- numeric(0)
   xx <- numeric(0)
 
   for (j in 1:m)
     xx <- rbind(xx, fhat$x[[j]])
 
-  #if (!missing(y.group))
   x.gr <- sort(unique(fhat$x.group))
 
   if (fhat$binned)
@@ -853,11 +844,14 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   ##dobs <- c(dobs, kde(fhat$x[[j]], fhat$H[[j]], eval.points=xx)$estimate
   ##          * prior.prob[j])
 
-  
   hts <- quantile(dobs, prob = (100-cont)/100)
 
   clear3d()
   bg3d(color="white")
+
+  plot3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
+         z=fhat$eval.points[[3]], type="n", xlab=xlab, ylab=ylab, zlab=zlab,
+         ...)
   
   for (j in 1:m)
   {
@@ -886,16 +880,16 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
     }
   }
   
-  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black", alpha=1)
+  ##lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+  ##        color="black", alpha=1)
+  ##lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+  ##        color="black", alpha=1)
+  ##lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+  ##        color="black", alpha=1)
 
-  texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-  texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-  texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
+  ##texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
+  ##texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
+  ##texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
 }
 
 

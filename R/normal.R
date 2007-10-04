@@ -1370,8 +1370,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
 }
 
 plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal",
-    gridsize, xlim, ylim, zlim, alphavec, colors, add=FALSE, origin=c(0,0,0),
-    endpts, xlab, ylab, zlab, nrand=1e5)
+    xlim, ylim, zlim, xlab, ylab, zlab, gridsize, alphavec, colors, add=FALSE, nrand=1e5, ...)
 {
   d <- 3
   dist <- tolower(substr(dist,1,1))
@@ -1397,15 +1396,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal"
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
-
-  if (missing(endpts))
-  {
-    endpts <- rep(0,3)
-    endpts[1] <-  xlim[2]
-    endpts[2] <-  ylim[2]
-    endpts[3] <-  zlim[2]
-  }
-  
   if (missing(xlab)) xlab <- "x"
   if (missing(ylab)) ylab <- "y"
   if (missing(zlab)) zlab <- "z"
@@ -1441,33 +1431,12 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal"
 
   hts <- quantile(dens.rand, prob = (100 - cont)/100)
 
-  if (!add)
-    for (i in 1:nc) 
-    {
-      scale <- cont[i]/hts[i]
-      contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=(i>1), color=colors[i],
-                alpha=alphavec[i])
-    }
-  else
-    for (i in 1:nc) 
-    {
-      scale <- cont[i]/hts[i]
-      contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
-                alpha=alphavec[i])
-    }
-
-  if (!add)
-  { 
-    lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-            color="black", alpha=1)
-    lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-            color="black", alpha=1)
-    lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-            color="black", alpha=1)
-   
-    texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-    texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-    texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
+  plot3d(x, y, z, type="n", add=add, ...)
+  for (i in 1:nc) 
+  {
+    scale <- cont[i]/hts[i]
+    contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
+             alpha=alphavec[i])
   }
 }
 

@@ -10,8 +10,8 @@ ks
   
 }
 \details{
-  There are three main types of functions in this package: (a) bandwidth
-  selectors, (b) kernel estimators and (c) display.
+  There are three main types of functions in this package: (a) computing bandwidth
+  selectors, (b) computing kernel estimators and (c) displaying kernel estimators.
 
   (a) For the bandwidth matrix selectors, there are several varieties: (i) plug-in
   \code{\link{Hpi}}, (ii) least squares (or unbiased) cross validation
@@ -24,17 +24,19 @@ ks
   (b) For kernel density estimation, the main function is
   \code{\link{kde}}. For kernel discriminant analysis, it's \code{\link{kda.kde}}.
 
-  (c) For display, versions of \code{plot} send to a graphics window 
+  (c) For display, versions of \code{plot}, \code{\link{plot.kde}} and
+  \code{\link{plot.kda.kde}}, send to a graphics window 
   the results of density estimation or discriminant analysis.
 
-  For d = 1, 2, 3, 4, binned kernel estimation is available from the
-  \code{KernSmooth} library.
-
+  For d = 1, 2, 3, 4, binned kernel estimation is available. 
+  
   For an overview of this package with 2-dim density estimation, see 
   \code{vignette("kde")}. 
 }
 \author{
-Tarn Duong <tduong@maths.unsw.edu.au>
+Tarn Duong <tduong@pasteur.fr> for most of the package. 
+Matt Wand for the binned estimation code. Jose E. Chacon for the pilot
+functional estimation code.  
 }
 \references{
   Bowman, A. \& Azzalini, A. (1997) \emph{Applied Smoothing Techniques

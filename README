@@ -1,5 +1,13 @@
 README file for ks 
 
+New v1.5
+
+1. New functions to compute pilot functinal estimators hat{psi}_r(g). 
+These are exact, and are more efficient than binned estimators for small 
+samples (~100), and are available in d > 4. 
+
+2. Added plot3d() capabilities from rgl to 3-d plot - removing own axes 
+drawing functions.
 
 
 New in v1.4
