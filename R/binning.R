@@ -213,7 +213,7 @@ linbin.ks <- function(X,gpoints,truncate=TRUE)
    if (truncate) trun <- 1
    a <- gpoints[1]
    b <- gpoints[M]
-   out <- .Fortran("linbin",as.double(X),as.integer(n),
+   out <- .C("linbin",as.double(X),as.integer(n),
            as.double(a),as.double(b),as.integer(M),
            as.integer(trun),double(M),PACKAGE="ks")
    return(out[[7]])
@@ -242,7 +242,7 @@ linbin2D.ks <- function(X,gpoints1,gpoints2)
    a2 <- gpoints2[1]
    b1 <- gpoints1[M1]
    b2 <- gpoints2[M2]
-   out <- .Fortran("lbtwod",as.double(X),as.integer(n),
+   out <- .C("lbtwod",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(b1),as.double(b2),
            as.integer(M1),as.integer(M2),double(M1*M2), PACKAGE="ks")
    return(matrix(out[[9]],M1,M2))
@@ -273,7 +273,7 @@ linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
    b1 <- gpoints1[M1]
    b2 <- gpoints2[M2]
    b3 <- gpoints3[M3]
-   out <- .Fortran("lbthrd",as.double(X),as.integer(n),
+   out <- .C("lbthrd",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(a3),as.double(b1),
            as.double(b2),as.double(b3),as.integer(M1),as.integer(M2),
            as.integer(M3),double(M1*M2*M3),PACKAGE="ks")
@@ -308,7 +308,7 @@ linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
    b2 <- gpoints2[M2]
    b3 <- gpoints3[M3]
    b4 <- gpoints4[M4]
-   out <- .Fortran("lbfoud",as.double(X),as.integer(n),
+   out <- .C("lbfoud",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(a3),as.double(a4),
            as.double(b1),as.double(b2),as.double(b3),as.double(b4),
            as.integer(M1),as.integer(M2),as.integer(M3),as.integer(M4),

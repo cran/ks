@@ -1,12 +1,12 @@
-This is pdfTeXk, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdflatex 2004.10.4)  7 SEP 2007 19:24
+This is pdfeTeXk, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2007.9.20)  4 OCT 2007 11:45
+entering extended mode
  file:line:error style messages enabled.
-**\nonstopmode \input /c/tduong/net/personal/tduong/research/kernel/library/ks/
-inst/doc/kde.tex
-(/c/tduong/net/personal/tduong/research/kernel/library/ks/inst/doc/kde.tex
-(/usr/share/texmf/tex/latex/base/article.cls
-Document Class: article 2001/04/21 v1.4e Standard LaTeX document class
-(/usr/share/texmf/tex/latex/base/size11.clo
-File: size11.clo 2001/04/21 v1.4e Standard LaTeX file (size option)
+**\nonstopmode \input /home/tduong/research/kernel/library/ks/inst/doc/kde.tex
+(/home/tduong/research/kernel/library/ks/inst/doc/kde.tex
+(/usr/share/texmf-tetex/tex/latex/base/article.cls
+Document Class: article 2004/02/16 v1.4f Standard LaTeX document class
+(/usr/share/texmf-tetex/tex/latex/base/size11.clo
+File: size11.clo 2004/02/16 v1.4f Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@section=\count80
@@ -20,24 +20,24 @@ File: size11.clo 2001/04/21 v1.4e Standard LaTeX file (size option)
 \belowcaptionskip=\skip42
 \bibindent=\dimen102
 )
-(/usr/share/texmf/tex/latex/amsmath/amsmath.sty
+(/usr/share/texmf-tetex/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2000/07/18 v2.13 AMS math features
 \@mathmargin=\skip43
 
 For additional information on amsmath, use the `?' option.
-(/usr/share/texmf/tex/latex/amsmath/amstext.sty
+(/usr/share/texmf-tetex/tex/latex/amsmath/amstext.sty
 Package: amstext 2000/06/29 v2.01
 
-(/usr/share/texmf/tex/latex/amsmath/amsgen.sty
+(/usr/share/texmf-tetex/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0
 \@emptytoks=\toks14
 \ex@=\dimen103
 ))
-(/usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+(/usr/share/texmf-tetex/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d
 \pmbraise@=\dimen104
 )
-(/usr/share/texmf/tex/latex/amsmath/amsopn.sty
+(/usr/share/texmf-tetex/tex/latex/amsmath/amsopn.sty
 Package: amsopn 1999/12/14 v2.01 operator names
 )
 \inf@bad=\count87
@@ -78,18 +78,18 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
 LaTeX Info: Redefining \[ on input line 2666.
 LaTeX Info: Redefining \] on input line 2667.
 )
-(/usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+(/usr/share/texmf-tetex/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2002/01/22 v2.2d
 
-(/usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+(/usr/share/texmf-tetex/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2001/10/25 v2.2f
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 132.
 ))
-(/usr/share/texmf/tex/latex/amscls/amsthm.sty
-Package: amsthm 2000/10/26 v2.08
+(/usr/share/texmf-tetex/tex/latex/amscls/amsthm.sty
+Package: amsthm 2004/08/06 v2.20
 \thm@style=\toks19
 \thm@bodyfont=\toks20
 \thm@headfont=\toks21
@@ -100,14 +100,14 @@ Package: amsthm 2000/10/26 v2.08
 \thm@headsep=\skip48
 \dth@everypar=\toks24
 )
-(/usr/share/texmf/tex/latex/natbib/natbib.sty
-Package: natbib 2000/07/24 7.0a (PWD)
+(/usr/share/texmf-tetex/tex/latex/natbib/natbib.sty
+Package: natbib 2003/06/06 7.1 (PWD)
 \bibhang=\skip49
 \bibsep=\skip50
-LaTeX Info: Redefining \cite on input line 508.
+LaTeX Info: Redefining \cite on input line 518.
 \c@NAT@ctr=\count99
 )
-(/usr/share/texmf/tex/latex/misc/anysize.sty
+(/usr/share/texmf-texlive/tex/latex/anysize/anysize.sty
 Package: anysize 1994/08/13 setting margin sizes
 
 document style option `anysize' loaded
@@ -117,81 +117,143 @@ Version 1.0, Aug 13, 1994
 \@Rightmargin=\dimen113
 \@Topmargin=\dimen114
 \@Bottommargin=\dimen115
-) (/usr/lib/R/share/texmf/Sweave.sty
+) (/usr/share/R/share/texmf/Sweave.sty
 
-LaTeX Warning: You have requested package `/usr/lib/R/share/texmf/Sweave',
+LaTeX Warning: You have requested package `/usr/share/R/share/texmf/Sweave',
                but the package provides `Sweave'.
 
 Package: Sweave 
-(/usr/share/texmf/tex/latex/base/ifthen.sty
+(/usr/share/texmf-tetex/tex/latex/base/ifthen.sty
 Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
 )
-(/usr/share/texmf/tex/latex/graphics/graphicx.sty
+(/usr/share/texmf-tetex/tex/latex/graphics/graphicx.sty
 Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
 
-(/usr/share/texmf/tex/latex/graphics/keyval.sty
+(/usr/share/texmf-tetex/tex/latex/graphics/keyval.sty
 Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
 \KV@toks@=\toks25
 )
-(/usr/share/texmf/tex/latex/graphics/graphics.sty
+(/usr/share/texmf-tetex/tex/latex/graphics/graphics.sty
 Package: graphics 2001/07/07 v1.0n Standard LaTeX Graphics (DPC,SPQR)
 
-(/usr/share/texmf/tex/latex/graphics/trig.sty
+(/usr/share/texmf-tetex/tex/latex/graphics/trig.sty
 Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
 )
-(/usr/share/texmf/tex/latex/config/graphics.cfg
-File: graphics.cfg 2001/08/31 v1.1 graphics configuration of teTeX/TeXLive
+(/usr/share/texmf-tetex/tex/latex/graphics/graphics.cfg
+File: graphics.cfg 2005/02/03 v1.3 graphics configuration of teTeX/TeXLive
 )
 Package graphics Info: Driver file: pdftex.def on input line 80.
 
-(/usr/share/texmf/tex/latex/graphics/pdftex.def
+(/usr/share/texmf-tetex/tex/latex/graphics/pdftex.def
 File: pdftex.def 2002/06/19 v0.03k graphics/color for pdftex
 \Gread@gobject=\count100
 ))
 \Gin@req@height=\dimen116
 \Gin@req@width=\dimen117
 )
-(/usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
-Package: fancyvrb 2000/03/21
+(/usr/share/texmf-texlive/tex/latex/fancyvrb/fancyvrb.sty
+Package: fancyvrb 1998/07/17
 
-Style option: `fancyvrb' v2.7, with DG/SPQR fixes <2000/03/21> (tvz)
+Style option: `fancyvrb' v2.6, with DG/SPQR fixes <1998/07/17> (tvz)
 \FV@CodeLineNo=\count101
 \FV@InFile=\read1
 \FV@TabBox=\box28
 \c@FancyVerbLine=\count102
 \FV@StepNumber=\count103
 \FV@OutFile=\write3
-)
-(/usr/lib/R/share/texmf/upquote.sty
+
+No file fancyvrb.cfg.
+) (/usr/share/R/share/texmf/upquote.sty
 Package: upquote 2003/08/11 v1.1 Covington's upright-quote modification to verb
 atim and verb
 
-(/usr/share/texmf/tex/latex/base/textcomp.sty
-Package: textcomp 2001/06/05 v1.94 Standard LaTeX package
+(/usr/share/texmf-tetex/tex/latex/base/textcomp.sty
+Package: textcomp 2004/02/22 v1.99f Standard LaTeX package
+Package textcomp Info: Sub-encoding information:
+(textcomp)               5 = only ISO-Adobe without \textcurrency
+(textcomp)               4 = 5 + \texteuro
+(textcomp)               3 = 4 + \textohm
+(textcomp)               2 = 3 + \textestimated + \textcurrency
+(textcomp)               1 = TS1 - \textcircled - \t
+(textcomp)               0 = TS1 (full)
+(textcomp)             Font families with sub-encoding setting implement
+(textcomp)             only a restricted character set as indicated.
+(textcomp)             Family '?' is the default used for unknown fonts.
+(textcomp)             See the documentation for details.
+Package textcomp Info: Setting ? sub-encoding to TS1/1 on input line 71.
 
-(/usr/share/texmf/tex/latex/base/ts1enc.def
+(/usr/share/texmf-tetex/tex/latex/base/ts1enc.def
 File: ts1enc.def 2001/06/05 v3.0e (jk/car/fm) Standard LaTeX file
-)))
-(/usr/share/texmf/tex/latex/base/fontenc.sty
-Package: fontenc 2001/06/05 v1.94 Standard LaTeX package
+)
+LaTeX Info: Redefining \oldstylenums on input line 266.
+Package textcomp Info: Setting cmr sub-encoding to TS1/0 on input line 281.
+Package textcomp Info: Setting cmss sub-encoding to TS1/0 on input line 282.
+Package textcomp Info: Setting cmtt sub-encoding to TS1/0 on input line 283.
+Package textcomp Info: Setting cmvtt sub-encoding to TS1/0 on input line 284.
+Package textcomp Info: Setting cmbr sub-encoding to TS1/0 on input line 285.
+Package textcomp Info: Setting cmtl sub-encoding to TS1/0 on input line 286.
+Package textcomp Info: Setting ccr sub-encoding to TS1/0 on input line 287.
+Package textcomp Info: Setting ptm sub-encoding to TS1/4 on input line 288.
+Package textcomp Info: Setting pcr sub-encoding to TS1/4 on input line 289.
+Package textcomp Info: Setting phv sub-encoding to TS1/4 on input line 290.
+Package textcomp Info: Setting ppl sub-encoding to TS1/3 on input line 291.
+Package textcomp Info: Setting pag sub-encoding to TS1/4 on input line 292.
+Package textcomp Info: Setting pbk sub-encoding to TS1/4 on input line 293.
+Package textcomp Info: Setting pnc sub-encoding to TS1/4 on input line 294.
+Package textcomp Info: Setting pzc sub-encoding to TS1/4 on input line 295.
+Package textcomp Info: Setting bch sub-encoding to TS1/4 on input line 296.
+Package textcomp Info: Setting put sub-encoding to TS1/5 on input line 297.
+Package textcomp Info: Setting uag sub-encoding to TS1/5 on input line 298.
+Package textcomp Info: Setting ugq sub-encoding to TS1/5 on input line 299.
+Package textcomp Info: Setting ul8 sub-encoding to TS1/4 on input line 300.
+Package textcomp Info: Setting ul9 sub-encoding to TS1/4 on input line 301.
+Package textcomp Info: Setting augie sub-encoding to TS1/5 on input line 302.
+Package textcomp Info: Setting dayrom sub-encoding to TS1/3 on input line 303.
+Package textcomp Info: Setting dayroms sub-encoding to TS1/3 on input line 304.
 
-(/usr/share/texmf/tex/latex/base/t1enc.def
-File: t1enc.def 2001/06/05 v1.94 Standard LaTeX file
-LaTeX Font Info:    Redeclaring font encoding T1 on input line 38.
+Package textcomp Info: Setting pxr sub-encoding to TS1/0 on input line 305.
+Package textcomp Info: Setting pxss sub-encoding to TS1/0 on input line 306.
+Package textcomp Info: Setting pxtt sub-encoding to TS1/0 on input line 307.
+Package textcomp Info: Setting txr sub-encoding to TS1/0 on input line 308.
+Package textcomp Info: Setting txss sub-encoding to TS1/0 on input line 309.
+Package textcomp Info: Setting txtt sub-encoding to TS1/0 on input line 310.
+Package textcomp Info: Setting futs sub-encoding to TS1/4 on input line 311.
+Package textcomp Info: Setting futx sub-encoding to TS1/4 on input line 312.
+Package textcomp Info: Setting futj sub-encoding to TS1/4 on input line 313.
+Package textcomp Info: Setting hlh sub-encoding to TS1/3 on input line 314.
+Package textcomp Info: Setting hls sub-encoding to TS1/3 on input line 315.
+Package textcomp Info: Setting hlst sub-encoding to TS1/3 on input line 316.
+Package textcomp Info: Setting hlct sub-encoding to TS1/5 on input line 317.
+Package textcomp Info: Setting hlx sub-encoding to TS1/5 on input line 318.
+Package textcomp Info: Setting hlce sub-encoding to TS1/5 on input line 319.
+Package textcomp Info: Setting hlcn sub-encoding to TS1/5 on input line 320.
+Package textcomp Info: Setting hlcw sub-encoding to TS1/5 on input line 321.
+Package textcomp Info: Setting hlcf sub-encoding to TS1/5 on input line 322.
+Package textcomp Info: Setting pplx sub-encoding to TS1/3 on input line 323.
+Package textcomp Info: Setting pplj sub-encoding to TS1/3 on input line 324.
+Package textcomp Info: Setting ptmx sub-encoding to TS1/4 on input line 325.
+Package textcomp Info: Setting ptmj sub-encoding to TS1/4 on input line 326.
 ))
-(/usr/share/texmf/tex/latex/ae/ae.sty
+(/usr/share/texmf-tetex/tex/latex/base/fontenc.sty
+Package: fontenc 2004/02/22 v1.99f Standard LaTeX package
+
+(/usr/share/texmf-tetex/tex/latex/base/t1enc.def
+File: t1enc.def 2004/02/22 v1.99f Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
+))
+(/usr/share/texmf-tetex/tex/latex/ae/ae.sty
 Package: ae 2001/02/12 1.3 Almost European Computer Modern
 
-(/usr/share/texmf/tex/latex/base/fontenc.sty
-Package: fontenc 2001/06/05 v1.94 Standard LaTeX package
+(/usr/share/texmf-tetex/tex/latex/base/fontenc.sty
+Package: fontenc 2004/02/22 v1.99f Standard LaTeX package
 
-(/usr/share/texmf/tex/latex/base/t1enc.def
-File: t1enc.def 2001/06/05 v1.94 Standard LaTeX file
-LaTeX Font Info:    Redeclaring font encoding T1 on input line 38.
+(/usr/share/texmf-tetex/tex/latex/base/t1enc.def
+File: t1enc.def 2004/02/22 v1.99f Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
 )
-LaTeX Font Info:    Try loading font information for T1+aer on input line 95.
+LaTeX Font Info:    Try loading font information for T1+aer on input line 100.
 
-(/usr/share/texmf/tex/latex/ae/t1aer.fd
+(/usr/share/texmf-tetex/tex/latex/ae/t1aer.fd
 File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 )))) (./kde.aux)
 \openout1 = `kde.aux'.
@@ -211,14 +273,14 @@ LaTeX Font Info:    ... okay on input line 70.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 70.
 LaTeX Font Info:    Try loading font information for TS1+cmr on input line 70.
 
-(/usr/share/texmf/tex/latex/base/ts1cmr.fd
+(/usr/share/texmf-tetex/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 70.
 
-(/usr/share/texmf/tex/context/base/supp-pdf.tex
-(/usr/share/texmf/tex/context/base/supp-mis.tex
-loading : Context Support Macros / Missing
+(/usr/share/texmf-tetex/tex/context/base/supp-pdf.tex
+(/usr/share/texmf-tetex/tex/context/base/supp-mis.tex
+loading : Context Support Macros / Miscellaneous (2004.10.26)
 \protectiondepth=\count104
 \scratchcounter=\count105
 \scratchtoks=\toks26
@@ -229,47 +291,53 @@ loading : Context Support Macros / Missing
 \scratchread=\read2
 \scratchwrite=\write4
 \zeropoint=\dimen119
+\onepoint=\dimen120
+\onebasepoint=\dimen121
 \minusone=\count106
-\thousandpoint=\dimen120
+\thousandpoint=\dimen122
+\onerealpoint=\dimen123
 \emptytoks=\toks27
 \nextbox=\box30
-\nextdepth=\dimen121
+\nextdepth=\dimen124
 \everyline=\toks28
 \!!counta=\count107
 \!!countb=\count108
 \recursecounter=\count109
 )
-loading : Context Support Macros / PDF
+loading : Context Support Macros / PDF (2004.03.26)
 \nofMPsegments=\count110
 \nofMParguments=\count111
+\MPscratchCnt=\count112
+\MPscratchDim=\dimen125
+\MPnumerator=\count113
 \everyMPtoPDFconversion=\toks29
 )
 LaTeX Font Info:    Try loading font information for U+msa on input line 72.
- (/usr/share/texmf/tex/latex/amsfonts/umsa.fd
+ (/usr/share/texmf-tetex/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2002/01/19 v2.2g AMS font definitions
 )
 LaTeX Font Info:    Try loading font information for U+msb on input line 72.
 
-(/usr/share/texmf/tex/latex/amsfonts/umsb.fd
+(/usr/share/texmf-tetex/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2002/01/19 v2.2g AMS font definitions
 )
 LaTeX Font Info:    Try loading font information for T1+aett on input line 80.
 
-(/usr/share/texmf/tex/latex/ae/t1aett.fd
+(/usr/share/texmf-tetex/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 ) [1
 
-{/var/lib/texmf/dvips/config/pdftex.map}] <kde-002.pdf, id=44, 433.62pt x 433.6
-2pt>
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] <kde-002.pdf, id=44, 433.6
+2pt x 433.62pt>
 File: kde-002.pdf Graphic file (type pdf)
- <use kde-002.pdf>
-<kde-003.pdf, id=45, 433.62pt x 433.62pt>
+
+<use kde-002.pdf> <kde-003.pdf, id=45, 433.62pt x 433.62pt>
 File: kde-003.pdf Graphic file (type pdf)
- <use kde-003.pdf> [2 <./kde-002.pdf> <./kde-003.pdf>] <kde-007.pdf, id=62, 433
-.62pt x 433.62pt>
+ <use kde-003.pdf>
+[2 <./kde-002.pdf> <./kde-003.pdf>] <kde-007.pdf, id=62, 433.62pt x 433.62pt>
 File: kde-007.pdf Graphic file (type pdf)
- <use kde-007.pdf>
-<kde-008.pdf, id=63, 433.62pt x 433.62pt>
+
+<use kde-007.pdf> <kde-008.pdf, id=63, 433.62pt x 433.62pt>
 File: kde-008.pdf Graphic file (type pdf)
  <use kde-008.pdf>
 <kde-011.pdf, id=64, 433.62pt x 433.62pt>
@@ -280,28 +348,28 @@ File: kde-012.pdf Graphic file (type pdf)
  <use kde-012.pdf> [3 <./kde-007.pdf> <./kde-008.pdf>] [4 <./kde-011.pdf> <./kd
 e-012.pdf>] [5] (./kde.aux) ) 
 Here is how much of TeX's memory you used:
- 3333 strings out of 95437
- 41135 string characters out of 1190247
- 88507 words of memory out of 1000001
- 6259 multiletter control sequences out of 10000+50000
- 29513 words of font info for 76 fonts, out of 500000 for 1000
- 14 hyphenation exceptions out of 1000
- 35i,7n,24p,337b,345s stack positions out of 1500i,500n,5000p,200000b,5000s
+ 3415 strings out of 94500
+ 42384 string characters out of 1175771
+ 90067 words of memory out of 1000000
+ 6500 multiletter control sequences out of 10000+50000
+ 29513 words of font info for 76 fonts, out of 500000 for 2000
+ 580 hyphenation exceptions out of 8191
+ 35i,7n,24p,320b,285s stack positions out of 1500i,500n,5000p,200000b,5000s
+PDF statistics:
  104 PDF objects out of 300000
  0 named destinations out of 131072
- 30 words of extra memory for PDF output out of 65536
-{/usr/share/texmf/dvips/tetex/74afc74c.enc}</usr/s
-hare/texmf/fonts/type1/bluesky/cm/cmti10.pfb>{/usr/share/texmf/dvips/tetex/f7b6
-d320.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmbx12.pfb>{/usr/share/texmf/
-dvips/tetex/09fbbfac.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmsltt10.pfb>
-{/usr/share/texmf/dvips/tetex/bbad153f.enc}</usr/share/texmf/fonts/type1/bluesk
-y/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx8.pfb></usr/share/
-texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf/fonts/type1/bluesky/c
-m/cmsy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb>{/usr/share/tex
-mf/dvips/tetex/aae443f0.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb>
-</usr/share/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/typ
-e1/bluesky/cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmib10.pfb></u
-sr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/fonts/type1/
-bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/s
-hare/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
-Output written on kde.pdf (5 pages, 272623 bytes).
+ 31 words of extra memory for PDF output out of 65536
+</usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmt
+i10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/t
+exmf-tetex/fonts/type1/bluesky/cm/cmsltt10.pfb></usr/share/texmf-tetex/fonts/ty
+pe1/bluesky/cm/cmsy10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmbx8.
+pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf
+-tetex/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf-tetex/fonts/type1/blu
+esky/cm/cmbx10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmmi8.pfb></u
+sr/share/texmf-tetex/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf-tetex/
+fonts/type1/bluesky/cm/cmr8.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/
+cmmib10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmtt10.pfb></usr/sha
+re/texmf-tetex/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf-tetex/fonts/t
+ype1/bluesky/cm/cmr12.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmr17.
+pfb>
+Output written on kde.pdf (5 pages, 271624 bytes).

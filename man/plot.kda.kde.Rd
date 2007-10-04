@@ -19,13 +19,12 @@ for 1- to 3-dimensional data}
 
 ## bivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    ncont=NULL, xlim, ylim, xlab="x", ylab="y", drawpoints=FALSE,
+    ncont=NULL, xlim, ylim, xlab, ylab, drawpoints=FALSE,
     drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol, ...)
 
 ## trivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50), colors,
-   alphavec, origin=c(0,0,0), endpts, xlab="x", ylab="y",
-   zlab="z", drawpoints=FALSE, size=3, ptcol, ...)
+   alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, ptcol="blue", ...)
 
 }
 
@@ -45,11 +44,9 @@ for 1- to 3-dimensional data}
   \item{ptcol}{vector of colours for data points of each group}
   \item{lcol}{vector of colours for contour lines of density estimates}
   \item{colors}{vector of colours for contours of density estimates (3-d plot)}
-  \item{origin}{origin vector (3-d plot)}
-  \item{endpts}{vector of end points for each of the 3 axes (3-d plot)}
   \item{alphavec}{vector of transparency values - one for each contour
     (3-d plot)}
-  \item{size}{size and of plotting symbol (3-d plot)}
+  \item{size}{size of plotting symbol (3-d plot)}
   \item{...}{other graphics parameters}
 }
   
@@ -95,10 +92,7 @@ for 1- to 3-dimensional data}
   Default contours are \code{cont=c(25,50)}. \code{colors} are
   set one per group - default is \code{heat.colors}. The transparency of
   each contour (within each group) is \code{alphavec}. Default range is
-  0.1 to 0.5. \code{origin} is the point where
-  the three axes meet. \code{endpts} is the vector of the 
-  maximum axis values to be plotted.  Default \code{endpts} is the
-  maxima for the plotting grid from \code{x}.
+  0.1 to 0.5. 
 }
  
 \references{  
@@ -119,6 +113,7 @@ data(iris)
 
 xlab <- "Sepal length (mm)"
 ylab <- "Sepal width (mm)"
+zlab <- "Petal length (mm)"
 xlim <- c(4,8)
 ylim <- c(2,4.5)
 
@@ -142,13 +137,13 @@ plot(kda.fhat, ncont=6, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim,
 
 ## trivariate example
 
-\dontrun{
 ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-## colour indicates species, transparency indicates density heights
-}
+plot(kda.fhat, xlab=xlab, ylab=ylab, zlab=zlab)
+  ## colour indicates species, transparency indicates density heights
+
 }
 \keyword{ hplot}
 

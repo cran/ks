@@ -314,7 +314,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 
   for (i in 1:n)
   {
-    # compute evaluation points 
+    ## compute evaluation points 
     eval.x <- seq(gridx[[1]][grid.pts$minx[i,1]], 
                   gridx[[1]][grid.pts$maxx[i,1]], by=gridx$stepsize[1])
     eval.y <- seq(gridx[[2]][grid.pts$minx[i,2]], 
@@ -325,7 +325,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
     eval.pts <- permute(list(eval.x, eval.y))
     fhat <- dmvnorm(eval.pts, x[i,], H)
     
-    # place vector of density estimate values `fhat' onto grid 'fhat.grid' 
+    ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
     for (j in 1:length(eval.y))
       fhat.grid[eval.x.ind, eval.y.ind[j]] <- 
         fhat.grid[eval.x.ind, eval.y.ind[j]] + 
@@ -361,7 +361,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 
 kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
 {
-  # initialise grid 
+  ## initialise grid 
   n <- nrow(x)
 
   if (is.null(gridx))
@@ -382,8 +382,6 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
                   gridx[[2]][grid.pts$maxx[i,2]], by=gridx$stepsize[2])
     eval.z <- seq(gridx[[3]][grid.pts$minx[i,3]], 
                   gridx[[3]][grid.pts$maxx[i,3]], by=gridx$stepsize[3])
-    #else
-    #  eval.z <- eval.levels
  
     eval.x.ind <- c(grid.pts$minx[i,1]:grid.pts$maxx[i,1])
     eval.y.ind <- c(grid.pts$minx[i,2]:grid.pts$maxx[i,2])
@@ -391,7 +389,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
     eval.x.len <- length(eval.x)
     eval.pts <- permute(list(eval.x, eval.y))
    
-    # place vector of density estimate values `fhat' onto grid 'fhat.grid' 
+    ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
 
     for (k in 1:length(eval.z))
     {
@@ -474,7 +472,7 @@ plot.kde <- function(x, drawpoints=FALSE, ...)
     if (d==2) 
       plotkde.2d.new(fhat, drawpoints=drawpoints, ...)
     else if (d==3)
-      warning("RGL 3-d plotting temporarily disabled")  ##plotkde.3d(fhat, drawpoints=drawpoints, ...)
+      plotkde.3d(fhat, drawpoints=drawpoints, ...)
     else 
       stop ("Plot function only available for 1, 2 or 3-dimensional data")
   }
@@ -534,7 +532,7 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, 
   eval1 <- fhat$eval.points[[1]]
   eval2 <- fhat$eval.points[[2]]
   
-  ## perspective/wire-frame plot
+  ## perspective/wireame plot
   if (disp1=="p")
     persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
           theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
@@ -599,12 +597,10 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, 
 
 
 plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
-  alphavec, size=3, ptcol="blue", add=FALSE, origin=c(0,0,0),
-  endpts, xlab, ylab, zlab, drawpoints=TRUE, ...)
+  alphavec, size=3, ptcol="blue", add=FALSE, 
+  xlab, ylab, zlab, drawpoints=FALSE, ...)
 
 {
-  ##require(rgl); require(misc3d) 
-
   n <- nrow(fhat$x)
   RK <- (4*pi)^(-3/2)
   bgridsize <- dim(fhat$estimate)
@@ -626,63 +622,52 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   if (missing(colors))
     colors <- rev(heat.colors(nc))
 
-  if (missing(endpts))
-  {
-    endpts <- rep(0,3)
-    endpts[1] <-  max(fhat$eval.points[[1]])
-    endpts[2] <-  max(fhat$eval.points[[2]])
-    endpts[3] <-  max(fhat$eval.points[[3]])
-  }
-  x.names <- colnames(fhat$x) 
-  if (!is.null(x.names))
-  {
-    if (missing(xlab)) xlab <- x.names[1]
-    if (missing(ylab)) ylab <- x.names[2]
-    if (missing(zlab)) zlab <- x.names[3]
-  }
-  else
-  {
-    xlab="x"
-    ylab="y"
-    zlab="z"
-  }
+  ##if (missing(endpts))
+  ##{
+  ##  endpts <- rep(0,3)
+  ##  endpts[1] <-  max(fhat$eval.points[[1]])
+  ##  endpts[2] <-  max(fhat$eval.points[[2]])
+  ##  endpts[3] <-  max(fhat$eval.points[[3]])
+  ##}
+  x.names <- colnames(fhat$x)
 
+  if (missing(xlab))
+    if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
+  if (missing(ylab))
+    if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
+  if (missing(zlab))
+    if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
+  
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
   
-  if (!add)
-  {
-    clear3d()
-    bg3d(col="white")
-    for (i in 1:nc) 
-      contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
-                fhat$eval.points[[2]], fhat$eval.points[[3]], add=(i>1),
-                color=colors[i], alpha=alphavec[i], ...)
-  }
-  else
-  {
-    bg3d(col="white")
-    for (i in 1:nc) 
-      contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
-                fhat$eval.points[[2]], fhat$eval.points[[3]], add=add,
-                color=colors[i], alpha=alphavec[i], ...)
-  }
-   
-  if (drawpoints)
-    points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1)
+  if (!add) clear3d()
   
-  lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-          color="black", alpha=1)
-  lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-          color="black", alpha=1)
+  bg3d(col="white")
+  if (drawpoints)
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1, xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  else
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  
+  for (i in 1:nc) 
+    contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
+              fhat$eval.points[[2]], fhat$eval.points[[3]], add=TRUE,
+              color=colors[i], alpha=alphavec[i], ...)
 
-  texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-  texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-  texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
+   
+  ##if (drawpoints)
+  ##  points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1)
+  
+  ##lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
+  ##        color="black", alpha=1)
+  ##lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
+  ##        color="black", alpha=1)
+  ##lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
+  ##        color="black", alpha=1)
+
+  ##texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
+  ##texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
+  ##texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
 
 }
-
-

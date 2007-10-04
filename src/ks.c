@@ -24,7 +24,7 @@ void dmvnormd6_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
 void dmvnorm_2d_sum(double *x1, double *x2, double *visigma,
 		    double *detsigma, int *n, double *sum);
 void dmvnorm_2d_sum_ab(double *x1, double *x2, double *sigma1, double *sigma2, 
-		       int *n, int *which, double *sum);
+					   int *n, int *which, double *sum);
 void dmvnorm_2d_sum_clust(double *x1, double *x2, double *y1, double *y2, 
 			  double *visigma, double *detsigma, int *nx, int *ny, 
 			  double *sum);
@@ -1108,8 +1108,12 @@ void dmvnorm_2d_sum(double *x1, double *x2, double *visigma, double *detsigma,
     free(x);
     free(y);
     free(dens);
-
 }
+
+
+
+
+
 /*************************************************************************
 * Double sum of normal density values for Abramson's selector - bivariate
 *
@@ -1163,6 +1167,7 @@ void dmvnorm_2d_sum_ab(double *x1, double *x2, double *sigma1, double *sigma2,
   sum[0] = sum1;
   free(x);
 }
+
 
 /*************************************************************************
 * Double sum of normal density values for re-clustered selector - bivariate
