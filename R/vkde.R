@@ -107,12 +107,12 @@ lscv.mat.ab <- function(x, h, fhatp)
   {
     n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
   }
-  result <- .C("dmvnorm_2d_sum_ab", as.double(x1), as.double(x2), as.double(h.ab),
+  result <- .Fortran("dmvnorm_2d_sum_ab", as.double(x1), as.double(x2), as.double(h.ab),
                as.double(h.ab), as.integer(n), as.integer(1), as.double(0),
                PACKAGE="ks")
   lscv1 <- result[[7]]
 
-  result <- .C("dmvnorm_2d_sum_ab", as.double(x1), as.double(x2), as.double(h.ab),
+  result <- .Fortran("dmvnorm_2d_sum_ab", as.double(x1), as.double(x2), as.double(h.ab),
                as.double(h.ab), as.integer(n), as.integer(0), as.double(0),
                PACKAGE="ks")
   lscv2 <- result[[7]]

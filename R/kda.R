@@ -652,8 +652,8 @@ plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
 
 
 plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL, 
-    cont=c(25,50,75), ncont=NULL, xlim, ylim, xlab, ylab,
-    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol, ...)
+    cont=c(25,50,75), abs.cont, xlim, ylim, xlab, ylab,
+    drawpoints=FALSE, drawlabels=TRUE,  cex=1, pch, lty, col, lcol, ptcol, ...)
 { 
   fhat <- x
   
@@ -743,48 +743,58 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
           points(y[y.group==y.gr[j],], cex=cex, pch=pch[j], col=ptcol[j]) 
       }
     }
-    
-    if (fhat$binned)
+    if (missing(abs.cont))
     {
-      bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-      
-      ##fhat$estimate[fhat$estimate <0] <- 0
-      dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
+      if (fhat$binned)
+      {
+        bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
+        
+        dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
+      }
+      else
+        dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
     }
-    else
-      dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
   }
+
+  if (missing(abs.cont))
+    hts <- quantile(dobs, prob = (100 - cont)/100)
+  else
+    hts <- abs.cont
   
-  hts <- quantile(dobs, prob = (100 - cont)/100)
-  
-  if (is.null(ncont))
-    for (i in 1:length(cont)) 
-    {
-      scale <- cont[i]/hts[i]
+  ##if (is.null(ncont))
+  for (i in 1:length(hts)) 
+  {
+    scale <- cont[i]/hts[i]
+    if (missing(abs.cont))
       for (j in 1:m)
         contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
                 fhat$estimate[[j]]*scale, level=hts[i]*scale, add=TRUE, 
                 drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
-    }
-  else
-    for (j in 1:m)
-      contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-              fhat$estimate[[j]], add=TRUE,  drawlabels=drawlabels,
-              nlevel=ncont, lty=lty[j], col=lcol[j], ...)
+    else
+      for (j in 1:m)
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate[[j]], level=hts[i], add=TRUE, 
+                drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
+  }
+  ##else
+  ##  for (j in 1:m)
+  ##    contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+  ##            fhat$estimate[[j]], add=TRUE,  drawlabels=drawlabels,
+  ##            nlevel=ncont, lty=lty[j], col=lcol[j], ...)
   
 }
 
 
 
 plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
-    cont=c(25,50), colors, alphavec, xlab, ylab, zlab,
+    cont=c(25,50), abs.cont, colors, alphavec, xlab, ylab, zlab,
     drawpoints=FALSE, size=3, ptcol="blue", ...)
 {   
   fhat <- x
    
   d <- 3
   m <- length(fhat$x)
-  ##type <- substr(fhat$type,1,1)
+ 
   eval1 <- fhat$eval.points[[1]]
   eval2 <- fhat$eval.points[[2]]
   eval3 <- fhat$eval.points[[3]]
@@ -812,13 +822,6 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
     if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
   if (missing(zlab))
     if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
-  
-  ncont <- length(cont)
-  
-  if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=ncont)
-  if (missing(colors)) colors <- rainbow(m)
-  if (missing(ptcol)) ptcol <- rep("blue", m)
-  if (length(ptcol)==1) ptcol <- rep(ptcol, m)
              
   dobs <- numeric(0)
   xx <- numeric(0)
@@ -831,21 +834,30 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   if (fhat$binned)
     bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
 
-  for (j in 1:m)
-    if (fhat$binned)
-    {
-      bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-      
-      dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
-    }
-    else
-      dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
+  if (missing(abs.cont))
+  {
+    for (j in 1:m)
+      if (fhat$binned)
+      {
+        bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
+        
+        dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
+      }
+      else
+        dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
+    
+    hts <- quantile(dobs, prob = (100-cont)/100)
+  }
+  else
+    hts <- abs.cont
 
-  ##dobs <- c(dobs, kde(fhat$x[[j]], fhat$H[[j]], eval.points=xx)$estimate
-  ##          * prior.prob[j])
-
-  hts <- quantile(dobs, prob = (100-cont)/100)
-
+  ncont <- length(hts)
+  
+  if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=ncont)
+  if (missing(colors)) colors <- rainbow(m)
+  if (missing(ptcol)) ptcol <- rep("blue", m)
+  if (length(ptcol)==1) ptcol <- rep(ptcol, m)
+  
   clear3d()
   bg3d(color="white")
 

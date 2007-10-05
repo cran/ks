@@ -19,7 +19,7 @@ for 1- to 3-dimensional data}
 
 ## bivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    ncont=NULL, xlim, ylim, xlab, ylab, drawpoints=FALSE,
+    abs.cont, xlim, ylim, xlab, ylab, drawpoints=FALSE,
     drawlabels=TRUE, cex=1, pch, lty, col, lcol, ptcol, ...)
 
 ## trivariate
@@ -34,9 +34,11 @@ for 1- to 3-dimensional data}
   \item{y}{matrix of test data points}
   \item{y.group}{vector of group labels for test data points}
   \item{prior.prob}{vector of prior probabilities}  
-  \item{cont}{vector of percentages (of maximum height) for contour
-    level curves (2-d plot)}
-  \item{ncont}{number of contour level curves (2-d plot)}
+  \item{cont}{vector of percentiles of density estimate heights for contour
+    level curves}
+  \item{abs.cont}{vector of absolute density estimate heights for contour
+    level curves - only one of \code{cont} or \code{abs.cont} needs to
+	be specified}
   \item{cex,pch,lty,xlim,ylim,xlab,ylab,zlab}{usual graphics parameters}
   \item{drawpoints}{if TRUE then draw data points}
   \item{drawlabels}{if TRUE then draw contour labels (2-d plot)}
@@ -82,10 +84,10 @@ for 1- to 3-dimensional data}
   The plotting symbols are set by \code{pch} and the colour by \code{ptcol}.
   
   Unlike \code{\link{plot.kde}}, the contour plots are automatically
-  added to the plot.  Default contours are \code{cont=c(25,50,75)}.
+  added to the plot.  The default contours are at 25\%, 50\%, 75\% or
+  \code{cont=c(25,50,75)}.
   The line types are set by \code{lty}. 
-  \code{cont} and \code{ncont} control the number of level curves (only
-  one of these needs to be set).
+  
 
   -- For 3-d plots:
   

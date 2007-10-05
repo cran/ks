@@ -1293,8 +1293,8 @@ plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", ...)
 
 
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
-    xlim, ylim, gridsize, display="slice", cont=c(25,50,75), lty,
-    ncont=NULL, xlabs="x", ylabs="y", zlabs="Density function",
+    xlim, ylim, gridsize, display="slice", cont=c(25,50,75), abs.cont,
+    lty, xlab="x", ylab="y", zlab="Density function",
     theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e5, ...)
 {
   dist <- tolower(substr(dist,1,1))
@@ -1316,7 +1316,6 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   xy <- permute(list(x, y))
 
   d <- ncol(Sigmas)
-
   
   if (dist=="n")
     dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
@@ -1329,8 +1328,8 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   disp <- substr(display,1,1)
 
   if (disp=="p")
-    persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlabs, ylab=ylabs,
-          zlab=zlabs, ...)
+    persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab,
+          zlab=zlab, ...)
 
   else if (disp=="s")
   {
@@ -1345,32 +1344,38 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
       dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
     }
     
-    if (missing(lty)) lty <- 1
-    hts <- quantile(dens.rand, prob=(100 - cont)/100)
-    if (!add)
-      plot(x, y, type="n", xlab=xlabs, ylab=ylabs, xlim=xlim, ylim=ylim, ...)
+    if (missing(lty))
+      lty <- 1
+    if (missing(abs.cont))
+      hts <- quantile(dens.rand, prob=(100 - cont)/100)
+    else
+      hts <- abs.cont
     
-    if (is.null(ncont))
-      for (i in 1:length(cont)) 
-      {
-        scale <- cont[i]/hts[i]
+    if (!add)
+      plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
+    
+    
+    for (i in 1:length(hts)) 
+    {
+      scale <- cont[i]/hts[i]
+      if (missing(abs.cont))
         contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE,
                 drawlabels=drawlabels, lty=lty, ...)
-      }
       else
-        contour(x, y, dens.mat, nlevel=ncont,add=TRUE, drawlabels=drawlabels,
-                lty=lty, ...)
+        contour(x, y, dens.mat, level=hts[i], add=TRUE,
+                drawlabels=drawlabels, lty=lty, ...)
+    }
   }
-   
+  
   else if (disp=="i")
-    image(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, ...)
+    image(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
   else if (disp=="f")
-    filled.contour(x, y, dens.mat,  xlab=xlabs, ylab=ylabs, ...)
+    filled.contour(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
     
 }
 
-plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal",
-    xlim, ylim, zlim, xlab, ylab, zlab, gridsize, alphavec, colors, add=FALSE, nrand=1e5, ...)
+plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
+    dist="normal", xlim, ylim, zlim, gridsize, alphavec, colors, add=FALSE, nrand=1e5, ...)
 {
   d <- 3
   dist <- tolower(substr(dist,1,1))
@@ -1388,17 +1393,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal"
   
   if (missing(gridsize))
     gridsize <- rep(51,d)
-
-  nc <- length(cont)
-  if (missing(colors))
-    colors <- rev(heat.colors(nc))
-  
-  if (missing(alphavec))
-    alphavec <- seq(0.1,0.5,length=nc)
-
-  if (missing(xlab)) xlab <- "x"
-  if (missing(ylab)) ylab <- "y"
-  if (missing(zlab)) zlab <- "z"
   
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
@@ -1428,15 +1422,25 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), dist="normal"
     x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
     dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
   }
+  if (missing(abs.cont))
+    hts <- quantile(dens.rand, prob = (100 - cont)/100)
+  else
+    hts <- abs.cont
 
-  hts <- quantile(dens.rand, prob = (100 - cont)/100)
+  nc <- length(hts)
+  if (missing(colors))
+    colors <- rev(heat.colors(nc))
+  
+  if (missing(alphavec))
+    alphavec <- seq(0.1,0.5,length=nc)
 
   plot3d(x, y, z, type="n", add=add, ...)
+
   for (i in 1:nc) 
   {
     scale <- cont[i]/hts[i]
     contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
-             alpha=alphavec[i])
+             alpha=alphavec[i], ...)
   }
 }
 

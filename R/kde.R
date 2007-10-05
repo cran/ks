@@ -502,7 +502,7 @@ plotkde.1d <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
 # cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, cex=0.7, 
+plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, cex=0.7, 
     xlab, ylab, zlab="Density function", theta=-30, phi=40, d=4,
     add=FALSE, drawpoints=TRUE, drawlabels=TRUE, pch, ptcol="blue", lcol="black",
     ...)
@@ -546,33 +546,40 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, 
     RK <- (4*pi)^(-2/2)
     bgridsize <- dim(fhat$estimate)
     
-   
-    ## for large sample sizes, use binned approx. 
-    if (fhat$binned)
+    if (missing(abs.cont))
     {
-      bin.par <- dfltCounts.ks(fhat$x, bgridsize, sqrt(diag(fhat$H)), supp=3.7)
-      #fhat$estimate[fhat$estimate <0] <- 0
-      dobs <- rep(fhat$estimate, round(bin.par$counts,0))
+      ## for large sample sizes, use binned approx. 
+      if (fhat$binned | nrow(fhat$x) >= 5e3)
+      {
+        bin.par <- dfltCounts.ks(fhat$x, bgridsize, sqrt(diag(fhat$H)), supp=3.7)
+        dobs <- rep(fhat$estimate, round(bin.par$counts,0))
+      }
+      else
+        dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x)$estimate 
+      
+      hts <- quantile(dobs, prob=(100 - cont)/100)
     }
     else
-      dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x)$estimate 
-   
-    
-    hts <- quantile(dobs, prob=(100 - cont)/100)
-
+      hts <- abs.cont
     
     ## compute and draw contours
-    if (is.null(ncont))
-      for (i in 1:length(cont)) 
+    ##if (is.null(ncont))
+      for (i in 1:length(hts)) 
       {
         scale <- cont[i]/hts[i]
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
-                drawlabels=drawlabels, col=lcol, ...)
+        if (missing(abs.cont))
+          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                  fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
+                  drawlabels=drawlabels, col=lcol, ...)
+        else
+          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                  fhat$estimate, level=hts[i], add=TRUE, 
+                  drawlabels=drawlabels, col=lcol, ...)
+        
       }
-    else
-      contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-              nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
+    ##else
+    ##  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
+    ##          nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
     
     ## add points 
     if (drawpoints)
@@ -596,7 +603,7 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), ncont=NULL, 
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
+plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
   alphavec, size=3, ptcol="blue", add=FALSE, 
   xlab, ylab, zlab, drawpoints=FALSE, ...)
 
@@ -606,18 +613,22 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   bgridsize <- dim(fhat$estimate)
   
   ## for large sample sizes, use binned approx. 
-  if (fhat$binned)
+  if (missing(abs.cont))
   {
-    bin.par <- dfltCounts.ks(fhat$x, bgridsize, sqrt(diag(fhat$H)), supp=3.7)
-    ##fhat$estimate[fhat$estimate <0] <- 0
-    dobs <- rep(fhat$estimate, round(bin.par$counts,0))
- 
+    if (fhat$binned | nrow(fhat$x) >= 5e4)
+    {
+      bin.par <- dfltCounts.ks(fhat$x, bgridsize, sqrt(diag(fhat$H)), supp=3.7)
+      dobs <- rep(fhat$estimate, round(bin.par$counts,0))
+    }
+    else
+      dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x)$estimate 
+  
+    hts <- quantile(dobs, prob = (100-cont)/100)
   }
   else
-    dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x)$estimate 
+    hts <- abs.cont
   
-  hts <- quantile(dobs, prob = (100-cont)/100)
-  nc <- length(cont)
+  nc <- length(hts)
   
   if (missing(colors))
     colors <- rev(heat.colors(nc))
@@ -650,11 +661,13 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), colors,
   else
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
   
-  for (i in 1:nc) 
-    contour3d(fhat$estimate, level=hts[nc-i+1], fhat$eval.points[[1]],
-              fhat$eval.points[[2]], fhat$eval.points[[3]], add=TRUE,
+  for (i in 1:nc)
+  {
+    ##scale <- cont[i]/hts[i]
+    contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]],
+              y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE,
               color=colors[i], alpha=alphavec[i], ...)
-
+  }
    
   ##if (drawpoints)
   ##  points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1)
