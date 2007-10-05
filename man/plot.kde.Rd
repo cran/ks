@@ -15,15 +15,15 @@
   ptcol="blue", lcol="black", drawpoints=TRUE, ...)
 
 ## bivariate
-\method{plot}{kde}(fhat, display="slice", cont=c(25,50,75), ncont=NULL,
+\method{plot}{kde}(fhat, display="slice", cont=c(25,50,75), abs.cont,
     cex=0.7, xlab, ylab, zlab="Density function", theta=-30,
     phi=40, d=4, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, pch,
-    ptcol="blue", lcol="black", ...)
+    ptcol="blue", lcol="black", nrand=1e5, ...)
 
 ## trivariate
-\method{plot}{kde}(fhat, cont=c(25,50,75), colors, alphavec,
+\method{plot}{kde}(fhat, cont=c(25,50,75), abs.cont, colors, alphavec,
     size=3, ptcol="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE,
-    ...)
+    nrand=1e5, ...)
 }
 
 \arguments{
@@ -33,8 +33,10 @@
     perspective plot, "image" for image plot, "filled" for filled
     contyour plot (2-d plot)}
   \item{cont}{vector of percentiles of density estimate heights for contour
-    level curves (2-d plot)}
-  \item{ncont}{number of contour level curves (2-d plot)}
+    level curves}
+  \item{abs.cont}{vector of absolute density estimate heights for contour
+    level curves - only one of \code{cont} or \code{abs.cont} needs to
+	be specified}
   \item{ptcol}{plotting colour for data points}
   \item{lcol}{plotting colour for density estimate}
   \item{cex,pch,xlab,ylab,zlab,add}{usual graphics parameters}
@@ -44,6 +46,7 @@
   \item{colors}{vector of colours for each contour (3-d plot)}
   \item{alphavec}{vector of transparency values (3-d plot)}
   \item{size}{size of plotting symbol (3-d plot)}
+  \item{nrand}{number of random points generated to produce density plot}
   \item{...}{other graphics parameters}
 }
   
@@ -72,8 +75,7 @@
   If \code{display="slice"} then a slice/contour plot
   is generated using \code{contour}.
   The default contours are at 25\%, 50\%, 75\% or
-  \code{cont=c(25,50,75)}.  The user can also set the number of contour
-  level curves by changing the value set to \code{ncont}. See examples below.
+  \code{cont=c(25,50,75)}.
   
   If \code{display="persp"} then a perspective/wire-frame plot
   is generated.  The default z-axis limits \code{zlim} are determined by

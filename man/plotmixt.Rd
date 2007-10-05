@@ -37,8 +37,8 @@ mus <- rbind(c(0,0), c(-1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 1), nr=2, nc=2) 
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
-plotmixt(mus, Sigmas, props, ncont=6, drawlabels=FALSE)
-plotmixt(mus, Sigmas, props, ncont=6, dfs=c(3,8), dist="t", drawlabels=FALSE)
+plotmixt(mus, Sigmas, props)
+plotmixt(mus, Sigmas, props, dfs=c(3,8), dist="t")
 
 %%\dontrun{
 ## trivariate example
