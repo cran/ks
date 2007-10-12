@@ -41,11 +41,11 @@ SCV bandwidth matrix.
 
 \references{
   Jones, M.C., Marron, J.~S. \& Park, B.U. (1991) A simple root n
-  bandwidth selector. \emph{The Annals of Statistics} \bold{19}, 1919--1932.
+  bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919--1932.
 
-  Duong, T. \& Hazelton, M.L. (2005) \emph{Cross-validation bandwidth
-    matrices for multivariate kernel density estimation}.  Scandinavian Journal 
-  of Statistics. \bold{32}, 485-506.
+  Duong, T. \& Hazelton, M.L. (2005) Cross-validation bandwidth
+    matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
+  of Statistics}. \bold{32}, 485-506.
 } 
 
 \seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}}

@@ -1,4 +1,4 @@
-This is pdfeTeXk, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2007.9.20)  5 OCT 2007 16:03
+This is pdfeTeXk, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2007.9.20)  12 OCT 2007 15:45
 entering extended mode
  file:line:error style messages enabled.
 **\nonstopmode \input /home/tduong/research/kernel/library/ks/inst/doc/kde.tex
@@ -325,19 +325,27 @@ LaTeX Font Info:    Try loading font information for T1+aett on input line 80.
 
 (/usr/share/texmf-tetex/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
-) [1
+)
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] <kde-002.pdf, id=44, 433.6
-2pt x 433.62pt>
+Package natbib Warning: Citation `sm' on page 1 undefined on input line 80.
+
+
+Package natbib Warning: Citation `KernSmooth' on page 1 undefined on input line
+ 81.
+
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+<kde-002.pdf, id=44, 433.62pt x 433.62pt>
 File: kde-002.pdf Graphic file (type pdf)
-
-<use kde-002.pdf> <kde-003.pdf, id=45, 433.62pt x 433.62pt>
+ <use kde-002.pdf>
+<kde-003.pdf, id=45, 433.62pt x 433.62pt>
 File: kde-003.pdf Graphic file (type pdf)
- <use kde-003.pdf>
-[2 <./kde-002.pdf> <./kde-003.pdf>] <kde-007.pdf, id=62, 433.62pt x 433.62pt>
+ <use kde-003.pdf> [2 <./kde-002.pdf> <./kde-003.pdf>] <kde-007.pdf, id=62, 433
+.62pt x 433.62pt>
 File: kde-007.pdf Graphic file (type pdf)
-
-<use kde-007.pdf> <kde-008.pdf, id=63, 433.62pt x 433.62pt>
+ <use kde-007.pdf>
+<kde-008.pdf, id=63, 433.62pt x 433.62pt>
 File: kde-008.pdf Graphic file (type pdf)
  <use kde-008.pdf>
 <kde-011.pdf, id=64, 433.62pt x 433.62pt>
@@ -345,31 +353,34 @@ File: kde-011.pdf Graphic file (type pdf)
  <use kde-011.pdf>
 <kde-012.pdf, id=65, 433.62pt x 433.62pt>
 File: kde-012.pdf Graphic file (type pdf)
- <use kde-012.pdf> [3 <./kde-007.pdf> <./kde-008.pdf>] [4 <./kde-011.pdf> <./kd
-e-012.pdf>] [5] (./kde.aux) ) 
+ <use kde-012.pdf> [3 <./kde-007.pdf> <./kde-008.pdf>]
+
+Package natbib Warning: There were undefined citations.
+
+[4 <./kde-011.pdf> <./kde-012.pdf>] (./kde.aux) ) 
 Here is how much of TeX's memory you used:
- 3415 strings out of 94500
- 42384 string characters out of 1175771
- 90067 words of memory out of 1000000
- 6500 multiletter control sequences out of 10000+50000
- 29513 words of font info for 76 fonts, out of 500000 for 2000
+ 3418 strings out of 94500
+ 42415 string characters out of 1175771
+ 90006 words of memory out of 1000000
+ 6501 multiletter control sequences out of 10000+50000
+ 31378 words of font info for 78 fonts, out of 500000 for 2000
  580 hyphenation exceptions out of 8191
  35i,7n,24p,320b,285s stack positions out of 1500i,500n,5000p,200000b,5000s
 PDF statistics:
- 104 PDF objects out of 300000
+ 101 PDF objects out of 300000
  0 named destinations out of 131072
  31 words of extra memory for PDF output out of 65536
-</usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmt
-i10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/t
-exmf-tetex/fonts/type1/bluesky/cm/cmsltt10.pfb></usr/share/texmf-tetex/fonts/ty
-pe1/bluesky/cm/cmsy10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmbx8.
-pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/texmf
--tetex/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf-tetex/fonts/type1/blu
-esky/cm/cmbx10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmmi8.pfb></u
-sr/share/texmf-tetex/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf-tetex/
-fonts/type1/bluesky/cm/cmr8.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/
-cmmib10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmtt10.pfb></usr/sha
-re/texmf-tetex/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf-tetex/fonts/t
-ype1/bluesky/cm/cmr12.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmr17.
-pfb>
-Output written on kde.pdf (5 pages, 259074 bytes).
+</usr/share/texmf-tetex/fonts/
+type1/bluesky/cm/cmti10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmbx
+12.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmsltt10.pfb></usr/share/
+texmf-tetex/fonts/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf-tetex/fonts/typ
+e1/bluesky/cm/cmbx8.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmex10.p
+fb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf-t
+etex/fonts/type1/bluesky/cm/cmmi8.pfb></usr/share/texmf-tetex/fonts/type1/blues
+ky/cm/cmmi10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmr8.pfb></usr/
+share/texmf-tetex/fonts/type1/bluesky/cm/cmmib10.pfb></usr/share/texmf-tetex/fo
+nts/type1/bluesky/cm/cmbx10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/
+cmtt10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmr10.pfb></usr/share
+/texmf-tetex/fonts/type1/bluesky/cm/cmr12.pfb></usr/share/texmf-tetex/fonts/typ
+e1/bluesky/cm/cmr17.pfb>
+Output written on kde.pdf (4 pages, 250221 bytes).

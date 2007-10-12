@@ -27,12 +27,12 @@ Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
 \value{
 Plug-in bandwidth matrix.
 }
-\references{ Wand, M.P. \& Jones, M.C. (1994) \emph{Multivariate plugin bandwidth
-    selection}.  Computational Statistics \bold{9}, 97-116.
+\references{ Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth
+    selection.  \emph{Computational Statistics}, \bold{9}, 97-116.
   
-  Duong, T. \& Hazelton, M.L. (2003) \emph{Plug-in bandwidth matrices for
-    bivariate kernel density estimation}. Journal of Nonparametric
-  Statistics \bold{15}, 17-30.
+  Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
+    bivariate kernel density estimation. \emph{Journal of Nonparametric
+  Statistics}, \bold{15}, 17-30.
 }
 
 \details{ Use \code{Hpi} for full bandwidth matrices and \code{Hpi.diag}

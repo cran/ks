@@ -24,7 +24,8 @@ for 1- to 3-dimensional data}
 
 ## trivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50), colors,
-   alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, ptcol="blue", ...)
+   alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3,
+   ptcol="blue", ...)
 
 }
 
@@ -55,8 +56,7 @@ for 1- to 3-dimensional data}
 
 \value{
   Plot of 1-d and 2-d density estimates for discriminant analysis is
-  sent to graphics window. Plot for 3-d is sent to RGL window (TEMPORARILY 
-  DISABLED UNTIL rgl COMPILES AGAIN).
+  sent to graphics window. Plot for 3-d is sent to RGL window.
 }
 
 \details{
@@ -80,28 +80,31 @@ for 1- to 3-dimensional data}
   analysis is also plotted. If this is not desired, set
   \code{display=""}. Its colours are controlled by \code{col}
   (the default is \code{heat.colors}).
-
   The plotting symbols are set by \code{pch} and the colour by \code{ptcol}.
-  
-  Unlike \code{\link{plot.kde}}, the contour plots are automatically
-  added to the plot.  The default contours are at 25\%, 50\%, 75\% or
-  \code{cont=c(25,50,75)}.
+  The default contours are at 25\%, 50\%, 75\% or
+  \code{cont=c(25,50,75)} for the highest
+  density regions, see Hyndman (1996).
   The line types are set by \code{lty}. 
   
 
   -- For 3-d plots:
   
-  Default contours are \code{cont=c(25,50)}. \code{colors} are
-  set one per group - default is \code{heat.colors}. The transparency of
-  each contour (within each group) is \code{alphavec}. Default range is
-  0.1 to 0.5. 
+  Default contours are \code{cont=c(25,50)} for the highest density regions,
+  see Hyndman (1996). The colour for each group
+  is set using \code{colors} - default is \code{heat.colors}. The
+  transparency of 
+  each contour (within each group) is \code{alphavec}, with the default
+  range from 0.1 to 0.5. 
 }
  
 \references{  
 
   Bowman, A.W. & Azzalini, A. (1997) \emph{Applied Smoothing Techniques
     for Data Analysis}. Clarendon Press. Oxford.
-  
+
+  Hyndman, R.J. (1996) Computing and graphing highest density regions,
+    \emph{American Statistician}, \bold{50}, 120--126
+
   Simonoff, J. S., (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.}
 }
@@ -113,9 +116,6 @@ for 1- to 3-dimensional data}
 library(MASS)
 data(iris)
 
-xlab <- "Sepal length (mm)"
-ylab <- "Sepal width (mm)"
-zlab <- "Petal length (mm)"
 xlim <- c(4,8)
 ylim <- c(2,4.5)
 
@@ -124,7 +124,7 @@ ir <- iris[,1]
 ir.gr <- iris[,5]
 
 kda.fhat <- kda.kde(ir, ir.gr, hs=sqrt(c(0.01, 0.04, 0.07)))
-plot(kda.fhat, xlab=xlab, ptcol=1:3)
+plot(kda.fhat, xlab="Sepal length", ptcol=1:3)
 
 ## bivariate example
 ir <- iris[,1:2]
@@ -132,10 +132,8 @@ ir.gr <- iris[,5]
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
 
-plot(kda.fhat, cont=0, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim)
-plot(kda.fhat, ncont=6, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim,
-     col=c("transparent", "grey", "#8f8f8f"), drawlabels=FALSE,
-     pch=c(1,5,10))
+plot(kda.fhat, cont=0)
+plot(kda.fhat, xlim=xlim, ylim=ylim, col=c("transparent", "grey", "#8f8f8f"))
 
 ## trivariate example
 
@@ -143,9 +141,7 @@ ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-plot(kda.fhat, xlab=xlab, ylab=ylab, zlab=zlab)
-  ## colour indicates species, transparency indicates density heights
-
+plot(kda.fhat)
 }
 \keyword{ hplot}
 

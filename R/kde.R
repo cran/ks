@@ -156,15 +156,10 @@ kde <- function(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7, eval.point
       else
       {
         d <- ncol(x)
-        
         if (d==2)
           gridsize <- rep(151,d)
-        else if (d==3)
+        else 
           gridsize <- rep(51, d)
-        else if (d==4)
-          gridsize <- rep(21, d)
-        else
-          gridsize <- rep(11, d)
       }
     }
   
@@ -375,7 +370,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL)
   
   for (i in 1:n)
   {
-    # compute evaluation points 
+    ## compute evaluation points 
     eval.x <- seq(gridx[[1]][grid.pts$minx[i,1]], 
                   gridx[[1]][grid.pts$maxx[i,1]], by=gridx$stepsize[1])
     eval.y <- seq(gridx[[2]][grid.pts$minx[i,2]], 
@@ -470,7 +465,7 @@ plot.kde <- function(x, drawpoints=FALSE, ...)
     d <- ncol(fhat$x)
 
     if (d==2) 
-      plotkde.2d.new(fhat, drawpoints=drawpoints, ...)
+      plotkde.2d.v2(fhat, drawpoints=drawpoints, ...)
     else if (d==3)
       plotkde.3d(fhat, drawpoints=drawpoints, ...)
     else 
@@ -502,9 +497,10 @@ plotkde.1d <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
 # cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, cex=0.7, 
-    xlab, ylab, zlab="Density function", theta=-30, phi=40, d=4,
-    add=FALSE, drawpoints=TRUE, drawlabels=TRUE, pch, ptcol="blue", lcol="black",
+plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, cex=0.7, 
+    xlab, ylab, zlab="Density function",  
+    add=FALSE, drawpoints=TRUE, drawlabels=TRUE, theta=-30, phi=40, d=4,
+    pch, ptcol="blue", lcol="black",
     ...)
 {
   disp1 <- substr(display,1,1)
@@ -540,7 +536,7 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, ce
   else if (disp1=="s")
   {
     if (!add)
-      plot(fhat$x[,1], fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
+      plot(fhat$x[,1], fhat$x[,2], type="n",xlab=xlab, ylab=ylab, ...)
 
     n <- nrow(fhat$x)
     RK <- (4*pi)^(-2/2)
@@ -563,32 +559,32 @@ plotkde.2d.new <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, ce
       hts <- abs.cont
     
     ## compute and draw contours
-    ##if (is.null(ncont))
+
+    if (missing(abs.cont))
       for (i in 1:length(hts)) 
       {
         scale <- cont[i]/hts[i]
-        if (missing(abs.cont))
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                  fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
-                  drawlabels=drawlabels, col=lcol, ...)
-        else
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                  fhat$estimate, level=hts[i], add=TRUE, 
-                  drawlabels=drawlabels, col=lcol, ...)
-        
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
+                drawlabels=drawlabels, col=lcol, ...)
       }
-    ##else
-    ##  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-    ##          nlevel=ncont, add=TRUE, drawlabels=drawlabels, col=lcol, ...)
+    else
+      contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+              fhat$estimate, level=hts, add=TRUE, 
+              drawlabels=drawlabels, col=lcol, ...)
     
+
     ## add points 
     if (drawpoints)
       points(fhat$x[,1], fhat$x[,2], cex=cex, col=ptcol)
   }
   ## image plot
   else if (disp1=="i")
+  {
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
             xlab=xlab, ylab=ylab, ...)
+    box()
+  }
   else if (disp1=="f")
     filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
                    xlab=xlab, ylab=ylab, ...)
@@ -633,13 +629,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
   if (missing(colors))
     colors <- rev(heat.colors(nc))
 
-  ##if (missing(endpts))
-  ##{
-  ##  endpts <- rep(0,3)
-  ##  endpts[1] <-  max(fhat$eval.points[[1]])
-  ##  endpts[2] <-  max(fhat$eval.points[[2]])
-  ##  endpts[3] <-  max(fhat$eval.points[[3]])
-  ##}
+ 
   x.names <- colnames(fhat$x)
 
   if (missing(xlab))
@@ -668,19 +658,36 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
               y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE,
               color=colors[i], alpha=alphavec[i], ...)
   }
-   
-  ##if (drawpoints)
-  ##  points3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1)
+}
+
+
+### highest density regions
+
+prob.cont <- function(x, H, prob=c(0.25,0.50,0.75), binned=FALSE, bgridsize)
+{
+  if (is.vector(x)) d <-1
+  else d <- ncol(x)
   
-  ##lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-  ##        color="black", alpha=1)
-  ##lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-  ##        color="black", alpha=1)
-  ##lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-  ##        color="black", alpha=1)
+  if (missing(bgridsize))
+    if (d==1)
+      bgridsize <- 401
+    else if (d==2)
+      bgridsize <- rep(151,d)
+    else if (d==3)
+      bgridsize <- rep(51, d)
+    else if (d==4)
+      bgridsize <- rep(21, d)
+  
+  if (binned)
+  {
+    fhat <- kde(x=x, H=H, binned=binned)
+    bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(fhat$H)), supp=3.7)
+    fhat.est <- rep(fhat$estimate, round(bin.par$counts,0))
+  }
+  else
+    fhat.est <- kde.points(x=x, H=H, eval.points=x)$est
+  
+  cont <- quantile(fhat.est, prob=prob)
 
-  ##texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-  ##texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-  ##texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
-
+  return(cont)
 }

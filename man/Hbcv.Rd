@@ -22,18 +22,19 @@ Hbcv.diag(x, whichbcv=1, Hstart)
 BCV bandwidth matrix.   
 }
 \references{Sain, S.R, Baggerly, K.A. \& Scott, D.W. (1994)
-  \emph{Cross-validation of multivariate densities}. Journal of the
-  American Statistical Association. \bold{82}, 1131-1146.
+  Cross-validation of multivariate densities. \emph{Journal of the
+  American Statistical Association}. \bold{82}, 1131-1146.
   
-  Duong, T. \& Hazelton, M.L. (2005) \emph{Cross-validation bandwidth
-    matrices for multivariate kernel density estimation}. Scandinavian Journal 
-    of Statistics. \bold{32}, 485-506.
+  Duong, T. \& Hazelton, M.L. (2005) Cross-validation bandwidth
+    matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
+    of Statistics}. \bold{32}, 485-506.
   
 }
 
 \details{
   Use \code{Hbcv} for full bandwidth matrices and \code{Hbcv.diag}
-  for diagonal bandwidth matrices.
+  for diagonal bandwidth matrices. These selectors are only
+  available for bivariate data.
 
   There are two types of BCV criteria
   considered here.  They are known as BCV1 and BCV2, from Sain, Baggerly
