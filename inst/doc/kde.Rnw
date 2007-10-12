@@ -179,9 +179,8 @@ command is \code{kde}, which creates a \code{kde} class object
 fhat.pi1 <- kde(x=x, H=Hpi1)
 fhat.pi2 <- kde(x=x, H=Hpi2)
 @ 
-We use the \code{plot} command to display these
-kernel density estimates. This generic \code{plot} command calls  
-\code{plot.kde}. The default is a contour plot with 
+We use the \code{plot} method for \code{kde} objects to display these
+kernel density estimates. The default is a contour plot with 
 the upper 25\%, 50\% and 75\% contours of the 
 (sample) highest density regions. %, as
 %defined in \citet*{bowman1993} and \citet*{hyndman1996}.
@@ -248,39 +247,34 @@ plot(fhat.cv2, main="SCV diagonal", cex.main=1.4)
 \end{figure}
 
 
-So far the calls to \code{kde} compute $\hat{f}$ exactly. This exact 
-computation is $O(n^2)$ complexity which becomes infeasible for large
-sample sizes, say $n=10\ 000$ on a current desktop PC. 
- One common technique for increasing computational
-speed for these large samples is binned kernel estimation, 
-%see \citet*[Appendix~D]{wand1994} 
-as implemented in
-\pkg{KernSmooth} \citep*{KernSmooth}. 
-Binning converts the data sample of size $n$ to a grid of size $m$,
-so binned estimation remains $O(m)$ regardless of the sample size.
-A suitable binning grid size for bivariate data is $m = 151^2$.
+%So far the calls to \code{kde} compute $\hat{f}$ exactly. This exact 
+%computation is $O(n^2)$ complexity which becomes infeasible for large
+%sample sizes, say $n=10\ 000$ on a current desktop PC. 
+% One common technique for increasing computational
+%speed for these large samples is binned kernel estimation, 
+%%see \citet*[Appendix~D]{wand1994} 
+%as implemented in
+%\pkg{KernSmooth} \citep*{KernSmooth}. 
+%Binning converts the data sample of size $n$ to a grid of size $m$,
+%so binned estimation remains $O(m)$ regardless of the sample size.
+%A suitable binning grid size for bivariate data is $m = 151^2$.
 
 
-Binned estimation is only defined 
-with diagonal bandwidth matrices. Applicable cases include 
-kernel density estimators with diagonal bandwidth matrices and
-the pilot estimators for the plug-in and SCV selectors. 
-In the \code{Hpi}, \code{Hpi.diag}, \code{Hscv}, \code{Hscv.diag}
-and \code{kde} commands, we set \code{binned=TRUE}, e.g. 
+%Binned estimation is only defined 
+%with diagonal bandwidth matrices. Applicable cases include 
+%kernel density estimators with diagonal bandwidth matrices and
+%the pilot estimators for the plug-in and SCV selectors. 
+%In the \code{Hpi}, \code{Hpi.diag}, \code{Hscv}, \code{Hscv.diag}
+%and \code{kde} commands, we set \code{binned=TRUE}, e.g. 
 
-<<eval=FALSE>>=
-x <- rmvnorm.mixt(10000, mus, Sigmas, props)
-H <- Hpi(x = x, binned = TRUE)
-Hdiag <- Hscv.diag(x = x, binned = TRUE)
-fhatdiag <- kde(x = x, H = Hdiag, binned = TRUE)
-@ 
+
 
 
 
 %\section{General recommendations}
 %\label{sec:rec}
-The different bandwidth selectors available in \pkg{ks} may
-now pose a problem of too much choice.
+%The different bandwidth selectors available in \pkg{ks} may
+%now pose a problem of too much choice.
 The unconstrained bandwidth selectors will be better than their diagonal counterparts
 when the data have large mass oriented obliquely to the co-ordinate axes,
 like for the dumbbell data. 
@@ -294,31 +288,20 @@ can be viewed as generally recommended selectors.
 
 \bibliographystyle{apalike}
 
-%%\bibliography{../../../../../references}
-
 \begin{thebibliography}{}
 
-\bibitem[Bowman and Azzalini, 2005]{sm}
-Bowman, A.~W. and Azzalini, A. (2005).
-\newblock {\em sm: kernel smoothing methods: Bowman and Azzalini (1997)}.
-\newblock R package version 2.0-14. Ported to R by B. D. Ripley.
 
 \bibitem[Duong, 2007]{duong2007c}
 Duong, T. (2007).
 \newblock ks: {K}ernel density estimation and kernel discriminant analysis for
   multivariate data in {R}.
-\newblock Submitted.
+\newblock {\em Journal of Statistical Software}. In press.
+
 
 \bibitem[Simonoff, 1996]{simonoff1996}
 Simonoff, J.~S. (1996).
 \newblock {\em Smoothing Methods in Statistics}.
 \newblock Springer-Verlag, New York.
-
-\bibitem[Wand, 2006]{KernSmooth}
-Wand, M.~P. (2006).
-\newblock {\em KernSmooth: Functions for kernel smoothing for Wand \& Jones
-  (1995)}.
-\newblock R package version 2.22-19. R port by B. D. Ripley.
 
 \end{thebibliography}
 

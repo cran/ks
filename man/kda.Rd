@@ -74,12 +74,7 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   of \code{nstage}, \code{pilot} and \code{pre} need to be set. For SCV
   selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
   need to be set.  For LSCV selectors, none of them are required. 
-
-  For \code{Hkda.diag}, options are \code{"plugin"} or \code{"lscv"}
-  which in turn call respectively \code{\link{Hpi.diag}} 
-  and \code{\link{Hlscv.diag}}. Again, \code{nstage}, \code{pilot} and
-  \code{pre} are available for \code{Hpi.diag} but not required for
-  \code{Hlscv.diag}.
+  \code{Hkda.diag} makes analagous calls to diagonal selectors.
 
   For d = 1, 2, 3, 4, 
   and if \code{eval.points} is not specified, then the

@@ -709,6 +709,7 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
   if (missing(col)) col <- heat.colors(m)
   image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim,
         ylim=ylim, add=TRUE, ...)
+  box()
   
   dobs <- numeric(0)
   xx <- numeric(0)
@@ -761,7 +762,6 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
   else
     hts <- abs.cont
   
-  ##if (is.null(ncont))
   for (i in 1:length(hts)) 
   {
     scale <- cont[i]/hts[i]
@@ -776,12 +776,6 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
                 fhat$estimate[[j]], level=hts[i], add=TRUE, 
                 drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
   }
-  ##else
-  ##  for (j in 1:m)
-  ##    contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-  ##            fhat$estimate[[j]], add=TRUE,  drawlabels=drawlabels,
-  ##            nlevel=ncont, lty=lty[j], col=lcol[j], ...)
-  
 }
 
 
