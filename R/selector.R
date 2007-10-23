@@ -1840,8 +1840,13 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   else if (substr(pilot,1,1)=="s")
     pilot <- "samse"
 
-  if (pilot=="amse" & d>2)
+  if (substr(pilot,1,1)=="a" & d>2)
       stop("Use SAMSE pilot selectors for higher dimensions")
+
+  if (substr(pre,1,2)=="sc") S12 <- diag(sqrt(diag(var(x))))
+  else if (substr(pre,1,2)=="sp") S12 <- matrix.sqrt(var(x))
+ 
+  Sinv12 <- chol2inv(chol(S12))
   
   if (missing(bgridsize) & binned)
     if (d==2)
@@ -1872,10 +1877,6 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   else if (d==6)
     psi.mat <- psimat.6d(x.star, nstage=nstage, pilot=pilot)
 
-  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
-  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
- 
-  Sinv12 <- chol2inv(chol(S12))
 
   ## use normal reference bandwidth as initial condition
   if (missing(Hstart)) 
@@ -1947,6 +1948,11 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   s1 <- sd(x[,1])
   s2 <- sd(x[,2])
 
+  if (substr(pre,1,2)=="sc") S12 <- diag(sqrt(diag(var(x))))
+  else if (subtr(pre,1,2)=="sp") S12 <- matrix.sqrt(var(x))
+ 
+  Sinv12 <- chol2inv(chol(S12))
+    
   if (missing(bgridsize) & binned)
     if (d==2)
       bgridsize <- rep(151,d)

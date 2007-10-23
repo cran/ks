@@ -8,12 +8,12 @@
   Kernel discriminant analysis for 1- to 6-dimensional data.
 }
 \usage{
-kda(x, x.group, Hs, hs, y, prior.prob=NULL)
-
 Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
      pre="sphere", binned=FALSE, bgridsize)
 Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
      pre="sphere", binned=FALSE, bgridsize)
+
+kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 }
 
 \arguments{
@@ -38,14 +38,13 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
 }
 
 \value{
+  -- The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
+  of bandwidth matrices, one for each training data group. 
+
   -- The result from \code{kda} is a vector of group labels
   estimated via the kernel discriminant rule.  If the test data \code{y} are
   given then these are classified. Otherwise the training data \code{x}
   are classified.
-
-  -- The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
-  of bandwidth matrices, one for each training data group. 
-
 }
 
 \references{
@@ -63,10 +62,6 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
 }
 
 \details{
-  -- If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
-  proportions as estimates of the prior probabilities.
-
   -- The values that valid for \code{bw} are \code{"plugin", "lscv"} and
   \code{"scv"} for
   \code{Hkda}.  These in turn call \code{\link{Hpi}},
@@ -91,6 +86,10 @@ Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse",
   
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
+
+  -- If you have prior probabilities then set \code{prior.prob} to these.
+  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  proportions as estimates of the prior probabilities.
 }
 
 \seealso{

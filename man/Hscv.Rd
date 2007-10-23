@@ -1,4 +1,4 @@
-\name{Hscv,Hscv.diag}
+\name{Hscv, Hscv.diag}
 \alias{Hscv}
 \alias{Hscv.diag}
 

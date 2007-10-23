@@ -6,19 +6,20 @@
   Kernel density estimate for 1- to 6-dimensional data.
 }
 \usage{
- kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7, eval.points)
+kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7,
+    eval.points, positive=FALSE)
 }
 
 \arguments{
   \item{x}{matrix of data values}
   \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth}
-  \item{gridsize}{vector of number of grid points - used for display and
-    binning}
+  \item{gridsize}{vector of number of grid points}
   \item{binned}{flag for binned estimation (default is FALSE)}
-  \item{bgridsize}{vector of binning grid sizes - only required if \code{binned=TRUE}}
+  \item{bgridsize}{vector of binning grid sizes - required if \code{binned=TRUE}}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
-  \item{eval.points}{points at which density estimate is evaluated} 
+  \item{eval.points}{points at which density estimate is evaluated}
+  \item{positive}{flag if 1-d data are positive (default is FALSE)} 
 }
   
 
@@ -28,7 +29,7 @@
   \item{x}{data points - same as input}
   \item{eval.points}{points at which the density estimate is evaluated}
   \item{estimate}{density estimate at \code{eval.points}}
-  \item{H}{bandwidth matrix (>1-d only) or}
+  \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth (1-d only)}
 }
 

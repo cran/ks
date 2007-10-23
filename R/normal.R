@@ -207,7 +207,7 @@ dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
-      sumval <- sumval - n*dmvnorm.deriv.1d(x=rep(0,d), r=rep(0,d), Sigma)
+      sumval <- sumval - n*dmvnorm.deriv.1d(x=rep(0,d), r=rep(0,d), sigma=sigma)
   }
   else
   {  

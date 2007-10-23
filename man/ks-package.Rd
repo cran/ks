@@ -24,7 +24,7 @@ ks
   \code{\link{Hscv}}, \code{\link{Hscv.diag}}.
 	The first selector in each pair is the unconstrained (or full)
 	selector,
-	and the sceond one is the diagonal selectors.
+	and the second one is the diagonal selectors.
 
 	Scalar bandwidth selectors are not provided - see
   \code{sm} or \code{KernSmooth} packages. 
@@ -38,7 +38,7 @@ ks
 
   For d = 1, 2, 3, 4, binned kernel estimation is available. 
   
-  For an overview of this package with 2-dim density estimation, see 
+  For an overview of this package with 2-dimensional density estimation, see 
   \code{vignette("kde")}. 
 }
 \author{
