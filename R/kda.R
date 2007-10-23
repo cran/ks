@@ -307,7 +307,7 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
         else if (substr(bw,1,1)=="s")
           H.temp <- Hscv(x[indx,],  Hstart=Hstart.temp, binned=binned, bgridsize=bgridsize,...)
         else if (substr(bw,1,1)=="l") 
-          H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, binned=binned, bgridsize=bgridsize,...)
+          H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, ...)
       }
       else
       {
@@ -316,7 +316,7 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
         else if (substr(bw,1,1)=="s")
           H.temp <- Hscv(x[indx,], binned=binned, bgridsize=bgridsize, ...)
         else if (substr(bw,1,1)=="l")
-          H.temp <- Hlscv(x[indx,], binned=binned, bgridsize=bgridsize, ...) 
+          H.temp <- Hlscv(x[indx,], ...) 
       }
       
       H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
@@ -398,7 +398,8 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
   if (is.vector(x))
   {
     if (missing(gridsize))  gridsize <- 101
-    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, eval.points=eval.points)
+    if (missing(bgridsize)) bgridsize <- 401
+    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize)
   }
   else
   {
@@ -523,37 +524,41 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
   return(fhat.list)
 }
 
-kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points)
+kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize)
 {
   grlab <- sort(unique(x.group))
   m <- length(grlab)
 
   hmax <- max(hs)
-  range.x <- c(min(x) - supp*hmax, max(x) + supp*hmax)
+  if (binned)
+    xrange <- as.matrix(t(c(min(x) - supp*hmax, max(x) + supp*hmax)))
+  else
+    xgrid <- seq(min(x) - supp*hmax, max(x) + supp*hmax, length=gridsize) 
+    
   fhat.list <- list()
   for (j in 1:m)
   {
     xx <- x[x.group==grlab[j]]
     h <- hs[j]
-
+  
     ## compute individual density estimate
-    if (is.null(eval.points))
-    {
-      fhat.temp <- bkde(x=xx, bandwidth=h, gridsize=gridsize, range.x=range.x)
-      fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$y))
-    }
+    if (binned)
+        fhat.temp <- kde.binned(x=xx, h=h, xrange=xrange)
+    else if (is.null(eval.points))
+        fhat.temp <- kde(x=xx, h=h, supp=supp, eval.points=xgrid)
     else
-    {
-      fhat.temp <- kde.points.1d(x=xx, h=h, eval.points=eval.points)
-      fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
-    }
-    fhat.list$x <- c(fhat.list$x, list(xx))
-    fhat.list$eval.points <- fhat.temp$x
+        fhat.temp <- kde(x=xx, h=h, supp=supp, eval.points=eval.points)
     
+    fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
+    fhat.list$eval.points <- fhat.temp$eval.points
+    fhat.list$x <- c(fhat.list$x, list(xx))
     fhat.list$h <- c(fhat.list$h, h)
   }
-
+    
+  fhat.list$H <- fhat.list$h^2
+  fhat.list$binned <- binned
   fhat.list$x.group <- x.group
+  
   if (is.null(prior.prob))
   {
     pr <- rep(0, length(grlab))
@@ -564,13 +569,35 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points)
   }
   else
     fhat.list$prior.prob <- prior.prob
-  #fhat.list$type <- "kernel"
-  
+ 
   class(fhat.list) <- "kda.kde"
   
   return(fhat.list)
   
 }
+##############################################################################
+## Contour method for kda.kde cobjects
+##
+##############################################################################
+
+contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, ...) 
+{
+  fhat <- x
+  m <- length(fhat$x)
+  hts <- list()
+  
+  for (j in 1:m)
+  {
+    fhatj <- list(x=fhat$x[[j]], eval.points=fhat$eval.points,
+                  estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned)
+    class(fhatj) <- "kde"
+    hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, nlevels=nlevels, ...)
+  }
+   
+  return(hts) 
+}
+
+
 
 ##############################################################################
 # Plot KDE of individual densities and partition - only for 2-dim
@@ -585,31 +612,29 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points)
 ##############################################################################
 
 
-plot.kda.kde <- function(x, y, y.group, ...) 
+plot.kda.kde <- function(x, y, y.group, drawpoints=FALSE, ...) 
 {
   if (is.vector(x$x[[1]]))
-    plotkda.kde.1d(x=x, y=y, y.group=y.group, ...)
+    plotkda.kde.1d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...)
   else
   {  
     d <- ncol(x$x[[1]])
     
     if (d==2)
-      plotkda.kde.2d(x=x, y=y, y.group=y.group, ...) 
-    else if (d==3)
-      ##warning("RGL 3-d plotting temporarily disabled")  
-       plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
+      plotkda.kde.2d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...) 
+    else if (d==3)  
+       plotkda.kde.3d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...) 
   }
 }
 
 
-plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", ylab="Weighted density function", drawpoints=TRUE, lty, lcol, col, ptcol, ...)
+plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", ylab="Weighted density function", drawpoints=TRUE, col, partcol, ptcol, lty, jitter=TRUE, ...)
 { 
   fhat <- x
   
   m <- length(fhat$x)
-  ##type <- substr(fhat$type,1,1)
   eval1 <- fhat$eval.points
-
+  
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
   
@@ -624,50 +649,75 @@ plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
   
   if (missing(xlim)) xlim <- range(fhat$eval.points)
   if (missing(ylim)) ylim <- range(weighted.fhat)
-  if (missing(lty)) lty <- 1:m
-  if (missing(lcol)) lcol <- 1:m
+  if (missing(lty)) lty <- rep(1, m)
+  if (length(lty) < m) lty <- rep(lty, m)
   if (missing(col)) col <- 1:m
-  if (missing(ptcol)) ptcol <- rep("blue", m)
+  if (length(col) < m) col <- rep(col, m)
+  if (missing(ptcol)) ptcol <- col
+  if (length(ptcol) < m) ptcol <- rep(ptcol, m)
+  if (missing(partcol)) partcol <- col
+  if (length(partcol) < m) partcol <- rep(partcol, m)
   
-
-  plot(fhat$eval.points, weighted.fhat[,1], type="l", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, lty=lty[1], col=lcol[1], ...)
+  ## plot each training group's KDE in separate colour and line type 
+  plot(fhat$eval.points, weighted.fhat[,1], type="l", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, lty=lty[1], col=col[1], ...)
   
   if (m > 1)
     for (j in 2:m)
-      lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=lcol[j], ...)
+      lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
 
   eval.points.gr <- apply(weighted.fhat, 1, which.max)
+
+  ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
+  ydata.gr <- kda(unlist(fhat$x), x.group=fhat$x.group, hs=fhat$h, y=ydata, prior.prob=fhat$prior.prob)
+
+  ## draw partition class as rug plot with ticks facing inwards 
+ 
+  for (j in 1:length(levels(fhat$x.group)))
+    rug(ydata[ydata.gr==levels(fhat$x.group)[j]], col=partcol[j])
+ 
   for (j in 1:m)
   {
-    rug(fhat$eval.points[eval.points.gr==j], col=col[j])
     if (drawpoints)
-      rug(fhat$x[[j]], col=ptcol[j], ticksize=-0.03)
+      if (jitter)
+        rug(jitter(fhat$x[[j]]), col=ptcol[j], ticksize=-0.03)
+      else
+        rug(fhat$x[[j]], col=ptcol[j], ticksize=-0.03)
   }
-  
+
+  ## if have test data y, then plot this as rug plot
   if (!missing(y.group)) y.gr <- sort(unique(y.group))
   if (!missing(y))
     for (j in 1:length(y.gr))
-      rug(y[y.group==y.gr[j]], col=ptcol[j], ticksize=-0.03)
+      if (jitter)
+        rug(jitter(y[y.group==y.gr[j]]), col=ptcol[j], ticksize=-0.03)
+      else
+        rug(y[y.group==y.gr[j]], col=ptcol[j], ticksize=-0.03)
 }
 
 
 plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL, 
     cont=c(25,50,75), abs.cont, xlim, ylim, xlab, ylab,
-    drawpoints=FALSE, drawlabels=TRUE,  cex=1, pch, lty, col, lcol, ptcol, ...)
+    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, partcol, ptcol, ...)
 { 
   fhat <- x
   
   d <- 2
   m <- length(fhat$x)
-  ##type <- substr(fhat$type,1,1)
   eval1 <- fhat$eval.points[[1]]
   eval2 <- fhat$eval.points[[2]]
   
-  if (missing(xlim)) xlim <- c(min(eval1), max(eval1))
-  if (missing(ylim)) ylim <- c(min(eval2), max(eval2))
+  xtemp <- numeric()
+  for (j in 1:m)
+     xtemp <- rbind(xtemp, fhat$x[[j]]) 
+  if (missing(xlim)) xlim <- range(xtemp[,1])
+  if (missing(ylim)) ylim <- range(xtemp[,2])
+ 
   if (missing(pch)) pch <- 1:m
-  if (missing(lty)) lty <- 1:m
-  if (missing(lcol)) lcol <- rep(1, m)
+  if (missing(lty)) lty <- rep(1, m)
+  if (length(lty) < m) lty <- rep(lty, m)
+  if (missing(col)) col <- 1:m
+  if (length(col) < m) col <- rep(col, m)
+  if (missing(partcol)) partcol <- grey.colors(m, start=0.7, end=1) 
   if (missing(ptcol)) ptcol <- rep("blue", m)
 
   x.names <- colnames(fhat$x[[1]]) 
@@ -689,13 +739,15 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
     stop("Prior prob. vector not same length as number of components in fhat")
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
     stop("Sum of prior weights not equal to 1")
-  
+
+  ## set up plot
   if (missing(y)) 
     plot(fhat$x[[1]], type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
   else
     plot(y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
   
- 
+
+  ## set up common grid for all densities 
   class.grid <- array(0, dim=dim(fhat$est[[1]]))
   temp <- matrix(0, ncol=length(fhat$est), nrow=nrow(fhat$est[[1]]))
   for (j in 1:ncol(fhat$est[[1]]))
@@ -706,82 +758,69 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
     
   }
   
-  if (missing(col)) col <- heat.colors(m)
-  image(fhat$eval[[1]], fhat$eval[[2]], class.grid,col=col, xlim=xlim,
+  ## draw partition
+  image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=partcol, xlim=xlim,
         ylim=ylim, add=TRUE, ...)
   box()
-  
-  dobs <- numeric(0)
-  xx <- numeric(0)
-  S <- 0
-  n <- 0 
-  for (j in 1:m)
+
+  ## common contour levels removed from >= v1.5.3 
+
+  if (missing(abs.cont))
   {
-    n <- nrow(fhat$x[[j]])
-    S <- S + nrow(fhat$x[[j]]) * var(fhat$x[[j]])
+    hts <- contourLevels(fhat, prob=(100-cont)/100)
+    nhts <- length(hts[[1]])
   }
-  S <- S/(n - m)
-
-
-  for (j in 1:m)
-    xx <- rbind(xx, fhat$x[[j]])
-  if (!missing(y.group)) y.gr <- sort(unique(y.group))
-
-  if (fhat$binned)
-    bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-  
+  else
+  {
+    hts <- abs.cont
+    nhts <- length(hts)
+  }
+ 
+  ## draw contours
   for (j in 1:m)
   {
+    for (i in 1:nhts) 
+    {
+      if (missing(abs.cont))
+      {
+        scale <- cont[i]/hts[[j]][i]
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate[[j]]*scale, level=hts[[j]][i]*scale, add=TRUE, 
+                drawlabels=drawlabels, lty=lty[j], col=col[j],
+                ...)
+      }
+      else
+      {
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
+                fhat$estimate[[j]], level=hts[i], add=TRUE, 
+                drawlabels=drawlabels, lty=lty[j], col=col[j],
+                ...)
+      }
+    }
+  }
+
+  for (j in 1:m)
+  {  
+    ## draw data points
     if (drawpoints)
     {
       if (missing(y))
-        points(fhat$x[[j]], cex=cex, pch=pch[j], col=ptcol[1])
+        points(fhat$x[[j]], pch=pch[j], col=ptcol[1], cex=cex)
       else 
       {
         if (missing(y.group))
-          points(y, cex=cex, col=ptcol[1])
+          points(y, col=ptcol[1], cex=cex)
         else
-          points(y[y.group==y.gr[j],], cex=cex, pch=pch[j], col=ptcol[j]) 
+          points(y[y.group==y.gr[j],], pch=pch[j], col=ptcol[j], cex=cex) 
       }
     }
-    if (missing(abs.cont))
-    {
-      if (fhat$binned)
-      {
-        bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-        
-        dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
-      }
-      else
-        dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
-    }
-  }
-
-  if (missing(abs.cont))
-    hts <- quantile(dobs, prob = (100 - cont)/100)
-  else
-    hts <- abs.cont
-  
-  for (i in 1:length(hts)) 
-  {
-    scale <- cont[i]/hts[i]
-    if (missing(abs.cont))
-      for (j in 1:m)
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                fhat$estimate[[j]]*scale, level=hts[i]*scale, add=TRUE, 
-                drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
-    else
-      for (j in 1:m)
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                fhat$estimate[[j]], level=hts[i], add=TRUE, 
-                drawlabels=drawlabels, lty=lty[j], col=lcol[j], ...)
-  }
+  }   
 }
 
 
 
 plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
-    cont=c(25,50), abs.cont, colors, alphavec, xlab, ylab, zlab,
+    cont=c(25,50,75), abs.cont, colors, alphavec, xlab, ylab, zlab,
     drawpoints=FALSE, size=3, ptcol="blue", ...)
 {   
   fhat <- x
@@ -800,14 +839,6 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
     stop("Sum of prior weights not equal to 1")
 
-  ##if (missing(endpts))
-  ##{
-  ##  endpts <- rep(0,3)
-  ##  endpts[1] <-  max(fhat$eval.points[[1]])
-  ##  endpts[2] <-  max(fhat$eval.points[[2]])
-  ##  endpts[3] <-  max(fhat$eval.points[[3]])
-  ##}
-
   x.names <- colnames(fhat$x[[1]])
 
   if (missing(xlab))
@@ -825,35 +856,30 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
 
   x.gr <- sort(unique(fhat$x.group))
 
-  if (fhat$binned)
-    bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
+  ##if (fhat$binned)
+  ##  bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
+
+  ## common contour levels removed from >= v1.5.3 
 
   if (missing(abs.cont))
   {
-    for (j in 1:m)
-      if (fhat$binned)
-      {
-        bin.par <- dfltCounts.ks(fhat$x[[j]], gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-        
-        dobs <- c(dobs, rep(fhat$estimate[[j]], round(bin.par.xx$counts,0))* prior.prob[j])
-      }
-      else
-        dobs <- c(dobs, kde(x=fhat$x[[j]], H=fhat$H[[j]], eval.points=xx)$estimate*prior.prob[j])
-    
-    hts <- quantile(dobs, prob = (100-cont)/100)
+    hts <- contourLevels(fhat, prob=(100-cont)/100)
+    nhts <- length(hts[[1]])
   }
   else
+  {
     hts <- abs.cont
+    nhts <- length(hts)
+  }
 
-  ncont <- length(hts)
   
-  if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=ncont)
+  if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
   if (missing(colors)) colors <- rainbow(m)
   if (missing(ptcol)) ptcol <- rep("blue", m)
   if (length(ptcol)==1) ptcol <- rep(ptcol, m)
   
   clear3d()
-  bg3d(color="white")
+  ##bg3d(color="white")
 
   plot3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
          z=fhat$eval.points[[3]], type="n", xlab=xlab, ylab=ylab, zlab=zlab,
@@ -861,10 +887,10 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   
   for (j in 1:m)
   {
-    for (i in 1:ncont) 
+    for (i in 1:nhts) 
       contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
                 z=fhat$eval.points[[3]], f=fhat$estimate[[j]],
-                level=hts[ncont-i+1],
+                level=hts[[j]][nhts-i+1],
                 add=TRUE, alpha=alphavec[i], color=colors[j],...)
 
     if (drawpoints)   ## plot points
@@ -885,17 +911,6 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
       }
     }
   }
-  
-  ##lines3d(c(origin[1],endpts[1]),rep(origin[2],2),rep(origin[3],2),size=3,
-  ##        color="black", alpha=1)
-  ##lines3d(rep(origin[1],2),c(origin[2],endpts[2]),rep(origin[3],2),size=3,
-  ##        color="black", alpha=1)
-  ##lines3d(rep(origin[1],2),rep(origin[2],2),c(origin[3],endpts[3]),size=3,
-  ##        color="black", alpha=1)
-
-  ##texts3d(endpts[1],origin[2],origin[3],xlab,color="black",size=3, alpha=1)
-  ##texts3d(origin[1],endpts[2],origin[3],ylab,color="black",size=3, alpha=1)
-  ##texts3d(origin[1],origin[2],endpts[3],zlab,color="black",size=3, alpha=1)
 }
 
 

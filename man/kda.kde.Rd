@@ -41,10 +41,6 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
 }
 
 \details{
-  If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
-  proportions as estimates of the prior probabilities.
-
   For d = 1, 2, 3, 4, 
   and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
@@ -57,6 +53,11 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   
   For d > 4, the kernel density estimate is computed exactly 
   and \code{eval.points} must be specified.
+
+  If you have prior probabilities then set \code{prior.prob} to these.
+  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  proportions as estimates of the prior probabilities.
+
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.

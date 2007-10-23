@@ -152,10 +152,10 @@ drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,esti
    if (d==1) 
    { 
       kappam <- as.vector(kappam)
-      est <- symconv(kappam,gcounts,skewflag=(-1)^drv)
+      est <- symconv.ks(kappam,gcounts,skewflag=(-1)^drv)
       
       if (se)
-        est.var <- ((symconv((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
+        est.var <- ((symconv.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
    }
 
    if (d==2) 

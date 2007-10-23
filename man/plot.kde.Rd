@@ -11,39 +11,40 @@
 \usage{
 
 ## univariate
-\method{plot}{kde}(fhat, xlab, ylab="Density function", add=FALSE,
-  ptcol="blue", lcol="black", drawpoints=TRUE, ...)
+\method{plot}{kde}(x, xlab, ylab="Density function", add=FALSE,
+  drawpoints=FALSE, ptcol="blue", col="black", jitter=TRUE, ...)
 
 ## bivariate
-\method{plot}{kde}(fhat, display="slice", cont=c(25,50,75), abs.cont,
-    cex=0.7, xlab, ylab, zlab="Density function", theta=-30,
-    phi=40, d=4, add=FALSE, drawpoints=FALSE, drawlabels=TRUE,
-    pch, ptcol="blue", lcol="black",...)
+\method{plot}{kde}(x, display="slice", cont=c(25,50,75), abs.cont,
+    xlab, ylab, zlab="Density function", add=FALSE, drawpoints=FALSE,
+    drawlabels=TRUE, theta=-30, phi=40, d=4,
+    ptcol="blue", col="black", ...)
 
 ## trivariate
-\method{plot}{kde}(fhat, cont=c(25,50,75), abs.cont, colors, alphavec, size=3,
-    ptcol="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE,
+\method{plot}{kde}(x, cont=c(25,50,75), abs.cont, colors,add=FALSE,
+    drawpoints=FALSE, alphavec, xlab, ylab, zlab, size=3, ptcol="blue",
     ...)
 }
 
 \arguments{
-  \item{fhat}{an object of class \code{kde} (output from
+  \item{x}{an object of class \code{kde} (output from
     \code{\link{kde}} function)}
   \item{display}{type of display, "slice" for contour plot, "persp" for
     perspective plot, "image" for image plot, "filled" for filled
-    contour plot (2-d plot)}
-  \item{cont}{vector of percentiles of density estimate heights for contour
+    contyour plot (2-d plot)}
+  \item{cont}{vector of percentages for contour
     level curves}
   \item{abs.cont}{vector of absolute density estimate heights for contour
-    level curves - only one of \code{cont} or \code{abs.cont} needs to
-	be specified}
+    level curves}
   \item{ptcol}{plotting colour for data points}
-  \item{lcol}{plotting colour for density estimate}
-  \item{cex,pch,xlab,ylab,zlab,add}{usual graphics parameters}
+  \item{col}{plotting colour for density estimate (1-d, 2-d plot)}
+  \item{colors}{vector of colours for each contour (3-d plot)}
+  \item{jitter}{if TRUE then jitter rug plot (1-d plot)}
+  \item{xlab,ylab,zlab}{axes labels}
+  \item{add}{if TRUE then add to current plot}
   \item{theta,phi,d}{graphics parameters for perspective plots (2-d plot)}
   \item{drawpoints}{if TRUE then draw data points on density estimate}
   \item{drawlabels}{if TRUE then draw contour labels (2-d plot)}
-  \item{colors}{vector of colours for each contour (3-d plot)}
   \item{alphavec}{vector of transparency values (3-d plot)}
   \item{size}{size of plotting symbol (3-d plot)}
   \item{...}{other graphics parameters}
@@ -59,10 +60,7 @@
 \references{
   Bowman, A.W. & Azzalini, A. (1997) \emph{Applied Smoothing Techniques
     for Data Analysis}. Clarendon Press. Oxford.
-
-  Hyndman, R.J. (1996) Computing and graphing highest density regions,
-    \emph{American Statistician}, \bold{50}, 120--126.
-		
+  
   Simonoff, J. S., (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.}
 }
@@ -71,28 +69,41 @@
   -- The 1-d plot is a standard plot of a 1-d curve. If
   \code{drawpoints=TRUE} then a rug plot is added.
   
-  -- There are three types of plotting displays for 2-d data available, controlled
-  by the \code{display} parameter.
+  -- There are three types of plotting displays for 2-d data available,
+  controlled by the \code{display} parameter.
 
   If \code{display="slice"} then a slice/contour plot
   is generated using \code{contour}.
   The default contours are at 25\%, 50\%, 75\% or
-  \code{cont=c(25,50,75)} for the highest
-  density regions, see Hyndman (1996).
+  \code{cont=c(25,50,75)} which are upper percentages of
+  highest density regions. See below for alternative
+  contour levels.
   
   If \code{display="persp"} then a perspective/wire-frame plot
-  is generated.  The default z-axis limits \code{zlim} are determined by
-  the range of the z values i.e. default from the usual \code{persp} command.
+  is generated.  The default z-axis limits \code{zlim} are the default
+  from the usual \code{persp} command. 
   
   If \code{display="image"} then an image plot
   is generated. Default colours are the default from the usual
   \code{image} command.
 
-  -- For 3-dimensional data, the interactive plot is a series of nested 3-d contours.
-  The default contours are \code{cont=c(25,50)}, the
+  -- For 3-dimensional data, the interactive plot is a series of nested
+  3-d contours. 
+  The default contours are \code{cont=c(25,50,75)}. See below for
+  alternative  contour levels. The
   default \code{colors} are \code{heat.colors} and the
   default opacity \code{alphavec} ranges from 0.1 to 0.5.
-  These contours are the highest density regions, see Hyndman (1996).
+
+  -- To specifiy contours, either one of \code{cont} or \code{abs.cont}
+  is required. \code{cont} specifies upper percentages which
+  correspond to 
+  highest density regions. If \code{abs.cont=NULL} then a \code{pretty}
+  set of contours is drawn. If \code{abs.cont} is set to particular
+  values, then contours at these levels are drawn.
+  This third option is useful for plotting
+  multiple density estimates with common contour levels. See
+  \code{\link{contourLevels}} for details on computing contour levels
+  for \code{kde} objects.  
 }
  
 
@@ -110,16 +121,22 @@ data(unicef)
 H.scv <- Hscv(unicef)
 fhat <- kde(unicef, H=H.scv)
 
-layout(rbind(c(1,2), c(3,4)))
-plot(fhat, display="slice")
-plot(fhat, display="slice", cont=seq(10,90, by=20), drawpoints=TRUE)
+plot(fhat)
+plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=2)
 plot(fhat, display="persp")
 plot(fhat, display="image", col=rev(heat.colors(100)))
-layout(1)
-
 plot(fhat, display="filled")
-  ## filled contour plot not compatible with layout()
 
+## pair of densities with same absolute contour levels
+x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
+Hx <- Hpi(x)
+fhatx <- kde(x=x, H=Hx) 
+y <- rmvnorm.mixt(n=100, mus=c(0.5,0.5), Sigmas=0.5*diag(2), props=1)
+Hy <- Hpi(y)
+fhaty <- kde(x=y, H=Hy)
+lev <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
+plot(fhatx, abs.cont=lev)
+plot(fhaty, abs.cont=lev, col=3, add=TRUE) 
 
 ## large sample - 10000 sample from bivariate standard normal 
 x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
@@ -127,7 +144,7 @@ H.pi <- Hpi.diag(x, binned=TRUE)
 fhat <- kde(x, H=H.pi, binned=TRUE) 
 plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20))
 
-%\dontrun{
+
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
@@ -138,7 +155,6 @@ x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi)  
 plot(fhat)
-%}
 }
 
-\keyword{ hplot}
+\keyword{hplot}
