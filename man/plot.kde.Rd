@@ -62,7 +62,7 @@
     for Data Analysis}. Clarendon Press. Oxford.
   
   Simonoff, J. S., (1996) \emph{Smoothing Methods in Statistics}.
-  Springer-Verlag. New York.}
+  Springer-Verlag. New York.
 }
 
 \details{

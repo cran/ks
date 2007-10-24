@@ -292,7 +292,7 @@ dmvnorm.2d.sum.pc <- function(x, y, Sigma, inc=1)
 {
   if (is.vector(x))
   {
-    n1 <- 1; d <- 1; x1 <- x[1]; x2 <- x[2]
+    n1 <- 1; x1 <- x[1]; x2 <- x[2]
   }
   else
   {
@@ -300,7 +300,7 @@ dmvnorm.2d.sum.pc <- function(x, y, Sigma, inc=1)
   }
   if (is.vector(y))
   {
-    n2 <- 1; d <- 1; y1 <- y[1]; y2 <- y[2]
+    n2 <- 1; y1 <- y[1]; y2 <- y[2]
   }
   else
   {
@@ -526,7 +526,7 @@ dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
 {
   if (is.vector(x))
   {
-    n <- 1; d <- 1; x1 <- x[1]; x2 <- x[2]
+    n <- 1; x1 <- x[1]; x2 <- x[2]
   }
   else
   {
@@ -615,18 +615,18 @@ dmvnorm.deriv.3d <- function(x, Sigma, r)
 {
   ####### Diagonal variance matrix implemented ONLY at the moment
   
-  d <- 3
+  ##d <- 3
   if (sum(r) > 6)
     stop("Only works for up to 6th order partial derivatives")
 
   if (is.vector(x))
   {    
-    n <- 1;
+    ##n <- 1;
     x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; 
   }
   else 
   {
-    n <- nrow(x);
+    ##n <- nrow(x);
     x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; 
   }
   
@@ -773,18 +773,18 @@ dmvnorm.deriv.4d <- function(x, Sigma, r)
 {
   ####### Diagonal variance matrix implemented ONLY at the moment
   
-  d <- 4
+  ##d <- 4
   if (sum(r) > 6)
     stop("Only works for up to 6th order partial derivatives")
 
   if (is.vector(x))
   {    
-    n <- 1;
+    ##n <- 1;
     x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
   }
   else 
   {
-    n <- nrow(x);
+    ##n <- nrow(x);
     x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
   }
   
@@ -918,18 +918,18 @@ dmvnorm.5d.sum <- function(x, Sigma, inc=1)
 
 dmvnorm.deriv.5d <- function(x, Sigma, r) 
 {
-  d <- 5
+  ##d <- 5
   if (sum(r) > 6)
     stop("Only works for 2nd, 4th and 6th order partial derivatives")
  
   if (is.vector(x))
   {    
-    n <- 1;
+    ##n <- 1;
     x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4]; x5 <- x[5]; 
   }
   else 
   {
-    n <- nrow(x);
+    ##n <- nrow(x);
     x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4]; x5 <- x[,5]; 
   }
   
@@ -1059,18 +1059,18 @@ dmvnorm.6d.sum <- function(x, Sigma, inc=1)
 
 dmvnorm.deriv.6d <- function(x, Sigma, r) 
 {
-  d <- 6
+  ##d <- 6
   if (sum(r) > 6)
     stop("Only works for 2nd, 4th and 6th order partial derivatives")
 
   if (is.vector(x))
   {    
-    n <- 1;
+    ##n <- 1;
     x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4]; x5 <- x[5]; x6 <- x[6];
   }
   else 
   {
-    n <- nrow(x);
+    ##n <- nrow(x);
     x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4]; x5 <- x[,5]; x6 <- x[,6];
   }
   
@@ -1438,7 +1438,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
 
   for (i in 1:nc) 
   {
-    scale <- cont[i]/hts[i]
+    ##scale <- cont[i]/hts[i]
     contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
              alpha=alphavec[i], ...)
   }

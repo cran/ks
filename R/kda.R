@@ -125,7 +125,7 @@ kda <- function(x, x.group, Hs, hs, y, prior.prob=NULL)
     if (is.data.frame(y)) y <- as.matrix(y)
     gr <- sort(unique(x.group))
 
-    d <- ncol(x)
+    ##d <- ncol(x)
    
     ## if prior.prob is NULL then use sample proportions
     if (is.null(prior.prob))
@@ -281,8 +281,8 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
     H <- Hkda(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
 
   ### classify data x using KDA rules based on x itself
-  kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
-  comp <- compare(x.group, kda.group)
+  ##kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
+  ##comp <- compare(x.group, kda.group)
  
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
@@ -343,8 +343,8 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
   d <- ncol(x)
 
   H <- Hkda.diag(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
-  kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
-  comp <- compare(x.group, kda.group)
+  ##kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
+  ##comp <- compare(x.group, kda.group)
  
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
@@ -628,12 +628,12 @@ plot.kda.kde <- function(x, y, y.group, drawpoints=FALSE, ...)
 }
 
 
-plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", ylab="Weighted density function", drawpoints=TRUE, col, partcol, ptcol, lty, jitter=TRUE, ...)
+plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", ylab="Weighted density function", drawpoints=FALSE, col, partcol, ptcol, lty, jitter=TRUE, ...)
 { 
   fhat <- x
   
   m <- length(fhat$x)
-  eval1 <- fhat$eval.points
+  ##eval1 <- fhat$eval.points
   
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
@@ -665,33 +665,42 @@ plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
     for (j in 2:m)
       lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
 
-  eval.points.gr <- apply(weighted.fhat, 1, which.max)
+  ##eval.points.gr <- apply(weighted.fhat, 1, which.max)
 
   ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
   ydata.gr <- kda(unlist(fhat$x), x.group=fhat$x.group, hs=fhat$h, y=ydata, prior.prob=fhat$prior.prob)
 
   ## draw partition class as rug plot with ticks facing inwards 
  
-  for (j in 1:length(levels(fhat$x.group)))
-    rug(ydata[ydata.gr==levels(fhat$x.group)[j]], col=partcol[j])
- 
   for (j in 1:m)
-  {
-    if (drawpoints)
-      if (jitter)
-        rug(jitter(fhat$x[[j]]), col=ptcol[j], ticksize=-0.03)
-      else
-        rug(fhat$x[[j]], col=ptcol[j], ticksize=-0.03)
-  }
+    rug(ydata[ydata.gr==levels(fhat$x.group)[j]], col=partcol[j])
+  
 
-  ## if have test data y, then plot this as rug plot
-  if (!missing(y.group)) y.gr <- sort(unique(y.group))
-  if (!missing(y))
-    for (j in 1:length(y.gr))
-      if (jitter)
-        rug(jitter(y[y.group==y.gr[j]]), col=ptcol[j], ticksize=-0.03)
-      else
-        rug(y[y.group==y.gr[j]], col=ptcol[j], ticksize=-0.03)
+  for (j in 1:m)
+  {  
+    ## draw data points
+    if (drawpoints)
+    {
+      if (missing(y))
+        if (jitter)
+          rug(jitter(fhat$x[[j]]), pch=pch[j], col=ptcol[1], ticksize=-0.03)
+        else
+          rug(fhat$x[[j]], pch=pch[j], col=ptcol[1], ticksize=-0.03)
+      else 
+      {
+        if (missing(y.group))
+          if (jitter)
+            rug(jitter(y), col=ptcol[1], ticksize=-0.03)
+          else
+            rug(y, col=ptcol[1], ticksize=-0.03)
+        else
+          if (jitter)
+            rug(jitter(y[y.group==levels(y.group)[j]]), col=ptcol[j], ticksize=-0.03)
+          else
+            rug(y[y.group==levels(y.group)[j]], col=ptcol[j], ticksize=-0.03) 
+      }
+    }
+  }   
 }
 
 
@@ -701,10 +710,10 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 { 
   fhat <- x
   
-  d <- 2
+  ##d <- 2
   m <- length(fhat$x)
-  eval1 <- fhat$eval.points[[1]]
-  eval2 <- fhat$eval.points[[2]]
+  ##eval1 <- fhat$eval.points[[1]]
+  ##eval2 <- fhat$eval.points[[2]]
   
   xtemp <- numeric()
   for (j in 1:m)
@@ -718,8 +727,13 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
   if (missing(col)) col <- 1:m
   if (length(col) < m) col <- rep(col, m)
   if (missing(partcol)) partcol <- grey.colors(m, start=0.7, end=1) 
-  if (missing(ptcol)) ptcol <- rep("blue", m)
-
+  if (missing(ptcol))
+    if (missing(y.group))
+      ptcol <- rep("blue", m)
+    else
+      ptcol <- 1:m
+  if (length(ptcol)==1) ptcol <- rep(ptcol, m)
+              
   x.names <- colnames(fhat$x[[1]]) 
   if (!is.null(x.names))
   {
@@ -798,7 +812,7 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
       }
     }
   }
-
+  
   for (j in 1:m)
   {  
     ## draw data points
@@ -811,7 +825,7 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
         if (missing(y.group))
           points(y, col=ptcol[1], cex=cex)
         else
-          points(y[y.group==y.gr[j],], pch=pch[j], col=ptcol[j], cex=cex) 
+          points(y[y.group==levels(y.group)[j],], pch=pch[j], col=ptcol[j], cex=cex) 
       }
     }
   }   
@@ -825,12 +839,12 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
 {   
   fhat <- x
    
-  d <- 3
+  ##d <- 3
   m <- length(fhat$x)
  
-  eval1 <- fhat$eval.points[[1]]
-  eval2 <- fhat$eval.points[[2]]
-  eval3 <- fhat$eval.points[[3]]
+  ##eval1 <- fhat$eval.points[[1]]
+  ##eval2 <- fhat$eval.points[[2]]
+  ##eval3 <- fhat$eval.points[[3]]
 
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
@@ -848,7 +862,7 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   if (missing(zlab))
     if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
              
-  dobs <- numeric(0)
+  ##dobs <- numeric(0)
   xx <- numeric(0)
 
   for (j in 1:m)
@@ -875,7 +889,11 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   
   if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
   if (missing(colors)) colors <- rainbow(m)
-  if (missing(ptcol)) ptcol <- rep("blue", m)
+  if (missing(ptcol))
+    if (missing(y.group))
+      ptcol <- rep("blue", m)
+    else
+      ptcol <- 1:m
   if (length(ptcol)==1) ptcol <- rep(ptcol, m)
   
   clear3d()
@@ -904,7 +922,7 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
           points3d(y[,1], y[,2], y[,3], color=ptcol, size=size, alpha=1)
         else
         {
-          y.temp <- y[y.group==x.gr[j],]
+          y.temp <- y[y.group==levels(y.group)[j],]
           if (nrow(y.temp)>0)
             points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=ptcol[j], size=size, alpha=1)
         }

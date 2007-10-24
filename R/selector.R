@@ -134,7 +134,7 @@ Psi4.elem <- function(k, kprime, d)
   eip <- elem(ipjp[1],d)
   ejp <- elem(ipjp[2],d)
   psi4.ind <- ei + eip + ej + ejp
-  psi4.ind.txt <- paste(psi4.ind, sep="", collapse="")
+  ##psi4.ind.txt <- paste(psi4.ind, sep="", collapse="")
   coeff <- (2 - (ij[1]==ij[2])) * (2 - (ipjp[1]==ipjp[2]))
   
   return (c(coeff, psi4.ind))
@@ -224,12 +224,12 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
   # 4th order derivatives
   if (modr == 4)
   {
-    RK04 <- 105/(64*pi)
-    RK13 <- 15/(64*pi)
-    RK22 <- 9/(64*pi)
-    RK31 <- 15/(64*pi)
-    RK40 <- 105/(64*pi)
-    RK <- c(RK04, RK13, RK22, RK31, RK40)
+    ##RK04 <- 105/(64*pi)
+    ##RK13 <- 15/(64*pi)
+    ##RK22 <- 9/(64*pi)
+    ##RK31 <- 15/(64*pi)
+    ##RK40 <- 105/(64*pi)
+    ##RK <- c(RK04, RK13, RK22, RK31, RK40)
     
     K40 <- dmvnorm.deriv.2d(x=c(0,0), r=c(4,0), Sigma=diag(c(1,1)))
     K13 <- dmvnorm.deriv.2d(x=c(0,0), r=c(1,3), Sigma=diag(c(1,1)))
@@ -238,7 +238,7 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
     K04 <- dmvnorm.deriv.2d(x=c(0,0), r=c(0,4), Sigma=diag(c(1,1)))
     K <- c(K04, K13, K22, K31, K40)
     
-    psi00 <- psins.2d(r=c(0,0), Sigma=Sigma.star)
+    ##psi00 <- psins.2d(r=c(0,0), Sigma=Sigma.star)
     
     if (nstage == 1)
     {
@@ -261,20 +261,20 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       psi06 <- psihat[7]
     }
     # required psi functionals    
-    psi <- c(psi06 + psi24, psi15 + psi33, psi24 + psi42, psi33 + psi15, 
+    psi <- c(psi06 + psi24, psi15 + psi33, psi24 + psi42, psi33 + psi51, 
              psi42 + psi60)
   }
   # 6th order functionals 
   else if (modr == 6)
   {
-    RK06 <- 10395/(256*pi)
-    RK15 <- 945/(256*pi)
-    RK24 <- 315/(256*pi)
-    RK33 <- 225/(256*pi)
-    RK42 <- 315/(256*pi)
-    RK51 <- 945/(256*pi)
-    RK60 <- 10395/(256*pi)
-    RK <- c(RK06, RK15, RK24, RK33, RK42, RK51, RK60)
+    ##RK06 <- 10395/(256*pi)
+    ##RK15 <- 945/(256*pi)
+    ##RK24 <- 315/(256*pi)
+    ##RK33 <- 225/(256*pi)
+    ##RK42 <- 315/(256*pi)
+    ##RK51 <- 945/(256*pi)
+    ##RK60 <- 10395/(256*pi)
+    ##RK <- c(RK06, RK15, RK24, RK33, RK42, RK51, RK60)
     
     K06 <- dmvnorm.deriv.2d(x=c(0,0), r=c(0,6), Sigma=diag(c(1,1)))
     K15 <- dmvnorm.deriv.2d(x=c(0,0), r=c(1,5), Sigma=diag(c(1,1)))
@@ -285,7 +285,7 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
     K60 <- dmvnorm.deriv.2d(x=c(0,0), r=c(6,0), Sigma=diag(c(1,1)))
     K <- c(K06, K15, K24, K33, K42, K51, K60)
     
-    psi00 <- psins.2d(r=c(0,0), Sigma=Sigma.star)
+    ##psi00 <- psins.2d(r=c(0,0), Sigma=Sigma.star)
     psi08 <- psins.2d(r=c(0,8), Sigma=Sigma.star)
     psi17 <- psins.2d(r=c(1,7), Sigma=Sigma.star)
     psi26 <- psins.2d(r=c(2,6), Sigma=Sigma.star)
@@ -301,8 +301,8 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
              psi62 + psi44, psi71 + psi53, psi62 + psi80)
   }
  
-  # see thesis for formula
-  A1 <- sum(RK)*psi00
+  ## see thesis for formula
+  ##A1 <- sum(RK)*psi00
   A2 <- sum(K^2)
   A3 <- sum(K * psi)  
   A4 <- sum(psi^2)
@@ -332,7 +332,7 @@ gsamse.2d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 gsamse.3d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
   d <- 3
-  RK <- numeric(); K <- numeric(); psi <- numeric()
+  K <- numeric(); psi <- numeric()
 
   d0 <- 4
   derivt <- numeric()
@@ -428,7 +428,7 @@ gsamse.3d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 gsamse.4d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
   d <- 4
-  RK <- numeric(); K <- numeric(); psi <- numeric()
+  K <- numeric(); psi <- numeric()
 
   d0 <- 4
   derivt <- numeric()
@@ -527,7 +527,7 @@ gsamse.4d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 gsamse.5d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
   d <- 5
-  RK <- numeric(); K <- numeric(); psi <- numeric()
+  K <- numeric(); psi <- numeric()
 
   d0 <- 4
   derivt <- numeric()
@@ -629,7 +629,7 @@ gsamse.5d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 gsamse.6d <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
   d <- 6
-  RK <- numeric(); K <- numeric(); psi <- numeric()
+  K <- numeric(); psi <- numeric()
 
   d0 <- 4
   derivt <- numeric()
@@ -739,9 +739,9 @@ psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
   
-  RK40 <- 105/(64*pi)
+  ##RK40 <- 105/(64*pi)
   RK31 <- 15/(64*pi)
-  RK22 <- 9/(64*pi)
+  ##RK22 <- 9/(64*pi)
   psi00 <- psins.2d(r=c(0,0), Sigma=S.star) 
   psihat.star <- vector()
   g.star <- vector()
@@ -769,12 +769,7 @@ psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
         g.star[k] <- gamse.even.2d(r, n, psi1, psi2)
     }
   
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
    
   for (k in 1:nrow(derivt))
@@ -812,12 +807,12 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
   
-  RK40 <- 105/(64*pi)
+  ##RK40 <- 105/(64*pi)
   RK31 <- 15/(64*pi)
-  RK22 <- 9/(64*pi)
-  RK60 <- 10395/(256*pi)
+  ##RK22 <- 9/(64*pi)
+  ##RK60 <- 10395/(256*pi)
   RK51 <- 945/(256*pi)
-  RK42 <- 315/(256*pi)
+  ##RK42 <- 315/(256*pi)
   RK33 <- 225/(256*pi)
   psi00 <- psins.2d(r=c(0,0), Sigma=S.star) 
 
@@ -826,14 +821,8 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
   psihat.star <- vector()
   g.star <- vector()
 
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
-   
   
   ## pilots are based on 6th order derivatives
   
@@ -925,15 +914,9 @@ psifun1.3d <- function(x.star, pilot="samse", binned, bin.par)
   psihat.star <- vector()
   g.star <- vector()
 
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
    
-  
   ## compute 1 pilot for SAMSE
   g.star <- gsamse.3d(S.star, n, 4, nstage=1)
   G.star <- g.star^2 * diag(d)
@@ -984,12 +967,7 @@ psifun2.3d <- function(x.star, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
 
   psihat6.star <- vector()
@@ -1065,14 +1043,8 @@ psifun1.4d <- function(x.star, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
- 
   
   psihat.star <- vector()
   g.star <- vector()
@@ -1125,12 +1097,7 @@ psifun2.4d <- function(x.star, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
-  if (binned)
-  {
-    gcounts.star <- bin.par$counts
-    range.x.star <- bin.par$range.x
-  }
-  else
+  if (!binned)
     x.star.diff <- differences(x.star)
  
   psihat6.star <- vector()
@@ -1211,7 +1178,7 @@ psifun1.5d <- function(x.star, pilot="samse")
   
   ## compute 1 pilot for SAMSE
   g.star <- gsamse.5d(S.star, n, 4, nstage=1)
-  G.star <- g.star^2 * diag(d)
+  ##G.star <- g.star^2 * diag(d)
   
   for (k in 1:nrow(derivt))
   {
@@ -1239,7 +1206,7 @@ psifun1.diag.5d <- function(x.star, pilot="samse")
 
   ## compute 1 pilot for SAMSE
   g.star <- gsamse.5d(S.star, n, 4, nstage=1)
-  G.star <- g.star^2 * diag(d)
+  ##G.star <- g.star^2 * diag(d)
 
   for (k in 1:nrow(derivt))
   {
@@ -1279,7 +1246,7 @@ psifun1.diag.5d <- function(x.star, pilot="samse")
 psifun2.5d <- function(x.star, pilot="samse")
 { 
   d <- 5
-  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+  ##RK <- numeric(); K <- numeric(); psi <- numeric(); 
 
   d0 <- 4
   derivt <- numeric()
@@ -1353,7 +1320,7 @@ psifun2.5d <- function(x.star, pilot="samse")
 psifun2.diag.5d <- function(x.star, pilot="samse")
 { 
   d <- 5
-  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+  ##RK <- numeric(); K <- numeric(); psi <- numeric(); 
 
   d0 <- 4
   derivt <- numeric()
@@ -1453,7 +1420,7 @@ psifun1.6d <- function(x.star, pilot="samse")
   
   ## compute 1 pilot for SAMSE
   g.star <- gsamse.6d(S.star, n, 4, nstage=1)
-  G.star <- g.star^2 * diag(d)
+  ##G.star <- g.star^2 * diag(d)
   
   for (k in 1:nrow(derivt))
   {
@@ -1480,7 +1447,7 @@ psifun1.diag.6d <- function(x.star, pilot="samse")
  
   ## compute 1 pilot for SAMSE
   g.star <- gsamse.6d(S.star, n, 4, nstage=1)
-  G.star <- g.star^2 * diag(d)
+  ##G.star <- g.star^2 * diag(d)
   
   for (k in 1:nrow(derivt))
   {
@@ -1521,7 +1488,7 @@ psifun1.diag.6d <- function(x.star, pilot="samse")
 psifun2.6d <- function(x.star, pilot="samse")
 { 
   d <- 6
-  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+  ##RK <- numeric(); K <- numeric(); psi <- numeric(); 
 
   d0 <- 4
   derivt <- numeric()
@@ -1597,7 +1564,7 @@ psifun2.6d <- function(x.star, pilot="samse")
 psifun2.diag.6d <- function(x.star, pilot="samse")
 { 
   d <- 6
-  RK <- numeric(); K <- numeric(); psi <- numeric(); 
+  ##RK <- numeric(); K <- numeric(); psi <- numeric(); 
 
   d0 <- 4
   derivt <- numeric()
@@ -1949,7 +1916,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   s2 <- sd(x[,2])
 
   if (substr(pre,1,2)=="sc") S12 <- diag(sqrt(diag(var(x))))
-  else if (subtr(pre,1,2)=="sp") S12 <- matrix.sqrt(var(x))
+  else if (substr(pre,1,2)=="sp") S12 <- matrix.sqrt(var(x))
  
   Sinv12 <- chol2inv(chol(S12))
     
@@ -2053,7 +2020,7 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par)
   n <- nrow(x)
   d <- ncol(x)
 
-  h <- sqrt(diag(H))
+  ##h <- sqrt(diag(H))
 
   if (d==2)
   {
@@ -2100,9 +2067,9 @@ Hlscv <- function(x, Hstart)
 {
   n <- nrow(x)
   d <- ncol(x)
-  RK <- (4*pi)^(-d/2)
+  ##RK <- (4*pi)^(-d/2)
   
-  # use normal reference selector as initial condn
+  ## use normal reference selector as initial condn
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
 
@@ -2228,7 +2195,7 @@ Hbcv <- function(x, whichbcv=1, Hstart)
   k <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*n*gamma((d+8)/2)*(d+2)))^(2/(d+4))
   Hmax <- k * abs(var(x))
   up.bound <- Hmax
-  lo.bound <- -Hmax
+  ##lo.bound <- -Hmax
   
   if (missing(Hstart))
     Hstart <- matrix.sqrt(0.9*Hmax)
@@ -2322,14 +2289,14 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart)
 {
   n <- nrow(x)
   d <- ncol(x)
-  D2 <- rbind(c(1,0,0), c(0,1,0), c(0,1,0), c(0,0,1))
+  ##D2 <- rbind(c(1,0,0), c(0,1,0), c(0,1,0), c(0,0,1))
   RK <- (4*pi)^(-d/2)
   
   ## use maximally smoothed b/w matrix for bounds
   k <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*n*gamma((d+8)/2)*(d+2)))^(2/(d+4))
   Hmax <- k * abs(var(x))
   up.bound <- diag(Hmax)
-  lo.bound <- rep(0,d)
+  ##lo.bound <- rep(0,d)
   
   if (missing(Hstart))
     Hstart <- 0.9*matrix.sqrt(Hmax)
@@ -2456,7 +2423,7 @@ Theta6.elem <- function(d)
 gamse.scv.2d <- function(x.star, Sigma.star, Hamise, n, binned=FALSE, bgridsize)
 {
   d <- 2
-  derivt6 <- cbind((3*d) - 0:(3*d), 0:(3*d))
+  ##derivt6 <- cbind((3*d) - 0:(3*d), 0:(3*d))
   g6.star <- gsamse.2d(Sigma.star, n, 6) 
   G6.star <- g6.star^2 * diag(c(1,1))
 

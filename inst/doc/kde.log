@@ -1,4 +1,4 @@
-This is pdfeTeXk, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2007.9.20)  23 OCT 2007 14:53
+This is pdfeTeXk, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=pdflatex 2007.9.20)  24 OCT 2007 11:41
 entering extended mode
  file:line:error style messages enabled.
 **\nonstopmode \input /home/tduong/research/kernel/library/ks/inst/doc/kde.tex
@@ -372,4 +372,4 @@ b10.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/t
 exmf-tetex/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf-tetex/fonts/type1
 /bluesky/cm/cmr12.pfb></usr/share/texmf-tetex/fonts/type1/bluesky/cm/cmr17.pfb>
 
-Output written on kde.pdf (4 pages, 263135 bytes).
+Output written on kde.pdf (4 pages, 263080 bytes).
