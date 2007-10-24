@@ -135,7 +135,9 @@ permute <- function (args)
                          optional = TRUE))
   cargs <- args
   rep.fac <- 1
-  orep <- final.len <- prod(sapply(args, length))
+  ##orep <- final.len <- prod(sapply(args, length))
+  orep <- prod(sapply(args, length))
+  
   for (i in 1:nargs) {
     x <- args[[i]]
     nx <- length(x)

@@ -60,8 +60,9 @@ Plug-in bandwidth matrix.
 \examples{
 ## bivariate example
 data(unicef)
-Hpi(unicef, nstage=2, pilot="samse", pre="sphere")
-Hpi(unicef, nstage=2, pilot="samse", pre="sphere", binned=TRUE)
+Hpi(unicef)
+Hpi(unicef, binned=TRUE)
+Hpi.diag(unicef)
 
 \dontrun{
 ## 4-variate example

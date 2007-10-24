@@ -156,10 +156,6 @@ amise.mixt <- function(H, mus, Sigmas, props, samp)
   if (is.vector(mus)) {d <- length(mus); mus <- t(matrix(mus))}
   else d <- ncol(mus)
   k <- length(props)
-
-  A <- matrix(0, nr=k, nc=k)
-  B <- matrix(0, nr=k, nc=k)
-  C <- matrix(0, nr=k, nc=k)
   Xi <- matrix(0, nr=k, nc=k)
   
   for (i in 1:k)
@@ -190,9 +186,9 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
   d <- ncol(Sigmas)
   k <- length(props)
   
-  h1 <- sqrt(H[1,1])
-  h2 <- sqrt(H[2,2])
-  h12 <- H[1,2]
+  ##h1 <- sqrt(H[1,1])
+  ##h2 <- sqrt(H[2,2])
+  ##h12 <- H[1,2]
 
   ## formula is found in Wand & Jones (1993)
   if (k == 1) 

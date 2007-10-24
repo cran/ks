@@ -91,7 +91,6 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
 }
 
 \seealso{  \code{\link{kda.kde}}}
-}
 
 \examples{
 ### univariate example -- independent test data

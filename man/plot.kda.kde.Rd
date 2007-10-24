@@ -1,10 +1,9 @@
 \name{plot.kda.kde}
 \alias{plot.kda.kde}
 
-\title{Kernel discriminant analysis plot
-for 1- to 3-dimensional data}
+\title{Kernel discriminant analysis plot for 1- to 3-dimensional data}
 \description{
-  Kernel discriminant analysis plot for 1- to 3-dimensional data.}
+  Kernel discriminant analysis plot for 1- to 3-dimensional data.
 }
 
 \synopsis{
@@ -97,7 +96,7 @@ for 1- to 3-dimensional data}
     for Data Analysis}. Clarendon Press. Oxford.
   
   Simonoff, J. S., (1996) \emph{Smoothing Methods in Statistics}.
-  Springer-Verlag. New York.}
+  Springer-Verlag. New York.
 }
 
 

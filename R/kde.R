@@ -229,14 +229,14 @@ kde.binned <- function(x, H, h, bgridsize, supp, xrange)
   if (is.vector(x))
   {
     d <- 1
-    n <- length(x)
+    ##n <- length(x)
   }
   else
   {
     d <- ncol(x)
-    n <- nrow(x)
+    ##n <- nrow(x)
   }
-  RK <- (4*pi)^(-d/2)
+  ##RK <- (4*pi)^(-d/2)
 
   if (d==1)
     if (missing(H)) H <- as.matrix(h^2)
@@ -577,8 +577,8 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
     ylab <- "y"
   }
  
-  eval1 <- fhat$eval.points[[1]]
-  eval2 <- fhat$eval.points[[2]]
+  ##eval1 <- fhat$eval.points[[1]]
+  ##eval2 <- fhat$eval.points[[2]]
   
   ## perspective/wireframe plot
   if (disp1=="p")
@@ -726,6 +726,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, ...)
 ################################################################################
 ## Probability functions for KDE
 ###############################################################################
+## cumulative probability P(fhat <= q)
 pkde <- function(q, fhat, exact=FALSE)
 {
   if (exact)
@@ -739,22 +740,51 @@ pkde <- function(q, fhat, exact=FALSE)
   else
   {
     q.ind <- findInterval(x=q, vec=fhat$eval.points)
-    simp.rule <- 0
 
-    ## Use Simpson's rule to compute numerical integration
-    for (i in 1:(q.ind-1))
+    if (q.ind==0)
+      prob <- 0
+   
+
+    if (q.ind>=1)
     {
-      del <- fhat$eval.points[i+1] - fhat$eval.points[i]
-      simp.rule <- simp.rule + min(fhat$est[i], fhat$est[i+1])*del + 1/2*abs(fhat$est[i+1] - fhat$est[i])*del 
+      simp.rule <- 0
+
+      if (q.ind > 1)
+      {  
+        ## Use Simpson's rule to compute numerical integration
+        for (i in 1:(q.ind-1))
+        {
+          del <- fhat$eval.points[i+1] - fhat$eval.points[i]
+          simp.rule <- simp.rule + min(fhat$est[i], fhat$est[i+1])*del + 1/2*abs(fhat$est[i+1] - fhat$est[i])*del 
+        }
+      }
+
+      simp.ruleq <- 0
+      if (q.ind < length(fhat$eval.points))
+      {
+        ## linearly interpolate kde at q
+        fhat.estq <- (fhat$est[q.ind+1] - fhat$est[q.ind])/(fhat$eval[q.ind+1] - fhat$eval[q.ind]) * (q - fhat$eval[q.ind]) + fhat$est[q.ind]
+        delq <- q - fhat$eval[q.ind] 
+        
+        simp.ruleq <- min(fhat.estq, fhat$est[q.ind])*delq + 1/2*abs(fhat.estq - fhat$est[q.ind])*delq
+        
+        
+      }
+      prob <- simp.rule + simp.ruleq
     }
 
-    ## linearly interpolate kde at q
-    fhat.estq <- (fhat$est[q.ind+1] - fhat$est[q.ind])/(fhat$eval[q.ind+1] - fhat$eval[q.ind]) * (q - fhat$eval[q.ind]) + fhat$est[q.ind]
-    delq <- q - fhat$eval[q.ind] 
-    
-    simp.ruleq <- min(fhat.estq, fhat$est[q.ind])*(q - fhat$eval[q.ind]) + 1/2*abs(fhat.estq - fhat$est[q.ind])*
-
-   prob <- simp.rule + simp.ruleq
+    if (prob > 1) prob <- 1
+    if (prob < 0) prob <- 0
   }
+
   return(prob)
+}
+
+### plot cumulative probability as shaded region on a KDE 
+
+plotkde.cumul <- function(fhat, q, ...)
+{
+  qind <- fhat$eval.points<=q
+  n <- sum(qind)
+  polygon(c(fhat$eval.points[qind],fhat$eval.points[n]), c(fhat$estimate[qind],0), ...)
 }
