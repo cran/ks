@@ -27,6 +27,8 @@ make.grid.ks <- function(x, H, tol, gridsize)
   maxx <- apply(x, 2, max) + tol.H
   stepsize <- rep(0, d)
   gridx <- numeric(0)
+  if (length(gridsize)==1)
+    gridsize <- rep(gridsize, d)
  
   for (i in 1:d)
   {
@@ -131,7 +133,7 @@ kde <- function(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7, eval.point
   if (binned)
   {
     if (!missing(eval.points))
-      stop("Both binned=TRUE and eval.points is non-empty")
+      stop("Both binned=TRUE and eval.points are non-empty.")
     
     if (missing(bgridsize))
     {
@@ -289,15 +291,22 @@ kde.binned <- function(x, H, h, bgridsize, supp, xrange)
 ## Univariate kernel density estimate on a grid
 ###############################################################################
 
-kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE)
+kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, delta)
 {
   if (positive)
-    y <- log(x)  ## transform positive data x to real line
+  {
+    if (missing(delta)) delta <- abs(min(x))
+    y <- log(x + delta)  ## transform positive data x to real line
+    gridx <- seq(max(0, min(x) - h*supp), max(x) + h*supp, length=gridsize)
+    gridy <- log(gridx + delta) 
+  }
   else
+  {
     y <- x
- 
+    gridy <- seq(min(y) - h*supp, max(y) + h*supp, length=gridsize)
+  }
   n <- length(y)
-  gridy <- seq(min(y) - h*supp, max(y) + h*supp, length=gridsize)
+ 
   est <- dnorm.mixt(x=gridy, mus=y, sigmas=rep(h, n), props=rep(1,n)/n)
   fhat <- list(x=y, eval.points=gridy, estimate=est, h=h, H=h^2)
  
@@ -306,7 +315,7 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE)
     ## compute transformation KDE
     fhat$estimate <- fhat$estimate / exp(gridy)
     fhat$x <- x
-    fhat$eval.points <- exp(gridy)
+    fhat$eval.points <- gridx # exp(gridy) - delta
   }
  
   class(fhat) <- "kde"
@@ -473,14 +482,15 @@ kde.points <- function(x, H, eval.points)
   return(list(x=x, eval.points=eval.points, estimate=fhat, H=H))
 }
 
-kde.points.1d <- function(x, h, eval.points, positive=FALSE) 
+kde.points.1d <- function(x, h, eval.points, positive=FALSE, delta) 
 {
   n <- length(x)
-  
+
   if (positive)
   {
-    y <- log(x)  ## transform positive data x to real line
-    eval.pointsy <- log(eval.points)
+    if (missing(delta)) delta <- abs(min(x))
+    y <- log(x + delta)  ## transform positive data x to real line
+    eval.pointsy <- log(eval.points + delta)
   }
   else
   {
@@ -488,9 +498,13 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE)
     eval.pointsy <- eval.points
   }
   
-  fhat <- dnorm.mixt(x=eval.pointsy, mus=y, sigmas=rep(h, n), props=rep(1, n)/n)
+  #fhat <- dnorm.mixt(x=eval.pointsy, mus=y, sigmas=rep(h, n), props=rep(1, n)/n)
+  fhat <- 0
+  for (k in 1:n)
+    fhat <- fhat + dnorm(x=eval.pointsy, mean=y[k], sd=h)
+  fhat <- fhat/n
   if (positive)
-    fhat <- fhat/exp(eval.pointsy)
+    fhat <- fhat/(eval.points + delta) ##fhat/exp(eval.pointsy)
   
   return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2))
 }
@@ -573,8 +587,8 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
   }
   else
   {
-    xlab <- "x"
-    ylab <- "y"
+    if (missing(xlab)) xlab <- "x"
+    if (missing(ylab)) ylab <- "y"
   }
  
   ##eval1 <- fhat$eval.points[[1]]
@@ -617,7 +631,7 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
   else if (disp1=="i")
   {
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
-            xlab=xlab, ylab=ylab, ...)
+            xlab=xlab, ylab=ylab, add=add, ...)
     box()
   }
   else if (disp1=="f")
@@ -723,12 +737,51 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, ...)
 }
 
 
-################################################################################
+#############################################################################
 ## Probability functions for KDE
-###############################################################################
+#############################################################################
+
 ## cumulative probability P(fhat <= q)
+
 pkde <- function(q, fhat, exact=FALSE)
 {
+  gridsize <- length(fhat$eval.points)
+  simp.rule <- rep(0, gridsize-1)
+  for (i in 1:(gridsize-1))
+  {
+    del <- fhat$eval.points[i+1] - fhat$eval.points[i]
+    simp.rule[i] <- min(fhat$est[i], fhat$est[i+1])*del + 1/2*abs(fhat$est[i+1] - fhat$est[i])*del 
+    
+  }
+  
+  q.ind <- findInterval(x=q, vec=fhat$eval.points)
+  q.prob <- rep(0, length(q))
+  i <- 0
+  
+  for (qi in q.ind)
+  {
+    i <- i+1
+
+    if (qi==0)
+      q.prob[i] <- 0
+    else if (qi < gridsize)
+    {
+      ## linearly interpolate kde 
+      fhat.estqi <- (fhat$est[qi+1] - fhat$est[qi])/(fhat$eval[qi+1] - fhat$eval[qi]) * (q[i] - fhat$eval[qi]) + fhat$est[qi]
+      delqi <- q[i] - fhat$eval[qi] 
+      
+      simp.ruleqi <- min(fhat.estqi, fhat$est[qi])*delqi + 1/2*abs(fhat.estqi - fhat$est[qi])*delqi
+      q.prob[i] <- sum(simp.rule[1:qi]) + simp.ruleqi
+    }
+    else
+      q.prob[i] <- 1
+  }
+
+
+  return(q.prob)
+
+
+  
   if (exact)
   {
     f <- function(x)

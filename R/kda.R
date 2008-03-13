@@ -683,9 +683,9 @@ plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
     {
       if (missing(y))
         if (jitter)
-          rug(jitter(fhat$x[[j]]), pch=pch[j], col=ptcol[1], ticksize=-0.03)
+          rug(jitter(fhat$x[[j]]), col=ptcol[1], ticksize=-0.03)
         else
-          rug(fhat$x[[j]], pch=pch[j], col=ptcol[1], ticksize=-0.03)
+          rug(fhat$x[[j]], col=ptcol[1], ticksize=-0.03)
       else 
       {
         if (missing(y.group))
@@ -868,7 +868,7 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   for (j in 1:m)
     xx <- rbind(xx, fhat$x[[j]])
 
-  x.gr <- sort(unique(fhat$x.group))
+  ##x.gr <- sort(unique(fhat$x.group))
 
   ##if (fhat$binned)
   ##  bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)

@@ -200,11 +200,17 @@ list.length <- function(x)
 # Pre-sphered x values
 ###############################################################################
 
-pre.sphere <- function(x)
+pre.sphere <- function(x, mean.centred=FALSE)
 {
   S <- var(x)
   Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
-  
+
+  if (mean.centred)
+  {
+    xmean <- apply(x,2,mean)
+    for (i in 1:ncol(x))
+      x[,i] <- x[,i] - xmean[i]
+  }
   x.sphered <- matrix(0, nc=ncol(x), nr=nrow(x))
   for (i in 1:nrow(x))
     x.sphered[i,] <- Sinv12 %*% x[i,]    
@@ -236,15 +242,17 @@ pre.sphere.pc <- function(x.pc)
 # Pre-scaled x values
 ###############################################################################
 
-pre.scale <- function(x)
+pre.scale <- function(x, mean.centred=FALSE)
 {
   x.scaled <- numeric()
   x.sd <- apply(x, 2, sd)
   d <- ncol(x)
 
   for (i in 1:d)
-    x.scaled <- cbind(x.scaled, x[,i] /x.sd[i])
-    
+    if (mean.centred)
+      x.scaled <- cbind(x.scaled, (x[,i] - mean(x[,i]))/x.sd[i])
+    else
+      x.scaled <- cbind(x.scaled, x[,i]/x.sd[i])                  
 
   return (x.scaled)
 }

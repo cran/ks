@@ -64,12 +64,10 @@ Hpi(unicef)
 Hpi(unicef, binned=TRUE)
 Hpi.diag(unicef)
 
-\dontrun{
 ## 4-variate example
-x <- rmvnorm.mixt(n=1000, mus=rep(0,4), diag(4))
-Hpi.diag(x, nstage=1, pilot="samse", pre="scale") 
-Hpi.diag(x, nstage=1, pilot="samse", pre="scale", binned=TRUE)
-} 
+x <- rmvnorm.mixt(n=100, mus=rep(0,4), diag(4))
+Hpi(x)
+Hpi.diag(x, pilot="samse") 
 }
 
 \keyword{ smooth }

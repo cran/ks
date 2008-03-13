@@ -1,6 +1,6 @@
 
 ###############################################################################
-# Univariate mixture normal densities
+## Univariate mixture normal densities
 ###############################################################################
 
 
@@ -20,15 +20,20 @@ rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1)
     n.samp <- sample(1:k, n, replace=TRUE, prob=props) 
     n.prop <- numeric(0)
 
-    # compute number taken from each mixture
+    ## alternative method for component membership
+    ##runif.memb <- runif(n=n)
+    ##memb <- findInterval(runif.memb, c(0,cumsum(props)), rightmost.closed=TRUE)
+    ##n.prop <- table(memb)
+    
+    ## compute number taken from each mixture
     for (i in 1:k)
       n.prop <- c(n.prop, sum(n.samp == i))
     
     rand <- numeric(0)
     
-    for (i in 1:k)
+    for (i in 1:k) ##for (i in as.numeric(rownames(n.prop)))
     {
-      # compute random sample from normal mixture component
+      ## compute random sample from normal mixture component
       if (n.prop[i] > 0)
           rand <- c(rand, rnorm(n=n.prop[i], mean=mus[i], sd=sigmas[i]))        
     }
@@ -43,17 +48,17 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
 
-  # single component mixture
+  ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
     dens <- dnorm(x, mean=mus, sd=sigmas)
 
-  # multiple component mixture
+  ## multiple component mixture
   else   
   {   
     k <- length(props)
     dens <- 0
 
-    # sum of each normal density value from each component at x  
+    ## sum of each normal density value from each component at x  
     for (i in 1:k)
       dens <- dens + props[i]*dnorm(x, mean=mus[i], sd=sigmas[i])
   }
@@ -68,18 +73,18 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 
 
 ###############################################################################
-# Multivariate normal mixture - random sample
-# 
-# Parameters
-# n - number of samples
-# mus - matrix of means (each row is a vector of means from each component
-#       density)
-# Sigmas - matrix of covariance matrices (every d rows is a covariance matrix 
-#          from each component density) 
-# props - vector of mixing proportions 
-# 
-# Returns
-# Vector of n observations from the normal mixture 
+## Multivariate normal mixture - random sample
+## 
+## Parameters
+## n - number of samples
+## mus - matrix of means (each row is a vector of means from each component
+##       density)
+## Sigmas - matrix of covariance matrices (every d rows is a covariance matrix 
+##          from each component density) 
+## props - vector of mixing proportions 
+## 
+## Returns
+## Vector of n observations from the normal mixture 
 ###############################################################################
 
 rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
@@ -88,7 +93,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
     stop("Proportions don't sum to one\n")
 
   #if (is.vector(Sigmas))
-  #  return(rnorm.mixt(n=n, mus=mus, sigmas=Sigmas, props=props))
+  ##  return(rnorm.mixt(n=n, mus=mus, sigmas=Sigmas, props=props))
   
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -102,7 +107,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
     n.samp <- sample(1:k, n, replace=TRUE, prob=props) 
     n.prop <- numeric(0)
 
-    # compute number taken from each mixture
+    ## compute number taken from each mixture
     for (i in 1:k)
       n.prop <- c(n.prop, sum(n.samp == i))
     
@@ -110,7 +115,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
     
     for (i in 1:k)
     {
-      # compute random sample from normal mixture component
+      ## compute random sample from normal mixture component
       if (n.prop[i] > 0)
           rand <- rbind(rand, rmvnorm(n=n.prop[i], mean=mus[i,], 
                                       sigma=Sigmas[((i-1)*d+1) : (i*d),]))        
@@ -122,16 +127,16 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
 
 
 ###############################################################################
-# Multivariate normal mixture - density values
-# 
-# Parameters
-# x - points to compute density at 
-# mus - matrix of means
-# Sigmas - matrix of covariance matrices 
-# props - vector of mixing proportions 
-# 
-# Returns
-# Density values from the normal mixture (at x)
+## Multivariate normal mixture - density values
+## 
+## Parameters
+## x - points to compute density at 
+## mus - matrix of means
+## Sigmas - matrix of covariance matrices 
+## props - vector of mixing proportions 
+## 
+## Returns
+## Density values from the normal mixture (at x)
 ###############################################################################
 
 dmvnorm.mixt <- function(x, mus, Sigmas, props)
@@ -142,11 +147,11 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props)
   #if (is.vector(Sigmas))
   #  return(dnorm.mixt(x=x, mus=mus, sigmas=Sigmas, props=props))
   
-  # single component mixture
+  ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
     dens <- dmvnorm(x, mean=mus, sigma=Sigmas)
 
-  # multiple component mixture
+  ## multiple component mixture
   else   
   {   
     if (is.vector(mus)) d <- length(mus)
@@ -154,7 +159,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props)
     k <- length(props)
     dens <- 0
 
-    # sum of each normal density value from each component at x  
+    ## sum of each normal density value from each component at x  
     for (i in 1:k)
       dens <- dens + props[i]*dmvnorm(x, mean=mus[i,],
                                       sigma=Sigmas[((i-1)*d+1):(i*d),])
@@ -164,7 +169,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props)
 }   
 
 ###############################################################################
-# Compute moments of multivariate normal mixture
+## Compute moments of multivariate normal mixture
 ###############################################################################
 
 moments.mixt <- function (mus, Sigmas, props)
@@ -185,16 +190,16 @@ moments.mixt <- function (mus, Sigmas, props)
 }
 
 ###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation
+## Double sum  of K(X_i - X_j) used in density derivative estimation
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
@@ -223,16 +228,16 @@ dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
 }
 
 ###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation
+## Double sum  of K(X_i - X_j) used in density derivative estimation
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.2d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
@@ -276,16 +281,16 @@ dmvnorm.2d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 }
 
 ###############################################################################
-# Double sum (i = 1:n1, j = 1:n2) of K(X_i - X_j), X_i from cluster 1,
-# X_j from cluster 2
+## Double sum (i = 1:n1, j = 1:n2) of K(X_i - X_j), X_i from cluster 1,
+## X_j from cluster 2
 #
-# Parameters
-# x - data points from first cluster
-# y - data points from second cluster
-# Sigma - variance matrix
+## Parameters
+## x - data points from first cluster
+## y - data points from second cluster
+## Sigma - variance matrix
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.2d.sum.pc <- function(x, y, Sigma, inc=1)
@@ -318,15 +323,15 @@ dmvnorm.2d.sum.pc <- function(x, y, Sigma, inc=1)
 }  
 
 ###############################################################################
-# Partial derivatives of the univariate normal (mean 0) 
-# 
-# Parameters
-# x - points to evaluate at
-# sigma - std deviation
-# r - derivative index 
+## Partial derivatives of the univariate normal (mean 0) 
+## 
+## Parameters
+## x - points to evaluate at
+## sigma - std deviation
+## r - derivative index 
 #
-# Returns
-# r-th derivative at x
+## Returns
+## r-th derivative at x
 ###############################################################################
 
 dmvnorm.deriv.1d <- function(x, sigma, r)
@@ -358,15 +363,15 @@ dmvnorm.deriv.1d <- function(x, sigma, r)
 }
 
 ###############################################################################
-# Partial derivatives of the bivariate normal (mean 0) 
-# 
-# Parameters
-# x - points to evaluate at
-# Sigma - variance matrix
-# r - (r1, r2) vector of partial derivative indices 
+## Partial derivatives of the bivariate normal (mean 0) 
+## 
+## Parameters
+## x - points to evaluate at
+## Sigma - variance matrix
+## r - (r1, r2) vector of partial derivative indices 
 #
-# Returns
-# r-th partial derivative at x
+## Returns
+## r-th partial derivative at x
 ###############################################################################
 
 dmvnorm.deriv.2d <- function(x, Sigma, r) 
@@ -383,32 +388,32 @@ dmvnorm.deriv.2d <- function(x, Sigma, r)
   
   if (sum(r) == 0)
     return(dmvnorm(x, c(0,0), Sigma))
-  # first order derivatives  
+  ## first order derivatives  
   else if (sum(r) == 1)
     derivt <- .C("dmvnormd1_2d", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n), 
                  as.double(rep(0, n)), PACKAGE="ks")
-  # third order derivatives
+  ## third order derivatives
   else if (sum(r) == 2)
     derivt <- .C("dmvnormd2_2d", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n), 
                  as.double(rep(0, n)), PACKAGE="ks")
-  # second order derivatives
+  ## second order derivatives
   else if (sum(r) == 3)
     derivt <- .C("dmvnormd3_2d", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n), 
                  as.double(rep(0, n)), PACKAGE="ks")
-  # fourth order derivatives
+  ## fourth order derivatives
   else if (sum(r) == 4)
     derivt <- .C("dmvnormd4_2d", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n), 
                  as.double(rep(0, n)), PACKAGE="ks")
-  # fifth order derivatives
+  ## fifth order derivatives
   else if (sum(r) == 5)
     derivt <- .C("dmvnormd5_2d", as.double(x1), as.double(x2), 
                  as.double(vec(Sigma)), as.integer(r), as.integer(n), 
                  as.double(rep(0, n)), PACKAGE="ks")
-  # sixth order derivatives
+  ## sixth order derivatives
   else if (sum(r) == 6)
     derivt <- .C("dmvnormd6_2d", as.double(x1), as.double(x2), 
             as.double(vec(Sigma)), as.integer(r), as.integer(n), 
@@ -422,15 +427,15 @@ dmvnorm.deriv.2d <- function(x, Sigma, r)
 
 
 ###############################################################################
-# Double sum of K^(r)(X_i - X_j) used in density derivative estimation
+## Double sum of K^(r)(X_i - X_j) used in density derivative estimation
 #
-# Parameters
-# x - points to evaluate 
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Parameters
+## x - points to evaluate 
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
@@ -510,16 +515,16 @@ dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 
 
 ###############################################################################
-# Double sum K^(r)(X_i - X_j)*(X_i - X_j)*(X_i - X_j)^T used in
-# density derivative estimation (Hbcv)
+## Double sum K^(r)(X_i - X_j)*(X_i - X_j)*(X_i - X_j)^T used in
+## density derivative estimation (Hbcv)
 #
-# Parameters
-# x - points to evaluate 
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Parameters
+## x - points to evaluate 
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
@@ -537,23 +542,23 @@ dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
                as.double(viSigma), as.integer(r), as.integer(n), 
                as.double(rep(0,4)), PACKAGE="ks")
   
-  # above C functions dmvnorm4_2d_xxt_sum only computes the upper triangular
-  # half so need to reflect along the diagonal to compute whole sum
+  ## above C functions dmvnorm4_2d_xxt_sum only computes the upper triangular
+  ## half so need to reflect along the diagonal to compute whole sum
   sumval <- 2*result[[6]]
   
   return(invvec(sumval))
 } 
 ###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation - 3-dim
+## Double sum  of K(X_i - X_j) used in density derivative estimation - 3-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.3d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
@@ -600,15 +605,15 @@ dmvnorm.3d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 
 
 ###############################################################################
-# Partial derivatives of the 3-variate normal (mean 0, diag variance matrix) 
-# 
-# Parameters
-# x - points to evaluate at
-# Sigma - variance matrix
-# r - (r1, r2, r3, r4) vector of partial derivative indices 
+## Partial derivatives of the 3-variate normal (mean 0, diag variance matrix) 
+## 
+## Parameters
+## x - points to evaluate at
+## Sigma - variance matrix
+## r - (r1, r2, r3, r4) vector of partial derivative indices 
 #
-# Returns
-# r-th partial derivative at x
+## Returns
+## r-th partial derivative at x
 ##############################################################################
 
 dmvnorm.deriv.3d <- function(x, Sigma, r) 
@@ -637,8 +642,8 @@ dmvnorm.deriv.3d <- function(x, Sigma, r)
   Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
   Sigma2 <- Sigma[3,3]
 
-  # Use existing 2-dim derivatives to compute 3-dim derivative for diag
-  # variance matrix
+  ## Use existing 2-dim derivatives to compute 3-dim derivative for diag
+  ## variance matrix
   derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
   derivt2 <- dmvnorm.deriv.1d(y2, sqrt(Sigma2), r2)
   derivt <- derivt1*derivt2
@@ -647,15 +652,15 @@ dmvnorm.deriv.3d <- function(x, Sigma, r)
 }         
 
 ###############################################################################
-# Double sum of K^(r)(X_i - X_j) used in density derivative estimation - 3-dim
+## Double sum of K^(r)(X_i - X_j) used in density derivative estimation - 3-dim
 #
-# Parameters
-# x - points to evaluate 
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Parameters
+## x - points to evaluate 
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
@@ -705,14 +710,14 @@ dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 ###############################################################################
 # Double sum  of K(X_i - X_j) used in density derivative estimation - 4-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.4d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
@@ -758,15 +763,15 @@ dmvnorm.4d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 
 
 ###############################################################################
-# Partial derivatives of the 4-variate normal (mean 0, diag variance matrix) 
-# 
-# Parameters
-# x - points to evaluate at
-# Sigma - variance matrix
-# r - (r1, r2, r3, r4) vector of partial derivative indices 
+## Partial derivatives of the 4-variate normal (mean 0, diag variance matrix) 
+## 
+## Parameters
+## x - points to evaluate at
+## Sigma - variance matrix
+## r - (r1, r2, r3, r4) vector of partial derivative indices 
 #
-# Returns
-# r-th partial derivative at x
+## Returns
+## r-th partial derivative at x
 ##############################################################################
 
 dmvnorm.deriv.4d <- function(x, Sigma, r) 
@@ -795,8 +800,8 @@ dmvnorm.deriv.4d <- function(x, Sigma, r)
   Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
   Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
 
-  # Use existing 2-dim derivatives to compute 4-dim derivative for diag
-  # variance matrix
+  ## Use existing 2-dim derivatives to compute 4-dim derivative for diag
+  ## variance matrix
   derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
   derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
   derivt <- derivt1*derivt2
@@ -805,15 +810,15 @@ dmvnorm.deriv.4d <- function(x, Sigma, r)
 }         
 
 ###############################################################################
-# Double sum of K^(r)(X_i - X_j) used in density derivative estimation - 4-dim
+## Double sum of K^(r)(X_i - X_j) used in density derivative estimation - 4-dim
 #
-# Parameters
-# x - points to evaluate 
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Parameters
+## x - points to evaluate 
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
@@ -860,16 +865,16 @@ dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
 
 
 ###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation - 5-dim
+## Double sum  of K(X_i - X_j) used in density derivative estimation - 5-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.5d.sum <- function(x, Sigma, inc=1)
@@ -892,9 +897,9 @@ dmvnorm.5d.sum <- function(x, Sigma, inc=1)
                as.double(0), PACKAGE="ks")
   sumval <- result[[9]]
 
-  # above C function mvnorm_5d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
+  ## above C function mvnorm_5d_sum only computes the upper triangular half
+  ## so need to reflect along the diagonal and then subtract appropriate
+  ## amount to compute whole sum 
   
   if (inc == 0) 
     sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
@@ -905,15 +910,15 @@ dmvnorm.5d.sum <- function(x, Sigma, inc=1)
 }
 
 ###############################################################################
-# Partial derivatives of the 5-variate normal (mean 0, diag variance matrix) 
-# 
-# Parameters
-# x - points to evaluate at
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Partial derivatives of the 5-variate normal (mean 0, diag variance matrix) 
+## 
+## Parameters
+## x - points to evaluate at
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# r-th partial derivative at x
+## Returns
+## r-th partial derivative at x
 ##############################################################################
 
 dmvnorm.deriv.5d <- function(x, Sigma, r) 
@@ -943,8 +948,8 @@ dmvnorm.deriv.5d <- function(x, Sigma, r)
   Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
   Sigma3 <- Sigma[5,5]
   
-  # Use existing 2-dim derivatives to compute 6-dim derivative for diag
-  # variance matrix
+  ## Use existing 2-dim derivatives to compute 6-dim derivative for diag
+  ## variance matrix
   derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
   derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
   derivt3 <- dmvnorm.deriv.1d(y3, sqrt(Sigma3), r3)
@@ -955,16 +960,16 @@ dmvnorm.deriv.5d <- function(x, Sigma, r)
 
 
 ###############################################################################
-# Double sum  of K^(r)(X_i - X_j) used in density derivative estimation - 5-dim
+## Double sum  of K^(r)(X_i - X_j) used in density derivative estimation - 5-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.5d.sum <- function(x, Sigma, r, inc=1)
@@ -1000,16 +1005,16 @@ dmvnorm.deriv.5d.sum <- function(x, Sigma, r, inc=1)
 }
 
 ###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation - 6-dim
+## Double sum  of K(X_i - X_j) used in density derivative estimation - 6-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.6d.sum <- function(x, Sigma, inc=1)
@@ -1032,9 +1037,9 @@ dmvnorm.6d.sum <- function(x, Sigma, inc=1)
                as.double(0), PACKAGE="ks")
   sumval <- result[[10]]
 
-  # above C function mvnorm_6d_sum only computes the upper triangular half
-  # so need to reflect along the diagonal and then subtract appropriate
-  # amount to compute whole sum 
+  ## above C function mvnorm_6d_sum only computes the upper triangular half
+  ## so need to reflect along the diagonal and then subtract appropriate
+  ## amount to compute whole sum 
   
   if (inc == 0) 
     sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
@@ -1046,15 +1051,15 @@ dmvnorm.6d.sum <- function(x, Sigma, inc=1)
 
 
 ###############################################################################
-# Partial derivatives of the 6-variate normal (mean 0, diag variance matrix) 
-# 
-# Parameters
-# x - points to evaluate at
-# Sigma - variance matrix
-# r - vector of partial derivative indices 
+## Partial derivatives of the 6-variate normal (mean 0, diag variance matrix) 
+## 
+## Parameters
+## x - points to evaluate at
+## Sigma - variance matrix
+## r - vector of partial derivative indices 
 #
-# Returns
-# r-th partial derivative at x
+## Returns
+## r-th partial derivative at x
 ##############################################################################
 
 dmvnorm.deriv.6d <- function(x, Sigma, r) 
@@ -1084,8 +1089,8 @@ dmvnorm.deriv.6d <- function(x, Sigma, r)
   Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
   Sigma3 <- diag(c(Sigma[5,5], Sigma[6,6]))
   
-  # Use existing 2-dim derivatives to compute 6-dim derivative for diag
-  # variance matrix
+  ## Use existing 2-dim derivatives to compute 6-dim derivative for diag
+  ## variance matrix
   derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
   derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
   derivt3 <- dmvnorm.deriv.2d(y3, Sigma3, r3)
@@ -1096,16 +1101,16 @@ dmvnorm.deriv.6d <- function(x, Sigma, r)
 
 
 ###############################################################################
-# Double sum  of K^(r)(X_i - X_j) used in density derivative estimation - 6-dim
+## Double sum  of K^(r)(X_i - X_j) used in density derivative estimation - 6-dim
 #
-# Parameters
-# x - points to evaluate
-# Sigma - variance matrix
-# inc - 0 - exclude diagonals
-#     - 1 - include diagonals
+## Parameters
+## x - points to evaluate
+## Sigma - variance matrix
+## inc - 0 - exclude diagonals
+##     - 1 - include diagonals
 #
-# Returns
-# Double sum at x
+## Returns
+## Double sum at x
 ###############################################################################
 
 dmvnorm.deriv.6d.sum <- function(x, Sigma, r, inc=1)
@@ -1143,16 +1148,16 @@ dmvnorm.deriv.6d.sum <- function(x, Sigma, r, inc=1)
 
 
 ###############################################################################
-# Multivariate t - density values
+## Multivariate t - density values
 #
-# Parameters
-# x - points to compute density     
-# mu - vector of means 
-# Sigma - dispersion matrix
-# df - degrees of freedom
+## Parameters
+## x - points to compute density     
+## mu - vector of means 
+## Sigma - dispersion matrix
+## df - degrees of freedom
 #
-# Returns
-# Value of multivariate t density at x
+## Returns
+## Value of multivariate t density at x
 ###############################################################################
 
 dmvt <- function(x, mu, Sigma, df)
@@ -1169,17 +1174,17 @@ dmvt <- function(x, mu, Sigma, df)
 
 
 ###############################################################################
-# Multivariate t mixture - density values
+## Multivariate t mixture - density values
 #
-# Parameters
-# x - points to compute density at    
-# mus - vector of means 
-# Sigmas - dispersion matrices
-# dfs - degrees of freedom
-# props - vector of mixing proportions
+## Parameters
+## x - points to compute density at    
+## mus - vector of means 
+## Sigmas - dispersion matrices
+## dfs - degrees of freedom
+## props - vector of mixing proportions
 #
-# Returns
-# Value of multivariate t mixture density at x
+## Returns
+## Value of multivariate t mixture density at x
 ###############################################################################
 
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
@@ -1189,11 +1194,11 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
   else if (length(dfs) != length(props))
     stop("Length of df and mixing proportions vectors not equal")
   
-  # single component mixture
+  ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
     dens <- dmvt(x, mu=mus, Sigma=Sigmas, df=dfs)
   
-  # multiple component mixture
+  ## multiple component mixture
   else   
   {   
     if (is.vector(mus)) d <- length(mus)
@@ -1210,17 +1215,17 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 
 
 ###############################################################################
-# Multivariate t mixture - random sample
-# 
-# Parameters
-# n - number of samples
-# mus - means 
-# Sigmas - matrix of dispersion matrices
-# dfs - vector of degrees of freedom
-# props - vector of mixing proportions 
-# 
-# Returns
-# Vector of n observations from the t mixture
+## Multivariate t mixture - random sample
+## 
+## Parameters
+## n - number of samples
+## mus - means 
+## Sigmas - matrix of dispersion matrices
+## dfs - vector of degrees of freedom
+## props - vector of mixing proportions 
+## 
+## Returns
+## Vector of n observations from the t mixture
 ###############################################################################
 
 rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
@@ -1230,7 +1235,7 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
   else if (length(dfs) != length(props))
     stop("Length of df and mixing proportions vectors not equal")  
 
-  # single component mixture
+  ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
   {
     rand <- rmvt(n=n, sigma=Sigmas, df=dfs)
@@ -1238,7 +1243,7 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
       rand[,i] <- rand[,i] + mus[i]
   }
   
-  # multiple component mixture
+  ## multiple component mixture
   else
   {
     k <- length(props)
@@ -1246,11 +1251,11 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
     n.samp <- sample(1:k, n, replace=TRUE, prob=props) 
     n.prop <- numeric(0)
 
-    # compute number to be drawn from each component 
+    ## compute number to be drawn from each component 
     for (i in 1:k)
       n.prop <- c(n.prop, sum(n.samp == i))
 
-    # generate random samples from each component
+    ## generate random samples from each component
     rand <- numeric(0)  
     for (i in 1:k)
     {
@@ -1270,16 +1275,16 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 
 
 ###############################################################################
-# Creates plots of mixture density functions
+## Creates plots of mixture density functions
 #
-# Parameters
-# mus - means
-# Sigmas - variances
-# props - vector of proportions of each mixture component 
-# dfs - degrees of freedom
-# dist - "normal" - normal mixture
-#      - "t" - t mixture
-# ...
+## Parameters
+## mus - means
+## Sigmas - variances
+## props - vector of proportions of each mixture component 
+## dfs - degrees of freedom
+## dist - "normal" - normal mixture
+##      - "t" - t mixture
+## ...
 ###############################################################################
 
 
