@@ -6,12 +6,13 @@
 \description{
 Pre-sphered or pre-scaled version of data.}
 \usage{
-pre.sphere(x)
-pre.scale(x)
+pre.sphere(x, mean.centred=FALSE)
+pre.scale(x, mean.centred=FALSE)
 }
 
 \arguments{
   \item{x}{matrix of data values}
+  \item{mean.centred}{if TRUE then centre the data values to have zero mean}
 }
 \value{Pre-sphered or pre-scaled version of data. These
   pre-transformations are required for implementing the plug-in
@@ -43,9 +44,9 @@ pre.scale(x)
 }
 
 \examples{
-x <- rmvnorm.mixt(1000, mus=c(0,0), Sigmas=rbind(c(1,0.2), c(0.2, 0.5))) 
+x <- rmvnorm.mixt(1000, mus=c(1,0.5), Sigmas=rbind(c(1,0.2), c(0.2, 0.5))) 
 x.sp <- pre.sphere(x)
-x.sc <- pre.scale(x)
+x.sc <- pre.scale(x, mean.centred=TRUE)
 var(x.sp)
 var(x.sc)
 }
