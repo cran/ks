@@ -19,14 +19,16 @@ vech i.e. they form matrices from vectors.
 }
 
 \usage{
-vec(x)
+vec(x, byrow = FALSE)
 vech(x)
-invvec(x)
+invvec(x, ncol, nrow, byrow = FALSE)
 invvech(x)
 }
 
 \arguments{
   \item{x}{vector or matrix}
+  \item{ncol,nrow}{number of columns and rows for inverse of vech}
+  \item{byrow}{flag for stacking row-wise or column-wise (default)}  
   }
   
 
@@ -44,10 +46,11 @@ invvech(x)
 
 \examples{
 x <- matrix(1:9, nrow=3, ncol=3)
+y <- (x + t(x))/2
 vec(x)
-vech(x)
+vech(y)
 invvec(vec(x))
-invvech(vech(x))
+invvech(vech(y))
 }
 
 \keyword{algebra}

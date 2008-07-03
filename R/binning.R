@@ -5,7 +5,48 @@
 
 # Last changed: 18 JUL 2005
 
-dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=1.5, range.x)
+
+binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
+{
+  x <- as.matrix(x)
+  d <- ncol(x)
+  
+  if (missing(h))  h <- rep(0,d)
+  if (!missing(H))
+    h <- sqrt(diag(H))
+
+  if (missing(bgridsize))
+    if (d==1) bgridsize <- 401
+    else if (d==2) bgridsize <- rep(151,d)
+    else if (d==3) bgridsize <- rep(51, d)
+    else if (d==4) bgridsize <- rep(21, d)
+  
+  if (!(missing(xmin) & missing(xmax)))
+  {
+    range.x <- list()
+    for (i in 1:d)
+      range.x[[i]] <- c(xmin[i], xmax[i])
+  }
+  else
+  {
+    range.x <- list()
+    for (i in 1:d)
+      range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
+  }
+  bin.counts <- dfltCounts.ks(x=x, gridsize=bgridsize, h=h, supp=supp, range.x=range.x)
+  bin.counts.ret <- list()
+  bin.counts.ret$counts <- bin.counts$counts 
+  bin.counts.ret$eval.points <- list() 
+  if (i==1)
+     bin.counts.ret$eval.points <- seq(range.x[[i]][1], range.x[[i]][2], length=bgridsize[i])
+  else
+    for (i in 1:d)
+      bin.counts.ret$eval.points[[i]] <- seq(range.x[[i]][1], range.x[[i]][2], length=bgridsize[i])
+
+  return(bin.counts.ret)
+}
+
+dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
 {
    x <- as.matrix(x)
    d <- ncol(x)

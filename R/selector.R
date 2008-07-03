@@ -1480,15 +1480,15 @@ psifun1.diag.6d <- function(x.star, pilot="samse")
 
 
 ###############################################################################
-# Estimate psi functionals for 6-variate data using 2-stage plug-in - 6-dim
-#
-# Parameters
-# x.star - pre-transformed data points
-# pilot - "amse" = different AMSE pilot bandwidths
-#       - "samse" = optimal SAMSE pilot bandwidth
-#
-# Returns
-# estimated psi functionals
+## Estimate psi functionals for 6-variate data using 2-stage plug-in - 6-dim
+##
+## Parameters
+## x.star - pre-transformed data points
+## pilot - "amse" = different AMSE pilot bandwidths
+##       - "samse" = optimal SAMSE pilot bandwidth
+##
+## Returns
+## estimated psi functionals
 ###############################################################################
 
 psifun2.6d <- function(x.star, pilot="samse")
@@ -1648,20 +1648,235 @@ psifun2.diag.6d <- function(x.star, pilot="samse")
   return(psihat.star)
 }
 
+###############################################################################
+## Estimate psi functionals for 6-variate data using 1-stage plug-in 
+## with unconstrained pilot
+##
+## Parameters
+## x - data points
+## Sd4, Sd6 - symmetrizer matrices of order 4 and 6
+##
+## Returns
+## estimated psi functionals
+###############################################################################
+
+
+psifun1.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+  S <- var(x)
+  
+  nlim <- 1e4
+  upper <- TRUE 
+
+  ## stage 1 of plug-in
+  G4 <-(2^(d/2+3)/((d+4)*n))^(2/(d+8))*S
+  vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper, nlim=nlim)
+  
+  return (vecPsi4)
+}
+
 
 ###############################################################################
-# Creates Psi_4 matrix of 4th order psi functionals used in AMISE - 2 to 6 dim
-#
-# Parameters
-# x - data points
-# nstage - number of plug-in stages (1 or 2)
-# pilot - "amse" - different AMSE pilot
-#       - "samse" - SAMSE pilot
-# pre - "scale" - pre-scaled data
-#     - "sphere"- pre-sphered data 
-#
-# Returns
-# matrix of psi functionals
+## Estimate psi functionals for 6-variate data using 2-stage plug-in 
+## with unconstrained pilot
+##
+## Parameters
+## x - data points
+## Sd4, Sd6 - symmetrizer matrices of order 4 and 6
+##
+## Returns
+## estimated psi functionals
+###############################################################################
+
+
+psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
+{
+  d <- ncol(x)
+  n <- nrow(x)
+  S <- var(x)
+
+  Hstart <- (4/(d+2))^(2/(d+4))*n^(-2/(d+4))*S
+  Hstart <- matrix.sqrt(Hstart)
+  nlim <- 1e4
+ 
+  ## matrix of pairwise differences
+  upper <- TRUE
+  difs <- differences(x, upper=upper)
+ 
+  ## constants for normal reference
+  D4phi0 <- D4L0(d=d, Sd4=Sd4)
+  Id1 <- diag(d)
+  vId <- vec(Id1)
+
+  ## stage 1 of plug-in
+  G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
+  G612 <- matrix.sqrt(G6)
+ 
+  vecPsi6 <- vecPsir(x=x, Sdr=Sd6, Gr=G6, r=6, upper=upper, nlim=nlim)
+   
+  Id4 <- diag(d^4)
+  Id2 <- diag(d^2)
+  Kdd2 <- K.mat(m=d,n=d^2)
+  Psi6 <- (Id1%x%Kdd2%x%Id2)%*%vecPsi6
+  
+  ## asymptotic squared bias for r = 4
+  AB2r4<-function(vechG){
+    r <- 4
+    G <- invvech(vechG)%*%invvech(vechG)
+    G12 <- matrix.sqrt(G)
+    Ginv12 <- chol2inv(chol(G12))
+    AB <- n^(-1)*det(Ginv12)*(K.pow(A=Ginv12,pow=r)%*%D4phi0)+
+      (1/2)*(t(vec(G))%x%Id4)%*%Psi6
+    return (sum(AB^2))
+  }
+  
+  res <- optim(vech(Hstart),AB2r4, control=list(reltol=rel.tol))
+  V4 <- res$value
+  G4 <- res$par
+  G4 <- invvech(G4)%*%invvech(G4)
+ 
+  ## stage 2 of plug-in
+
+  vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper, nlim=nlim)
+  
+  return (vecPsi4)
+}
+
+### vec Psi_r functionals estimation with unconstr bw matrices
+
+vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
+{
+  d <- ncol(x)
+  n <- nrow(x)
+  S <- var(x)
+
+  ## matrix of differences - upper triangular form is available
+  difs <- differences(x, upper=upper)
+  
+  Id1 <- diag(d)
+  vId <- vec(Id1)
+  Gr12 <- matrix.sqrt(Gr)
+  Grinv12 <- chol2inv(chol(Gr12))
+
+  args <- t(Grinv12%*%t(difs))
+
+  if (r==6)
+  {  
+    vecPsi6 <- rep(0,d^6)
+
+    K6 <- function(args)
+    {
+      return(mat.K.pow(args,6)-15*mat.Kprod(mat.K.pow(args,4),rep(1,nrow(args))%x%t(vId)) + 45*mat.Kprod(mat.K.pow(args,2),rep(1,nrow(args))%x%t(K.pow(vId,2)))-15*rep(1,nrow(args))%x%t(K.pow(vId,3)))
+    }
+
+    ## split into blocks because of memory limitations
+    if (nrow(args) > nlim)
+    {
+      num.loops <- nrow(args) %/% nlim
+      for (j in 1:num.loops)
+      {
+        args.temp <- args[((j-1)* nlim+1):(j*nlim),]
+        hmnew.temp <- K6(args.temp)
+        vecPsi6  <- vecPsi6 + colSums(dmvnorm(args.temp)*hmnew.temp)
+        cat(j, " ")
+      }
+    
+      if (nrow(args) %% nlim >0)
+      {
+        args.temp <- args[(num.loops*nlim+1):nrow(args),]
+        hmnew.temp <- K6(args.temp)
+        vecPsi6  <- vecPsi6 + colSums(dmvnorm(args.temp)*hmnew.temp)
+      }
+    }
+    else
+    {
+      hmnew <- K6(args)
+      vecPsi6 <- colSums(dmvnorm(args)*hmnew)
+    }
+    cat("\n")
+
+    if (upper)
+    {
+      ## adjust for upper triangular form of differences matrix
+      args0 <- t(rep(0,d))
+      hmnew0 <- K6(args0)
+      vecPsi6 <- 2*vecPsi6 - as.vector(n*dmvnorm(args0)*hmnew0)
+      vecPsi6 <- Sdr%*%vecPsi6/n^2
+    }
+    else
+      vecPsi6 <- Sdr%*%vecPsi6/nrow(args)
+
+    vecPsi6 <- (-1)^6*det(Grinv12)*K.pow(Grinv12,6)%*%vecPsi6
+
+    return (vecPsi6)
+  }
+
+  
+  if (r==4)
+  {
+    vecPsi4 <- rep(0,d^4)
+    K4 <- function(args)
+    {
+      return(mat.K.pow(args,4)-6*mat.Kprod(mat.K.pow(args,2),rep(1,nrow(args))%x%t(vId))+3*rep(1,nrow(args))%x%t(K.pow(vId,2)))
+    }
+    
+    if (nrow(args)>nlim)
+    {
+      num.loops <- nrow(args) %/% nlim
+      for (j in 1:num.loops)
+      {
+        args.temp <- args[((j-1)* nlim+1):(j*nlim),]
+        hmnew.temp <- K4(args.temp)
+        vecPsi4  <- vecPsi4 + colSums(dmvnorm(args.temp)*hmnew.temp)
+        cat(j, " ")
+      }
+    
+      if (nrow(args) %% nlim >0)
+      {
+        args.temp <- args[(num.loops*nlim+1):nrow(args),]
+        hmnew.temp <- K4(args.temp)
+        vecPsi4  <- vecPsi4 + colSums(dmvnorm(args.temp)*hmnew.temp)
+      }   
+    }
+    else
+    {
+      hmnew <- K4(args)
+      vecPsi4 <- colSums(dmvnorm(args)*hmnew)
+    }
+    cat("\n")
+    
+    if (upper)
+    {
+      args0 <- t(rep(0,d))
+      hmnew0 <- K4(args0)
+      vecPsi4 <- 2*vecPsi4 - as.vector(n*dmvnorm(args0)*hmnew0)
+      vecPsi4 <- Sdr%*%vecPsi4/n^2
+    }
+    else
+      vecPsi4 <- Sdr%*%vecPsi4/nrow(args)
+
+    vecPsi4<-(-1)^4*det(Grinv12)*K.pow(Grinv12,4)%*%vecPsi4
+
+    return(vecPsi4)
+  }
+}
+
+
+###############################################################################
+## Creates Psi_4 matrix of 4th order psi functionals used in AMISE - 2 to 6 dim
+##
+## Parameters
+## x - data points
+## nstage - number of plug-in stages (1 or 2)
+## pilot - "amse" - different AMSE pilot
+##       - "samse" - SAMSE pilot
+## pre - "scale" - pre-scaled data
+##     - "sphere"- pre-sphered data 
+##
+## Returns
+## matrix of psi functionals
 ############################################################################
 
 psimat.2d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
@@ -1772,30 +1987,49 @@ psimat.diag.6d <- function(x.star, nstage=1, pilot="samse")
   return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
+###  unconstrained pilot selectors
 
+psimat.unconstr.nd <- function(x, nstage=1, Sd4, Sd6)
+{
+  if (nstage==1)
+    psi.fun <- psifun1.unconstr.nd(x=x, Sd4=Sd4, Sd6=Sd6)
+  else if (nstage==2)
+    psi.fun <- psifun2.unconstr.nd(x=x, Sd4=Sd4, Sd6=Sd6)
+
+  return(invvec(psi.fun))
+}
+  
 ###############################################################################
 # Plug-in bandwidth selectors
 ###############################################################################
 
     
 ###############################################################################
-# Computes plug-in full bandwidth matrix - 2 to 6 dim
-#
-# Parameters
-# x - data points
-# Hstart - initial value for minimisation
-# nstage - number of plug-in stages (1 or 2)
-# pilot - "amse" - different AMSE pilot
-#       - "samse" - SAMSE pilot
-# pre - "scale" - pre-scaled data
-#     - "sphere"- pre-sphered data 
-#
-# Returns
-# Plug-in full bandwidth matrix
+## Computes plug-in full bandwidth matrix - 2 to 6 dim
+##
+## Parameters
+## x - data points
+## Hstart - initial value for minimisation
+## nstage - number of plug-in stages (1 or 2)
+## pilot - "amse" - different AMSE pilot
+##       - "samse" - SAMSE pilot
+##       - "unconstr" - unconstrained pilot
+## pre - "scale" - pre-scaled data
+##     - "sphere"- pre-sphered data 
+##
+## Returns
+## Plug-in full bandwidth matrix
 ###############################################################################
 
-Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
-                bgridsize)
+hpi <- function(x, nstage=2, binned=TRUE, bgridsize)
+{
+  ## 1-d selector is taken from KernSmooth's dpik
+  
+  if (missing(bgridsize)) bgridsize <- 401
+  return(dpik(x=x, level=nstage, gridsize=bgridsize))
+}
+
+Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1804,22 +2038,31 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
   if(!is.matrix(x)) x <- as.matrix(x)
 
   if (substr(pre,1,2)=="sc")
+  {
     x.star <- pre.scale(x)
+    S12 <- diag(sqrt(diag(var(x))))
+    Sinv12 <- chol2inv(chol(S12))
+  }
   else if (substr(pre,1,2)=="sp")
+  {
     x.star <- pre.sphere(x)
-
+    S12 <- matrix.sqrt(var(x))
+    Sinv12 <- chol2inv(chol(S12))
+  }
+  
   if (substr(pilot,1,1)=="a")
     pilot <- "amse"
   else if (substr(pilot,1,1)=="s")
     pilot <- "samse"
-
-  if (substr(pilot,1,1)=="a" & d>2)
+  else if (substr(pilot,1,1)=="u")
+    pilot <- "unconstr"
+           
+  
+  if (pilot=="amse" & d>2)
     stop("SAMSE pilot selectors are better for higher dimensions")
 
-  if (substr(pre,1,2)=="sc") S12 <- diag(sqrt(diag(var(x))))
-  else if (substr(pre,1,2)=="sp") S12 <- matrix.sqrt(var(x))
- 
-  Sinv12 <- chol2inv(chol(S12))
+  if (pilot=="unconstr" & d>=6)
+    stop("Uconstrained pilots not implemented yet for 6-dim data")
   
   if (missing(bgridsize) & binned)
     if (d==2)
@@ -1838,52 +2081,91 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
     bin.par <- dfltCounts.ks(x.star, bgridsize, sqrt(diag(H.max)))
   }
 
-  ## psi.mat is on pre-transformed data scale
-  if (d==2)
-    psi.mat <- psimat.2d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
-  else if (d==3)
-    psi.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
-  else if (d==4)
-    psi.mat <- psimat.4d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
-  else if (d==5)
-    psi.mat <- psimat.5d(x.star, nstage=nstage, pilot=pilot)
-  else if (d==6)
-    psi.mat <- psimat.6d(x.star, nstage=nstage, pilot=pilot)
-
-  
-  ## use normal reference bandwidth as initial condition
-  if (missing(Hstart)) 
-    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
-  else    
-    Hstart <- Sinv12 %*% Hstart %*% Sinv12
-
-  Hstart <- matrix.sqrt(Hstart)
-
-  ## PI is estimate of AMISE
-  pi.temp <- function(vechH)
-  { 
-    H <- invvech(vechH) %*% invvech(vechH)
-    pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vech(H)) %*% psi.mat %*% vech(H)
-    return(drop(pi.temp)) 
-  } 
-
-  # check that Psi_4 is positive definite (needed for AMSE pilots) 
-  if (prod(eigen(psi.mat)$val > 0) == 1)
-  {
-    result <- optim(vech(Hstart), pi.temp, method="BFGS")
-    H <- invvech(result$par) %*% invvech(result$par)
+  ## psi4.mat is on pre-transformed data scale
+  if (pilot!="unconstr")
+  {  
+    if (d==2)
+      psi4.mat <- psimat.2d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
+    else if (d==3)
+      psi4.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
+    else if (d==4)
+      psi4.mat <- psimat.4d(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)
+    else if (d==5)
+      psi4.mat <- psimat.5d(x.star, nstage=nstage, pilot=pilot)
+    else if (d==6)
+      psi4.mat <- psimat.6d(x.star, nstage=nstage, pilot=pilot)
   }
   else
-  { 
-    cat("Psi matrix not positive definite\n")
-    H <- matrix(NA, nc=d, nr=d) 
-  }    
+  {
+    require(Matrix)
+    data(Sd4)
+    data(Sd6)
+    Sd4 <- Sd4[[d]]
+    Sd6 <- Sd6[[d]]
 
-  ## back-transform
-  H <- S12 %*% H %*% S12
+    psi4.mat <- psimat.unconstr.nd(x=x, nstage=nstage, Sd4=Sd4, Sd6=Sd6)
+  }
+
+  if (pilot=="unconstr")
+  {
+    ## use normal reference bandwidth as initial condition 
+    if (missing(Hstart)) 
+      Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x)
+    
+    Hstart <- matrix.sqrt(Hstart)
+
+    ## PI is estimate of AMISE
+    pi.temp.unconstr <- function(vechH)
+    { 
+      H <- invvech(vechH) %*% invvech(vechH)
+      pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vec(H)) %*% psi4.mat %*% vec(H)
+      return(drop(pi.temp))
+    }
+
+    ## psi4.mat always a zero eigen-values since it has repeated rows 
+    result <- optim(vech(Hstart), pi.temp.unconstr, method="BFGS")
+    H <- invvech(result$par) %*% invvech(result$par)
+  }
+  else if (pilot!="unconstr")
+  {
+    ## use normal reference bandwidth as initial condition 
+    if (missing(Hstart)) 
+      Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+    else
+      Hstart <- Sinv12 %*% Hstart %*% Sinv12
+    
+    Hstart <- matrix.sqrt(Hstart)
+
+    ## PI is estimate of AMISE
+    pi.temp <- function(vechH)
+    { 
+      H <- invvech(vechH) %*% invvech(vechH)
+      pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vech(H)) %*% psi4.mat %*% vech(H)
+      return(drop(pi.temp)) 
+    }
+    
+    ## check that Psi_4 is positive definite (needed for AMSE pilots) 
+    if (prod(eigen(psi4.mat)$val > 0) == 1)
+    {
+      result <- optim(vech(Hstart), pi.temp, method="BFGS")
+      H <- invvech(result$par) %*% invvech(result$par)
+    }
+    else
+    { 
+      cat("Psi matrix not positive definite\n")
+      H <- matrix(NA, nc=d, nr=d) 
+    }    
+    ## back-transform
+    H <- S12 %*% H %*% S12
+  }
   
-  return(H)
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, PI=result$value))
 }     
+
+
 
 ###############################################################################
 # Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
@@ -1975,20 +2257,20 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
     Hstart <- matrix.sqrt(Hstart)
  
     if (d==3)
-      psi.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)    
+      psi4.mat <- psimat.3d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)    
     else if (d==4)
-      psi.mat <- psimat.4d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)
+      psi4.mat <- psimat.4d(x.star, nstage=nstage, pilot=pilot,binned=binned, bin.par=bin.par)
     else if (d==5)
-      psi.mat <- psimat.diag.5d(x.star, nstage=nstage, pilot=pilot)
+      psi4.mat <- psimat.diag.5d(x.star, nstage=nstage, pilot=pilot)
     else if (d==6)
-      psi.mat <- psimat.diag.6d(x.star, nstage=nstage, pilot=pilot)
+      psi4.mat <- psimat.diag.6d(x.star, nstage=nstage, pilot=pilot)
 
    
     ## PI is estimate of AMISE
     pi.temp <- function(diagH)
     { 
       H <- diag(diagH) %*% diag(diagH)
-      pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vech(H)) %*% psi.mat %*% vech(H)
+      pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vech(H)) %*% psi4.mat %*% vech(H)
     return(drop(pi.temp)) 
     }
     
@@ -2166,13 +2448,13 @@ bcv.mat <- function(x, H1, H2)
   coeff <- c(1, 2, 1, 2, 4, 2, 1, 2, 1)
   psi.fun <- c(psi40, psi31, psi22, psi31, psi22, psi13, psi22, psi13,psi04)/
     (n*(n-1))
-  psi.mat <- matrix(coeff * psi.fun, nc=3, nr=3)
+  psi4.mat <- matrix(coeff * psi.fun, nc=3, nr=3)
   
   RK <- (4*pi)^(-d/2) 
-  bcv <- drop(n^(-1)*det(H1)^(-1/2)*RK + 1/4*t(vech(H1)) %*% psi.mat
+  bcv <- drop(n^(-1)*det(H1)^(-1/2)*RK + 1/4*t(vech(H1)) %*% psi4.mat
               %*% vech(H1))
   
-  return(list(bcv=bcv, psimat=psi.mat))
+  return(list(bcv=bcv, psimat=psi4.mat))
 }
 
 
@@ -2226,19 +2508,19 @@ Hbcv <- function(x, whichbcv=1, Hstart)
     H <-  invvech(vechH) %*% invvech(vechH)
     Hinv <- chol2inv(chol(H))
     
-    psi.mat <- bcv.mat(x, H, H)$psimat
-    psi22 <- psi.mat[1,3] 
+    psi4.mat <- bcv.mat(x, H, H)$psimat
+    psi22 <- psi4.mat[1,3] 
     psi00 <- dmvnorm.2d.sum(x, Sigma=H, inc=0)/(n*(n-1))
     psi22.deriv.xxt <- dmvnorm.deriv.2d.xxt.sum(x, r=c(2,2), Sigma=H)/(n*(n-1))
     psi22.deriv <- t(D2)%*% vec((Hinv %*% psi22.deriv.xxt %*% Hinv +
                                  2* psi00 *Hinv %*% Hinv - psi22*Hinv)/2) 
     
     const <- matrix(c(0,0,1, 0,4,0, 1,0,0), nc=3, byrow=TRUE)
-    psi.mat.deriv<- const %x% psi22.deriv
+    psi4.mat.deriv<- const %x% psi22.deriv
     
     deriv1 <- -1/2*n^{-1}*RK*t(D2) %*% vec(chol2inv(chol(H)))
-    deriv2 <- 1/2 * psi.mat %*% vech(H) + 1/4 *
-      (t(psi.mat.deriv) %*% (vech(H) %x% diag(c(1,1,1)))) %*% vech(H)
+    deriv2 <- 1/2 * psi4.mat %*% vech(H) + 1/4 *
+      (t(psi4.mat.deriv) %*% (vech(H) %x% diag(c(1,1,1)))) %*% vech(H)
     
     return(deriv1 + deriv2)      
   }
@@ -2249,19 +2531,19 @@ Hbcv <- function(x, whichbcv=1, Hstart)
     H <-  invvech(vechH) %*% invvech(vechH)
     Hinv <- chol2inv(chol(H))
     
-    psi.mat <- bcv.mat(x, H, 2*H)$psimat
-    psi22 <- psi.mat[1,3] 
+    psi4.mat <- bcv.mat(x, H, 2*H)$psimat
+    psi22 <- psi4.mat[1,3] 
     psi00 <- dmvnorm.2d.sum(x, Sigma=2*H, inc=0)/(n*(n-1))
     psi22.deriv.xxt <- dmvnorm.deriv.2d.xxt.sum(x,r=c(2,2),Sigma=2*H)/(n*(n-1))
     psi22.deriv <- t(D2)%*% vec((Hinv %*% psi22.deriv.xxt %*% Hinv +
                                  2* psi00 *Hinv %*% Hinv - psi22*Hinv)/2) 
     
     const <- matrix(c(0,0,1, 0,4,0, 1,0,0), nc=3, byrow=TRUE)
-    psi.mat.deriv<- const %x% psi22.deriv
+    psi4.mat.deriv<- const %x% psi22.deriv
     
     deriv1 <- -1/2*n^{-1}*RK*t(D2) %*% vec(chol2inv(chol(H)))
-    deriv2 <- 1/2 * psi.mat %*% vech(H) + 1/4 *
-      (t(psi.mat.deriv) %*% (vech(H) %x% diag(c(1,1,1)))) %*% vech(H)
+    deriv2 <- 1/2 * psi4.mat %*% vech(H) + 1/4 *
+      (t(psi4.mat.deriv) %*% (vech(H) %x% diag(c(1,1,1)))) %*% vech(H)
     
     return(deriv1 + 2*deriv2)    
   }

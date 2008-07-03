@@ -6,8 +6,8 @@
   Kernel density estimate for 1- to 6-dimensional data.
 }
 \usage{
-kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7,
-    eval.points, positive=FALSE)
+kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
+    binned=FALSE, bgridsize, positive=FALSE, adj.positive)
 }
 
 \arguments{
@@ -15,11 +15,18 @@ kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7,
   \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth}
   \item{gridsize}{vector of number of grid points}
-  \item{binned}{flag for binned estimation (default is FALSE)}
-  \item{bgridsize}{vector of binning grid sizes - required if \code{binned=TRUE}}
+  \item{gridtype}{not yet implemented}
+  \item{xmin}{vector of minimum values for grid}
+  \item{xmax}{vector of maximum values for grid}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
   \item{eval.points}{points at which density estimate is evaluated}
-  \item{positive}{flag if 1-d data are positive (default is FALSE)} 
+  \item{binned}{flag for binned estimation (default is FALSE)}
+  \item{bgridsize}{vector of binning grid sizes - required if \code{binned=TRUE}}
+  \item{positive}{flag if 1-d data are positive (default is FALSE)}
+  \item{adj.positive}{adjustment added to data i.e. when
+	\code{positive=TRUE} KDE is carried out on \code{log(x +
+	  adj.positive)}. Default is the minimum of \code{x}.}
+
 }
   
 
@@ -46,6 +53,10 @@ kde(x, H, h, gridsize, binned=FALSE, bgridsize, supp=3.7,
   
   For d > 4, the kernel density estimate is computed exactly
   and \code{eval.points} must be specified.
+
+  The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
+  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximim of the
+  diagonal elements of \code{H}. 
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.

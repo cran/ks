@@ -4,15 +4,19 @@
 ###############################################################################
 
 
-rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1)
+rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
 
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
-    rand <- rnorm(n=n, mean=mus, sd=sigmas)
-
+  {
+    if (mixt.label)
+      rand <- cbind(rnorm(n=n, mean=mus, sd=sigmas), rep(1, n))
+    else
+      rand <- rnorm(n=n, mean=mus, sd=sigmas)
+  }
   ### multiple component mixture
   else
   {
@@ -35,11 +39,16 @@ rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1)
     {
       ## compute random sample from normal mixture component
       if (n.prop[i] > 0)
-          rand <- c(rand, rnorm(n=n.prop[i], mean=mus[i], sd=sigmas[i]))        
+        if (mixt.label)
+          rand <- rbind(rand, cbind(rnorm(n=n.prop[i], mean=mus[i], sd=sigmas[i]), rep(i, n.prop[i])))
+        else
+          rand <- c(rand, rnorm(n=n.prop[i], mean=mus[i], sd=sigmas[i]))
     }
   }
-
-  return(rand[sample(n)])
+  if (mixt.label)
+    return(rand[sample(n),])
+  else
+    return(rand[sample(n)])
 }
 
 
@@ -87,7 +96,7 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 ## Vector of n observations from the normal mixture 
 ###############################################################################
 
-rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
+rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
@@ -97,8 +106,11 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
   
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
-    rand <- rmvnorm(n=n, mean=mus, sigma=Sigmas)
-
+   if (mixt.label)
+     rand <- cbind(rmvnorm(n=n, mean=mus, sigma=Sigmas), rep(1, n))
+   else
+     rand <- cbind(rmvnorm(n=n, mean=mus, sigma=Sigmas))
+    
   ### multiple component mixture
   else
   {
@@ -117,8 +129,13 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
     {
       ## compute random sample from normal mixture component
       if (n.prop[i] > 0)
-          rand <- rbind(rand, rmvnorm(n=n.prop[i], mean=mus[i,], 
-                                      sigma=Sigmas[((i-1)*d+1) : (i*d),]))        
+      {
+        
+        if (mixt.label)
+          rand <- rbind(rand, cbind(rmvnorm(n=n.prop[i], mean=mus[i,], sigma=Sigmas[((i-1)*d+1) : (i*d),]), rep(i, n.prop[i])))
+        else
+          rand <- rbind(rand, rmvnorm(n=n.prop[i], mean=mus[i,], sigma=Sigmas[((i-1)*d+1) : (i*d),]))
+      }    
     }
   }
 
@@ -1382,6 +1399,8 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
 plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
     dist="normal", xlim, ylim, zlim, gridsize, alphavec, colors, add=FALSE, nrand=1e5, ...)
 {
+  require(rgl)
+  require(misc3d)
   d <- 3
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 3.7*max(Sigmas)

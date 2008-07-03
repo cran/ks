@@ -8,8 +8,8 @@
 Random generation and density values from multivariate normal mixture
 distribution.}
 \usage{
-rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
 dmvnorm.mixt(x, mus, Sigmas, props)
+rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 }
 
 \arguments{
@@ -18,6 +18,7 @@ dmvnorm.mixt(x, mus, Sigmas, props)
   \item{mus}{(stacked) matrix of mean vectors}
   \item{Sigmas}{(stacked) matrix of variance matrices}
   \item{props}{vector of mixing proportions}
+  \item{mixt.label}{numeric label indicating the mixture component}
   }
   
 

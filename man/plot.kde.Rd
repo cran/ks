@@ -112,14 +112,14 @@
 \examples{
 ## univariate example
 x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
-fhat <- kde(x, h=sqrt(0.09))  
+fhat <- kde(x=x, h=hpi(x))  
 plot(fhat)
 
 
 ## bivariate example
 data(unicef)
-H.scv <- Hscv(unicef)
-fhat <- kde(unicef, H=H.scv)
+H.scv <- Hscv(x=unicef)
+fhat <- kde(x=unicef, H=H.scv)
 
 plot(fhat)
 plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=2)
@@ -130,10 +130,10 @@ plot(fhat, display="filled")
 ## pair of densities with same absolute contour levels
 x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
 Hx <- Hpi(x)
-fhatx <- kde(x=x, H=Hx) 
+fhatx <- kde(x=x, H=Hx, xmin=c(-4,-4), xmax=c(4,4)) 
 y <- rmvnorm.mixt(n=100, mus=c(0.5,0.5), Sigmas=0.5*diag(2), props=1)
 Hy <- Hpi(y)
-fhaty <- kde(x=y, H=Hy)
+fhaty <- kde(x=y, H=Hy, xmin=c(-4,-4), xmax=c(4,4))
 lev <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
 plot(fhatx, abs.cont=lev)
 plot(fhaty, abs.cont=lev, col=3, add=TRUE) 
@@ -151,7 +151,7 @@ Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3)
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 
-x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
+x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi)  
 plot(fhat)

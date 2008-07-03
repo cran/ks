@@ -8,7 +8,7 @@ Random generation and density values from univariate normal mixture
 distribution.}
 \usage{
 dnorm.mixt(x, mus=0, sigmas=1, props=1)
-rnorm.mixt(n=100, mus=0, sigmas=1, props=1)
+rnorm.mixt(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 }
 
 \arguments{
@@ -17,6 +17,7 @@ rnorm.mixt(n=100, mus=0, sigmas=1, props=1)
   \item{mus}{vector of means}
   \item{sigmas}{vector of standard deviations}
   \item{props}{vector of mixing proportions}
+  \item{mixt.label}{numeric label indicating the mixture component}
   }
   
 

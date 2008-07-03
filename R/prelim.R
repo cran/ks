@@ -10,14 +10,15 @@
 # vector
 ###############################################################################
 
-vec <- function(x)
+vec <- function(x, byrow=FALSE)
 {
-    d <- ncol(x)
-    vecx <- vector()
-    for (j in 1:d)
-        vecx <- c(vecx, x[,j])
-        
-    return(vecx)           
+  if (byrow) x <- t(x)
+  d <- ncol(x)
+  vecx <- vector()
+  for (j in 1:d)
+    vecx <- c(vecx, x[,j])
+  
+  return(vecx)           
 }
 
 ###############################################################################
@@ -30,6 +31,9 @@ vec <- function(x)
 vech <- function(x)
 {
   d <- ncol(x)
+  if (!isSymmetric(x))
+    stop("vech only defined for symmetric matrices")
+  
   vechx <- vector()
   
   for (j in 1:d)
@@ -58,13 +62,23 @@ vech.cat <- function(x)
 # Takes vector x and stacks its elements into columns of a matrix. 
 ###############################################################################
     
-invvec <- function(x)
+invvec <- function(x, ncol, nrow, byrow=FALSE)
 {
   d <- sqrt(length(x))
-  invvecx <- matrix(0, nr = d, nc = d)
+  if (missing(ncol) | missing(nrow))
+  {
+    ncol <- d; nrow <- d
+    if (round(d) != d)
+      stop("Need to specify nrow and ncol for non-square matrices")
+  }
   
-  for (j in 1:d)
-    invvecx[,j] <- x[c(1:d) + (j-1)*d]
+  invvecx <- matrix(0, nrow = nrow, ncol = ncol)
+  if (byrow)
+    for (j in 1:nrow)
+      invvecx[j,] <- x[c(1:ncol) + (j-1)*ncol]
+  else
+    for (j in 1:ncol)
+      invvecx[,j] <- x[c(1:nrow) + (j-1)*nrow]
   
   return(invvecx)
 }
@@ -78,12 +92,15 @@ invvec <- function(x)
 invvech <- function(x)
 {
   d <- (-1 + sqrt(8*length(x) + 1))/2
+  if (round(d) != d)
+    stop("Number of elements in x will not form a square matrix.")
   invvechx <- matrix(0, nr = d, nc = d)
 
   for (j in 1:d)
     invvechx[j:d,j] <- x[1:(d-j+1)+ (j-1)*(d - 1/2*(j-2))]
   
   invvechx <- invvechx + t(invvechx) - diag(diag(invvechx))
+  
   return(invvechx)
 }
 
@@ -408,4 +425,99 @@ permute.mat <- function(order)
 
 
 
+####################################################################
+## Functions for unconstrained pilot selectors
+## Author: Jose E. Chacon
+####################################################################
+
+##### Odd factorial
+
+OF<-function(m){factorial(m)/(2^(m/2)*factorial(m/2))} 
+
+
+#####  Matrix square root
+
+matrix.sqrt <- function(A) {
+    d<-ncol(A)
+    if(d==1){A12<-sqrt(A)}
+    else{
+    xe <- eigen(A)
+    xe1 <- xe$values
+    if(all(xe1 >= 0)) {
+    xev1 <- diag(sqrt(xe1))
+    }
+    xval1 <- cbind(xe$vectors)
+    xval1i <- solve(xval1)
+    A12 <- xval1 %*% xev1 %*% xval1i}
+    return(A12)
+    }
+
+##### Commutation matrix of order m,n
+
+K.mat<-function(m,n){
+    K<-0
+    for(i in 1:m){for(j in 1:n){
+        H<-matrix(0,nrow=m,ncol=n)
+        H[i,j]<-1
+        K<-K+(H%x%t(H))
+        }}
+    return(K)        
+    }
+
+
+##### Kronecker power of a matrix A
+
+K.pow<-function(A,pow){
+    if(floor(pow)!=pow)stop("pow must be an integer number")
+    Apow<-A
+    if(pow==0){Apow<-1}
+    if(pow>1){
+        for(i in 2:pow) Apow<-Apow%x%A
+    }
+    return(Apow)
+    }
+    
+##### Row-wise Kronecker products and powers of matrices
+    
+mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
+    n1<-nrow(U)
+    n2<-nrow(V)
+    if(n1!=n2)stop("U and V must have the same number of vectors")
+    p<-ncol(U)
+    q<-ncol(V)
+    P<-U[,1]*V
+    if(p>1){for(j in 2:p){P<-cbind(P,U[,j]*V)}}
+    return(P)
+    }
+    
+mat.K.pow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
+    Apow<-A
+    if(pow>1){
+        for(i in 2:pow) Apow<-mat.Kprod(Apow,A)
+    }
+    return(Apow)
+    }
+    
+##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0), for r=6,4
+
+D6L0<-function(d,Sd6){
+    r<-6
+    if(missing(Sd6)){Sd6<-Sd6(d)}
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd6%*%K.pow(A=vec(diag(d)),pow=r/2))
+    return(DL0)
+    }
+    
+D4L0<-function(d,Sd4){
+    r<-4
+    if(missing(Sd4)){Sd4<-Sd4(d)}
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd4%*%K.pow(A=vec(diag(d)),pow=r/2))
+    return(DL0)
+    }
+    
+D2L0<-function(d,Sd2){
+    r<-2
+    if(missing(Sd2)){Sd2<-Sd2(d)}
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd2%*%K.pow(A=vec(diag(d)),pow=r/2))
+    return(DL0)
+    }
 

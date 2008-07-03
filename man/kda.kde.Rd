@@ -6,8 +6,8 @@
   Kernel density estimate for kernel discriminant analysis for 1- to 6-dimensional data
 }
 \usage{
-kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
-        eval.points=NULL, binned=FALSE, bgridsize)
+kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
+        supp=3.7, eval.points=NULL, binned=FALSE, bgridsize)
 }
 
 \arguments{
@@ -17,10 +17,13 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   \item{hs}{vector of scalar bandwidths}
   \item{prior.prob}{vector of prior probabilities}
   \item{gridsize}{vector of number of grid points}
+  \item{xmin}{vector of minimum values for grid}
+  \item{xmax}{vector of maximum values for grid}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
   \item{eval.points}{points at which density estimate is evaluated}
   \item{binned}{flag for binned kernel estimation}
-  \item{bgridsize}{vector of binning grid sizes - only required if \code{binned=TRUE}}
+  \item{bgridsize}{vector of binning grid sizes - only required if
+	\code{binned=TRUE}}
 }
   
 
@@ -58,6 +61,9 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7,
   Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
   proportions as estimates of the prior probabilities.
 
+  The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
+  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximim of the
+  diagonal elements of \code{H}. 
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.

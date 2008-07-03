@@ -22,13 +22,13 @@ ks
   \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} and
   (iv) smoothed cross validation (SCV)
   \code{\link{Hscv}}, \code{\link{Hscv.diag}}.
-	The first selector in each pair is the unconstrained (or full)
-	selector,
-	and the second one is the diagonal selectors.
-
-	Scalar bandwidth selectors are not provided - see
-  \code{sm} or \code{KernSmooth} packages. 
-
+  The first selector in each pair is the unconstrained (or full)
+  selector, and the second one is the diagonal selectors.
+  
+  A scalar plug-in bandwidth selectors is implemented as
+  \code{\link{hpi}}. The code is taken from the \code{dpik} selector
+  in the \pkg{KernSmooth} package. 
+  
   (b) For kernel density estimation, the main function is
   \code{\link{kde}}. For kernel discriminant analysis, it's \code{\link{kda.kde}}.
 
@@ -43,12 +43,15 @@ ks
 }
 \author{
 Tarn Duong <tduong@pasteur.fr> for most of the package. 
-Matt Wand for the binned estimation code. Jose E. Chacon for the pilot
+Matt Wand for the binned estimation code. Jose E. Chac\'on for the pilot
 functional estimation code.  
 }
 \references{
   Bowman, A. \& Azzalini, A. (1997) \emph{Applied Smoothing Techniques
     for Data Analysis}. Oxford University Press. Oxford.
+
+  Chac\'on, J.E. \& Duong, T. (2008) Multivariate plug-in bandwidth
+  selection with unconstrained pilot matrices. \emph{Submitted.}
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis. University of Western Australia. 
