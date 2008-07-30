@@ -109,7 +109,8 @@ data(iris)
 ## univariate example
 ir <- iris[,1]
 ir.gr <- iris[,5]
-kda.fhat <- kda.kde(ir, ir.gr, hs=sqrt(c(0.01, 0.04, 0.07)))
+hs <- hkda(x=ir, x.gr=ir.gr)
+kda.fhat <- kda.kde(ir, ir.gr, hs=hs, xmin=3, xmax=9)
 plot(kda.fhat, xlab="Sepal length")
 
 ## bivariate example

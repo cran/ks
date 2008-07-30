@@ -1,5 +1,6 @@
 README file for ks
 
+
 New v1.5
 
 1. New functions to compute pilot functinal estimators hat{psi}_r(g).
@@ -12,7 +13,13 @@ drawing functions.
 3. Made changes to specifying line colour (col rather than lcol) in plot.kde, 
 plot.kda.kde and partition class colour (partcol) in plot.kda.kde. 
 
+4. Added unconstrained pilot selectors for d = 1, ..., 5 as option `pilot="unconstr"' in `Hpi'.
 
+5. Added plug-in selectors for 1-d data (exactly the code for dpik from KernSmooth). For KDE, this is `hpi', for KDA, this is 'hkda(..., bw="plugin")'.
+ 
+
+
+---------------------------------------------------------------------------
 New in v1.4
 
 1. Hscv.diag() and Hbcv.diag() added for completeness.
@@ -26,6 +33,8 @@ estimation with diagonal selectors.
 
 5. Vignette illustrating 2-d KDE added.
 
+
+---------------------------------------------------------------------------
 New in v1.3
 
 1. Multivariate (for 3 to 6 dimensions inclusive) bandwidth selectors added
@@ -42,6 +51,8 @@ to that for 2-d. For v >=1.3.4, there are now the same. 3-d axes added.
 
 3. Fixed small bug in compare.kda.cv() and compare.kda.diag.cv().
 
+
+---------------------------------------------------------------------------
 New in v1.2
 
 1. The child mortality data set `unicef' is used in the examples now. See `unicef'
@@ -51,6 +62,8 @@ for more details.
 website. To pass all the necessary checks involved some internal programming
 changes but has not affected the user interface.
 
+
+---------------------------------------------------------------------------
 New in v1.1
 
 1. The `adapt' library is no longer required. This was formerly used on

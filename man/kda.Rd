@@ -1,7 +1,8 @@
-\name{kda, Hkda, Hkda.diag}
+\name{kda, Hkda, Hkda.diag, hkda}
 \alias{Hkda}
 \alias{Hkda.diag}
 \alias{kda}
+\alias{hkda}
 
 \title{Kernel discriminant analysis for multivariate data}
 \description{
@@ -12,6 +13,7 @@ Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
      pre="sphere", binned=FALSE, bgridsize)
 Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
      pre="sphere", binned=FALSE, bgridsize)
+hkda(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
 
 kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 }
@@ -39,7 +41,9 @@ kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 
 \value{
   -- The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
-  of bandwidth matrices, one for each training data group. 
+  of bandwidth matrices, one for each training data group. The result
+  from \code{hkda} is a vector of bandwidths, one for each training data
+  group.  
 
   -- The result from \code{kda} is a vector of group labels
   estimated via the kernel discriminant rule.  If the test data \code{y} are

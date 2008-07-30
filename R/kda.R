@@ -1,4 +1,5 @@
-###############################################################################
+
+##############################################################################
 # Kernel discriminant analysis
 ###############################################################################
 
@@ -18,6 +19,26 @@
 # Matrix of bandwidths for each group in training set
 ###############################################################################
 
+hkda <- function(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
+{
+  grlab <- sort(unique(x.group))
+  m <- length(grlab)
+  bw <- substr(tolower(bw),1,1)
+  hs <- numeric(0)
+
+  if (missing(bgridsize)) bgridsize <- 401
+  
+  for (i in 1:m)
+  {
+    y <- x[x.group==grlab[i]]
+    if (bw=="p")
+      h <- hpi(y, nstage=nstage, binned=TRUE, bgridsize=bgridsize) 
+    hs <- c(hs, h)
+  }
+
+  return(hs)
+}
+   
 Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
                  pre="sphere", binned=FALSE, bgridsize)
 {
@@ -272,6 +293,40 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
     prior.prob=NULL, Hstart, by.group=FALSE, trace=FALSE, binned=FALSE,
     bgridsize, recompute=FALSE, ...)
 {
+  ## 1-d
+  if (is.vector(x))
+  {
+    n <- length(x)
+    h <- hkda(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
+    gr <- sort(unique(x.group)) 
+    kda.cv.gr <- x.group
+
+    for (i in 1:n)
+    {
+      h.mod <- h
+      ## find group that x[i] belongs to 
+      ind <- which(x.group[i]==gr)
+      indx <- x.group==gr[ind]
+      indx[i] <- FALSE
+
+      if (substr(bw,1,1)=="p")
+        h.temp <- hpi(x[indx], binned=binned, bgridsize=bgridsize, ...)
+
+      h.mod[ind] <- h.temp
+    
+      ## recompute KDA estimate of groups with x[i] excluded
+      
+      if (trace)
+        cat(paste("Processing data item:", i, "\n"))
+      
+      kda.cv.gr[i] <- kda(x[-i], x.group[-i], hs=h.mod, y=x, prior.prob=prior.prob)[i]
+    }
+
+    return(compare(x.group, kda.cv.gr, by.group=by.group)) 
+  }
+
+
+  ## multi-dimensional   
   n <- nrow(x)
   d <- ncol(x)
   
@@ -393,13 +448,14 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize)
+kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize)
 {
   if (is.vector(x))
   {
     if (missing(gridsize))  gridsize <- 101
     if (missing(bgridsize)) bgridsize <- 401
-    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize)
+    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, eval.points=eval.points, 
+                  binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
   }
   else
   {
@@ -415,12 +471,13 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
     Hmax.ind <- which.max(detH)
     Hmax <- Hs[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
 
-    if (binned)
-    {
-      if (d > 4)
+    if (missing(xmin)) xmin <- apply(x, 2, min) - supp*det(Hmax)
+    if (missing(xmax)) xmax <- apply(x, 2, max) + supp*det(Hmax)
+    
+    if (d > 4)
         stop("Binning only available for 1- to 4-dim data")
       
-      if (missing(bgridsize))
+    if (missing(bgridsize))
         if (d==2)
           bgridsize <- rep(151,d)
         else if (d==3)
@@ -428,46 +485,7 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
         else if (d==4)
           bgridsize <- rep(21, d)
 
-      ## linear binning
-      bin.par.x <- dfltCounts.ks(x, bgridsize, sqrt(diag(Hmax)), supp=supp)
-      
-      fhat.list <- list()
-      
-      for (j in 1:m)
-      {
-        xx <- x[x.group==grlab[j],]     
-        H <- Hs[((j-1)*d+1) : (j*d),]     
-
-        if (!identical(diag(diag(H)), H))
-          stop("Binned estimation requires diagonal bandwidth matrices")
-        
-        bin.par <- dfltCounts.ks(xx, bgridsize, sqrt(diag(Hmax)), range.x=bin.par.x$range.x, supp=supp)
-        
-        if (is.null(eval.points))
-        {
-          fhat.temp <- drvkde.ks(x=bin.par$counts, drv=rep(0,d),
-                                  bandwidth=sqrt(diag(H)),
-                                  binned=TRUE, range.x=bin.par$range.x, se=FALSE)
-          fhat.list$x <- c(fhat.list$x, list(xx))
-          fhat.list$eval.points <- fhat.temp$x.grid
-          fhat.temp$est[fhat.temp$est<0] <- 0
-          fhat.temp$est <- zapsmall(fhat.temp$est, digits=20)
-          fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$est))
-          fhat.list$H <- c(fhat.list$H, list(H))
-        }
-        else
-        {
-          fhat.temp <- kde.points(xx, H, eval.points=eval.points)
-          fhat.list$x <- c(fhat.list$x, list(xx))
-          fhat.list$eval.points <- fhat.temp$eval.points
-          fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$est))
-          fhat.list$H <- c(fhat.list$H, list(fhat.temp$H))
-        }
-      }
-    }
-    else
-    {
-      if (missing(gridsize))
+    if (missing(gridsize))
         if (d==2)
           gridsize <- rep(151,d)
         else if (d==3)
@@ -476,37 +494,26 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
           gridsize <- rep(21, d)
         else
           gridsize <- rep(11, d)
-       
-      ## initialise grid 
-      gridx <- make.grid.ks(x, matrix.sqrt(Hmax), tol=supp, gridsize=gridsize) 
-      suppx <- make.supp(x, matrix.sqrt(Hmax), tol=supp)  
-      grid.pts <- find.gridpts(gridx, suppx)
-      fhat.list <- list()
-      
-      for (j in 1:m)
-      {
-        xx <- x[x.group==grlab[j],]
-        H <- Hs[((j-1)*d+1) : (j*d),]
-        
+    
+    fhat.list <- list()
+    
+    for (j in 1:m)
+    {
+        xx <- x[x.group==grlab[j],]     
+        H <- Hs[((j-1)*d+1) : (j*d),]     
+    
         ## compute individual density estimate
-        if (is.null(eval.points))
-        {
-          xx.grid.pts <- list()
-          xx.grid.pts$minx <- grid.pts$minx[x.group==grlab[j],]
-          xx.grid.pts$maxx <- grid.pts$maxx[x.group==grlab[j],]
-          if (d==2)
-            fhat.temp <- kde.grid.2d(xx, H, gridx=gridx, supp=supp, grid.pts=xx.grid.pts)
-          else if (d==3)
-            fhat.temp <- kde.grid.3d(xx, H, gridx=gridx, supp=supp, grid.pts=xx.grid.pts)
-        }
+        if (binned)
+            fhat.temp <- kde.binned(x=xx, supp=supp, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax)
+        else if (is.null(eval.points))
+            fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
         else
-          fhat.temp <- kde.points(xx, H, eval.points=eval.points)
-        
-        fhat.list$x <- c(fhat.list$x, list(xx))
-        fhat.list$eval.points <- fhat.temp$eval.points
-        fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$est))
-        fhat.list$H <- c(fhat.list$H, list(fhat.temp$H))
-      }
+            fhat.temp <- kde(x=xx, H=H, eval.points=eval.points)
+    
+       fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
+       fhat.list$eval.points <- fhat.temp$eval.points
+       fhat.list$x <- c(fhat.list$x, list(xx))
+       fhat.list$H <- c(fhat.list$H, list(H))
     }
     
     fhat.list$x.group <- x.group
@@ -524,30 +531,28 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, supp=3.7, eva
   return(fhat.list)
 }
 
-kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize)
+kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax)
 {
   grlab <- sort(unique(x.group))
   m <- length(grlab)
 
   hmax <- max(hs)
-  if (binned)
-    xrange <- as.matrix(t(c(min(x) - supp*hmax, max(x) + supp*hmax)))
-  else
-    xgrid <- seq(min(x) - supp*hmax, max(x) + supp*hmax, length=gridsize) 
-    
+  if (missing(xmin)) xmin <- min(x) - supp*hmax
+  if (missing(xmax)) xmax <- max(x) + supp*hmax
+  
   fhat.list <- list()
   for (j in 1:m)
   {
     xx <- x[x.group==grlab[j]]
     h <- hs[j]
-  
+    
     ## compute individual density estimate
     if (binned)
-        fhat.temp <- kde.binned(x=xx, h=h, xrange=xrange)
+        fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, supp=supp)
     else if (is.null(eval.points))
-        fhat.temp <- kde(x=xx, h=h, supp=supp, eval.points=xgrid)
+        fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
     else
-        fhat.temp <- kde(x=xx, h=h, supp=supp, eval.points=eval.points)
+        fhat.temp <- kde(x=xx, h=h, eval.points=eval.points)
     
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
     fhat.list$eval.points <- fhat.temp$eval.points
@@ -581,7 +586,7 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
 ##############################################################################
 
 contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, ...) 
-{
+{ 
   fhat <- x
   m <- length(fhat$x)
   hts <- list()
@@ -614,6 +619,8 @@ contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, ...)
 
 plot.kda.kde <- function(x, y, y.group, drawpoints=FALSE, ...) 
 {
+  
+  
   if (is.vector(x$x[[1]]))
     plotkda.kde.1d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...)
   else
@@ -779,6 +786,7 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 
   ## common contour levels removed from >= v1.5.3 
 
+
   if (missing(abs.cont))
   {
     hts <- contourLevels(fhat, prob=(100-cont)/100)
@@ -836,7 +844,10 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
     cont=c(25,50,75), abs.cont, colors, alphavec, xlab, ylab, zlab,
     drawpoints=FALSE, size=3, ptcol="blue", ...)
-{   
+{
+  require(rgl)
+  require(misc3d)
+  
   fhat <- x
    
   ##d <- 3

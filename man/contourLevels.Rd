@@ -27,7 +27,7 @@ contourLevels(x, ...)
   \item{cont}{vector of percentages which correspond to the complement
 	of \code{prob}}
   \item{nlevels}{number of pretty contour levels} 
-  \item{...}{other parameters for \command{\link{contour}}}
+  \item{...}{other parameters for \code{\link{contour}}}
 }
   
 
