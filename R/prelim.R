@@ -502,22 +502,37 @@ mat.K.pow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker powe
 
 D6L0<-function(d,Sd6){
     r<-6
-    if(missing(Sd6)){Sd6<-Sd6(d)}
     DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd6%*%K.pow(A=vec(diag(d)),pow=r/2))
     return(DL0)
     }
     
 D4L0<-function(d,Sd4){
     r<-4
-    if(missing(Sd4)){Sd4<-Sd4(d)}
+    
     DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd4%*%K.pow(A=vec(diag(d)),pow=r/2))
     return(DL0)
     }
     
 D2L0<-function(d,Sd2){
     r<-2
-    if(missing(Sd2)){Sd2<-Sd2(d)}
     DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd2%*%K.pow(A=vec(diag(d)),pow=r/2))
     return(DL0)
     }
 
+
+T<-function(d,r){    #### Second version, recursive
+    Id<-diag(d)
+    Tmat<-Id
+    Kdd<-K.mat(d,d)
+    if(r>1){for(j in 2:r){
+        Idj2Kdd<-diag(d^(j-2))%x%Kdd
+        Tmat<-Idj2Kdd%*%((Tmat%x%Id)+Idj2Kdd)%*%Idj2Kdd
+        }}
+    return(Tmat)
+    }
+    
+Sdr<-function(d,r){
+    S<-diag(d)
+    if(r>=2){for(j in 2:r){S<-(S%x%diag(d))%*%T(d,j)/j}}
+    return(S)
+    }

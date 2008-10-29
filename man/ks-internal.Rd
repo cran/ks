@@ -1,10 +1,8 @@
 \name{ks-internal}
 
 \alias{drvkde} 
-\alias{Sd2}
-\alias{Sd4}
-\alias{Sd6}
-
+\alias{Sdr}
+\alias{ise}
 
 \title{Internal functions in the ks library}
 \description{

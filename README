@@ -17,7 +17,9 @@ plot.kda.kde and partition class colour (partcol) in plot.kda.kde.
 
 5. Added plug-in selectors for 1-d data (exactly the code for dpik from KernSmooth). For KDE, this is `hpi', for KDA, this is 'hkda(..., bw="plugin")'.
  
+6. Added distribution functions for 1-d KDES: dkde, pdke, qkde, rkde.
 
+7. Dependence on Matrix package removed. Added dependence on combinat.
 
 ---------------------------------------------------------------------------
 New in v1.4

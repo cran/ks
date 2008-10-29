@@ -70,7 +70,10 @@ functional estimation code.
 
   Scott, D.W. (1992) \emph{Multivariate Density Estimation: Theory,
     Practice, and Visualization}. John Wiley \& Sons. New York.
-  
+
+  Silverman, B. (1986) \emph{Density Estimation for Statistics and
+  Data Analysis}. Chapman \& Hall/CRC. London.
+
   Simonoff, J. S. (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.
 

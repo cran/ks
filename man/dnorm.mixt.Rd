@@ -17,7 +17,8 @@ rnorm.mixt(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
   \item{mus}{vector of means}
   \item{sigmas}{vector of standard deviations}
   \item{props}{vector of mixing proportions}
-  \item{mixt.label}{numeric label indicating the mixture component}
+  \item{mixt.label}{flag to output numeric label indicating the mixture
+	component. Default is FALSE.}
   }
   
 

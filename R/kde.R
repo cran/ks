@@ -575,9 +575,15 @@ plot.kde <- function(x, drawpoints=FALSE, ...)
     d <- ncol(fhat$x)
 
     if (d==2) 
-      plotkde.2d.v2(fhat, drawpoints=drawpoints, ...)
+    {
+      plotret <- plotkde.2d.v2(fhat, drawpoints=drawpoints, ...)
+      invisible(plotret)
+    }
     else if (d==3)
+    {
       plotkde.3d(fhat, drawpoints=drawpoints, ...)
+       invisible()
+    }
     else 
       stop ("Plot function only available for 1, 2 or 3-dimensional data")
   }
@@ -590,12 +596,16 @@ plotkde.1d.v2 <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
   if (add)
     lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, ...)
   else
-      plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
+    plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
+
   if (drawpoints)
     if (jitter)
       rug(jitter(fhat$x), col=ptcol)
     else
-     rug(fhat$x, col=ptcol)
+      rug(fhat$x, col=ptcol)
+
+ 
+  
 }
 
 
@@ -613,7 +623,7 @@ plotkde.1d.v2 <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
 plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
     xlab, ylab, zlab="Density function", cex=1, pch=1,  
     add=FALSE, drawpoints=TRUE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", ...)
+    ptcol="blue", ...) #shade=0.75, border=NA, persp.col="grey", ...)
 {
   disp1 <- substr(display,1,1)
   if (!is.list(fhat$eval.points))
@@ -642,8 +652,9 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
   
   ## perspective/wireframe plot
   if (disp1=="p")
-    persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
+    plotret <- persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
           theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
+          ##shade=shade, border=border, col=persp.col, ...)
   
   else if (disp1=="s")
   {
@@ -683,6 +694,9 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
   else if (disp1=="f")
     filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
                    xlab=xlab, ylab=ylab, ...)
+
+  if (disp1=="p")  invisible(plotret)
+  else invisible()
 }
   
 
@@ -786,107 +800,3 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, ...)
 }
 
 
-#############################################################################
-## Probability functions for KDE
-#############################################################################
-
-## cumulative probability P(fhat <= q)
-
-pkde <- function(q, fhat, exact=FALSE)
-{
-  gridsize <- length(fhat$eval.points)
-  simp.rule <- rep(0, gridsize-1)
-  for (i in 1:(gridsize-1))
-  {
-    del <- fhat$eval.points[i+1] - fhat$eval.points[i]
-    simp.rule[i] <- min(fhat$est[i], fhat$est[i+1])*del + 1/2*abs(fhat$est[i+1] - fhat$est[i])*del 
-    
-  }
-  
-  q.ind <- findInterval(x=q, vec=fhat$eval.points)
-  q.prob <- rep(0, length(q))
-  i <- 0
-  
-  for (qi in q.ind)
-  {
-    i <- i+1
-
-    if (qi==0)
-      q.prob[i] <- 0
-    else if (qi < gridsize)
-    {
-      ## linearly interpolate kde 
-      fhat.estqi <- (fhat$est[qi+1] - fhat$est[qi])/(fhat$eval[qi+1] - fhat$eval[qi]) * (q[i] - fhat$eval[qi]) + fhat$est[qi]
-      delqi <- q[i] - fhat$eval[qi] 
-      
-      simp.ruleqi <- min(fhat.estqi, fhat$est[qi])*delqi + 1/2*abs(fhat.estqi - fhat$est[qi])*delqi
-      q.prob[i] <- sum(simp.rule[1:qi]) + simp.ruleqi
-    }
-    else
-      q.prob[i] <- 1
-  }
-
-
-  return(q.prob)
-
-
-  
-  if (exact)
-  {
-    f <- function(x)
-      return (kde(x=fhat$x, eval.points=x, H=fhat$H)$est)
-    lower <- min(fhat$eval.points) - 0.1*abs(min(fhat$eval.points))
-    prob <- integrate(f, lower=lower, upper=q)$value
-    
-  }
-  else
-  {
-    q.ind <- findInterval(x=q, vec=fhat$eval.points)
-
-    if (q.ind==0)
-      prob <- 0
-   
-
-    if (q.ind>=1)
-    {
-      simp.rule <- 0
-
-      if (q.ind > 1)
-      {  
-        ## Use Simpson's rule to compute numerical integration
-        for (i in 1:(q.ind-1))
-        {
-          del <- fhat$eval.points[i+1] - fhat$eval.points[i]
-          simp.rule <- simp.rule + min(fhat$est[i], fhat$est[i+1])*del + 1/2*abs(fhat$est[i+1] - fhat$est[i])*del 
-        }
-      }
-
-      simp.ruleq <- 0
-      if (q.ind < length(fhat$eval.points))
-      {
-        ## linearly interpolate kde at q
-        fhat.estq <- (fhat$est[q.ind+1] - fhat$est[q.ind])/(fhat$eval[q.ind+1] - fhat$eval[q.ind]) * (q - fhat$eval[q.ind]) + fhat$est[q.ind]
-        delq <- q - fhat$eval[q.ind] 
-        
-        simp.ruleq <- min(fhat.estq, fhat$est[q.ind])*delq + 1/2*abs(fhat.estq - fhat$est[q.ind])*delq
-        
-        
-      }
-      prob <- simp.rule + simp.ruleq
-    }
-
-    if (prob > 1) prob <- 1
-    if (prob < 0) prob <- 0
-  }
-
-  return(prob)
-}
-
-### plot cumulative probability as shaded region on a KDE 
-
-plotkde.cumul <- function(fhat, q, ...)
-{
-  qind <- fhat$eval.points<=q
-  n <- sum(qind)
-  polygon(c(fhat$eval.points[qind],fhat$eval.points[n]), c(fhat$estimate[qind],0), ...)
-}
