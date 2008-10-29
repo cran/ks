@@ -123,7 +123,7 @@ fhat <- kde(x=unicef, H=H.scv)
 
 plot(fhat)
 plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=2)
-plot(fhat, display="persp")
+plot(fhat, display="persp", border=NA, col="grey96", shade=0.75)
 plot(fhat, display="image", col=rev(heat.colors(100)))
 plot(fhat, display="filled")
 
