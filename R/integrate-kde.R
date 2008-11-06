@@ -125,7 +125,7 @@ plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
 
 ## ISE of difference between two KDEs
 
-ise <- function(fhat1, fhat2)
+ise.diff <- function(fhat1, fhat2)
 {
   if(!isTRUE(all.equal(fhat1$eval.points, fhat2$eval.points)))
     stop("fhat1 and fhat2 need to de defined on the same grid")

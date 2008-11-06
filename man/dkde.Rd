@@ -52,7 +52,6 @@
   Data Analysis}. Chapman \& Hall/CRC. London.}
 
 \examples{
-set.seed(8192)
 x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))

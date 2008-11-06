@@ -1,12 +1,12 @@
 
 useDynLib(ks)
 
-export(Hamise.mixt, Hmise.mixt)
+export(Hamise.mixt, Hmise.mixt, hamise.mixt, hmise.mixt)
 export(Hbcv, Hbcv.diag)
 export(Hlscv, Hlscv.diag)
 export(Hpi, Hpi.diag, hpi)
 export(Hscv, Hscv.diag)
-export(amise.mixt, ise.mixt, mise.mixt, ise)
+export(amise.mixt, ise.mixt, mise.mixt, ise.diff)
 export(binning)
 export(compare, compare.kda.cv, compare.kda.diag.cv)
 export(contourLevels)

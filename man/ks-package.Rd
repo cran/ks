@@ -6,45 +6,52 @@ ks
 }
 \description{
   Kernel density estimation and kernel discriminant analysis for
-  multivariate data (1- to 6-dimensions) with display functions.
+  data from 1- to 6-dimensions, with display functions.
   
 }
 \details{
-  There are three main types of functions in this package: (a) computing bandwidth
+  There are three main types of functions in this package:
+  (a) computing bandwidth
   selectors, (b) computing kernel estimators and (c) displaying kernel estimators.
 
-  (a) For the bandwidth matrix selectors, there are several varieties:
-  (i) plug-in
-  \code{\link{Hpi}}, \code{\link{Hpi.diag}}
-  (ii) least squares (or unbiased) cross validation (LSCV or UCV)
-  \code{\link{Hlscv}}, \code{\link{Hlscv.diag}},
-  (iii) biased cross validation (BCV)
-  \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} and
-  (iv) smoothed cross validation (SCV)
-  \code{\link{Hscv}}, \code{\link{Hscv.diag}}.
-  The first selector in each pair is the unconstrained (or full)
+  \enumerate{
+	\item[(a)] For the bandwidth matrix selectors, there are several varieties:
+  \enumerate{
+  \item[(i)] plug-in \code{\link{hpi}} (1-d); 
+  \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d)
+  \item[(ii)] least squares (or unbiased) cross validation (LSCV or UCV)
+  \code{\link{Hlscv}}, \code{\link{Hlscv.diag}} (2- to 6-d)
+  \item[(iii)] biased cross validation (BCV) 
+  \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} (2- to 6-d)
+  \item[(iv)] smoothed cross validation (SCV)
+  \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d)
+  \item[(v)] normal scale selectors \code{\link{hmise.mixt}},
+  \code{\link{hamise.mixt}} (1-d); and \code{\link{Hmise.mixt}},
+  \code{\link{Hamise.mixt}} (2- to 6-d).
+  }
+  For multivariate selectors, the first selector in each pair is the
+  unconstrained (or full) 
   selector, and the second one is the diagonal selectors.
   
-  A scalar plug-in bandwidth selectors is implemented as
-  \code{\link{hpi}}. The code is taken from the \code{dpik} selector
-  in the \pkg{KernSmooth} package. 
-  
-  (b) For kernel density estimation, the main function is
+  \item[(b)] For kernel density estimation, the main function is
   \code{\link{kde}}. For kernel discriminant analysis, it's \code{\link{kda.kde}}.
 
-  (c) For display, versions of \code{plot}, \code{\link{plot.kde}} and
-  \code{\link{plot.kda.kde}}, send to a graphics window 
+  \item[(c)] For display, \code{plot} via (\code{\link{plot.kde}} and
+  \code{\link{plot.kda.kde}}) sends to a graphics window 
   the results of density estimation or discriminant analysis.
+  }
 
   For d = 1, 2, 3, 4, binned kernel estimation is available. 
   
-  For an overview of this package with 2-dimensional density estimation, see 
+  For an overview of this package with 2-d density estimation, see 
   \code{vignette("kde")}. 
 }
 \author{
-Tarn Duong <tduong@pasteur.fr> for most of the package. 
-Matt Wand for the binned estimation code. Jose E. Chac\'on for the pilot
-functional estimation code.  
+  Tarn Duong <tarn.duong@gmail.com> for most of the package. 
+  Matt Wand for the binned estimation and univariate plug-in selector
+  code. Jose E. Chac\'on for the unconstrained pilot
+  functional estimation and (A)MISE-optimal selectors for normal mixture
+  densities code.   
 }
 \references{
   Bowman, A. \& Azzalini, A. (1997) \emph{Applied Smoothing Techniques

@@ -39,7 +39,7 @@ invvech(x)
 
 \references{ Magnus, J.R. \& Neudecker H.M. (1999) \emph{Matrix
   Differential Calculus with Applications in Statistiscs and
-  Econometrics (revised edition)}, Wiley.
+  Econometrics (revised edition)}, Wiley \& Sons. Chichester.
 }
 
 

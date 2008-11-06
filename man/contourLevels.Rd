@@ -59,18 +59,14 @@ contourLevels(x, ...)
 x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
 Hx <- Hpi(x)
 fhatx <- kde(x=x, H=Hx)
-
 lev1 <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
-lev2 <- contourLevels(fhatx, cont=c(75, 50, 25))
-  ## lev1 = lev2
+lev2 <- contourLevels(fhatx, cont=c(75, 50, 25))      ## lev1 == lev2
 
 ## kda.kde
-
 library(MASS)
 data(iris)
 ir <- iris[,1]
 ir.gr <- iris[,5]
-
 kda.fhat <- kda.kde(ir, ir.gr, hs=sqrt(c(0.01, 0.04, 0.07)))
 contourLevels(kda.fhat, prob=c(0.25, 0.5, 0.75))
 }
