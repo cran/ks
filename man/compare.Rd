@@ -1,4 +1,4 @@
-\name{compare, compare.kda.diag.cv, compare.kda.cv}
+con\name{compare, compare.kda.diag.cv, compare.kda.cv}
 
 \alias{compare}
 \alias{compare.kda.diag.cv}
@@ -67,7 +67,6 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
 }
 
 \references{
-
   Silverman, B. W. (1986) \emph{Data Analysis for Statistics and Data
     Analysis}. Chapman \& Hall. London.
   
@@ -99,7 +98,6 @@ x <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
        rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
-
 kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
 compare(x.gr, kda.gr)
 compare(x.gr, kda.gr, by.group=TRUE) 
@@ -109,7 +107,6 @@ library(MASS)
 data(iris)
 ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
-
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse")
 compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse",
    pre="scaled", binned=TRUE)
@@ -117,7 +114,6 @@ compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse",
 \dontrun{
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse", recompute=TRUE)
 }
-
 }
 
 \keyword{ smooth }

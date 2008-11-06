@@ -2,7 +2,7 @@
 
 \alias{drvkde} 
 \alias{Sdr}
-\alias{ise}
+\alias{ise.diff}
 
 \title{Internal functions in the ks library}
 \description{
