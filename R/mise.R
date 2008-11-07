@@ -108,7 +108,7 @@ omega.1d <- function(mus, sigmas, k, a, h, d=1, r, Sd2r)
   Sigmas <- sigmas^2
   
   if (k == 1)
-    omega.mat <- gamma.r(mu=0, Sigma=a*H + 2*Sigmas, d=d, r=r, Sd2r=Sd2r)  ##dmvnorm(x=mus, mean=mus, sigma=a*H + 2*Sigmas)
+    omega.mat <- gamma.r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), d=d, r=r, Sd2r=Sd2r)  ##dmvnorm(x=mus, mean=mus, sigma=a*H + 2*Sigmas)
   else
   {   
     omega.mat <- matrix(0, nr=k, nc=k)
@@ -120,7 +120,7 @@ omega.1d <- function(mus, sigmas, k, a, h, d=1, r, Sd2r)
       {
         Sigmaj <- Sigmas[j]
         muj <- mus[j]    
-        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, d=d, r=r, Sd2r=Sd2r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
+        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj), d=d, r=r, Sd2r=Sd2r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
       }
     }
   }
