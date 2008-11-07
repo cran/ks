@@ -1,4 +1,4 @@
-con\name{compare, compare.kda.diag.cv, compare.kda.cv}
+\name{compare, compare.kda.diag.cv, compare.kda.cv}
 
 \alias{compare}
 \alias{compare.kda.diag.cv}
