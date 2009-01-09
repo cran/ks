@@ -235,11 +235,29 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
    }
 
    fhat$binned <- binned
-   ##fhat$gridtype <- gridtype 
-   class(fhat) <- "kde"
+   ##fhat$gridtype <- gridtype
 
+  ## add variable names
+  if (is.vector(x))
+  {
+    d <- 1
+    x.names <- deparse(substitute(x))
+  }
+  else
+  {  
+    d <- ncol(x)
+    x.names <- colnames(x)
+    if (is.null(x.names))
+    {
+      x.names <- strsplit(deparse(substitute(x)), "\\[")[[1]][1]
+      x.names <- paste(x.names, "[,", 1:d,"]",sep="") 
+    }
+  }
+  fhat$names <- x.names
+  class(fhat) <- "kde"
+  
 
-   return(fhat)
+  return(fhat)
  }
 
  ###############################################################################
@@ -293,7 +311,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
      bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H)), supp=3.7, range.x=xrange.list)  
    }
 
-   fhat.grid <- drvkde.ks(x=bin.par$counts, drv=rep(0,d),bandwidth=sqrt(diag(H)), binned=TRUE, range.x=bin.par$range.x, se=FALSE)
+   fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d),bandwidth=sqrt(diag(H)), binned=TRUE, range.x=bin.par$range.x, se=FALSE)
 
    eval.points <- fhat.grid$x.grid
    fhat.grid <- fhat.grid$est
@@ -589,9 +607,10 @@ plot.kde <- function(x, drawpoints=FALSE, ...)
   }
 }
 
-plotkde.1d.v2 <- function(fhat, xlab="x", ylab="Density function", add=FALSE,
+plotkde.1d.v2 <- function(fhat, xlab, ylab="Density function", add=FALSE,
   drawpoints=TRUE, ptcol="blue", jitter=FALSE, ...) #col="black", ...)
 {
+  if (missing(xlab)) xlab <- fhat$names
   
   if (add)
     lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, ...)
@@ -629,24 +648,9 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
   if (!is.list(fhat$eval.points))
     stop("Need a grid of density estimates")
 
-  if (is.data.frame(fhat$x))
-  {
-    xlab <- names(fhat$x)[1]
-    ylab <- names(fhat$x)[2]
-  }
+  if (missing(xlab)) xlab <- fhat$names[1]
+  if (missing(ylab)) ylab <- fhat$names[2]
 
-  x.names <- colnames(fhat$x) 
-  if (!is.null(x.names))
-  {
-    if (missing(xlab)) xlab <- x.names[1]
-    if (missing(ylab)) ylab <- x.names[2]
-  }
-  else
-  {
-    if (missing(xlab)) xlab <- "x"
-    if (missing(ylab)) ylab <- "y"
-  }
- 
   ##eval1 <- fhat$eval.points[[1]]
   ##eval2 <- fhat$eval.points[[2]]
   
@@ -713,7 +717,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
 {
   require(rgl)
   require(misc3d)
-
+ 
   if (missing(abs.cont))
     hts <- contourLevels(fhat, prob=(100-cont)/100)
   else
@@ -722,15 +726,11 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
   
   if (missing(colors))
     colors <- rev(heat.colors(nc))
-  
-  x.names <- colnames(fhat$x)
 
-  if (missing(xlab))
-    if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
-  if (missing(ylab))
-    if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
-  if (missing(zlab))
-    if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
+  if (missing(xlab)) xlab <- fhat$names[1]
+  if (missing(ylab)) ylab <- fhat$names[2]
+  if (missing(zlab)) zlab <- fhat$names[3]
+    #if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
   
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)

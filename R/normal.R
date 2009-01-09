@@ -225,7 +225,7 @@ dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
   d <- 1
   if (binned)
   {
-    fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sigma,
+    fhatr <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sigma,
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
@@ -270,7 +270,7 @@ dmvnorm.2d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 
   if (binned)
   {
-    fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+    fhatr <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
@@ -469,7 +469,7 @@ dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
   if (binned)
   {
     ## drvkde computes include-diagonals estimate
-    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+    fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
@@ -591,7 +591,7 @@ dmvnorm.3d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 
   if (binned)
   {
-     fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+     fhatr <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
                         binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
      sumval <- sum(bin.par$counts * n * fhatr)
      if (inc == 0) 
@@ -697,7 +697,7 @@ dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
   if (binned)
   {
     ## drvkde computes include-diagonals estimate
-    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+    fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
@@ -750,7 +750,7 @@ dmvnorm.4d.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par)
 
   if (binned)
   {
-     fhatr <- drvkde.ks(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
+     fhatr <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(Sigma)),
                         binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
      sumval <- sum(bin.par$counts * n * fhatr)
      if (inc == 0) 
@@ -856,7 +856,7 @@ dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
   if (binned)
   {
     ## drvkde computes include-diagonals estimate
-    fhatr <- drvkde.ks(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
+    fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
                        binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
