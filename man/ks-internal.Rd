@@ -1,6 +1,5 @@
 \name{ks-internal}
 
-\alias{drvkde} 
 \alias{Sdr}
 \alias{ise.diff}
 

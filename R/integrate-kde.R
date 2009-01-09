@@ -43,6 +43,8 @@ integral.kde <- function(q, fhat, density) #, exact=FALSE)
     }
   }
 
+  if (density) q.prob[q.prob>=1] <- 1
+  
   return(q.prob)
 }
 
@@ -125,13 +127,25 @@ plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
 
 ## ISE of difference between two KDEs
 
-ise.diff <- function(fhat1, fhat2)
+ise.diff <- function(fhat1, fhat2, xmin, xmax)
 {
   if(!isTRUE(all.equal(fhat1$eval.points, fhat2$eval.points)))
     stop("fhat1 and fhat2 need to de defined on the same grid")
-  
+
   fhat.sq <- fhat1
   fhat.sq$estimate <- (fhat1$estimate - fhat2$estimate)^2
   
-  return(integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE))   
+  if (missing(xmin) & missing(xmax))
+    int <- integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE)
+  
+  if (missing(xmin) & !missing(xmax))
+    int <- integral.kde(fhat=fhat.sq, q=xmax, density=FALSE)
+
+  if (!missing(xmin) & missing(xmax))
+    int <- integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
+
+  if (!missing(xmin) & !missing(xmax))
+    int <- integral.kde(fhat=fhat.sq, q=xmax, density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
+  
+  return(int)   
 }

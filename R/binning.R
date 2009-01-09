@@ -92,7 +92,7 @@ dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7,
 
 # Last changed: 28 OCT 2005
 
-drvkde.ks <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimate.positive=FALSE)
+drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimate.positive=FALSE)
 {  
    d <- length(drv)
 

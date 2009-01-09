@@ -2097,13 +2097,12 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   }
   else
   {
-    
     ##require(Matrix)
     ##data(Sd4)
     ##data(Sd6)
     ##Sd4 <- Sd4[[d]]
     ##Sd6 <- Sd6[[d]]
-    require(combinat)
+    ##require(combinat)
     Sd2 <- Sdr(d=d, r=2)
     Sd4 <- Sdr(d=d, r=4)
     Sd6 <- Sdr(d=d, r=6)

@@ -155,6 +155,7 @@ x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi)  
 plot(fhat)
+plot(fhat, axes=FALSE, box=FALSE); axes3d(c('x','y','z'))
 }
 
 \keyword{hplot}
