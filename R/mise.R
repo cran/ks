@@ -428,11 +428,9 @@ hmise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
 {
   r <- deriv.order
   d <- 1
-  seed <- 8326
-
+  
   if (missing(hstart))
   {
-    set.seed(seed)
     x <- rnorm.mixt(n=1000, mus=mus, sigmas=sigmas)  
     hstart <- sqrt((4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
   }
@@ -448,18 +446,17 @@ hmise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
 
 Hmise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 {
-  
   r <- deriv.order
   if (is.vector(mus)) d <- length(mus)
   else d <- ncol(mus) 
-  seed <- 8326
-
-  # use normal reference estimate as initial condition
-  set.seed(seed)
-  x <- rmvnorm.mixt(1000, mus, Sigmas, props)
+ 
+  ## use normal reference estimate as initial condition
   if (missing(Hstart))
+  {
+    x <- rmvnorm.mixt(10000, mus, Sigmas, props)
     Hstart <- matrix.sqrt((4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
-    
+  }
+  
   Hstart <- vech(Hstart)
 
   # input vech(H) into mise.mixt.temp because optim can only optimise
@@ -483,13 +480,12 @@ Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 {   
   if (is.vector(mus)) d <- length(mus)
   else d <- ncol(mus) 
-  seed <- 8326
 
-  set.seed(seed)
-  x <- rmvnorm.mixt(1000, mus, Sigmas, props)
   if (missing(Hstart))
+  {
+    x <- rmvnorm.mixt(10000, mus, Sigmas, props)
     Hstart <- (4/(samp*(d + 2)))^(2/(d + 4)) * var(x)
-    
+  }  
   Hstart <- diag(matrix.sqrt(Hstart))
 
   mise.mixt.temp <- function(diagH)
@@ -524,10 +520,9 @@ hamise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
 {
   r <- deriv.order
   d <- 1
-  seed <- 8326
+ 
   if (missing(hstart))
   {
-    set.seed(seed)
     x <- rnorm.mixt(n=1000, mus=mus, sigmas=sigmas)  
     hstart <- sqrt((4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
   }
@@ -548,7 +543,6 @@ Hamise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
   r <- deriv.order
   if (is.vector(mus)) d <- length(mus)
   else d <- ncol(mus) 
-  seed <- 8326
 
   ## use explicit formula for single normal
   if (length(props)==1)
@@ -560,8 +554,7 @@ Hamise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     ## use normal reference estimate as initial condition
     if (missing(Hstart)) 
     {
-      set.seed(seed)
-      x <- rmvnorm.mixt(1000, mus, Sigmas, props)
+      x <- rmvnorm.mixt(10000, mus, Sigmas, props)
       Hstart <- matrix.sqrt((4/ (samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
     }
     
@@ -659,7 +652,7 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dmvnorm.1d.sum(x=x, sigma=sqrt(2)*h, inc=1)
+  ise1 <- dnorm.1d.sum(x=x, sigma=sqrt(2)*h, inc=1)
   
   for (j in 1:M)
   {

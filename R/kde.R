@@ -289,6 +289,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
    if (!identical(diag(diag(H)), H) & d > 1)
      stop("Binning requires diagonal bandwidth matrix")
 
+    
    if (missing(bgridsize))
      if (d==1)
        bgridsize <- 401
@@ -311,8 +312,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
      bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H)), supp=3.7, range.x=xrange.list)  
    }
 
-   fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d),bandwidth=sqrt(diag(H)), binned=TRUE, range.x=bin.par$range.x, se=FALSE)
-
+   fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d),bandwidth=sqrt(diag(H)), binned=TRUE, range.x=bin.par$range.x, se=FALSE, gridsize=bgridsize)
    eval.points <- fhat.grid$x.grid
    fhat.grid <- fhat.grid$est
    fhat.grid[fhat.grid<0] <- 0
@@ -712,7 +712,7 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont,
 
 plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
                        alphavec, size=3, ptcol="blue", add=FALSE, 
-                       xlab, ylab, zlab, drawpoints=FALSE, ...)
+                       xlab, ylab, zlab, drawpoints=FALSE, alpha=1, ...)
 
 {
   require(rgl)
@@ -741,7 +741,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
   bg3d(col="white")
   
   if (drawpoints)
-    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=1, xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
   else
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
   

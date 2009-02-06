@@ -219,20 +219,20 @@ moments.mixt <- function (mus, Sigmas, props)
 ## Double sum at x
 ###############################################################################
 
-dmvnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
+dnorm.1d.sum <- function(x, sigma, inc=1, binned=FALSE, bin.par)
 {
-  n <- length(x)
   d <- 1
   if (binned)
   {
-    fhatr <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sigma,
-                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
+    n <- sum(bin.par$counts)
+    fhatr <- drvkde(x=bin.par$counts, drv=0, bandwidth=sigma, binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
     sumval <- sum(bin.par$counts * n * fhatr)
     if (inc == 0) 
-      sumval <- sumval - n*dmvnorm.deriv.1d(x=rep(0,d), r=rep(0,d), sigma=sigma)
+      sumval <- sumval - n*dmvnorm.deriv.1d(x=0, r=0, sigma=sigma)
   }
   else
-  {  
+  {
+    n <- length(x)
     sumval <- 0
     for (i in 1:n)
       sumval <- sumval + sum(dnorm(x[i] - x, mean=0, sd=sigma))
@@ -1422,7 +1422,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
   z <- seq(zlim[1], zlim[2], length=gridsize[3])
   xy <- permute(list(x,y))
- 
+
   dens.array <- array(0, dim=gridsize)
   
   for (i in 1:length(z))

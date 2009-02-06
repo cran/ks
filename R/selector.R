@@ -1,6 +1,6 @@
-################################################################################
+##############################################################################
 ## Density derivative (psi) functional estimators 
-################################################################################
+##############################################################################
 
 
 RKfun <- function(r)
@@ -27,11 +27,11 @@ RKfun <- function(r)
   return(val)
 }
 
-###############################################################################
+#############################################################################
 ## Estimation of psi_r (no binning, arbitrary d) for G = g^2 I
 ##
 ## Code by Jose E. Chacon. Received  04/09/2007
-###############################################################################
+#############################################################################
     
 differences <- function(x, upper=TRUE)
 {
@@ -114,13 +114,12 @@ psir.hat <- function(x, r, g, diff=FALSE, upper=diff)
 
 Psi4.elem <- function(k, kprime, d)
 {
-
   ind <- function(k, d)  
   {
     j <- 1
     dprime <- 1/2*d*(d+1)
     if (k > dprime) stop ("k is larger than d'")
-    while (j < d & !(((j-1)*d -1/2*(j-2)*(j-1) < k) & (k <= j*d -1/2*j*(j-1))))   
+    while (j < d & !(((j-1)*d -1/2*(j-2)*(j-1) < k) & (k <= j*d -1/2*j*(j-1))))
       j <- j+1
     i <- k - (j-1)*d + 1/2*j*(j-1)
     
@@ -1780,7 +1779,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
         args.temp <- args[((j-1)* nlim+1):(j*nlim),]
         hmnew.temp <- K6(args.temp)
         vecPsi6  <- vecPsi6 + colSums(dmvnorm(args.temp)*hmnew.temp)
-        cat(j, " ")
+        ##cat(j, " ")
       }
     
       if (nrow(args) %% nlim >0)
@@ -1795,7 +1794,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
       hmnew <- K6(args)
       vecPsi6 <- colSums(dmvnorm(args)*hmnew)
     }
-    cat("\n")
+    ##cat("\n")
 
     if (upper)
     {
@@ -1830,7 +1829,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
         args.temp <- args[((j-1)* nlim+1):(j*nlim),]
         hmnew.temp <- K4(args.temp)
         vecPsi4  <- vecPsi4 + colSums(dmvnorm(args.temp)*hmnew.temp)
-        cat(j, " ")
+        ##cat(j, " ")
       }
     
       if (nrow(args) %% nlim >0)
@@ -1845,7 +1844,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
       hmnew <- K4(args)
       vecPsi4 <- colSums(dmvnorm(args)*hmnew)
     }
-    cat("\n")
+    ##cat("\n")
     
     if (upper)
     {
@@ -2306,6 +2305,19 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
 # LSCV(H)
 ###############################################################################
 
+lscv.1d.binned <- function(xbin.par, h)
+{
+  n <- sum(xbin.par$counts)
+  lscv1 <- n^2*bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], drv=0, bandwidth=sqrt(2)*h, binned=TRUE)
+  lscv2 <- n^2*(bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], drv=0, bandwidth=h, binned=TRUE) - dnorm(0, mean=0, sd=h)/n)
+ 
+  lscv <- lscv1/n^2 - 2/(n*(n-1))*lscv2
+
+  return(lscv)
+}
+
+
+
 lscv.mat <- function(x, H, binned=FALSE, bin.par)
 {
   n <- nrow(x)
@@ -2354,8 +2366,31 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par)
 # H_LSCV
 ###############################################################################
 
+hlscv <- function(x, binned=TRUE, bgridsize)
+{
+  if (any(duplicated(x)))
+    stop("Data contain duplicated values: LSCV is not well-behaved in this case")
+  n <- length(x)
+  d <- 1
+  hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
+  if (missing(bgridsize)) bgridsize <- 401
+  
+  xbin.par <- dfltCounts.ks(x, gridsize=bgridsize)
+
+  lscv.1d.temp <- function(h)
+  {
+    return(lscv.1d.binned(x=xbin.par, h=h))
+  }
+
+  opt <- optimise(f=lscv.1d.temp, interval=c(0.2*hnorm, 5*hnorm, tol=.Machine$double.eps))$minimum
+  return(opt)
+    
+}
+  
 Hlscv <- function(x, Hstart)
 {
+  if (any(duplicated(x)))
+    stop("Data contain duplicated values: LSCV is not well-behaved in this case")
   n <- nrow(x)
   d <- ncol(x)
   ##RK <- (4*pi)^(-d/2)
@@ -2364,7 +2399,6 @@ Hlscv <- function(x, Hstart)
   if (missing(Hstart)) 
     Hstart <- matrix.sqrt((4/ (n*(d + 2)))^(2/(d + 4)) * var(x))
 
- 
   lscv.mat.temp <- function(vechH)
   {
     ##  ensures that H is positive definite
@@ -2618,58 +2652,6 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart)
 
 
 
-###############################################################################
-# Computes the smoothed cross validation function for 2 to 6 dim
-# 
-# Parameters
-# x - data values
-# H - bandwidth matrix
-# G - pilot bandwidth matrix
-#
-# Returns
-# SCV(H)
-###############################################################################
-
-scv.mat <- function(x, H, G)
-{
-  n <- nrow(x)
-  d <- ncol(x)
-
-  if (d==2)
-  {
-    scv1 <- dmvnorm.2d.sum(x, Sigma=2*H + 2*G, inc=1)
-    scv2 <- dmvnorm.2d.sum(x, Sigma=H + 2*G, inc=1)
-    scv3 <- dmvnorm.2d.sum(x, Sigma=2*G, inc=1)
-  }
-  else if (d==3)
-  {
-
-    scv1 <- dmvnorm.3d.sum(x, Sigma=2*H + 2*G, inc=1)
-    scv2 <- dmvnorm.3d.sum(x, Sigma=H + 2*G, inc=1)
-    scv3 <- dmvnorm.3d.sum(x, Sigma=2*G, inc=1)
-  }
-  else if (d==4)
-  {
-    scv1 <- dmvnorm.4d.sum(x, Sigma=2*H + 2*G, inc=1)
-    scv2 <- dmvnorm.4d.sum(x, Sigma=H + 2*G, inc=1)
-    scv3 <- dmvnorm.4d.sum(x, Sigma=2*G, inc=1)
-  } 
-  else if (d==5)
-  {
-    scv1 <- dmvnorm.5d.sum(x, Sigma=2*H + 2*G, inc=1)
-    scv2 <- dmvnorm.5d.sum(x, Sigma=H + 2*G, inc=1)
-    scv3 <- dmvnorm.5d.sum(x, Sigma=2*G, inc=1)
-  } 
-  else if (d==6)
-  {
-    scv1 <- dmvnorm.6d.sum(x, Sigma=2*H + 2*G, inc=1)
-    scv2 <- dmvnorm.6d.sum(x, Sigma=H + 2*G, inc=1)
-    scv3 <- dmvnorm.6d.sum(x, Sigma=2*G, inc=1)
-  }
-  scvmat <- n^(-1)*det(H)^(-1/2)*(4*pi)^(-d/2)+ n^(-2)*(scv1 - 2*scv2 + scv3)
-    
-  return (scvmat)
-}
 
 ########################################################################
 ### Identifying elements of Theta_6 matrix
@@ -2987,6 +2969,87 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
 
 
 ###############################################################################
+# Computes the smoothed cross validation function for 2 to 6 dim
+# 
+# Parameters
+# x - data values
+# H - bandwidth matrix
+# G - pilot bandwidth matrix
+#
+# Returns
+# SCV(H)
+###############################################################################
+
+
+scv.1d <- function(x, h, g, binned=TRUE)
+{
+  if (binned)
+  {  
+    n <- sum(x$counts)
+    scv1 <- dnorm.1d.sum(bin.par=x, sigma=sqrt(2*h^2+2*g^2), binned=binned)
+    scv2 <- dnorm.1d.sum(bin.par=x, sigma=sqrt(h^2+2*g^2), binned=binned)
+    scv3 <- dnorm.1d.sum(bin.par=x, sigma=sqrt(2*g^2), binned=binned)
+    
+    #if (scv1 <0) scv1 <- 1e10
+    #if (scv2 <0) scv2 <- 1e10
+    #if (scv3 <0) scv3 <- 1e10
+  }
+  else
+  {
+    n <- length(x)
+    scv1 <- dnorm.1d.sum(x=x, sigma=sqrt(2*h^2+2*g^2), binned=FALSE)
+    scv2 <- dnorm.1d.sum(x=x, sigma=sqrt(h^2+2*g^2), binned=FALSE)
+    scv3 <- dnorm.1d.sum(x=x, sigma=sqrt(2*g^2), binned=FALSE)
+  }
+  scv <- n^(-2)*(scv1 - 2*scv2 + scv3) + (n*h)^(-1)*(4*pi)^(-1/2) ##+ 
+
+  return(scv)
+}
+
+scv.mat <- function(x, H, G)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+
+  if (d==2)
+  {
+    scv1 <- dmvnorm.2d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.2d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.2d.sum(x, Sigma=2*G, inc=1)
+  }
+  else if (d==3)
+  {
+
+    scv1 <- dmvnorm.3d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.3d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.3d.sum(x, Sigma=2*G, inc=1)
+  }
+  else if (d==4)
+  {
+    scv1 <- dmvnorm.4d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.4d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.4d.sum(x, Sigma=2*G, inc=1)
+  } 
+  else if (d==5)
+  {
+    scv1 <- dmvnorm.5d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.5d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.5d.sum(x, Sigma=2*G, inc=1)
+  } 
+  else if (d==6)
+  {
+    scv1 <- dmvnorm.6d.sum(x, Sigma=2*H + 2*G, inc=1)
+    scv2 <- dmvnorm.6d.sum(x, Sigma=H + 2*G, inc=1)
+    scv3 <- dmvnorm.6d.sum(x, Sigma=2*G, inc=1)
+  }
+  scvmat <- n^(-1)*det(H)^(-1/2)*(4*pi)^(-d/2)+ n^(-2)*(scv1 - 2*scv2 + scv3)
+    
+  return (scvmat)
+}
+
+
+
+###############################################################################
 # Find the bandwidth matrix that minimises the SCV for 2 to 6 dim
 # 
 # Parameters
@@ -2998,6 +3061,56 @@ gamse.scv.6d <- function(x.star, Sigma.star, Hamise, n)
 # Returns
 # H_SCV
 ###############################################################################
+
+hscv <- function(x, nstage=2, binned=TRUE, bgridsize, hmin, hmax)
+{
+  sigma <- sd(x)
+  n <- length(x)
+  d <- 1
+  hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
+  if (missing(bgridsize)) bgridsize <- 401
+  if (missing(hmin)) hmin <- 0.1*hnorm
+  if (missing(hmax)) hmax <- 2*hnorm
+  
+  xbin.par <- dfltCounts.ks(x, gridsize=bgridsize)
+
+  if (nstage==1)
+  {
+    psihat6 <- psins.1d(r=6, sigma=sigma)
+    psihat10 <- psins.1d(r=10, sigma=sigma)
+  }
+  else if (nstage==2)
+  {
+    psihat8 <- psins.1d(r=8, sigma=sigma)
+    psihat12 <- psins.1d(r=12, sigma=sigma)
+    g1 <- (2/(7*n))^(1/9)*2^(1/2)*sigma
+    g2 <- (2/(11*n))^(1/13)*2^(1/2)*sigma
+    
+    psihat6 <- bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], binned=TRUE, drv=6, bandwidth=g1)
+    psihat10 <- bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], binned=TRUE, drv=10, bandwidth=g2) 
+  }
+
+  g3 <- (-6/((2*pi)^(1/2)*psihat6*n))^(1/7) 
+  g4 <- (-210/((2*pi)^(1/2)*psihat10*n))^(1/11)
+  psihat4 <- bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], binned=TRUE, drv=4, bandwidth=g3)
+  psihat8 <- bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], binned=TRUE, drv=8, bandwidth=g4)   
+  C <- (441/(64*pi))^(1/18) * (4*pi)^(-1/5) * psihat4^(-2/5) * psihat8^(-1/9)
+  if (n > 1e5) h0 <- hpi(x)
+  
+  scv.1d.temp <- function(h)
+  {
+    ##print(c(h, C*n^(-23/45)*h^(-2)))
+    return(scv.1d(x=xbin.par, h=h, g=C*n^(-23/45)*h^(-2), binned=TRUE))
+  }
+
+  #plot(0, xlim=c(hmin, hmax), type="n", ylim=c(0,5*scv.1d.temp(hpi(x))))
+  #for (i in seq(hmin, hmax, length=100))
+  #  points(i, scv.1d.temp(i))
+  #browser()
+  opt <- optimise(f=scv.1d.temp, interval=c(hmin, hmax))$minimum
+  return(opt)
+}
+
 
 Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 {
@@ -3157,10 +3270,8 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize)
   ## back-transform
   result <- optim(diag(Hstart), scv.mat.temp, method= "Nelder-Mead")
                                         #control=list(abstol=n^(-10*d)))
- 
   H <- diag(result$par) %*% diag(result$par)
   H <- S12 %*% H %*% S12
-  
   
   return(H)
 }

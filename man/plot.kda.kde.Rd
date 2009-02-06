@@ -128,7 +128,7 @@ ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
 kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-plot(kda.fhat)    
+plot(kda.fhat, cont=50, alpha=0.5)   
 }
 
 \keyword{ hplot}
