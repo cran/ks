@@ -46,6 +46,9 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
   return(bin.counts.ret)
 }
 
+
+
+
 dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
 {
    x <- as.matrix(x)
@@ -57,7 +60,7 @@ dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7,
      for (id in 1:d)
        range.x[[id]] <- c(min(x[,id])-supp*h[id],max(x[,id])+supp*h[id])  
    }
-       
+
    a <- unlist(lapply(range.x,min))
    b <- unlist(lapply(range.x,max))
 
@@ -68,7 +71,7 @@ dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7,
    if ((d!=1)&(d!=2)&(d!=3)&(d!=4)) stop("currently only for d=1,2,3,4")
 
    if (d==1)
-      gcounts <- linbin.ks(x,gpoints[[1]])
+      gcounts <- linbin.ks(x,gpoints[[1]]) ##binning.1d(x=x, xmin=range.x[[1]][1], xmax=range.x[[1]][2], bgridsize=gridsize)$counts 
 
    if (d==2)
       gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
@@ -97,64 +100,58 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimat
    d <- length(drv)
 
    if (d==1) x <- as.matrix(x)
-
-   if (binned)
-   {
-      if (any(dim(x)==1))
-         gridsize <- max(dim(x))  
-
-      if (!any(dim(x)==1))
-         gridsize <- dim(x)
-      gcounts <- x
-   }
-
-   if ((!binned)&(missing(gridsize))) gridsize <- rep(64,d)
-
-   # Rename common variables
-
+ 
+   ## Rename common variables
+   
    h <- bandwidth
-   tau <- 4 + max(drv)    
-
+   tau <- 4 ##+ max(drv)    
+   
    if (length(h)==1) h <- rep(h,d)
 
-   if (missing(range.x)&(binned==FALSE)) 
-   {
-      range.x <- list()
-      for (id in 1:d)
-         range.x[[id]] <- c(min(x[,id])-1.5*h[id],max(x[,id])+1.5*h[id])  
-   }
+   if (missing(gridsize))
+     if (d==1) gridsize <- 401
+     else if (d==2) gridsize <- rep(151,d)
+     else if (d==3) gridsize <- rep(51, d)
+     else if (d==4) gridsize <- rep(21, d)
+   
+   ## Bin the data if not already binned
 
+   if (missing(range.x)) 
+   {
+     range.x <- list()
+     for (id in 1:d)
+       range.x[[id]] <- c(min(x[,id])-tau*h[id],max(x[,id])+tau*h[id])  
+   }
+   
    a <- unlist(lapply(range.x,min))
    b <- unlist(lapply(range.x,max))
-
+   
    M <- gridsize
    gpoints <- list()
-
+     
    for (id in 1:d)
-      gpoints[[id]] <- seq(a[id],b[id],length=M[id])
-
-   # Bin the data if not already binned
+     gpoints[[id]] <- seq(a[id],b[id],length=M[id])
 
    if (binned==FALSE)
    {
-      if (d==1) 
-        gcounts <- linbin.ks(x,gpoints[[1]])
-      if (d==2) 
-        gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-      if (d==3) 
-        gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
-      if (d==4)
-        gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+     if (d==1) 
+       gcounts <- linbin.ks(x,gpoints[[1]])
+     if (d==2) 
+       gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
+     if (d==3) 
+       gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
+     if (d==4)
+       gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
    }
    else
-      gcounts <- x      
+     gcounts <- x
 
    n <- sum(gcounts)
-  
+
    kapmid <- list()
    for (id in (1:d))
    {
-     Lid <- min(floor(tau*h[id]*(M[id]-1)/(b[id]-a[id])),M[id]) 
+     Lid <- max(min(floor(tau*h[id]*(M[id]-1)/(b[id]-a[id])),M[id]),d+1)
      lvecid <- (0:Lid)
      facid  <- (b[id]-a[id])/(h[id]*(M[id]-1))
      argid <- lvecid*facid
@@ -172,8 +169,7 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimat
        }
      kapmid[[id]] <- hmnew*kapmid[[id]]*(-1)^drv[id]
    }
-   
-   
+  
    if (d==1)
      kappam <- kapmid[[1]]/n
    
@@ -183,10 +179,8 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimat
    if (d==3)
      kappam <- outer(kapmid[[1]],outer(kapmid[[2]],kapmid[[3]]))/n
    
-
    if (d==4)
-     kappam <- outer(kapmid[[1]],
-                     outer(kapmid[[2]],outer(kapmid[[3]],kapmid[[4]])))/n
+     kappam <- outer(kapmid[[1]], outer(kapmid[[2]],outer(kapmid[[3]],kapmid[[4]])))/n
   
    if (!any(c(d==1,d==2,d==3,d==4))) stop("only for d=1,2,3,4")
 
@@ -464,7 +458,6 @@ symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
                                    sf[1]*sf[3]*rr[(L1+1):2,1:(L2+1),(L3+1):2]
    rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3] <-  
                              sf[1]*sf[2]*sf[3]*rr[(L1+1):2,(L2+1):2,(L3+1):2]
-
    sp <- array(0,P)
    sp[1:M1,1:M2,1:M3] <- ss            # zero-padded version of ss
 
@@ -537,3 +530,30 @@ symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
 }
 
 ########## End of symconv4D ###########
+
+
+
+
+
+binning.1d <- function(x, bgridsize, xmin, xmax)
+{
+  grid.val <- seq(xmin, xmax, length=bgridsize)
+  grid.ind <- findInterval(x, vec=grid.val)
+
+  delta <- diff(grid.val)[1]
+  linbini1 <- abs(x-grid.val[grid.ind])/delta
+  linbini2 <- abs(x-grid.val[grid.ind+1])/delta
+  grid.counts <- rep(0, length=bgridsize)
+
+  for (g in 1:(bgridsize-1))
+  {
+    grid.update.ind <- which(grid.ind==g)
+    if (length(grid.update.ind) > 0)
+    {
+      grid.counts[g] <- grid.counts[g] + sum(linbini1[grid.update.ind])
+      grid.counts[g+1] <- grid.counts[g+1] + sum(linbini2[grid.update.ind])
+    }
+  }
+ 
+  return(list(counts=grid.counts, eval.points=grid.val))
+}

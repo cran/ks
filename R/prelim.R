@@ -33,21 +33,24 @@ vec <- function(x, byrow=FALSE)
 vech <- function(x)
 {
   if (is.vector(x))
+  {
     if (length(x)==1)
       return (x)
-  else
-    stop("vech only defined for symmetric matrices")
+    else
+      stop("vech undefined for vectors")
+  }
+  else if (is.matrix(x))
+  {  
+    d <- ncol(x)
+    if (d!=nrow(x)) ##if (!isSymmetric(x))
+      stop("vech only defined for square matrices")
+    
+    vechx <- vector()
+    for (j in 1:d)
+      vechx <- c(vechx, x[j:d,j])
+    return(vechx)
+  }
   
-  d <- ncol(x)
-  if (!isSymmetric(x))
-    stop("vech only defined for symmetric matrices")
-  
-  vechx <- vector()
-  
-  for (j in 1:d)
-    vechx <- c(vechx, x[j:d,j])
-                   
-  return(vechx)
 }
 
 # Analogue for stacked matrix

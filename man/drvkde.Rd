@@ -54,7 +54,7 @@ fhat1 <- drvkde(x=x, drv=1, bandwidth=0.1)   ## KDE of df/dx
 	 \& Hall/CRC, London.
 }
    
-%\author{M.P. Wand  \email{wand@uow.edu.au}}
+\author{M.P. Wand}
 
 
 \keyword{smooth} 

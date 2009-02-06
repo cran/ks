@@ -1,37 +1,43 @@
-\name{Hscv, Hscv.diag}
+\name{Hscv, Hscv.diag, hscv}
 \alias{Hscv}
 \alias{Hscv.diag}
+%\alias{hscv}
+\title{Smoothed cross-validation (SCV) bandwidth selector}
 
-\title{Smoothed cross-validation (SCV) bandwidth matrix selector
-  for 2- to 6-dimensional data}
 \description{
-SCV bandwidth matrix for 2- to 6-dimensional data.}
+  SCV bandwidth for 1- to 6-dimensional data.}
+
 \usage{
 Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
 }
+%hscv(x, nstage=2, binned=TRUE, bgridsize)
 
 \arguments{
-  \item{x}{matrix of data values}
+  \item{x}{vector or matrix of data values}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - 
-  required only if \code{binned=TRUE}}
+	required only if \code{binned=TRUE}}
+  %\item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
 }
 
 \value{
-SCV bandwidth matrix.  
+SCV bandwidth.  
 }
 
 
-\details{ This SCV selector is a generalisation of the univariate SCV
-  selector of Jones, Marron \& Park (1991).
+\details{ \code{hsv} is the univariate SCV
+  selector of Jones, Marron \& Park (1991). \code{Hscv} is a
+  multivariate generalisation of this.
 
-  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
-  the density estimate is computed over a binning grid defined 
-  by \code{bgridsize}. Otherwise it's computed exactly.
+  %For d = 1, the selector \code{hscv} is always computed as binned
+  %estimator.
+  For d = 2, 3, 4 and \code{binned=TRUE}, the density
+  estimate is computed over a binning grid defined by
+  \code{bgridsize}. Otherwise it's computed exactly. 
   
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
@@ -48,12 +54,12 @@ SCV bandwidth matrix.
   of Statistics}. \bold{32}, 485-506.
 } 
 
-\seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}}
+\seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}, \code{\link{Hpi}}}
 
 \examples{
 data(unicef)
 Hscv(unicef)
-Hscv(unicef, binned=TRUE)
-Hscv.diag(unicef)
+Hscv.diag(unicef, binned=TRUE)
 }
+%hscv(unicef[,1])
 \keyword{ smooth }

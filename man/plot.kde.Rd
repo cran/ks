@@ -22,8 +22,8 @@
 
 ## trivariate
 \method{plot}{kde}(x, cont=c(25,50,75), abs.cont, colors,add=FALSE,
-    drawpoints=FALSE, alphavec, xlab, ylab, zlab, size=3, ptcol="blue",
-    ...)
+    drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, size=3,
+    ptcol="blue", ...)
 }
 
 \arguments{
@@ -45,7 +45,8 @@
   \item{theta,phi,d}{graphics parameters for perspective plots (2-d plot)}
   \item{drawpoints}{if TRUE then draw data points on density estimate}
   \item{drawlabels}{if TRUE then draw contour labels (2-d plot)}
-  \item{alphavec}{vector of transparency values (3-d plot)}
+  \item{alpha}{transparency value of plotting symbol (3-d plot)}
+  \item{alphavec}{vector of transparency values for contours (3-d plot)}
   \item{size}{size of plotting symbol (3-d plot)}
   \item{...}{other graphics parameters}
 }
@@ -94,7 +95,7 @@
   default \code{colors} are \code{heat.colors} and the
   default opacity \code{alphavec} ranges from 0.1 to 0.5.
 
-  -- To specifiy contours, either one of \code{cont} or \code{abs.cont}
+  -- To specify contours, either one of \code{cont} or \code{abs.cont}
   is required. \code{cont} specifies upper percentages which
   correspond to 
   highest density regions. If \code{abs.cont=NULL} then a \code{pretty}
@@ -155,7 +156,7 @@ x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi)  
 plot(fhat)
-plot(fhat, axes=FALSE, box=FALSE); axes3d(c('x','y','z'))
+plot(fhat, axes=FALSE, box=FALSE, drawpoints=TRUE); axes3d(c('x','y','z'))
 }
 
 \keyword{hplot}

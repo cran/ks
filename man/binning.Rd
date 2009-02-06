@@ -37,8 +37,8 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 
 \examples{
 data(unicef)
-binning(x=unicef)
-binning(x=unicef, xmin=c(0, 20), xmax=c(350, 100), H=diag(2), bgridsize=c(201,201))
+unicef.binned <- binning(x=unicef)
+unicef.binned <- binning(x=unicef, xmin=c(0, 20), xmax=c(350, 100), H=diag(2), bgridsize=c(201,201))
 }
 
 \keyword{smooth}

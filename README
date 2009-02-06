@@ -23,6 +23,9 @@ plot.kda.kde and partition class colour (partcol) in plot.kda.kde.
 
 8. Added normal mixture (A)MISE-optimal selectors: hamise.mixt, hmise.mixt, Hamsie.mixt, Hmise.mxt.
 
+9. >=1.5.10. Added drvkde (kernel density derivative estimator 1-d) from feature using Matt Wand's code.
+
+10. Added 1-d SCV selector hscv.
  
 ---------------------------------------------------------------------------
 New in v1.4

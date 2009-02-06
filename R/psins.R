@@ -1,3 +1,12 @@
+psins.1d <- function(r, sigma)
+{
+  if (r %%2 ==0)
+    return((-1)^(r/2)*factorial(r)/((2*sigma)^(r+1)*factorial(r/2)*pi^(1/2)))
+  else
+    stop("psins.1d only defined for only even r")
+}
+
+
 psins.2d <- function(r, Sigma)
 {
   A <- chol2inv(chol(2*Sigma))
