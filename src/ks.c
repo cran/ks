@@ -4,6 +4,7 @@
 
 
 double mult(double *x, double *vecA, double *y, int d);
+void mat_mult(double *vecA, double *vecB, int d, double *vecAB);
 
 /* 2-dim */
 void dmvnorm_2d(double *x, double *y, double *mu, double *visigma, 
@@ -91,17 +92,28 @@ void dmvnorm_6d_sum(double *x1, double *x2, double *x3, double *x4, double *x5,
 *************************************************************************/
 double mult(double *x, double *vecA, double *y, int d)
 {
-    int i, j;
-    double result;
-
-    result = 0.0;
-    for (j = 1; j <= d; j++)
-      for (i = 1; i <= d; i++)
-	result = result + x[i - 1] * vecA[(i - 1) + (j - 1)*d] * y[j - 1];
+  int i, j;
+  double result;
+  
+  result = 0.0;
+  for (j = 1; j <= d; j++)
+	for (i = 1; i <= d; i++)
+	  result = result + x[i - 1] * vecA[(i - 1) + (j - 1)*d] * y[j - 1];
     
-    return(result);
+  return(result);
 }
 
+void mat_mult(double *vecA, double *vecB, int d, double *vecAB)
+{
+  int i,j;
+  int m = 0;
+
+  for (j = 1; j <= d; j++)
+	for (i = 1; i <= d; i++){
+	  m++;
+	  vecAB[m-1] = vecAB[m-1] + vecA[(i-1)*d + j]*vecB[(i-1)*d + j];
+		}
+}
 
 /*************************************************************************
  * Bivariate normal density
@@ -330,7 +342,7 @@ void dmvnormd3_2d(double *x1, double *x2, double *vsigma, int *r, int *n,
       x = x1[i - 1];
       y = x2[i - 1];
 	
-      derivt[i - 1] = (pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
+      derivt[i - 1] = -(pow(M_E,(pow(sigma22,2)*pow(x,2) - 2*rho*sigma11*sigma22*x*y + 
           pow(sigma11,2)*pow(y,2))/
         (2.*(-1 + pow(rho,2))*pow(sigma11,2)*pow(sigma22,2)))*
       (pow(rho,2)*pow(sigma22,3)*pow(x,3) - 

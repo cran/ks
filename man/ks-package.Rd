@@ -21,7 +21,7 @@ ks
   \code{\link{Hlscv}}, \code{\link{Hlscv.diag}} (2- to 6-d) \cr
   (iii) biased cross validation (BCV) 
   \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} (2- to 6-d) \cr
-  (iv) smoothed cross validation (SCV) %\code{\link{hscv}} (1-d); 
+  (iv) smoothed cross validation (SCV) \code{\link{hscv}} (1-d);
   \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) \cr
   (v) normal scale selectors \code{\link{hmise.mixt}},
   \code{\link{hamise.mixt}} (1-d); and \code{\link{Hmise.mixt}},
@@ -42,7 +42,7 @@ ks
   \code{vignette("kde")}. 
 }
 \author{
-  Tarn Duong <tarn.duong@gmail.com> for most of the package. 
+  Tarn Duong for most of the package. 
   Matt Wand for the binned estimation, univariate plug-in selector
   and density derivative estimator code.
   Jose E. Chac\'on for the unconstrained pilot

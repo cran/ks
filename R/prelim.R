@@ -1,8 +1,8 @@
 
-###############################################################################
-# Basic operators and functions
-###############################################################################
-    
+#############################################################################
+## Basic important vectors and matrices
+#############################################################################
+  
 ###############################################################################
 # Vec operator 
 #
@@ -121,20 +121,6 @@ invvech <- function(x)
   return(invvechx)
 }
 
-invvech.cat <- function(x, d)
-{
-  dstar <- d*(d+1)/2
-  num <- length(x)/dstar
-  invvechx <- numeric()
-  for (j in 1:num)
-    invvechx <- rbind(invvechx, invvech(x[((j-1)*dstar+1) : (j*dstar)]))
-
-  return(invvechx)
-  
-}
-
-
-
 ##### Trace of matrix
 
 tr <- function(A)
@@ -150,37 +136,6 @@ tr <- function(A)
   return(count)
 }
 
-###############################################################################
-# Permute a list of values
-#
-# Same function as EXPAND.GRID (base package), modified to take 
-# list as an argument and returns a matrix 
-###############################################################################
-
-permute <- function (args) 
-{
-  nargs <- length(args)
-  if (!nargs) 
-    return(as.data.frame(list()))
-  if (nargs == 1 && is.list(a1 <- args[[1]])) 
-    nargs <- length(args <- a1)
-  if (nargs <= 1) 
-    return(as.data.frame(if (nargs == 0 || is.null(args[[1]])) list() else args, 
-                         optional = TRUE))
-  cargs <- args
-  rep.fac <- 1
-  ##orep <- final.len <- prod(sapply(args, length))
-  orep <- prod(sapply(args, length))
-  
-  for (i in 1:nargs) {
-    x <- args[[i]]
-    nx <- length(x)
-    orep <- orep/nx
-    cargs[[i]] <- rep(rep(x, rep(rep.fac, nx)), orep)
-    rep.fac <- rep.fac * nx
-  }
-  do.call("cbind", cargs)
-} 
 
 ###############################################################################
 # Elementary vector 
@@ -211,125 +166,6 @@ matrix.sqrt <- function(A)
   else
     stop("Matrix square root is not defined")
   return(Asqrt)
-}
-
-###############################################################################
-# For a list of matrices, this returns the dimensions of each matrix
-###############################################################################
-
-list.length <- function(x)
-{
-  ell <- length(x)
-  len <- matrix(0, nr=ell, nc=2)
-  for (i in 1:ell)
-    len[i,] <- dim(x[[i]])
-
-  return(len)
-}
-
-###############################################################################
-# Pre-sphering
-# Parameters
-# x - data points
-#
-# Returns
-# Pre-sphered x values
-###############################################################################
-
-pre.sphere <- function(x, mean.centred=FALSE)
-{
-  S <- var(x)
-  Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
-
-  if (mean.centred)
-  {
-    xmean <- apply(x,2,mean)
-    for (i in 1:ncol(x))
-      x[,i] <- x[,i] - xmean[i]
-  }
-  x.sphered <- matrix(0, nc=ncol(x), nr=nrow(x))
-  for (i in 1:nrow(x))
-    x.sphered[i,] <- Sinv12 %*% x[i,]    
-
-  return (x.sphered)
-}
-
-pre.sphere.pc <- function(x.pc)
-{
-  g <- length(x.pc$nclust)
-  d <- ncol(x.pc$x)
-  x.pc1 <- x.pc
-  x.pc1$x <- matrix(0, nc=d, nr=nrow(x.pc$x))
-  for (j in 1:g)
-  {
-    xj <- x.pc$x[x.pc$ind==j,]
-    x.pc1$x[x.pc$ind==j,] <- pre.sphere(xj) 
-  }
- 
-  return (x.pc1)          
-}  
-
-###############################################################################
-# Pre-scaling
-# Parameters
-# x - data points
-#
-# Returns
-# Pre-scaled x values
-###############################################################################
-
-pre.scale <- function(x, mean.centred=FALSE)
-{
-  x.scaled <- numeric()
-  x.sd <- apply(x, 2, sd)
-  d <- ncol(x)
-
-  for (i in 1:d)
-    if (mean.centred)
-      x.scaled <- cbind(x.scaled, (x[,i] - mean(x[,i]))/x.sd[i])
-    else
-      x.scaled <- cbind(x.scaled, x[,i]/x.sd[i])                  
-
-  return (x.scaled)
-}
-
-pre.scale.pc <- function(x.pc)
-{
-  g <- length(x.pc$nclust)
-  d <- ncol(x.pc$x)
-  x.pc1 <- x.pc
-  x.pc1$x <- matrix(0, nc=d, nr=nrow(x.pc$x))
-  for (j in 1:g)
-  {
-    xj <- x.pc$x[x.pc$ind==j,]
-    x.pc1$x[x.pc$ind==j,] <- pre.scale(xj) 
-  }
- 
-  return (x.pc1)          
-}
-
-###############################################################################
-# Finds row index matrix
-# Parameters
-# x - data points
-#
-# Returns
-# i  - if r==mat[i,]
-# NA - otherwise
-###############################################################################
-which.mat <- function(r, mat)
-{
-
-  for (i in 1:nrow(mat))
-    if (identical(r, mat[i,])) return(i)
-
-  return(NA)  
-}
-
-is.even <- function(x)
-{
-  y <- x[x>0] %%2
-  return(identical(y, rep(0, length(y))))
 }
 
 ###############################################################################
@@ -425,6 +261,143 @@ invdupl <- function(order, ret.q = FALSE)
     obj
 }
 
+###############################################################################
+# Pre-sphering
+# Parameters
+# x - data points
+#
+# Returns
+# Pre-sphered x values
+###############################################################################
+
+pre.sphere <- function(x, mean.centred=FALSE)
+{
+  S <- var(x)
+  Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
+
+  if (mean.centred)
+  {
+    xmean <- apply(x,2,mean)
+    for (i in 1:ncol(x))
+      x[,i] <- x[,i] - xmean[i]
+  }
+  x.sphered <- matrix(0, nc=ncol(x), nr=nrow(x))
+  for (i in 1:nrow(x))
+    x.sphered[i,] <- Sinv12 %*% x[i,]    
+
+  return (x.sphered)
+}
+
+pre.sphere.pc <- function(x.pc)
+{
+  g <- length(x.pc$nclust)
+  d <- ncol(x.pc$x)
+  x.pc1 <- x.pc
+  x.pc1$x <- matrix(0, nc=d, nr=nrow(x.pc$x))
+  for (j in 1:g)
+  {
+    xj <- x.pc$x[x.pc$ind==j,]
+    x.pc1$x[x.pc$ind==j,] <- pre.sphere(xj) 
+  }
+ 
+  return (x.pc1)          
+}  
+
+###############################################################################
+# Pre-scaling
+# Parameters
+# x - data points
+#
+# Returns
+# Pre-scaled x values
+###############################################################################
+
+pre.scale <- function(x, mean.centred=FALSE)
+{
+  x.scaled <- numeric()
+  x.sd <- apply(x, 2, sd)
+  d <- ncol(x)
+
+  for (i in 1:d)
+    if (mean.centred)
+      x.scaled <- cbind(x.scaled, (x[,i] - mean(x[,i]))/x.sd[i])
+    else
+      x.scaled <- cbind(x.scaled, x[,i]/x.sd[i])                  
+
+  return (x.scaled)
+}
+
+
+###############################################################################
+# Finds row index matrix
+# Parameters
+# x - data points
+#
+# Returns
+# i  - if r==mat[i,]
+# NA - otherwise
+###############################################################################
+which.mat <- function(r, mat)
+{
+  ind <- numeric()
+  
+  for (i in 1:nrow(mat))
+    if (identical(r, mat[i,])) ind <- c(ind,i)
+
+  return(ind)  
+}
+
+
+
+###############################################################################
+# Permute a list of values
+#
+# Same function as EXPAND.GRID (base package), modified to take 
+# list as an argument and returns a matrix 
+###############################################################################
+
+permute <- function (args) 
+{
+  nargs <- length(args)
+  if (!nargs) 
+    return(as.data.frame(list()))
+  if (nargs == 1 && is.list(a1 <- args[[1]])) 
+    nargs <- length(args <- a1)
+  if (nargs <= 1) 
+    return(as.data.frame(if (nargs == 0 || is.null(args[[1]])) list() else args, 
+                         optional = TRUE))
+  cargs <- args
+  rep.fac <- 1
+  ##orep <- final.len <- prod(sapply(args, length))
+  orep <- prod(sapply(args, length))
+  
+  for (i in 1:nargs) {
+    x <- args[[i]]
+    nx <- length(x)
+    orep <- orep/nx
+    cargs[[i]] <- rep(rep(x, rep(rep.fac, nx)), orep)
+    rep.fac <- rep.fac * nx
+  }
+  do.call("cbind", cargs)
+} 
+
+
+###############################################################################
+# For a list of matrices, this returns the dimensions of each matrix
+###############################################################################
+
+list.length <- function(x)
+{
+  ell <- length(x)
+  len <- matrix(0, nr=ell, nc=2)
+  for (i in 1:ell)
+    len[i,] <- dim(x[[i]])
+
+  return(len)
+}
+
+###############################################################################
+
 permute.mat <- function(order)
 {
     m <- as.integer(order)
@@ -442,6 +415,20 @@ permute.mat <- function(order)
 
 
 
+###############################################################################
+## Boolean functions
+###############################################################################
+
+is.even <- function(x)
+{
+  y <- x[x>0] %%2
+  return(identical(y, rep(0, length(y))))
+}
+
+is.diagonal <- function(x)
+{
+  return(identical(diag(diag(x)),x))
+}
 
 
 ####################################################################
@@ -449,6 +436,35 @@ permute.mat <- function(order)
 ## selectors for normal mixtures
 ## Author: Jose E. Chacon
 ####################################################################
+
+
+differences <- function(x, upper=TRUE)
+{
+  if (is.vector(x)) x <- t(as.matrix(x))
+  n <- nrow(x)
+  d <- ncol(x)
+  
+  difs <- matrix(ncol=d,nrow=n^2)
+  for (j in 1:d)
+  {    
+    xj <- x[,j]
+    difxj <- as.vector(xj%*%t(rep(1,n))-rep(1,n)%*%t(xj))
+    ##The jth column of difs contains all the differences X_{ij}-X_{kj}
+    difs[,j]<-difxj
+  }
+  
+  if (upper)
+  {
+    ind.remove <- numeric()
+    for (j in 1:(n-1))
+      ind.remove <- c(ind.remove, (j*n+1):(j*n+j))
+    
+    return(difs[-ind.remove,])
+  }
+  else
+    return(difs)
+}
+
 
 ##### Odd factorial
 
@@ -471,6 +487,18 @@ OF<-function(m){factorial(m)/(2^(m/2)*factorial(m/2))}
 #    A12 <- xval1 %*% xev1 %*% xval1i}
 #  return(A12)
 #}
+
+
+K.sum <- function(A,B)
+{
+  AB <- numeric()
+  for (i in 1:nrow(A))
+    for (j in 1:nrow(B))
+      AB <- rbind(AB, A[i,] + B[j,])
+
+  return(AB)
+}
+
 
 ##### Commutation matrix of order m,n
 
@@ -561,6 +589,150 @@ Sdr<-function(d,r){
 }
 
 
+##############################################################################
+## Density derivative (psi) functional estimators 
+##############################################################################
 
 
+deriv.list <- function(d, r)
+{
+  derivt <- numeric()
 
+  if (d==2)
+  {
+    for (j1 in r:0)
+      for (j2 in r:0)
+        if (sum(c(j1,j2))==r)
+          derivt <- rbind(derivt, c(j1,j2))
+  }
+  if (d==3)
+  {
+    for (j1 in r:0)
+      for (j2 in r:0)
+        for (j3 in r:0)
+          if (sum(c(j1,j2,j3))==r)
+            derivt <- rbind(derivt, c(j1,j2,j3))
+  }
+  if (d==4)
+  {
+    for (j1 in r:0)
+      for (j2 in r:0)
+        for (j3 in r:0)
+          for (j4 in r:0)
+            if (sum(c(j1,j2,j3,j4))==r)
+              derivt <- rbind(derivt, c(j1,j2,j3,j4))
+  }
+
+  if (d==5)
+  {
+    for (j1 in r:0)
+      for (j2 in r:0)
+        for (j3 in r:0)
+          for (j4 in r:0)
+            for (j5 in r:0)
+              if (sum(c(j1,j2,j3,j4,j5))==r)
+                derivt <- rbind(derivt, c(j1,j2,j3,j4,j5))
+  }
+  
+  if (d==6)
+  {
+    for (j1 in r:0)
+      for (j2 in r:0)
+        for (j3 in r:0)
+          for (j4 in r:0)
+            for (j5 in r:0)
+              for (j6 in r:0)
+                if (sum(c(j1,j2,j3,j4,j5,j6))==r)
+                  derivt <- rbind(derivt, c(j1,j2,j3,j4,j5,j6))
+  }
+
+  return(derivt)
+
+}
+
+
+RKfun <- function(r)
+{
+  if (r==0)
+    val <- 1/(2*sqrt(pi))
+  else if (r==1)
+    val <- 1/(4*sqrt(pi))
+  else if (r==2)
+    val <- 3/(8*sqrt(pi)) 
+  else if (r==3)
+    val <- 15/(16*sqrt(pi))
+  else if (r==4)
+    val <- 105/(32*sqrt(pi))
+  else if (r==5)
+    val <- 945/(64*sqrt(pi))
+  else if (r==6)
+    val <- 10395/(128*sqrt(pi))
+  else if (r==7)
+    val <- 135135/(256*sqrt(pi))
+  else if (r==8)
+    val <- 2027025/(512*sqrt(pi))
+  
+  return(val)
+}
+
+
+########################################################################
+### Identifying elements of Psi_4 matrix
+########################################################################
+
+Psi4.elem <- function(k, kprime, d)
+{
+  ind <- function(k, d)  
+  {
+    j <- 1
+    dprime <- 1/2*d*(d+1)
+    if (k > dprime) stop ("k is larger than d'")
+    while (j < d & !(((j-1)*d -1/2*(j-2)*(j-1) < k) & (k <= j*d -1/2*j*(j-1))))
+      j <- j+1
+    i <- k - (j-1)*d + 1/2*j*(j-1)
+    
+    return(c(i,j))
+  }
+
+  ij <- ind(k, d)
+  ei <- elem(ij[1],d)
+  ej <- elem(ij[2],d)
+  ipjp <- ind(kprime, d)
+  eip <- elem(ipjp[1],d)
+  ejp <- elem(ipjp[2],d)
+  psi4.ind <- ei + eip + ej + ejp
+  coeff <- (2 - (ij[1]==ij[2])) * (2 - (ipjp[1]==ipjp[2]))
+  
+  return (c(coeff, psi4.ind))
+}
+
+
+Psi4.list <- function(d)
+{
+  coeff <- vector()
+  psifun <- vector()
+  dprime <- 1/2*d*(d+1)
+  for (k in 1:dprime)
+    for (kprime in 1:dprime)
+    {
+      coeff <- c(coeff, Psi4.elem(k, kprime, d)[1])
+      psifun <- rbind(psifun, Psi4.elem(k, kprime, d)[-1]) 
+    }
+
+  return(list(coeff=coeff, psi=psifun))  
+}
+
+
+default.gridsize <- function(d)
+{
+  if (d==1)
+    gridsize <- 401
+  else if (d==2)
+    gridsize <- rep(151,d)
+  else if (d==3)
+    gridsize <- rep(51, d)
+  else if (d==4)
+    gridsize <- rep(21, d)
+
+  return(gridsize)
+}

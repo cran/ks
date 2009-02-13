@@ -48,13 +48,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
   bw <- substr(tolower(bw),1,1)
   Hs <- numeric(0)
 
-  if (missing(bgridsize) & binned)
-    if (d==2)
-      bgridsize <- rep(151,d)
-    else if (d==3)
-      bgridsize <- rep(51, d)
-    else if (d==4)
-      bgridsize <- rep(21, d)
+  if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
   
   for (i in 1:m)
   {
@@ -94,13 +88,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
   bw <- substr(tolower(bw),1,1)
   Hs <- numeric(0)
 
-  if (missing(bgridsize) & binned)
-    if (d==2)
-      bgridsize <- rep(151,d)
-    else if (d==3)
-      bgridsize <- rep(51, d)
-    else if (d==4)
-      bgridsize <- rep(21, d)
+  if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
 
   for (i in 1:m)
   {
@@ -454,8 +442,7 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
   {
     if (missing(gridsize))  gridsize <- 101
     if (missing(bgridsize)) bgridsize <- 401
-    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, eval.points=eval.points, 
-                  binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, eval.points=eval.points, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
   }
   else
   {
@@ -475,45 +462,29 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
     if (missing(xmax)) xmax <- apply(x, 2, max) + supp*det(Hmax)
     
     if (d > 4)
-        stop("Binning only available for 1- to 4-dim data")
-      
-    if (missing(bgridsize))
-        if (d==2)
-          bgridsize <- rep(151,d)
-        else if (d==3)
-          bgridsize <- rep(51, d)
-        else if (d==4)
-          bgridsize <- rep(21, d)
-
-    if (missing(gridsize))
-        if (d==2)
-          gridsize <- rep(151,d)
-        else if (d==3)
-          gridsize <- rep(51, d)
-        else if (d==4)
-          gridsize <- rep(21, d)
-        else
-          gridsize <- rep(11, d)
+      stop("Binning only available for 1- to 4-dim data")
     
+    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    if (missing(gridsize)) gridsize <- default.gridsize(d)
+       
     fhat.list <- list()
-    
     for (j in 1:m)
     {
-        xx <- x[x.group==grlab[j],]     
-        H <- Hs[((j-1)*d+1) : (j*d),]     
-    
-        ## compute individual density estimate
-        if (binned)
-            fhat.temp <- kde.binned(x=xx, supp=supp, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax)
-        else if (is.null(eval.points))
-            fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
-        else
-            fhat.temp <- kde(x=xx, H=H, eval.points=eval.points)
-    
-       fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
-       fhat.list$eval.points <- fhat.temp$eval.points
-       fhat.list$x <- c(fhat.list$x, list(xx))
-       fhat.list$H <- c(fhat.list$H, list(H))
+      xx <- x[x.group==grlab[j],]     
+      H <- Hs[((j-1)*d+1) : (j*d),]     
+      
+      ## compute individual density estimate
+      if (binned)
+        fhat.temp <- kde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax)
+      else if (is.null(eval.points))
+        fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
+      else
+        fhat.temp <- kde(x=xx, H=H, eval.points=eval.points)
+      
+      fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
+      fhat.list$eval.points <- fhat.temp$eval.points
+      fhat.list$x <- c(fhat.list$x, list(xx))
+      fhat.list$H <- c(fhat.list$H, list(H))
     }
     
     fhat.list$x.group <- x.group
@@ -548,11 +519,11 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
     
     ## compute individual density estimate
     if (binned)
-        fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, supp=supp)
+      fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize)
     else if (is.null(eval.points))
-        fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
+      fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
     else
-        fhat.temp <- kde(x=xx, h=h, eval.points=eval.points)
+      fhat.temp <- kde(x=xx, h=h, eval.points=eval.points)
     
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
     fhat.list$eval.points <- fhat.temp$eval.points
@@ -586,7 +557,7 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
 ##############################################################################
 
 contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, ...) 
-{ 
+{
   fhat <- x
   m <- length(fhat$x)
   hts <- list()

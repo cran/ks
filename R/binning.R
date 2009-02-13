@@ -1,26 +1,23 @@
-######### R-function:dfltCounts  #########
- 
-# Obtain default set of grid counts from a 
-# multivariate point cloud 'x'.
-
-# Last changed: 18 JUL 2005
+########################################################################
+## Linear binning
+## Courtesy of M Wand 2005
+## Extended by T Duong to 3- and 4-dim 2006
+########################################################################
 
 
 binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 {
   x <- as.matrix(x)
   d <- ncol(x)
-  
-  if (missing(h))  h <- rep(0,d)
-  if (!missing(H))
-    h <- sqrt(diag(H))
 
-  if (missing(bgridsize))
-    if (d==1) bgridsize <- 401
-    else if (d==2) bgridsize <- rep(151,d)
-    else if (d==3) bgridsize <- rep(51, d)
-    else if (d==4) bgridsize <- rep(21, d)
+  if (d>1 & !missing(H))
+     if (!identical(diag(diag(H)), H))
+       stop("Binning requires diagonal bandwidth matrix")
   
+  if (missing(h)) h <- rep(0,d)
+  if (!missing(H)) h <- sqrt(diag(H))
+
+  if (missing(bgridsize)) bgridsize <- default.gridsize(d)
   if (!(missing(xmin) & missing(xmax)))
   {
     range.x <- list()
@@ -33,21 +30,34 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
     for (i in 1:d)
       range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
   }
-  bin.counts <- dfltCounts.ks(x=x, gridsize=bgridsize, h=h, supp=supp, range.x=range.x)
-  bin.counts.ret <- list()
-  bin.counts.ret$counts <- bin.counts$counts 
-  bin.counts.ret$eval.points <- list() 
-  if (i==1)
-     bin.counts.ret$eval.points <- seq(range.x[[i]][1], range.x[[i]][2], length=bgridsize[i])
-  else
-    for (i in 1:d)
-      bin.counts.ret$eval.points[[i]] <- seq(range.x[[i]][1], range.x[[i]][2], length=bgridsize[i])
+  
+  a <- unlist(lapply(range.x,min))
+  b <- unlist(lapply(range.x,max))
 
-  return(bin.counts.ret)
+  gpoints <- list()
+  for (id in 1:d)
+    gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
+ 
+  if (d==1) counts <- linbin.ks(x,gpoints[[1]]) 
+  if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
+  if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
+  if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+ 
+  ##bin.counts <- dfltCounts.ks(x=x, gridsize=bgridsize, h=h, supp=supp, range.x=range.x)
+  bin.counts <- list(counts=counts, eval.points=gpoints)
+  if (d==1) bin.counts$eval.points <- gpoints[[1]]
+     
+  return(bin.counts)
 }
 
 
 
+######### R-function:dfltCounts  #########
+ 
+# Obtain default set of grid counts from a 
+# multivariate point cloud 'x'.
+
+# Last changed: 18 JUL 2005
 
 dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
 {
@@ -70,174 +80,23 @@ dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7,
  
    if ((d!=1)&(d!=2)&(d!=3)&(d!=4)) stop("currently only for d=1,2,3,4")
 
-   if (d==1)
-      gcounts <- linbin.ks(x,gpoints[[1]]) ##binning.1d(x=x, xmin=range.x[[1]][1], xmax=range.x[[1]][2], bgridsize=gridsize)$counts 
+   if (d==1) gcounts <- linbin.ks(x,gpoints[[1]]) 
+      
+   if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
 
-   if (d==2)
-      gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-
-   if (d==3)
-      gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
+   if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
    
-   if (d==4)
-      gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+   if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
    
    return(list(counts=gcounts,range.x=range.x))
 }
 
 ######## End of dfltCounts ########
 
-########## R-function: drvkde ##########
 
-# Computes the mth derivative of a binned
-# d-variate kernel density estimate based
-# on grid counts.
-
-# Last changed: 28 OCT 2005
-
-drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE,estimate.positive=FALSE)
-{  
-   d <- length(drv)
-
-   if (d==1) x <- as.matrix(x)
- 
-   ## Rename common variables
-   
-   h <- bandwidth
-   tau <- 4 ##+ max(drv)    
-   
-   if (length(h)==1) h <- rep(h,d)
-
-   if (missing(gridsize))
-     if (d==1) gridsize <- 401
-     else if (d==2) gridsize <- rep(151,d)
-     else if (d==3) gridsize <- rep(51, d)
-     else if (d==4) gridsize <- rep(21, d)
-   
-   ## Bin the data if not already binned
-
-   if (missing(range.x)) 
-   {
-     range.x <- list()
-     for (id in 1:d)
-       range.x[[id]] <- c(min(x[,id])-tau*h[id],max(x[,id])+tau*h[id])  
-   }
-   
-   a <- unlist(lapply(range.x,min))
-   b <- unlist(lapply(range.x,max))
-   
-   M <- gridsize
-   gpoints <- list()
-     
-   for (id in 1:d)
-     gpoints[[id]] <- seq(a[id],b[id],length=M[id])
-
-   if (binned==FALSE)
-   {
-     if (d==1) 
-       gcounts <- linbin.ks(x,gpoints[[1]])
-     if (d==2) 
-       gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-     if (d==3) 
-       gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
-     if (d==4)
-       gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
-   }
-   else
-     gcounts <- x
-
-   n <- sum(gcounts)
-
-   kapmid <- list()
-   for (id in (1:d))
-   {
-     Lid <- max(min(floor(tau*h[id]*(M[id]-1)/(b[id]-a[id])),M[id]),d+1)
-     lvecid <- (0:Lid)
-     facid  <- (b[id]-a[id])/(h[id]*(M[id]-1))
-     argid <- lvecid*facid
-     kapmid[[id]] <- dnorm(argid)/(h[id]^(drv[id]+1))
-     hmold0 <- 1
-     hmold1 <- argid
-     if (drv[id]==0) hmnew <- 1
-     if (drv[id]==1) hmnew <- argid
-     if (drv[id] >= 2) 
-       for (ihm in (2:drv[id])) 
-       {
-         hmnew <- argid*hmold1 - (ihm-1)*hmold0
-         hmold0 <- hmold1   # Compute drv[id] degree Hermite polynomial
-         hmold1 <- hmnew    # by recurrence.
-       }
-     kapmid[[id]] <- hmnew*kapmid[[id]]*(-1)^drv[id]
-   }
-  
-   if (d==1)
-     kappam <- kapmid[[1]]/n
-   
-   if (d==2)
-     kappam <- outer(kapmid[[1]],kapmid[[2]])/n
-     
-   if (d==3)
-     kappam <- outer(kapmid[[1]],outer(kapmid[[2]],kapmid[[3]]))/n
-   
-   if (d==4)
-     kappam <- outer(kapmid[[1]], outer(kapmid[[2]],outer(kapmid[[3]],kapmid[[4]])))/n
-  
-   if (!any(c(d==1,d==2,d==3,d==4))) stop("only for d=1,2,3,4")
-
-   if (d==1) 
-   { 
-      kappam <- as.vector(kappam)
-      est <- symconv.ks(kappam,gcounts,skewflag=(-1)^drv)
-      
-      if (se)
-        est.var <- ((symconv.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
-   }
-
-   if (d==2) 
-   {     
-     est <- symconv2D.ks(kappam,gcounts,skewflag=(-1)^drv)
-
-     if (se)   
-       est.var <- ((symconv2D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)     
-   }
-     
-
-   if (d==3)
-   {
-     est <- symconv3D.ks(kappam,gcounts,skewflag=(-1)^drv) 
- 
-     if (se)
-       est.var <- ((symconv3D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)    
-   }
-     
-   if (d==4)
-   {
-     est <- symconv4D.ks(kappam,gcounts,skewflag=(-1)^drv) 
-
-     if (se)
-       est.var <- ((symconv4D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
-   }
-   
-   if (estimate.positive)
-     est[est<0] <- 0
-   
-   if (se)
-   {
-     est.var[est.var<0] <- 0
-     return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
-   }
-   else if (!se)
-     return(list(x.grid=gpoints,est=est))
-}
-
-########## End of drvkde #########
-
-########## R-function: linbin ##########
-
-# For application of linear binning to a 
-# univariate data set.
-
-# Last changed: 16 JUNE 1995
+########################################################################
+## Linear binning
+########################################################################
 
 linbin.ks <- function(X,gpoints,truncate=TRUE)
 
@@ -254,19 +113,6 @@ linbin.ks <- function(X,gpoints,truncate=TRUE)
    return(out[[7]])
 }
 
-########## End of linbin ##########
-
-
-######### R-function: linbin2D #########
- 
-# Creates the grid counts from a bivariate data set X 
-# over an equally-spaced set of grid points
-# contained in "gpoints" using the linear 
-# binning strategy. Note that the FORTRAN subroutine
-# "lbtwod" is called. 
-
-# Last changed: 25 AUG 1995
-
 linbin2D.ks <- function(X,gpoints1,gpoints2)
 {
    n <- nrow(X)
@@ -282,18 +128,6 @@ linbin2D.ks <- function(X,gpoints1,gpoints2)
            as.integer(M1),as.integer(M2),double(M1*M2), PACKAGE="ks")
    return(matrix(out[[9]],M1,M2))
 }
-
-########## End of linbin2D ##########
-
-######### R-function: linbin3D #########
- 
-# Creates the grid counts from a trivariate data set X 
-# over an equally-spaced set of grid points
-# contained in "gpoints" using the linear 
-# binning strategy. Note that the FORTRAN subroutine
-# "lbthrd" is called. 
-
-# Last changed: 27 JUL 2005
 
 linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
 {
@@ -315,17 +149,6 @@ linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
    return(array(out[[12]],c(M1,M2,M3)))
 }
 
-########## End of linbin3D ##########
-
-######### R-function: linbin4D #########
- 
-# Creates the grid counts from a quadrivariate data set X 
-# over an equally-spaced set of grid points
-# contained in "gpoints" using the linear 
-# binning strategy. Note that the FORTRAN subroutine
-# "lbfoud" is called. 
-
-# Last changed: 31 AUG 2005
 
 linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
 {
@@ -351,23 +174,18 @@ linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
    return(array(out[[15]],c(M1,M2,M3,M4)))
 }
 
-########## End of linbin4D ##########
-#########################################################################
-### Binning functions courtesy of M Wand 2005
-### Extended by T Duong to 3- and 4-dim 2006
-#########################################################################
+
+########################################################################
+## Discrete convolution
+########################################################################
 
 
-#
-########## R-function: symconv ##########
+## Computes the discrete convolution of
+## a symmetric or skew-symmetric response 
+## vector r and a data vector s.
+## If r is symmetric then "skewflag"=1.
+## If r is skew-symmetric then "skewflag"=-1.
 
-# Computes the discrete convolution of
-# a symmetric or skew-symmetric response 
-# vector r and a data vector s.
-# If r is symmetric then "skewflag"=1.
-# If r is skew-symmetric then "skewflag"=-1.
-
-# Last changed: 03 AUG 2005
  
 symconv.ks  <- function(r,s,skewflag=1)
 
@@ -384,14 +202,6 @@ symconv.ks  <- function(r,s,skewflag=1)
    return((Re(t)/P)[1:M])            # return normalized truncated t
 }
 
-########## End of symconv ##########
-
-########## R-function: symconv2D ##########
-
-# Computes the discrete two-dimensional convolution of
-# a symmetric response matrix rr and data matrix ss.
-
-# Last changed: 20 MAY 2005
  
 symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
 
@@ -424,14 +234,6 @@ symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
    return((Re(tt)/(P1*P2))[1:M1,1:M2]) # return normalized truncated tt
 }
 
-######## End of symconv2D ########
-
-########### R-function: symconv3D ##########
-
-# Computes the discrete three-dimensional convolution of a symmetric  
-# response array rr and a data matrix ss.
-
-# Last changed: 01 JUN 2005
  
 symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
 
@@ -467,14 +269,6 @@ symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
    return((Re(tt)/(P1*P2*P3))[1:M1,1:M2,1:M3]) # return normalized truncated tt
 }
 
-########## End of symconv3D ###########
-
-########### R-function: symconv4D ##########
-
-# Computes the discrete four-dimensional convolution of a symmetric  
-# response array rr and a data matrix ss.
-
-# Last changed: 01 SEP 2005
  
 symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
 
@@ -529,31 +323,4 @@ symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
    return((Re(tt)/(P1*P2*P3*P4))[1:M1,1:M2,1:M3,1:M4]) # return normalized truncated tt
 }
 
-########## End of symconv4D ###########
 
-
-
-
-
-binning.1d <- function(x, bgridsize, xmin, xmax)
-{
-  grid.val <- seq(xmin, xmax, length=bgridsize)
-  grid.ind <- findInterval(x, vec=grid.val)
-
-  delta <- diff(grid.val)[1]
-  linbini1 <- abs(x-grid.val[grid.ind])/delta
-  linbini2 <- abs(x-grid.val[grid.ind+1])/delta
-  grid.counts <- rep(0, length=bgridsize)
-
-  for (g in 1:(bgridsize-1))
-  {
-    grid.update.ind <- which(grid.ind==g)
-    if (length(grid.update.ind) > 0)
-    {
-      grid.counts[g] <- grid.counts[g] + sum(linbini1[grid.update.ind])
-      grid.counts[g+1] <- grid.counts[g+1] + sum(linbini2[grid.update.ind])
-    }
-  }
- 
-  return(list(counts=grid.counts, eval.points=grid.val))
-}

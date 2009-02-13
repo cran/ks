@@ -1,9 +1,42 @@
+
+#############################################################################
+## Estimation of psi_r for normal scales
+#############################################################################
+
+
 psins.1d <- function(r, sigma)
 {
+  ##return(dnorm.deriv(x=0, r=r, sigma=sqrt(2)*sigma))
+  
   if (r %%2 ==0)
-    return((-1)^(r/2)*factorial(r)/((2*sigma)^(r+1)*factorial(r/2)*pi^(1/2)))
+    psins <- (-1)^(r/2)*factorial(r)/((2*sigma)^(r+1)*factorial(r/2)*pi^(1/2))
   else
-    stop("psins.1d only defined for only even r")
+    psins <- 0
+    
+  return(psins)  
+}
+
+
+psins <- function(r, Sigma, complete=FALSE, Sdr.mat)
+{
+  d <- ncol(Sigma)
+  if (complete)
+  {
+    return(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), r=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat))
+  }
+  else
+  {  
+    if (d==2)
+      return(psins.2d(r=r, Sigma=Sigma))
+    if (d==3)
+      return(psins.3d(r=r, Sigma=Sigma))
+    if (d==4)
+      return(psins.4d(r=r, Sigma=Sigma))
+    if (d==5)
+      return(psins.5d(r=r, Sigma=Sigma))
+    if (d==6)
+      return(psins.6d(r=r, Sigma=Sigma))
+  }
 }
 
 

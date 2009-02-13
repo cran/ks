@@ -85,15 +85,13 @@ for kernel density estimation,
 %are in the development of new methods for the latter for general dimensions.
 which can also be used for multivariate kernel
 discriminant analysis.  
-The \pkg{ks} package implements selectors for  2- to 6-dimensional
+The \pkg{ks} package implements selectors for 1- to 6-dimensional
 data. 
 
 This vignette contains only a brief introduction 
 to using \pkg{ks} for kernel density estimation
 for 2-dimensional data. 
 See \citet*{duong2007c} for a more detailed account. 
-
-
 For a bivariate random sample $\vecX_1, \vecX_2, \ldots, \vecX_n$ 
 drawn from a density $f$, 
 the kernel density estimate is defined by

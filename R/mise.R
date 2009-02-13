@@ -652,7 +652,7 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dnorm.1d.sum(x=x, sigma=sqrt(2)*h, inc=1)
+  ise1 <- dnorm.sum(x=x, sigma=sqrt(2)*h, inc=1)
   
   for (j in 1:M)
   {
