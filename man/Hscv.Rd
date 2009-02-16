@@ -65,10 +65,7 @@ SCV bandwidth.
 data(unicef)
 Hscv(unicef)
 Hscv.diag(unicef, binned=TRUE)
-
-x <- rmvnorm.mixt(n=1e4, rep(0,3), diag(3))
-Hscv.diag(x, binned=TRUE, bgridsize=rep(21,3))
-hscv(x[,1], binned=TRUE)
+hscv(unicef[,1])
 }
 
 \keyword{ smooth }

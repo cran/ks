@@ -189,52 +189,52 @@ linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
  
 symconv.ks  <- function(r,s,skewflag=1)
 
-{ 
-   L <- length(r)-1
-   M <- length(s) 
-   P <- 2^(ceiling(log(M+L)/log(2))) # smallest power of 2>=M+L         
-   r <- c(r,rep(0,P-2*L-1),skewflag*r[(L+1):2])
-                                     # wrap-around version of r
-   s <- c(s,rep(0,P-M))              # zero-padded version of s
-   R <- fft(r)                       # Obtain FFT's of r and s  
-   S <- fft(s)
-   t <- fft(R*S,TRUE)               # invert element-wise product of FFT's 
-   return((Re(t)/P)[1:M])            # return normalized truncated t
+{
+  L <- length(r)-1
+  M <- length(s) 
+  P <- 2^(ceiling(log(M+L)/log(2))) # smallest power of 2>=M+L         
+  r <- c(r,rep(0,P-2*L-1),skewflag*r[(L+1):2])
+                                        # wrap-around version of r
+  s <- c(s,rep(0,P-M))              # zero-padded version of s
+  R <- fft(r)                       # Obtain FFT's of r and s  
+  S <- fft(s)
+  t <- fft(R*S,TRUE)               # invert element-wise product of FFT's 
+  return((Re(t)/P)[1:M])            # return normalized truncated t
 }
 
  
 symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
 
 {  
-   L <- dim(rr)-1
-   M <- dim(ss) 
-   L1 <- L[1]
-   L2 <- L[2]               # find dimensions of r,s
-   M1 <- M[1]
-   M2 <- M[2]
-   P1 <- 2^(ceiling(log(M1+L1)/log(2))) # smallest power of 2 >= M1+L1         
-   P2 <- 2^(ceiling(log(M2+L2)/log(2))) # smallest power of 2 >= M2+L2         
-
-   rp <- matrix(0,P1,P2)
-   rp[1:(L1+1),1:(L2+1)] <- rr
-   if (L1>0)
-      rp[(P1-L1+1):P1,1:(L2+1)] <- skewflag[1]*rr[(L1+1):2,]
-   if (L2>0)
-   {
+  L <- dim(rr)-1
+  M <- dim(ss) 
+  L1 <- L[1]
+  L2 <- L[2]               # find dimensions of r,s
+  M1 <- M[1]
+  M2 <- M[2]
+  P1 <- 2^(ceiling(log(M1+L1)/log(2))) # smallest power of 2 >= M1+L1         
+  P2 <- 2^(ceiling(log(M2+L2)/log(2))) # smallest power of 2 >= M2+L2         
+  
+  rp <- matrix(0,P1,P2)
+  rp[1:(L1+1),1:(L2+1)] <- rr
+  if (L1>0)
+    rp[(P1-L1+1):P1,1:(L2+1)] <- skewflag[1]*rr[(L1+1):2,]
+  if (L2>0)
+    {
       rp[1:(L1+1),(P2-L2+1):P2] <- skewflag[2]*rr[,(L2+1):2]
       rp[(P1-L1+1):P1,(P2-L2+1):P2] <-  prod(skewflag)*rr[(L1+1):2,(L2+1):2]   
-   }
-                                       # wrap around version of rr
-   sp <- matrix(0,P1,P2)
-   sp[1:M1,1:M2] <- ss                 # zero-padded version of ss
-                                       
-   RR <- fft(rp)                       # Obtain FFT's of rr and ss  
-   SS <- fft(sp)
-   tt <- fft(RR*SS,TRUE)               # invert element-wise product of FFT's 
-   return((Re(tt)/(P1*P2))[1:M1,1:M2]) # return normalized truncated tt
+    }
+                                        # wrap around version of rr
+  sp <- matrix(0,P1,P2)
+  sp[1:M1,1:M2] <- ss                 # zero-padded version of ss
+  
+  RR <- fft(rp)                       # Obtain FFT's of rr and ss  
+  SS <- fft(sp)
+  tt <- fft(RR*SS,TRUE)               # invert element-wise product of FFT's 
+  return((Re(tt)/(P1*P2))[1:M1,1:M2]) # return normalized truncated tt
 }
 
- 
+
 symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
 
 {  

@@ -1252,14 +1252,14 @@ scv.1d <- function(x, h, g, binned=TRUE, bin.par, inc=1)
   return(scv)
 }
 
-scv.mat <- function(x, H, G, binned=FALSE, bin.par)
+scv.mat <- function(x, H, G, binned=FALSE, bin.par, diff=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
 
-  scv1 <- dmvnorm.sum(x=x, Sigma=2*H + 2*G, inc=1, bin.par=bin.par, binned=binned)
-  scv2 <- dmvnorm.sum(x=x, Sigma=H + 2*G, inc=1, bin.par=bin.par, binned=binned)
-  scv3 <- dmvnorm.sum(x=x, Sigma=2*G, inc=1, bin.par=bin.par, binned=binned)
+  scv1 <- dmvnorm.sum(x=x, Sigma=2*H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
+  scv2 <- dmvnorm.sum(x=x, Sigma=H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
+  scv3 <- dmvnorm.sum(x=x, Sigma=2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
   scvmat <- n^(-1)*det(H)^(-1/2)*(4*pi)^(-d/2) + n^(-2)*(scv1 - 2*scv2 + scv3)
     
   return (scvmat)
@@ -1383,7 +1383,10 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
     gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=TRUE, bin.par=bin.par)
   }
   else
+  {
+    x.star.diff <- differences(x.star, upper=FALSE)
     gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=FALSE)
+  }
   G.amse <- gamse^2 * diag(d)
   
   ## use normal reference bandwidth as initial condition
@@ -1440,14 +1443,15 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize)
   else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
 
   S12inv <- chol2inv(chol(S12))
-  Hamise <- S12inv %*% Hpi.diag(x=x,nstage=1, pilot="samse", pre="scale", binned=TRUE, bgridsize=bgridsize) %*% S12inv
+  Hamise <- S12inv %*% Hpi.diag(x=x,nstage=1, pilot="samse", pre="scale", binned=binned, bgridsize=bgridsize) %*% S12inv
 
   if (any(is.na(Hamise)))
   {
     warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
     Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
   }
-  
+
+ 
   if (binned)
   {  
     bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(diag(Hamise)))

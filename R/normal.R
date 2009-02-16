@@ -458,7 +458,7 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
 {
   if (binned)
   {
-    if (!identical(diag(diag(Sigma)), Sigma))
+    if (!is.diagonal(Sigma))
       stop("Binned estimation defined for diagonal Sigma only")
     if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
     
@@ -478,7 +478,7 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
     if (d==4) sumval <- dmvnorm.4d.sum(x=x, Sigma=Sigma, inc=inc)
     if (d==5) sumval <- dmvnorm.5d.sum(x=x, Sigma=Sigma, inc=inc)
     if (d==6) sumval <- dmvnorm.6d.sum(x=x, Sigma=Sigma, inc=inc)
-    
+
     if (d>6)
     {
       if(!diff)
