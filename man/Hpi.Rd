@@ -88,8 +88,6 @@ Hpi(unicef)
 Hpi(unicef, pilot="unconstr")
 Hpi.diag(unicef, binned=TRUE)
 hpi(unicef[,1])
-
-x <- rmvnorm.mixt(n=100, rep(0,4), diag(4)); Hpi(x)
 }
 
 \keyword{ smooth }

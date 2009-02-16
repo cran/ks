@@ -142,13 +142,20 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
    if (length(h)==1) h <- rep(h,d)
 
    if (missing(gridsize))
-     if (d==1) gridsize <- 401
-     else if (d==2) gridsize <- rep(151,d)
-     else if (d==3) gridsize <- rep(51, d)
-     else if (d==4) gridsize <- rep(21, d)
-   
+     if (!binned)   ## changes 16/02/2009
+     {  
+       if (d==1) gridsize <- 401
+       else if (d==2) gridsize <- rep(151,d)
+       else if (d==3) gridsize <- rep(51, d)
+       else if (d==4) gridsize <- rep(21, d)
+     }
+     else
+     {
+       if (d==1) gridsize <- dim(x)[1]
+       else gridsize <- dim(x)
+     }
    ## Bin the data if not already binned
-
+  
    if (missing(range.x)) 
    {
      range.x <- list()
