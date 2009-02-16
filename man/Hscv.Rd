@@ -1,7 +1,7 @@
 \name{Hscv, Hscv.diag, hscv}
 \alias{Hscv}
 \alias{Hscv.diag}
-%\alias{hscv}
+\alias{hscv}
 \title{Smoothed cross-validation (SCV) bandwidth selector}
 
 \description{
@@ -10,9 +10,8 @@
 \usage{
 Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
 Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
+hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
-%hscv(x, nstage=2, binned=TRUE, bgridsize)
-
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
@@ -21,7 +20,9 @@ Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - 
 	required only if \code{binned=TRUE}}
-  %\item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
+  \item{nstage}{number of stages in the SCV bandwidth selector (1 or
+	2) (1-d only)}
+  \item{plot}{flag to display plot of SCV(h) vs h (1-d only)}
 }
 
 \value{
@@ -33,10 +34,14 @@ SCV bandwidth.
   selector of Jones, Marron \& Park (1991). \code{Hscv} is a
   multivariate generalisation of this.
 
-  %For d = 1, the selector \code{hscv} is always computed as binned
-  %estimator.
-  For d = 2, 3, 4 and \code{binned=TRUE}, the density
-  estimate is computed over a binning grid defined by
+  For d = 1, the selector \code{hscv} is not always stable for large
+  sample sizes with binning.
+  Examine the plot from \code{hscv(, plot=TRUE)} to
+  determine the appropriate smoothness of the SCV function. Any
+  non-smoothness is due to the discretised nature of binned estimation.
+  
+  For d = 1, 2, 3, 4 and \code{binned=TRUE}, the 
+  estimates are computed over a binning grid defined by
   \code{bgridsize}. Otherwise it's computed exactly. 
   
   For details on the pre-transformations in \code{pre}, see
@@ -60,6 +65,10 @@ SCV bandwidth.
 data(unicef)
 Hscv(unicef)
 Hscv.diag(unicef, binned=TRUE)
+
+x <- rmvnorm.mixt(n=1e4, rep(0,3), diag(3))
+Hscv.diag(x, binned=TRUE, bgridsize=rep(21,3))
+hscv(x[,1], binned=TRUE)
 }
-%hscv(unicef[,1])
+
 \keyword{ smooth }

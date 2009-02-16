@@ -25,7 +25,7 @@ plot.kda.kde and partition class colour (partcol) in plot.kda.kde.
 
 9. >=1.5.10. Added drvkde (kernel density derivative estimator 1-d) from feature using Matt Wand's code.
 
-10. Added 1-d SCV selector hscv.
+10. 1.5.11. Fixed small bugs in drvkde, vech, Hpi(, pilot="unconstr").  
  
 ---------------------------------------------------------------------------
 New in v1.4

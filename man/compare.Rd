@@ -25,9 +25,8 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   \item{bw}{\code{"plugin"} = plug-in, \code{"lscv"} = LSCV, \code{"scv"} = SCV}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices}
   \item{prior.prob}{vector of prior probabilities}
-  \item{by.group}{if set to TRUE then results are given for each group
-    as well}
-  \item{trace}{if set to TRUE then message is printed in command line to
+  \item{by.group}{flag to give results also within each group}
+  \item{trace}{flag for printing messages in command line to
     trace the execution}
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - only required if
@@ -84,9 +83,8 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   estimates of the prior probabilities.
 
   If \code{trace=TRUE}, a message is printed in the command line
-  indicating that it's processing the i-th data item. This can be
-  helpful since the cross-validated estimates may take a long time to
-  execute completely.
+  indicating that it's processing the i-th data item:
+  cross-validated estimates may take a long time to execute.
 }
 
 \seealso{  \code{\link{kda.kde}}}
@@ -110,10 +108,6 @@ ir.gr <- iris[,5]
 compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse")
 compare.kda.diag.cv(ir, ir.gr, bw="plug-in", pilot="samse",
    pre="scaled", binned=TRUE)
-
-\dontrun{
-compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse", recompute=TRUE)
-}
 }
 
 \keyword{ smooth }

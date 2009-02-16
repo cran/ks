@@ -8,7 +8,7 @@
 }
 
 \usage{
-drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE, estimate.positive=FALSE)
+drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE)
 }
 
 \arguments{
@@ -19,9 +19,9 @@ drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE, estimate.pos
   \item{range.x}{list of vector of ranges for x}
   \item{binned}{TRUE if x is binned counts or FALSE if x is
     data matrix} 
-  \item{se}{flag for computing standard error of kernel
+  \item{se}{flag for computing the standard error of kernel
     estimate}
-  \item{estimate.positive}{flag for ensuring all estimate values are positive}
+ %%\item{estimate.positive}{flag for ensuring all estimate values are positive}
 }
 
 \value{

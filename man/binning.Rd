@@ -28,8 +28,8 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 }
 
 \details{
-  Code is used courtesy of Matt Wand. Default \code{bgridsize} are:
-  401 (d=1), rep(151, 2), rep(51, 3), rep(21,4). 
+  Code is used courtesy of Matt Wand. Default \code{bgridsize} are
+  d=1: 401; d=2: rep(151, 2); d=3: rep(51, 3); d=4: rep(21,4). 
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
@@ -37,8 +37,8 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 
 \examples{
 data(unicef)
-unicef.binned <- binning(x=unicef)
-unicef.binned <- binning(x=unicef, xmin=c(0, 20), xmax=c(350, 100), H=diag(2), bgridsize=c(201,201))
+ubinned <- binning(x=unicef)
+ubinned <- binning(x=unicef, xmin=c(0, 20), xmax=c(350, 100))
 }
 
 \keyword{smooth}

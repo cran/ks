@@ -149,58 +149,43 @@ find.gridpts <- function(gridx, suppx)
 
 kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize,  positive=FALSE, adj.positive)
 {
+  if (is.vector(x))
+  {
+    if (missing(H)) d <- 1
+    else
+    {
+      if (is.vector(H)) d <- 1
+      else {x <- matrix(x, nrow=1); d <- ncol(x)}
+    }
+  }
+  else d <- ncol(x)
+
   ## compute binned estimator
   if (binned)
   {
     if (!missing(eval.points))
       stop("Both binned=TRUE and eval.points are non-empty.")
     
-    if (missing(bgridsize))
-    {
-      if (is.vector(x)) 
-        bgridsize <- 401
-      else
-      {
-        d <- ncol(x)
-        
-        if (d==2)
-          bgridsize <- rep(151,d)
-        else if (d==3)
-          bgridsize <- rep(51, d)
-        else if (d==4)
-          bgridsize <- rep(21, d)
-      }
-    }
-    if (positive & is.vector(x))
+    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    
+    if (positive & d==1)
     {
       y <- log(x)
-      fhat <- kde.binned(x=y, H=H, h=h, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax)
+      fhat <- kde.binned(x=y, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
       fhat$estimate <- fhat$estimate/exp(fhat$eval.points)
       fhat$eval.points <- exp(fhat$eval.points)
       fhat$x <- x
     }
     else
-      fhat <- kde.binned(x=x, H=H, h=h, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax)
+      fhat <- kde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
   }
   else
   {
     ## compute exact (non-binned) estimator
-    if (missing(gridsize))
-    {  
-      if (is.vector(x)) 
-        gridsize <- 401
-      else
-      {
-        d <- ncol(x)
-        if (d==2)
-          gridsize <- rep(151,d)
-        else 
-          gridsize <- rep(51, d)
-      }
-    }
-  
+    if (missing(gridsize)) gridsize <- default.gridsize(d)
+    
     ## 1-dimensional    
-    if (is.vector(x))
+    if (d==1)
     {
       if (!missing(H) & !missing(h))
         stop("Both H and h are both specified.")
@@ -220,7 +205,6 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
 
        if (missing(eval.points))
        {
-         d <- ncol(x)
          if (d==2)
            fhat <- kde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype)
          else if (d == 3)
@@ -238,14 +222,12 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
    ##fhat$gridtype <- gridtype
 
   ## add variable names
-  if (is.vector(x))
+  if (d==1)
   {
-    d <- 1
     x.names <- deparse(substitute(x))
   }
   else
   {  
-    d <- ncol(x)
     x.names <- colnames(x)
     if (is.null(x.names))
     {
@@ -260,75 +242,63 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   return(fhat)
  }
 
- ###############################################################################
- ### Multivariate binned kernel density estimate using normal kernels
- ###############################################################################
+###############################################################################
+### Multivariate binned kernel density estimate using normal kernels
+###############################################################################
 
 
- kde.binned <- function(x, H, h, bgridsize, supp, xmin, xmax)
- {
-   if (is.vector(x))
-   {
-     d <- 1
-     ##n <- length(x)
-   }
-   else
-   {
-     d <- ncol(x)
-     ##n <- nrow(x)
-   }
-   ##RK <- (4*pi)^(-d/2)
+kde.binned <- function(x, H, h, bgridsize, xmin, xmax, bin.par)
+{
+  ## linear binning
+  if (missing(bin.par))
+  {
+    if (is.vector(x)) d <- 1
+    else d <- ncol(x)
 
-   if (d==1)
-     if (missing(H)) H <- as.matrix(h^2)
-     else {h <- sqrt(H); H <- as.matrix(H)}
+    if (d==1)
+      if (missing(H)) H <- as.matrix(h^2)
+      else {h <- sqrt(H); H <- as.matrix(H)}
 
-   if (d > 4)
-     stop("Binning only available for 1- to 4-dim data")
+    if (!is.diagonal(H) & d > 1)
+      stop("Binned estimation defined for diagonal H only")
+     
+    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    bin.par <- binning(x=x, H=H, h, bgridsize, xmin, xmax, supp=3.7)
+  }
+  else
+  {
+    if (!is.list(bin.par$eval.points)) { d <- 1; bgridsize <- length(bin.par$eval.points)}
+    else  { d <- length(bin.par$eval.points); bgridsize <- sapply(bin.par$eval.points, length)} 
 
-   if (!identical(diag(diag(H)), H) & d > 1)
-     stop("Binning requires diagonal bandwidth matrix")
-
-    
-   if (missing(bgridsize))
-     if (d==1)
-       bgridsize <- 401
-     else if (d==2)
-       bgridsize <- rep(151,d)
-     else if (d==3)
-       bgridsize <- rep(51, d)
-     else if (d==4)
-       bgridsize <- rep(21, d)
-
-   ## linear binning
-   if (missing(xmin) | missing(xmax))
-     bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H)), supp=3.7)  
-   else
-   { 
-     xrange.list <- list()
-     for (j in 1:d)
-        xrange.list[[j]] <- c(xmin[j], xmax[j])
-
-     bin.par <- dfltCounts.ks(x, bgridsize, sqrt(diag(H)), supp=3.7, range.x=xrange.list)  
-   }
-
-   fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d),bandwidth=sqrt(diag(H)), binned=TRUE, range.x=bin.par$range.x, se=FALSE, gridsize=bgridsize)
-   eval.points <- fhat.grid$x.grid
-   fhat.grid <- fhat.grid$est
-   fhat.grid[fhat.grid<0] <- 0
-
-   if (d==1)
+    if (d==1)
+      if (missing(H)) H <- as.matrix(h^2)
+      else {h <- sqrt(H); H <- as.matrix(H)}
+  }
+  
+  if (d==1)
+    range.x <- list(range(bin.par$eval.points))
+  else
+    range.x <- lapply(bin.par$eval.points, range)
+  
+  fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+  eval.points <- fhat.grid$x.grid
+  fhat.grid <- fhat.grid$est
+  fhat.grid[fhat.grid<0] <- 0
+  
+  if (missing(x)) x <- NULL
+  
+  if (d==1)
      fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, H=h^2, h=h)
-   else
-     fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H)
+  else
+    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H)
 
-   return(fhat)
+  return(fhat)
+}
 
- }
 
- ###############################################################################
+ #############################################################################
  ## Univariate kernel density estimate on a grid
- ###############################################################################
+ #############################################################################
 
  kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype)
  {
@@ -358,7 +328,6 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
      {
        gridy.temp <- seq(sign(xmin)*sqrt(abs(xmin)), sign(xmax)*sqrt(abs(xmax)), length=gridsize)
        gridy <- sign(gridy.temp) * gridy.temp^2
-       ##gridy <- seq(sign(xmin)*sqrt(abs(xmin)), sign(xmax)*sqrt(abs(xmax)), length=gridsize)^2
        gridtype.vec <- "sqrt"
      }
    }
@@ -413,11 +382,6 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
   for (i in 1:n)
   {
     ## compute evaluation points 
-    ##eval.x <- seq(gridx[[1]][grid.pts$xmin[i,1]], 
-    ##              gridx[[1]][grid.pts$xmax[i,1]], by=gridx$stepsize[1])
-    ##eval.y <- seq(gridx[[2]][grid.pts$xmin[i,2]], 
-    ##              gridx[[2]][grid.pts$xmax[i,2]], by=gridx$stepsize[2])
-
     eval.x <- gridx[[1]][grid.pts$xmin[i,1]:grid.pts$xmax[i,1]]
     eval.y <- gridx[[2]][grid.pts$xmin[i,2]:grid.pts$xmax[i,2]]
     eval.x.ind <- c(grid.pts$xmin[i,1]:grid.pts$xmax[i,1])
@@ -480,13 +444,6 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     eval.x <- gridx[[1]][grid.pts$xmin[i,1]:grid.pts$xmax[i,1]]
     eval.y <- gridx[[2]][grid.pts$xmin[i,2]:grid.pts$xmax[i,2]]
     eval.z <- gridx[[3]][grid.pts$xmin[i,3]:grid.pts$xmax[i,3]]
-    ##eval.x <- seq(gridx[[1]][grid.pts$xmin[i,1]], 
-    ##              gridx[[1]][grid.pts$xmax[i,1]], by=gridx$stepsize[1])
-    ##eval.y <- seq(gridx[[2]][grid.pts$xmin[i,2]], 
-    ##              gridx[[2]][grid.pts$xmax[i,2]], by=gridx$stepsize[2])
-    ##eval.z <- seq(gridx[[3]][grid.pts$xmin[i,3]], 
-    ##              gridx[[3]][grid.pts$xmax[i,3]], by=gridx$stepsize[3])
- 
     eval.x.ind <- c(grid.pts$xmin[i,1]:grid.pts$xmax[i,1])
     eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
     eval.z.ind <- c(grid.pts$xmin[i,3]:grid.pts$xmax[i,3])
@@ -562,7 +519,6 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive)
     eval.pointsy <- eval.points
   }
   
-  #fhat <- dnorm.mixt(x=eval.pointsy, mus=y, sigmas=rep(h, n), props=rep(1, n)/n)
   fhat <- 0
   for (k in 1:n)
     fhat <- fhat + dnorm(x=eval.pointsy, mean=y[k], sd=h)
@@ -764,7 +720,7 @@ contourLevels <- function(x, ...){
 }   
 
 contourLevels.kde <- function(x, prob, cont, nlevels=5, ...)
-{
+{ 
   fhat <- x
   if (is.vector(fhat$x))
   {
@@ -780,7 +736,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, ...)
   ## for large sample sizes, use binned approx. 
   if (n >= 5e3 & d <= 4 & fhat$binned)
   {
-    bin.par <- dfltCounts.ks(fhat$x, bgridsize, sqrt(diag(H)), supp=3.7)
+    bin.par <- binning(fhat$x, bgridsize=bgridsize, H=H, supp=3.7)
     dobs <- rep(fhat$estimate, round(bin.par$counts,0))
     dobs <- dobs[dobs>0]
   }

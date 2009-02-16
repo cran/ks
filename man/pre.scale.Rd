@@ -35,19 +35,20 @@ pre.scale(x, mean.centred=FALSE)
   
 }
 
-\references{ Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth
-    selection. \emph{Computational Statistics}, \bold{9}, 97-116.
-  
-  Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
-    bivariate kernel density estimation. \emph{Journal of Nonparametric
-  Statistics}, \bold{15}, 17-30.
-}
+%%\references{ Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth
+%%    selection. \emph{Computational Statistics}, \bold{9}, 97-116.
+%%  
+%%  Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
+%%    bivariate kernel density estimation. \emph{Journal of Nonparametric
+%%  Statistics}, \bold{15}, 17-30.
+%%}
 
 \examples{
-x <- rmvnorm.mixt(1000, mus=c(1,0.5), Sigmas=rbind(c(1,0.2), c(0.2, 0.5))) 
-x.sp <- pre.sphere(x)
-x.sc <- pre.scale(x, mean.centred=TRUE)
-var(x.sp)
-var(x.sc)
+data(unicef)
+unicef <- as.matrix(unicef)
+unicef.sp <- pre.sphere(unicef)
+unicef.sc <- pre.scale(unicef, mean.centred=TRUE)
+var(unicef.sp)
+var(unicef.sc)
 }
 \keyword{ algebra }
