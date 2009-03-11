@@ -345,6 +345,7 @@ psifun2.nd <- function(x.star, d, pilot="samse", binned, bin.par)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
+ 
   if (!binned)
     x.star.diff <- differences(x.star, upper=FALSE)
 
@@ -360,12 +361,10 @@ psifun2.nd <- function(x.star, d, pilot="samse", binned, bin.par)
   if (pilot=="samse")
     g6.star <- gsamse.nd(Sigma.star=S.star, n=n, modr=6)
   G6.star <- g6.star^2 * diag(d) 
- 
+  
   for (k in 1:nrow(derivt6))
   {
     r <- derivt6[k,]
-   
-    
     if (binned)
       psihat6.star[k] <- kfe(bin.par=bin.par, G=G6.star, r=r, binned=TRUE)
     else 
@@ -524,7 +523,7 @@ psimat.2d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
 }
 
 psimat.nd <- function(x.star, d, nstage=1, pilot="samse", binned, bin.par)
-{  
+{
   if (nstage==1)
     psi.fun <- psifun1.nd(x.star, d=d, pilot=pilot, binned=binned, bin.par=bin.par)
   else if (nstage==2)
@@ -623,8 +622,8 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     ##bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max)))
 
     ## for large samples, take subset for pilot estimation
-    nsub <- min(n, 1e4)
-    x.star.sub <- x.star[1:nsub,]
+    nsub <- n ## min(n, 1e4)
+    x.star.sub <- x.star[sample(1:n, size=nsub),] 
     bin.par.sub <- binning(x=x.star.sub, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
   }
   else 
@@ -721,6 +720,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 # Plug-in diagonal bandwidth matrix
 ###############################################################################
 
+
 Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALSE, bgridsize)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
@@ -753,10 +753,10 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   if (binned)
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    ##bin.par <- binning(x.star, bgridsize, sqrt(diag(H.max)))
+    ## bin.par <- binning(x.star, bgridsize, sqrt(diag(H.max)))
     ## for large samples, take subset for pilot estimation
-    nsub <- min(n, 1e4)
-    x.star.sub <- x.star[sample(1:n, size=nsub),]
+    nsub <- n ##min(n, 1e4)
+    x.star.sub <- x.star[sample(1:n, size=nsub),]  
     bin.par.sub <- binning(x=x.star.sub, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
   }
   else
@@ -792,7 +792,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
        Hstart <- Sinv12 %*% Hstart %*% Sinv12
 
     Hstart <- matrix.sqrt(Hstart)
- 
+    
     psi4.mat <- psimat.nd(x.star.sub, d=d, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par.sub)    
   
     ## PI is estimate of AMISE
@@ -802,7 +802,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
       pi.temp <- 1/(det(H)^(1/2)*n)*RK + 1/4* t(vech(H)) %*% psi4.mat %*% vech(H)
     return(drop(pi.temp)) 
     }
-    
+   
     result <- optim(diag(Hstart), pi.temp, method="BFGS")
     H <- diag(result$par) %*% diag(result$par)
   

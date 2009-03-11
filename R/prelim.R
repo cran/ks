@@ -736,3 +736,4 @@ default.gridsize <- function(d)
 
   return(gridsize)
 }
+
