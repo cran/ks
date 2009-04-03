@@ -847,14 +847,8 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
   ##dobs <- numeric(0)
   xx <- numeric(0)
 
-  for (j in 1:m)
-    xx <- rbind(xx, fhat$x[[j]])
-
-  ##x.gr <- sort(unique(fhat$x.group))
-
-  ##if (fhat$binned)
-  ##  bin.par.xx <- dfltCounts.ks(xx, gridsize=dim(fhat$est[[j]]), sqrt(diag(fhat$H[[j]])), supp=3.7)
-
+  for (j in 1:m) xx <- rbind(xx, fhat$x[[j]])
+  
   ## common contour levels removed from >= v1.5.3 
 
   if (missing(abs.cont))

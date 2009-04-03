@@ -43,7 +43,6 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
   if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
   if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
  
-  ##bin.counts <- dfltCounts.ks(x=x, gridsize=bgridsize, h=h, supp=supp, range.x=range.x)
   bin.counts <- list(counts=counts, eval.points=gpoints)
   if (d==1) bin.counts$eval.points <- gpoints[[1]]
      
@@ -59,7 +58,7 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 
 # Last changed: 18 JUL 2005
 
-dfltCounts.ks <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
+dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
 {
    x <- as.matrix(x)
    d <- ncol(x)
@@ -187,22 +186,23 @@ linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
 ## If r is skew-symmetric then "skewflag"=-1.
 
  
-symconv.ks  <- function(r,s,skewflag=1)
-
+symconv.ks <- function (rr,ss,skewflag = 1) 
 {
-  L <- length(r)-1
-  M <- length(s) 
-  P <- 2^(ceiling(log(M+L)/log(2))) # smallest power of 2>=M+L         
-  r <- c(r,rep(0,P-2*L-1),skewflag*r[(L+1):2])
-                                        # wrap-around version of r
-  s <- c(s,rep(0,P-M))              # zero-padded version of s
-  R <- fft(r)                       # Obtain FFT's of r and s  
-  S <- fft(s)
-  t <- fft(R*S,TRUE)               # invert element-wise product of FFT's 
-  return((Re(t)/P)[1:M])            # return normalized truncated t
+  L <- length(rr) - 1
+  M <- length(ss)
+  P <- 2^(ceiling(log(M + L)/log(2)))
+  rp <- rep(0,P)
+  rp[1:(L+1)] <- rr
+  if (L>0) rp[(P-L+1):P] <- skewflag*rr[(L+1):2]
+  sp <- rep(0,P) 
+  sp[1:M] <- ss
+  R <- fft(rp)
+  S <- fft(sp)
+  t <- fft(R * S, TRUE)
+  return((Re(t)/P)[1:M])
 }
 
- 
+
 symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
 
 {  
@@ -214,17 +214,17 @@ symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
   M2 <- M[2]
   P1 <- 2^(ceiling(log(M1+L1)/log(2))) # smallest power of 2 >= M1+L1         
   P2 <- 2^(ceiling(log(M2+L2)/log(2))) # smallest power of 2 >= M2+L2         
-  
+
   rp <- matrix(0,P1,P2)
   rp[1:(L1+1),1:(L2+1)] <- rr
   if (L1>0)
     rp[(P1-L1+1):P1,1:(L2+1)] <- skewflag[1]*rr[(L1+1):2,]
   if (L2>0)
-    {
-      rp[1:(L1+1),(P2-L2+1):P2] <- skewflag[2]*rr[,(L2+1):2]
-      rp[(P1-L1+1):P1,(P2-L2+1):P2] <-  prod(skewflag)*rr[(L1+1):2,(L2+1):2]   
-    }
-                                        # wrap around version of rr
+    rp[1:(L1+1),(P2-L2+1):P2] <- skewflag[2]*rr[,(L2+1):2]
+  if (L1 > 0 & L2 > 0)
+    rp[(P1-L1+1):P1,(P2-L2+1):P2] <- prod(skewflag)*rr[(L1+1):2,(L2+1):2]   
+  
+                                      # wrap around version of rr
   sp <- matrix(0,P1,P2)
   sp[1:M1,1:M2] <- ss                 # zero-padded version of ss
   
@@ -236,7 +236,6 @@ symconv2D.ks <- function(rr,ss,skewflag=rep(1,2))
 
 
 symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
-
 {  
    L <- dim(rr) - 1
 
@@ -249,17 +248,21 @@ symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
 
    rp <- array(0,P) 
    rp[1:(L1+1),1:(L2+1),1:(L3+1)] <- rr
-   rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1)] <- sf[1]*rr[(L1+1):2,1:(L2+1),1:(L3+1)]
-   rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1)] <- sf[2]*rr[1:(L1+1),(L2+1):2,1:(L3+1)]
-   rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3] <- sf[3]*rr[1:(L1+1),1:(L2+1),(L3+1):2]
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1)] <-  
-                                   sf[1]*sf[2]*rr[(L1+1):2,(L2+1):2,1:(L3+1)]
-   rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3] <-  
-                                   sf[2]*sf[3]*rr[1:(L1+1),(L2+1):2,(L3+1):2]
-   rp[(P1-L1+1):P1,1:(L2+1),(P3-L3+1):P3] <-  
-                                   sf[1]*sf[3]*rr[(L1+1):2,1:(L2+1),(L3+1):2]
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3] <-  
-                             sf[1]*sf[2]*sf[3]*rr[(L1+1):2,(L2+1):2,(L3+1):2]
+   if (L1>0)
+     rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1)] <- sf[1]*rr[(L1+1):2,1:(L2+1),1:(L3+1)]
+   if (L2>0)
+     rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1)] <- sf[2]*rr[1:(L1+1),(L2+1):2,1:(L3+1)]
+   if (L3>0)
+     rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3] <- sf[3]*rr[1:(L1+1),1:(L2+1),(L3+1):2]
+   if (L1>0 & L2>0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1)] <- sf[1]*sf[2]*rr[(L1+1):2,(L2+1):2,1:(L3+1)]
+   if (L2>0 & L3>0)
+     rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3] <- sf[2]*sf[3]*rr[1:(L1+1),(L2+1):2,(L3+1):2]
+   if (L1>0 & L3>0)
+     rp[(P1-L1+1):P1,1:(L2+1),(P3-L3+1):P3] <- sf[1]*sf[3]*rr[(L1+1):2,1:(L2+1),(L3+1):2]
+   if (L1>0 & L2>0 & L3>0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3] <- sf[1]*sf[2]*sf[3]*rr[(L1+1):2,(L2+1):2,(L3+1):2]
+   
    sp <- array(0,P)
    sp[1:M1,1:M2,1:M3] <- ss            # zero-padded version of ss
 
@@ -271,10 +274,8 @@ symconv3D.ks <- function(rr,ss,skewflag=rep(1,3))
 
  
 symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
-
 {  
    L <- dim(rr) - 1
-
    M <- dim(ss) 
    P <- 2^(ceiling(log(M+L)/log(2))) # smallest powers of 2 >= M+L
    L1 <- L[1] ; L2 <- L[2] ; L3 <- L[3] ; L4 <- L[4]
@@ -282,37 +283,40 @@ symconv4D.ks <- function(rr,ss,skewflag=rep(1,4))
    P1 <- P[1] ; P2 <- P[2] ; P3 <- P[3] ; P4 <- P[4] 
    sf <- skewflag
 
-
    rp <- array(0,P) 
    rp[1:(L1+1),1:(L2+1),1:(L3+1),1:(L4+1)] <- rr
 
-   rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1),1:(L4+1)] <- sf[1]*rr[(L1+1):2,1:(L2+1),1:(L3+1),1:(L4+1)]
-   rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1),1:(L4+1)] <- sf[2]*rr[1:(L1+1),(L2+1):2,1:(L3+1),1:(L4+1)]
-   rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3,1:(L4+1)] <- sf[3]*rr[1:(L1+1),1:(L2+1),(L3+1):2,1:(L4+1)]
-   rp[1:(L1+1),1:(L2+1),1:(L3+1),(P4-L4+1):P4] <- sf[4]*rr[1:(L1+1),1:(L2+1),1:(L3+1),(L4+1):2]
-     
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1),1:(L4+1)] <-  
-     sf[1]*sf[2]*rr[(L1+1):2,(L2+1):2,1:(L3+1),1:(L4+1)]
-   rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3,1:(L4+1)] <-  
-     sf[2]*sf[3]*rr[1:(L1+1),(L2+1):2,(L3+1):2,1:(L4+1)]
-   rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3,(P4-L4+1):P4] <-
-     sf[3]*sf[4]*rr[1:(L1+1),1:(L2+1),(L3+1):2,(L4+1):2]
-   rp[(P1-L1+1):P1,1:(L2+1),(P3-L3+1):P3,1:(L4+1)] <-  
-     sf[1]*sf[3]*rr[(L1+1):2,1:(L2+1),(L3+1):2,1:(L4+1)]
-   rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1),(P4-L4+1):P4] <-
-     sf[2]*sf[4]*rr[1:(L1+1),(L2+1):2,1:(L3+1),(L4+1):2]
-   rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1),(P4-L4+1):P4] <-
-     sf[1]*sf[4]*rr[(L1+1):2,1:(L2+1),1:(L3+1),(L4+1):2]
-   
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3,1:(L4+1)] <-  
-     sf[1]*sf[2]*sf[3]*rr[(L1+1):2,(L2+1):2,(L3+1):2,1:(L4+1)]
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1),(P4-L4+1):P4] <-  
-     sf[1]*sf[2]*sf[4]*rr[(L1+1):2,(L2+1):2,1:(L3+1),(L4+1):2]
-   rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3,(P4-L4+1):P4] <-  
-     sf[2]*sf[3]*sf[4]*rr[1:(L1+1),(L2+1):2,(L3+1):2,(L4+1):2]
+   if (L1>0)
+     rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1),1:(L4+1)] <- sf[1]*rr[(L1+1):2,1:(L2+1),1:(L3+1),1:(L4+1)]
+   if (L2>0)
+     rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1),1:(L4+1)] <- sf[2]*rr[1:(L1+1),(L2+1):2,1:(L3+1),1:(L4+1)]
+   if (L3>0)
+     rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3,1:(L4+1)] <- sf[3]*rr[1:(L1+1),1:(L2+1),(L3+1):2,1:(L4+1)]
+   if (L4>0)
+     rp[1:(L1+1),1:(L2+1),1:(L3+1),(P4-L4+1):P4] <- sf[4]*rr[1:(L1+1),1:(L2+1),1:(L3+1),(L4+1):2]
 
-   rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3,(P4-L4+1):P4] <-  
-     sf[1]*sf[2]*sf[3]*sf[4]*rr[(L1+1):2,(L2+1):2,(L3+1):2,(L4+1):2]
+   if (L1>0 & L2 >0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1),1:(L4+1)] <- sf[1]*sf[2]*rr[(L1+1):2,(L2+1):2,1:(L3+1),1:(L4+1)]
+   if (L2>0 & L3>0)
+     rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3,1:(L4+1)] <- sf[2]*sf[3]*rr[1:(L1+1),(L2+1):2,(L3+1):2,1:(L4+1)]
+   if (L3>0 & L4>0)
+     rp[1:(L1+1),1:(L2+1),(P3-L3+1):P3,(P4-L4+1):P4] <- sf[3]*sf[4]*rr[1:(L1+1),1:(L2+1),(L3+1):2,(L4+1):2]
+   if (L1>0 & L3>0)
+     rp[(P1-L1+1):P1,1:(L2+1),(P3-L3+1):P3,1:(L4+1)] <- sf[1]*sf[3]*rr[(L1+1):2,1:(L2+1),(L3+1):2,1:(L4+1)]
+   if (L2>0 & L4>0)
+     rp[1:(L1+1),(P2-L2+1):P2,1:(L3+1),(P4-L4+1):P4] <- sf[2]*sf[4]*rr[1:(L1+1),(L2+1):2,1:(L3+1),(L4+1):2]
+   if (L1>0 & L4>0)
+     rp[(P1-L1+1):P1,1:(L2+1),1:(L3+1),(P4-L4+1):P4] <- sf[1]*sf[4]*rr[(L1+1):2,1:(L2+1),1:(L3+1),(L4+1):2]
+   
+   if (L1>0 & L2>0 & L3>0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3,1:(L4+1)] <- sf[1]*sf[2]*sf[3]*rr[(L1+1):2,(L2+1):2,(L3+1):2,1:(L4+1)]
+   if (L1>0 & L2>0 & L4>0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,1:(L3+1),(P4-L4+1):P4] <- sf[1]*sf[2]*sf[4]*rr[(L1+1):2,(L2+1):2,1:(L3+1),(L4+1):2]
+   if (L2>0 & L3>0 & L4>0)
+     rp[1:(L1+1),(P2-L2+1):P2,(P3-L3+1):P3,(P4-L4+1):P4] <- sf[2]*sf[3]*sf[4]*rr[1:(L1+1),(L2+1):2,(L3+1):2,(L4+1):2]
+
+   if (L1>0 & L2>0 & L3>0 & L4>0)
+     rp[(P1-L1+1):P1,(P2-L2+1):P2,(P3-L3+1):P3,(P4-L4+1):P4] <- sf[1]*sf[2]*sf[3]*sf[4]*rr[(L1+1):2,(L2+1):2,(L3+1):2,(L4+1):2]
    
    sp <- array(0,P)
    sp[1:M1,1:M2,1:M3,1:M4] <- ss            # zero-padded version of ss

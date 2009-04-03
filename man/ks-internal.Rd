@@ -2,6 +2,7 @@
 
 \alias{Sdr}
 \alias{ise.diff}
+\alias{dfltCounts}
 
 \title{Internal functions in the ks library}
 \description{

@@ -875,7 +875,7 @@ hlscv <- function(x, binned=TRUE, bgridsize)
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
   if (missing(bgridsize)) bgridsize <- 401
   
-  xbin.par <- dfltCounts.ks(x, gridsize=bgridsize)
+  xbin.par <- dfltCounts(x, gridsize=bgridsize)
 
   lscv.1d.temp <- function(h)
   {
