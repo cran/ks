@@ -1,12 +1,11 @@
-cccccccccc FORTRAN subroutine linbin.f cccccccccc
+cccccccccc FORTRAN subroutine linbin2009.f cccccccccc
 
-c Obtains bin counts for univariate data
-c via the linear binning strategy. If "trun=0" then
-c weight from end observations is given to corresponding
-c end grid points. If "trun=1" then end observations
-c are truncated.
+c Obtains bin counts for univariate data via the linear 
+c binning strategy. If "trun=0" then weight from end 
+c observations is given to corresponding end grid points. 
+c If "trun=1" then end observations are truncated.
 
-c Last changed: 27/01/95
+c Last changed: 20 MAR 2009
 
       subroutine linbin(X,n,a,b,M,trun,gcounts)     
       double precision X(*),a,b,gcounts(*),lxi,delta,rem
@@ -30,16 +29,19 @@ c        Find integer part of "lxi"
          if (li.ge.1.and.li.lt.M) then
             gcounts(li) = gcounts(li) + (1-rem)
             gcounts(li+1) = gcounts(li+1) + rem
-         elseif (li.lt.1.and.trun.eq.0) then
-            gcounts(1) = gcounts(1) + 1
-         elseif (li.ge.M) then
-            if (li.eq.M.or.trun.eq.0) then 
-               gcounts(M) = gcounts(M) + 1
-            endif
          endif
+
+         if (li.lt.1.and.trun.eq.0) then
+            gcounts(1) = gcounts(1) + 1
+         endif
+
+         if (li.ge.M.and.trun.eq.0) then
+            gcounts(M) = gcounts(M) + 1
+         endif
+
 20    continue
 
       return
       end
 
-cccccccccc End of linbin.f cccccccccc
+cccccccccc End of linbin2009.f cccccccccc

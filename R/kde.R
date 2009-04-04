@@ -700,11 +700,13 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, colors,
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
   else
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
-  
+
   for (i in 1:nc)
-    contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]],
+    if (hts[nc-i+1] < max(fhat$estimate))
+      contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]],
               y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE,
-              color=colors[i], alpha=alphavec[i], ...)
+                color=colors[i], alpha=alphavec[i], ...)
+    
 }
 
 
