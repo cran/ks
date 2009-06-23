@@ -1,7 +1,18 @@
 README file for ks
 
+New in v1.6
 
-New v1.5
+1. Reorganised and renamed internal bandwidth selection functions. 
+
+2. Streamlined code sharing with feature package (all binning code now
+contained only in ks).
+
+3. 1-d binned KDE fix from M.P. Wand. 
+ 
+
+--------------------------------------------------------------------------
+
+New in v1.5
 
 1. New functions to compute pilot functinal estimators hat{psi}_r(g).
 These are exact, and are more efficient than binned estimators for small

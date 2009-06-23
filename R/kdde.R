@@ -131,7 +131,7 @@ kdde.binned <- function(x, H, h, r, bgridsize, xmin, xmax, bin.par)
 ### on grid counts.
 #############################################################
 
-drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
+drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE, w)
 {  
    d <- length(drv)
    if (d==1) x <- as.matrix(x)
@@ -154,6 +154,8 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
        if (d==1) gridsize <- dim(x)[1]
        else gridsize <- dim(x)
      }
+
+   if(missing(w)) w <- rep(1,nrow(x))
    ## Bin the data if not already binned
   
    if (missing(range.x)) 
@@ -174,10 +176,10 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE)
 
    if (binned==FALSE)
    {
-     if (d==1) gcounts <- linbin.ks(x,gpoints[[1]])
-     if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-     if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
-     if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+     if (d==1) gcounts <- linbin.ks(x,gpoints[[1]], w=w)
+     if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
+     if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
+     if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
    }
    else
      gcounts <- x

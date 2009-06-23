@@ -7,8 +7,8 @@ c If "trun=1" then end observations are truncated.
 
 c Last changed: 20 MAR 2009
 
-      subroutine linbin(X,n,a,b,M,trun,gcounts)     
-      double precision X(*),a,b,gcounts(*),lxi,delta,rem
+      subroutine linbin(X,n,a,b,M,trun,w,gcounts)     
+      double precision X(*),a,b,w(*),gcounts(*),lxi,delta,rem
       integer n,M,i,li,trun
 
 c     Initialize grid counts to zero
@@ -27,19 +27,18 @@ c        Find integer part of "lxi"
 
          rem = lxi - li
          if (li.ge.1.and.li.lt.M) then
-            gcounts(li) = gcounts(li) + (1-rem)
-            gcounts(li+1) = gcounts(li+1) + rem
+            gcounts(li) = gcounts(li) + w(i)*(1-rem)
+            gcounts(li+1) = gcounts(li+1) + w(i)*rem
          endif
 
          if (li.lt.1.and.trun.eq.0) then
-            gcounts(1) = gcounts(1) + 1
+            gcounts(1) = gcounts(1) + w(i)
          endif
 
          if (li.ge.M.and.trun.eq.0) then
-            gcounts(M) = gcounts(M) + 1
+            gcounts(M) = gcounts(M) + w(i)
          endif
-
-20    continue
+ 20   continue
 
       return
       end

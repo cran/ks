@@ -41,9 +41,9 @@ gamma.r <- function(mu, Sigma, d, r, Sd2r)
 ## gamma functional for AMISE 
 gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H)
 {
-  
   Sigmainv <- chol2inv(chol(Sigma))
-  w <- vec(K.pow(Sigmainv %*% Sigmainv, r)) %x% vec(K.pow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4 
+  w <- vec(K.pow(Sigmainv %*% Sigmainv, r)) %x% vec(K.pow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
+  ##w <- K.pow(vec(Sigmainv %*% Sigmainv), r) %x% K.pow(vec(Sigmainv %*% H %*% Sigmainv), 2) %*% Sd2r4 
   v <- rep(0,length=d^(2*r+4))
   for(j in 0:(r+2))
     v <- v+((-1)^j*OF(2*j)*choose(2*r+4, 2*j))*(K.pow(mu,2*r-2*j+4)%x%K.pow(vec(Sigma),j))

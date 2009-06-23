@@ -59,7 +59,7 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
-    dens <- dnorm(x, mean=mus, sd=sigmas)
+    dens <- dnorm(x, mean=mus[1], sd=sigmas[1])
 
   ## multiple component mixture
   else   
@@ -286,7 +286,10 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
    
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
-    dens <- dmvnorm(x=x, mean=mus, sigma=Sigmas)
+  {
+    if (is.matrix(mus)) mus <- mus[1,]
+    dens <- dmvnorm(x=x, mean=mus, sigma=Sigmas[1:d,])
+  }
   ## multiple component mixture
   else   
   {   
@@ -1381,18 +1384,18 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
   require(misc3d)
   d <- 3
   dist <- tolower(substr(dist,1,1))
-  maxSigmas <- 3.7*max(Sigmas)
+  maxsd <- sqrt(apply(Sigmas, 2, max))
 
   if (is.vector(mus))
     mus <- as.matrix(t(mus))
-  
+
   if (missing(xlim))
-    xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
+    xlim <- c(min(mus[,1]) - 4*maxsd[1], max(mus[,1]) + 4*maxsd[1])
   if (missing(ylim))
-    ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
+    ylim <- c(min(mus[,2]) - 4*maxsd[2], max(mus[,2]) + 4*maxsd[2])
   if (missing(zlim))
-    zlim <- c(min(mus[,3]) - maxSigmas, max(mus[,3]) + maxSigmas)
-  
+    zlim <- c(min(mus[,3]) - 4*maxsd[3], max(mus[,3]) + 4*maxsd[3])
+
   if (missing(gridsize))
     gridsize <- rep(51,d)
   
@@ -1436,14 +1439,18 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
-  plot3d(x, y, z, type="n", add=add, ...)
-
+  ##plot3d(x, y, z, type="n", add=add, ...)
+  if (!add) clear3d()
+  
   for (i in 1:nc) 
   {
-    ##scale <- cont[i]/hts[i]
-    contour3d(dens.array, level=hts[nc-i+1],x, y, z, add=TRUE, color=colors[i],
-             alpha=alphavec[i], ...)
+    contour3d(dens.array, level=hts[nc-i+1], x,y,z, add=TRUE, color=colors[i],
+             alpha=alphavec[i],...)
   }
+  decorate3d(...)
+  fhat <- list(eval.points=list(x, y, z), estimate=dens.array, cont=hts)
+ 
+  invisible(fhat)
 }
 
 
@@ -1561,7 +1568,7 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
     {
       if (n.prop[i] > 0)
       {  
-        rand.temp<-rmvt(n=n.prop[i],sigma=Sigmas[((i-1)*d+1):(i*d),],df=dfs[k])
+        rand.temp<-rmvt(n=n.prop[i],sigma=Sigmas[((i-1)*d+1):(i*d),],df=dfs[i])
         for (j in 1:length(mus[k,]))
           rand.temp[,j] <- rand.temp[,j] + mus[i,j]
        

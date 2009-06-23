@@ -7,7 +7,7 @@
 }
 \usage{
 kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
-        supp=3.7, eval.points=NULL, binned=FALSE, bgridsize)
+        supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w)
 }
 
 \arguments{
@@ -24,6 +24,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - only required if
 	\code{binned=TRUE}}
+  \item{w}{vector of weights (non-negative and sum is equal to sample size)}
 }
   
 
@@ -39,8 +40,9 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{eval.points}{points that density estimate is evaluated at}
   \item{estimate}{density estimate at \code{eval.points}}  
   \item{prior.prob}{prior probabilities}
-  \item{H}{bandwidth matrices (>1-d only)  or } 
+  \item{H}{bandwidth matrices (>1-d only) or} 
   \item{h}{bandwidths (1-d only)}
+  \item{w}{weights}
 }
 
 \details{
@@ -63,7 +65,9 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
 
   The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
   is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximim of the
-  diagonal elements of \code{H}. 
+  diagonal elements of \code{H}.
+
+  The default weights \code{w} is a vector of all ones.
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
