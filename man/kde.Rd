@@ -7,7 +7,7 @@
 }
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-    binned=FALSE, bgridsize, positive=FALSE, adj.positive)
+    binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
 }
 
 \arguments{
@@ -26,6 +26,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{adj.positive}{adjustment added to data i.e. when
 	\code{positive=TRUE} KDE is carried out on \code{log(x +
 	  adj.positive)}. Default is the minimum of \code{x}.}
+  \item{w}{vector of weights (non-negative and sum is equal to sample size)}
 
 }
   
@@ -38,6 +39,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{estimate}{density estimate at \code{eval.points}}
   \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth (1-d only)}
+  \item{w}{weights}
 }
 
 \details{
@@ -56,7 +58,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
   The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
   is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximim of the
-  diagonal elements of \code{H}. 
+  diagonal elements of \code{H}.
+
+  The default weights \code{w} is a vector of all ones.
 }
 
 \references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.

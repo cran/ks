@@ -6,10 +6,10 @@ c observations outside the mesh are ignored.
 
 c Last changed: 28 JUL 2005
 
-      subroutine lbthrd(X,n,a1,a2,a3,b1,b2,b3,M1,M2,M3,gcounts)  
+      subroutine lbthrd(X,n,a1,a2,a3,b1,b2,b3,M1,M2,M3,w,gcounts)  
       integer n,M1,M2,M3,i,li1,li2,li3,ind1,ind2,ind3,ind4
       integer ind5,ind6,ind7,ind8
-      double precision X(*),a1,a2,a3,b1,b2,b3,gcounts(*)
+      double precision X(*),a1,a2,a3,b1,b2,b3,gcounts(*),w(*)
       double precision lxi1,lxi2,lxi3,delta1,delta2,delta3
       double precision rem1,rem2,rem3
 
@@ -49,14 +49,14 @@ c        Find the integer part of "lxi1","lxi2" and "lxi3"
                            ind6 = li1+1+M1*(li2-1)+M1*M2*li3
                            ind7 = li1+M1*li2+M1*M2*li3
                            ind8 = li1+1+M1*li2+M1*M2*li3
-             gcounts(ind1) = gcounts(ind1)+(1-rem1)*(1-rem2)*(1-rem3)
-             gcounts(ind2) = gcounts(ind2)+rem1*(1-rem2)*(1-rem3)
-             gcounts(ind3) = gcounts(ind3)+(1-rem1)*rem2*(1-rem3)
-             gcounts(ind4) = gcounts(ind4)+rem1*rem2*(1-rem3)
-             gcounts(ind5) = gcounts(ind5)+(1-rem1)*(1-rem2)*rem3
-             gcounts(ind6) = gcounts(ind6)+rem1*(1-rem2)*rem3
-             gcounts(ind7) = gcounts(ind7)+(1-rem1)*rem2*rem3
-             gcounts(ind8) = gcounts(ind8)+rem1*rem2*rem3                
+         gcounts(ind1) = gcounts(ind1)+w(i)*((1-rem1)*(1-rem2)*(1-rem3))
+         gcounts(ind2) = gcounts(ind2)+w(i)*(rem1*(1-rem2)*(1-rem3))
+         gcounts(ind3) = gcounts(ind3)+w(i)*((1-rem1)*rem2*(1-rem3))
+         gcounts(ind4) = gcounts(ind4)+w(i)*(rem1*rem2*(1-rem3))
+         gcounts(ind5) = gcounts(ind5)+w(i)*((1-rem1)*(1-rem2)*rem3)
+         gcounts(ind6) = gcounts(ind6)+w(i)*(rem1*(1-rem2)*rem3)
+         gcounts(ind7) = gcounts(ind7)+w(i)*((1-rem1)*rem2*rem3)
+         gcounts(ind8) = gcounts(ind8)+w(i)*(rem1*rem2*rem3)               
                         endif
                      endif
                   endif

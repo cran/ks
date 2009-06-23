@@ -8,7 +8,7 @@
 }
 
 \usage{
-drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE)
+drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE, w)
 }
 
 \arguments{
@@ -21,7 +21,7 @@ drvkde(x, drv, bandwidth, gridsize, range.x, binned=FALSE, se=TRUE)
     data matrix} 
   \item{se}{flag for computing the standard error of kernel
     estimate}
- %%\item{estimate.positive}{flag for ensuring all estimate values are positive}
+  \item{w}{vector of weights (non-negative and sum is equal to sample size)}
 }
 
 \value{

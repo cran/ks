@@ -436,13 +436,13 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize)
+kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w)
 {
   if (is.vector(x))
   {
     if (missing(gridsize))  gridsize <- 101
     if (missing(bgridsize)) bgridsize <- 401
-    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, eval.points=eval.points, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, eval.points=eval.points, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w)
   }
   else
   {
@@ -460,8 +460,9 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
 
     if (missing(xmin)) xmin <- apply(x, 2, min) - supp*det(Hmax)
     if (missing(xmax)) xmax <- apply(x, 2, max) + supp*det(Hmax)
+    if (missing(w)) w <- rep(1, nrow(x))
     
-    if (d > 4)
+    if (binned & d > 4)
       stop("Binning only available for 1- to 4-dim data")
     
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
@@ -470,16 +471,17 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
     fhat.list <- list()
     for (j in 1:m)
     {
-      xx <- x[x.group==grlab[j],]     
+      xx <- x[x.group==grlab[j],]
+      ww <- w[x.group==grlab[j]]   
       H <- Hs[((j-1)*d+1) : (j*d),]     
       
       ## compute individual density estimate
       if (binned)
-        fhat.temp <- kde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax)
+        fhat.temp <- kde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax, w=ww)
       else if (is.null(eval.points))
-        fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
+        fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
       else
-        fhat.temp <- kde(x=xx, H=H, eval.points=eval.points)
+        fhat.temp <- kde(x=xx, H=H, eval.points=eval.points, w=ww)
       
       fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
       fhat.list$eval.points <- fhat.temp$eval.points
@@ -502,7 +504,7 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
   return(fhat.list)
 }
 
-kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax)
+kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax, w)
 {
   grlab <- sort(unique(x.group))
   m <- length(grlab)
@@ -510,20 +512,22 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
   hmax <- max(hs)
   if (missing(xmin)) xmin <- min(x) - supp*hmax
   if (missing(xmax)) xmax <- max(x) + supp*hmax
+  if (missing(w)) w <- rep(1, length(x))
   
   fhat.list <- list()
   for (j in 1:m)
   {
     xx <- x[x.group==grlab[j]]
+    ww <- w[x.group==grlab[j]]
     h <- hs[j]
     
     ## compute individual density estimate
     if (binned)
-      fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize)
+      fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, w=ww)
     else if (is.null(eval.points))
-      fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize)
+      fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
     else
-      fhat.temp <- kde(x=xx, h=h, eval.points=eval.points)
+      fhat.temp <- kde(x=xx, h=h, eval.points=eval.points, w=ww)
     
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
     fhat.list$eval.points <- fhat.temp$eval.points

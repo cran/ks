@@ -5,11 +5,12 @@
 ########################################################################
 
 
-binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
+binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
 {
   x <- as.matrix(x)
   d <- ncol(x)
-
+  n <- nrow(x)
+  if (missing(w)) w <- rep(1,n)
   if (d>1 & !missing(H))
      if (!identical(diag(diag(H)), H))
        stop("Binning requires diagonal bandwidth matrix")
@@ -30,6 +31,8 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
     for (i in 1:d)
       range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
   }
+
+  ##if (missing(weights)) weights <- rep(1, n)
   
   a <- unlist(lapply(range.x,min))
   b <- unlist(lapply(range.x,max))
@@ -38,12 +41,12 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
   for (id in 1:d)
     gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
  
-  if (d==1) counts <- linbin.ks(x,gpoints[[1]]) 
-  if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-  if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
-  if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+  if (d==1) counts <- linbin.ks(x,gpoints[[1]], w=w) 
+  if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
+  if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
+  if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
  
-  bin.counts <- list(counts=counts, eval.points=gpoints)
+  bin.counts <- list(counts=counts, eval.points=gpoints, w=w)
   if (d==1) bin.counts$eval.points <- gpoints[[1]]
      
   return(bin.counts)
@@ -58,11 +61,13 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7)
 
 # Last changed: 18 JUL 2005
 
-dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x)
+dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, range.x, w)
 {
    x <- as.matrix(x)
    d <- ncol(x)
-
+   n <- nrow(x)
+   if (missing(w)) w <- rep(1,n)
+   
    if (missing(range.x))
    {
      range.x <- list()
@@ -79,13 +84,10 @@ dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, ra
  
    if ((d!=1)&(d!=2)&(d!=3)&(d!=4)) stop("currently only for d=1,2,3,4")
 
-   if (d==1) gcounts <- linbin.ks(x,gpoints[[1]]) 
-      
-   if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]])
-
-   if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]])
-   
-   if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]])
+   if (d==1) gcounts <- linbin.ks(x,gpoints[[1]], w=w) 
+   if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
+   if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
+   if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
    
    return(list(counts=gcounts,range.x=range.x))
 }
@@ -97,22 +99,23 @@ dfltCounts <- function(x,gridsize=rep(64,NCOL(x)),h=rep(0,NCOL(x)), supp=3.7, ra
 ## Linear binning
 ########################################################################
 
-linbin.ks <- function(X,gpoints,truncate=TRUE)
-
+linbin.ks <- function(X,gpoints,truncate=TRUE, w)
 {
    n <- length(X)
    M <- length(gpoints)  
    trun <- 0
    if (truncate) trun <- 1
+   if (missing(w)) w <- rep(1, n)
+     
    a <- gpoints[1]
    b <- gpoints[M]
    out <- .Fortran("linbin",as.double(X),as.integer(n),
            as.double(a),as.double(b),as.integer(M),
-           as.integer(trun),double(M),PACKAGE="ks")
-   return(out[[7]])
+           as.integer(trun), as.double(w), double(M),PACKAGE="ks")
+   return(out[[8]])
 }
 
-linbin2D.ks <- function(X,gpoints1,gpoints2)
+linbin2D.ks <- function(X,gpoints1,gpoints2, w)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2]) 
@@ -122,13 +125,15 @@ linbin2D.ks <- function(X,gpoints1,gpoints2)
    a2 <- gpoints2[1]
    b1 <- gpoints1[M1]
    b2 <- gpoints2[M2]
+   if (missing(w)) w <- rep(1, n)
+
    out <- .Fortran("lbtwod",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(b1),as.double(b2),
-           as.integer(M1),as.integer(M2),double(M1*M2), PACKAGE="ks")
-   return(matrix(out[[9]],M1,M2))
+           as.integer(M1),as.integer(M2), as.double(w), double(M1*M2), PACKAGE="ks")
+   return(matrix(out[[10]],M1,M2))
 }
 
-linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
+linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3, w)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2],X[,3]) 
@@ -141,15 +146,17 @@ linbin3D.ks <- function(X,gpoints1,gpoints2,gpoints3)
    b1 <- gpoints1[M1]
    b2 <- gpoints2[M2]
    b3 <- gpoints3[M3]
+   if (missing(w)) w <- rep(1, n)
+   
    out <- .Fortran("lbthrd",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(a3),as.double(b1),
            as.double(b2),as.double(b3),as.integer(M1),as.integer(M2),
-           as.integer(M3),double(M1*M2*M3),PACKAGE="ks")
-   return(array(out[[12]],c(M1,M2,M3)))
+           as.integer(M3),as.double(w), double(M1*M2*M3),PACKAGE="ks")
+   return(array(out[[13]],c(M1,M2,M3)))
 }
 
 
-linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
+linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4, w)
 {
    n <- nrow(X)
    X <- c(X[,1],X[,2],X[,3],X[,4]) 
@@ -165,12 +172,14 @@ linbin4D.ks  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4)
    b2 <- gpoints2[M2]
    b3 <- gpoints3[M3]
    b4 <- gpoints4[M4]
+   if (missing(w)) w <- rep(1, n)
+   
    out <- .Fortran("lbfoud",as.double(X),as.integer(n),
            as.double(a1),as.double(a2),as.double(a3),as.double(a4),
            as.double(b1),as.double(b2),as.double(b3),as.double(b4),
            as.integer(M1),as.integer(M2),as.integer(M3),as.integer(M4),
-           double(M1*M2*M3*M4),PACKAGE="ks")
-   return(array(out[[15]],c(M1,M2,M3,M4)))
+           as.double(w),double(M1*M2*M3*M4),PACKAGE="ks")
+   return(array(out[[16]],c(M1,M2,M3,M4)))
 }
 
 
