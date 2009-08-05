@@ -1,6 +1,8 @@
-\name{Hamise.mixt, Hmise.mixt, amise.mixt, ise.mixt, mise.mixt}
+\name{Hamise.mixt, Hmise.mixt, Hamise.mixt.diag, Hmise.mixt.diag, amise.mixt, ise.mixt, mise.mixt}
 \alias{Hmise.mixt}
 \alias{Hamise.mixt}
+\alias{Hmise.mixt.diag}
+\alias{Hamise.mixt.diag}
 \alias{hmise.mixt}
 \alias{hamise.mixt}
 \alias{ise.mixt}
@@ -29,6 +31,8 @@
 
 Hamise.mixt(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 Hmise.mixt(mus, Sigmas, props, samp, Hstart, deriv.order=0)
+Hamise.mixt.diag(mus, Sigmas, props, samp, Hstart, deriv.order=0)
+Hmise.mixt.diag(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 hamise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
 hmise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
 

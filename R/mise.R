@@ -298,36 +298,6 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
 }
 
 
-amise.mixt.old <- function(H, mus, Sigmas, props, samp)
-{ 
-  if (is.vector(mus)) {d <- length(mus); mus <- t(matrix(mus))}
-  else d <- ncol(mus)
-  k <- length(props)
-  Xi <- matrix(0, nr=k, nc=k)
-
-  for (i in 1:k)
-  {
-    Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
-    mui <- mus[i,]
-
-    for (j in 1:k)
-    {        
-       Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
-       muj <- mus[j,]
-       Aij <- chol2inv(chol(Sigmai + Sigmaj))
-       Bij <- Aij %*% (diag(d) - 2*(mui - muj) %*%  t(mui - muj) %*% Aij)
-       Cij <- Aij %*% (diag(d) - (mui - muj) %*%  t(mui - muj) %*% Aij)
-    
-       Xi[i,j] <- dmvnorm.mixt(x=mui, mus=muj, Sigmas=Sigmai+Sigmaj, props=1) *
-                  (2*tr(H %*% Aij %*% H %*% Bij) + tr(H %*% Cij)^2)
-    }  
-  }
-   
-  amise <- 1/(samp *(4*pi)^(d/2)*sqrt(det(H)))+ 1/4*props %*% Xi %*% props
-
-  return(drop(amise))
-}
-
 
 ###############################################################################
 # Lambda matrices (for exact AMISE for normal mixtures)
@@ -454,10 +424,10 @@ Hmise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
   if (missing(Hstart))
   {
     x <- rmvnorm.mixt(10000, mus, Sigmas, props)
-    Hstart <- matrix.sqrt((4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
+    Hstart <- (4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
   }
   
-  Hstart <- vech(Hstart)
+  Hstart <- vech(matrix.sqrt(Hstart))
 
   # input vech(H) into mise.mixt.temp because optim can only optimise
   # over vectors and not matrices
@@ -470,7 +440,7 @@ Hmise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
   }
 
-  result <- optim(Hstart, mise.mixt.temp, method="BFGS")
+  result <- optim(Hstart, mise.mixt.temp, method="Nelder-Mead")
   Hmise <- invvech(result$par) %*% invvech(result$par) 
   
   return(Hmise)
@@ -494,7 +464,7 @@ Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
   }
 
-  result <- optim(Hstart, mise.mixt.temp, method = "BFGS")
+  result <- optim(Hstart, mise.mixt.temp, method = "Nelder-Mead")
   Hmise <- diag(result$par) %*% diag(result$par) 
   
   return(Hmise)
@@ -575,7 +545,37 @@ Hamise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
   
   return(Hamise)
 }   
+
+Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
+{
+  r <- deriv.order
+  if (is.vector(mus)) d <- length(mus)
+  else d <- ncol(mus) 
+
+  ## use normal reference estimate as initial condition
+  if (missing(Hstart)) 
+  {
+    x <- rmvnorm.mixt(10000, mus, Sigmas, props)
+    Hstart <- matrix.sqrt((4/ (samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
+    }
   
+  ## input vech(H) into mise.mixt.temp because optim can only optimise
+  ## over vectors and not matrices    
+  Hstart <- diag(Hstart)
+  amise.mixt.temp <- function(diagH)
+  {
+    H <- diag(diagH) %*% diag(diagH)
+    ## ensures that H is positive definite
+    return(amise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
+  }
+    
+  result <- optim(Hstart, amise.mixt.temp, method="BFGS")
+  Hamise <- diag(result$par) %*% diag(result$par) 
+  
+  return(Hamise)
+}   
+  
+
 
 ###############################################################################
 # ISE for normal mixtures (fixed KDE)
@@ -610,36 +610,78 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
   d <- ncol(x)
   n <- nrow(x)
   M <- length(props)
-  ise1 <- 0
-  ise2 <- 0
-  ise3 <- 0
-
-  ## formula is found in thesis  
-  if (d==2)
-    ise1 <- dmvnorm.2d.sum(x=x, Sigma=2*H, inc=1)
-  else if (d==3)
-    ise1 <- dmvnorm.3d.sum(x=x, Sigma=2*H, inc=1)
-  else if (d==4)
-    ise1 <- dmvnorm.4d.sum(x=x, Sigma=2*H, inc=1)
-  else if (d==5)
-    ise1 <- dmvnorm.5d.sum(x=x, Sigma=2*H, inc=1)
-  else if (d==6)
-    ise1 <- dmvnorm.6d.sum(x=x, Sigma=2*H, inc=1)
-  
-  for (j in 1:M)
+  r <- deriv.order
+ 
+  ## formula is found in thesis
+  if (r==0)
   {
-    Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
-    ise2 <- ise2 + sum(props[j]*dmvnorm(x=x, mean=mus[j,], sigma=H + Sigmaj))
+    ise1 <- 0
+    ise2 <- 0
+    ise3 <- 0
     
-    for (i in 1:M)
-    {
-      Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
-      ise3 <- ise3 + sum(props[i] * props[j] *
-                         dmvnorm(x=mus[i,], mean=mus[j,], sigma=Sigmai+Sigmaj))
-    }
-  }  
+    if (d==2)
+      ise1 <- dmvnorm.deriv.2d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
+    else if (d==3)
+      ise1 <- dmvnorm.deriv.3d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
+    else if (d==4)
+      ise1 <- dmvnorm.deriv.4d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
+    else if (d==5)
+      ise1 <- dmvnorm.deriv.5d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
+    else if (d==6)
+      ise1 <- dmvnorm.deriv.6d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
 
-  return (ise1/n^2 - 2*ise2/n + ise3)
+    for (j in 1:M)
+    {
+      Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
+      ise2 <- ise2 + sum(props[j]*as.vector(dmvnorm.deriv(x=x, mu=mus[j,], Sigma=H + Sigmaj, r=2*r)$deriv))
+      
+      for (i in 1:M)
+      {
+        Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
+        ise3 <- ise3 + sum(props[i] * props[j] * as.vector(dmvnorm.deriv(x=mus[i,], mu=mus[j,], Sigma=Sigmai+Sigmaj, r=2*r)$deriv))
+      }
+    }  
+  }
+  else if (r >0)
+  {
+    deriv.ind <- dmvnorm.deriv(d.index=d, index.only=TRUE, r=2*r)
+    vecIdr <- vec(diag(d^r))
+    ise1 <- rep(0, d^(2*r))
+    ise2 <- rep(0, d^(2*r))
+    ise3 <- rep(0, d^(2*r))
+    for (j in 1:nrow(deriv.ind))
+    {
+      ##mult <- sum(deriv.ind.str %in% deriv.ind.str.unique[j])
+      if (vecIdr[j]!=0)
+      {
+        if (d==2)
+          ise1[j] <- dmvnorm.deriv.2d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
+        else if (d==3)
+          ise1[j] <- dmvnorm.deriv.3d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
+        else if (d==4)
+          ise1[j] <- dmvnorm.deriv.4d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
+        else if (d==5)
+          ise1[j] <- dmvnorm.deriv.5d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
+        else if (d==6)
+          ise1[j] <- dmvnorm.deriv.6d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
+        for (k in 1:M)
+        {
+          Sigmak <- Sigmas[((k-1)*d+1) : (k*d),]
+          ise2[j] <- props[k]*sum(dmvnorm.deriv(x=x, mu=mus[k,], Sigma=H + Sigmak, r=deriv.ind[j,]))
+         
+          for (m in 1:M)
+          {
+            Sigmam <- Sigmas[((m-1)*d+1) : (m*d),]
+            ise3[j] <- props[k]*props[m]*sum(dmvnorm.deriv(x=mus[m,], mu=mus[k,], Sigma=Sigmam + Sigmak, r=deriv.ind[j,]))
+          }
+        }
+          
+      }
+    }
+
+  }
+ 
+  return((-1)^r*sum((ise1/n^2 - 2*ise2/n + ise3)))
 }
 
 
@@ -648,25 +690,26 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
   d <- 1
   n <- length(x)
   M <- length(props)
+  r <- deriv.order 
   ise1 <- 0
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dnorm.sum(x=x, sigma=sqrt(2)*h, inc=1)
+  ise1 <- dnorm.deriv.sum(x=x, sigma=sqrt(2)*h, inc=1, r=2*r)
   
   for (j in 1:M)
   {
     sigmaj <- sigmas[j]
-    ise2 <- ise2 + sum(props[j]*dnorm(x=x, mean=mus[j], sd=sqrt(h^2 + sigmaj^2)))
+    ise2 <- ise2 + sum(props[j]*dnorm.deriv(x=x, mu=mus[j], sigma=sqrt(h^2 + sigmaj^2), r=2*r))
     
     for (i in 1:M)
     {
       sigmai <- sigmas[i]
-      ise3 <- ise3 + sum(props[i]*props[j]*dnorm(x=mus[i], mean=mus[j], sd=sqrt(sigmai^2+sigmaj^2)))
+      ise3 <- ise3 + sum(props[i]*props[j]*dnorm.deriv(x=mus[i], mu=mus[j], sigma=sqrt(sigmai^2+sigmaj^2), r=2*r))
     }
   }  
 
-  return (ise1/n^2 - 2*ise2/n + ise3)
+  return ((-1)^r*(ise1/n^2 - 2*ise2/n + ise3))
 }
 
 

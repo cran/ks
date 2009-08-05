@@ -2,39 +2,46 @@ README file for ks
 
 New in v1.6
 
-1. Reorganised and renamed internal bandwidth selection functions. 
+1. Reorganised and renamed internal bandwidth selection functionsi (mostly
+   double sums of normal densities). 
 
 2. Streamlined code sharing with feature package (all binning code now
-contained only in ks).
+   contained only in ks).
 
 3. 1-d binned KDE fix from M.P. Wand. 
  
+4. MISE, AMISE, ISE functions for normal mixtures derivatives.
 
 --------------------------------------------------------------------------
 
 New in v1.5
 
 1. New functions to compute pilot functinal estimators hat{psi}_r(g).
-These are exact, and are more efficient than binned estimators for small
-samples (~100), and are available in d > 4.
+   These are exact, and are more efficient than binned estimators for small
+   samples (~100), and are available in d > 4.
 
 2. Added plot3d() capabilities from rgl to 3-d plot - removing own axes
-drawing functions.
+   drawing functions.
 
 3. Made changes to specifying line colour (col rather than lcol) in plot.kde, 
-plot.kda.kde and partition class colour (partcol) in plot.kda.kde. 
+   plot.kda.kde and partition class colour (partcol) in plot.kda.kde. 
 
-4. Added unconstrained pilot selectors for d = 1, ..., 5 as option `pilot="unconstr"' in `Hpi'.
+4. Added unconstrained pilot selectors for d = 1, ..., 5 as option 
+   `pilot="unconstr"' in `Hpi'.
 
-5. Added plug-in selectors for 1-d data (exactly the code for dpik from KernSmooth). For KDE, this is `hpi', for KDA, this is 'hkda(..., bw="plugin")'.
+5. Added plug-in selectors for 1-d data (exactly the code for dpik from 
+   KernSmooth). For KDE, this is `hpi', for KDA, this is 
+   'hkda(..., bw="plugin")'.
  
 6. Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde.
 
 7. Dependence on Matrix package removed. Added dependence on combinat.
 
-8. Added normal mixture (A)MISE-optimal selectors: hamise.mixt, hmise.mixt, Hamsie.mixt, Hmise.mxt.
+8. Added normal mixture (A)MISE-optimal selectors: hamise.mixt, hmise.mixt, 
+   Hamsie.mixt, Hmise.mxt.
 
-9. >=1.5.10. Added drvkde (kernel density derivative estimator 1-d) from feature using Matt Wand's code.
+9. >=1.5.10. Added drvkde (kernel density derivative estimator 1-d) from 
+   feature using Matt Wand's code.
 
 10. 1.5.11. Fixed small bugs in drvkde, vech, Hpi(, pilot="unconstr").  
  
