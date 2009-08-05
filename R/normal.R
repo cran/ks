@@ -342,22 +342,47 @@ dmvnorm.deriv.diag <- function(x, mu, Sigma, r)
 }
 
 ### for general Sigma
-dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
-{   
-  if (is.vector(x))
-    x <- t(as.matrix(x))
-
-  if (is.data.frame(x)) x <- as.matrix(x)
-  d <- ncol(x)
-  n <- nrow(x)
-  
+dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat, d.index, index.only=FALSE, duplicate=FALSE)
+{
   sumr <- sum(r)
+  
+  if (missing(x)) d <- d.index
+  else
+  {
+    if (is.vector(x))
+      x <- t(as.matrix(x))
+    
+    if (is.data.frame(x)) x <- as.matrix(x)
+    d <- ncol(x)
+    n <- nrow(x)
+  }
+  
+  ## matrix of derivative indices
+  
+  if (sumr==0) ind.mat <- 0
+  if (sumr==1) ind.mat <- diag(d)
+  if (sumr==2) ind.mat <- K.sum(diag(d), diag(d))
+  if (sumr==3) ind.mat <- K.sum(diag(d), K.sum(diag(d), diag(d)))
+  if (sumr==4)
+    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
+  if (sumr==5)
+    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
+  if (sumr==6)
+    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
+  if (sumr==7)
+    ind.mat <- K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
+  if (sumr==8)
+    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
+
+  if (index.only) return(ind.mat)
+
+  ## derivatives
   
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
 
   for (i in 1:n)
-      x[i,] <- x[i,] - mu
+    x[i,] <- x[i,] - mu
   
   if (missing(Sdr.mat) & d >=2)
     Sdr.mat <- Sdr(d=d, r=sumr)
@@ -369,14 +394,15 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
  
   if (sumr==0)
     mvh <- dens
+   
   if (sumr==1)
     mvh <- x*dens
+
   if (sumr==2)
   {
     Sinv <- (Sigmainv %x% Sigmainv) %*%  Sdr.mat
     for (i in 1:n)
       mvh[i,]  <-  Sinv %*% ((x[i,] %x% x[i,]) - vSigma) * dens[i]
-    ind.mat <- K.sum(diag(d), diag(d))
   }
 
   if (sumr==3)
@@ -384,7 +410,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,3) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,], 3) - 3*x[i,] %x% vSigma) * dens[i]
-    ind.mat <- K.sum(diag(d), K.sum(diag(d), diag(d)))
   }
 
   if (sumr==4)
@@ -392,7 +417,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,4) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,], 4) - 6*K.pow(x[i,],2) %x% vSigma + 3*vSigma %x% vSigma) * dens[i]
-    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
   }
 
   if (sumr==5)
@@ -400,7 +424,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,5) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,], 5) - 10*K.pow(x[i,],3) %x% vSigma + 15*x[i,] %x% K.pow(vSigma,2)) * dens[i]
-    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
   }
 
   if (sumr==6)
@@ -408,7 +431,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,6) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,],6) - 15*K.pow(x[i,],4) %x% vSigma + 45*K.pow(x[i,],2) %x% K.pow(vSigma,2) - 15*K.pow(vSigma,3)) * dens[i]
-    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
   }
 
   if (sumr==7)
@@ -416,7 +438,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,7) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,],7) - 21*K.pow(x[i,],5) %x% vSigma + 105*K.pow(x[i,],3) %x% K.pow(vSigma,2)) * dens[i]
-    ind.mat <- K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
   }
 
   if (sumr==8)
@@ -424,23 +445,35 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat)
     Sinv <- K.pow(Sigmainv,8) %*% Sdr.mat
     for (i in 1:n)
       mvh[i,] <- Sinv %*% (K.pow(x[i,],8) - 28*K.pow(x[i,],6) %x% vSigma + 210*K.pow(x[i,],4) %x% K.pow(vSigma,2) - 420*K.pow(x[i,],2) %x% K.pow(vSigma,3) + 105*K.pow(vSigma, 4)) * dens[i]
-    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
   }
 
   if (sumr > 8)
     stop ("Up to 8th order derivatives only")
 
-  mvh <- (-1)^sumr*mvh[,!duplicated(ind.mat)]
-
-  deriv.ind <- unique(ind.mat)
+ 
   if (length(r)>1)
   {
+    mvh <- (-1)^sumr*mvh[,!duplicated(ind.mat)]
+    deriv.ind <- unique(ind.mat)
     which.deriv <- which.mat(r, deriv.ind)
     if (is.vector(mvh)) return(mvh[which.deriv])
     else return(mvh[,which.deriv])
   }
   else
-    return(list(deriv=mvh, deriv.ind=deriv.ind))
+  {
+    if (r>1)
+    {  
+      if (!duplicate)
+      { 
+        mvh <- (-1)^sumr*mvh[,!duplicated(ind.mat)]
+        ind.mat <- unique(ind.mat)
+      }
+    }
+    else
+      mvh <- (-1)^sumr*mvh
+
+    return(list(deriv=mvh, deriv.ind=ind.mat))
+  }
 }
 
 
@@ -550,12 +583,6 @@ dmvnorm.deriv.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par, diff=FA
   
   return(sumval)
 }
-
-
-
-
-
-
 
 
 
