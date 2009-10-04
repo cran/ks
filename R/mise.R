@@ -5,9 +5,9 @@
 
 ## nu, gamma.r, gamma.r2 written by Jose Chacon 10/2008
 
-nu <- function(r,A)
+nu <- function(r,A, inverse=FALSE)
 { ###Using the recursive formula provided in Kan (2008)
-  A <- solve(A)
+  if (!inverse) A <- solve(A)
   ei <- eigen(A)$values
   tr <- numeric(r)
   for(p in 1:r)
@@ -25,28 +25,60 @@ nu <- function(r,A)
   return(factorial(r)*2^r*nu[r+1])   
 }   
 
-## gamma functional for MISE 
-gamma.r <- function(mu, Sigma, d, r, Sd2r)
+nu.rs <- function(r, s, A, B, inverse=FALSE)
+{
+  if (s==0)
+    return(nu(r=r, A=A, inverse=inverse))
+  
+  if (s >=1)
+  {
+    nu <- 0
+    for (i in 0:r)
+      for (j in 0:(s-1))
+      {
+        if (!inverse)
+          nu <- nu + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,-(r-i))%*%matrix.pow(B,-(s-j)))*nu.rs(r=i,s=j, A=A, B=B, inverse=inverse)
+        else
+          nu <- nu + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,(r-i))%*%matrix.pow(B,(s-j)))*nu.rs(r=i,s=j, A=A, B=B, inverse=inverse)
+      }
+    return(nu)
+  }
+}
+## gamma functional for normal mixture MISE
+
+gamma.r <- function(mu, Sigma, r)
 {
   Sigmainv <- chol2inv(chol(Sigma))
-  w <- vec(K.pow(Sigmainv %*% Sigmainv, r)) %*% Sd2r
+  d <- ncol(Sigma)
+  v <- 0
+  for (j in 0:r)
+    v <- v + (-1)^j*choose(2*r, 2*j)*OF(2*j)*nu.rs(r=r-j, s=j, A=Sigmainv%*%mu%*%t(mu)%*%Sigmainv, B=Sigmainv, inverse=TRUE)
+   
+  v <- (-1)^r*v*drop(dmvnorm.deriv(x=rep(0,d), mu=mu, Sigma=Sigma,deriv.order=0)/OF(2*r))
+  return(v)
+}
+
+## gamma functional for normal mixture MISE 
+gamma.r.norec <- function(mu, Sigma, d, r, Sd2r)
+{
+  Sigmainv <- chol2inv(chol(Sigma))
+  w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %*% Sd2r
   v <- rep(0,length=d^(2*r))
   for(j in 0:r)
-    v <- v + ((-1)^j*OF(2*j)*choose(2*r, 2*j))*(K.pow(mu,2*r-2*j)%x%K.pow(vec(Sigma),j))
+    v <- v + ((-1)^j*OF(2*j)*choose(2*r, 2*j))*(Kpow(mu,2*r-2*j)%x%Kpow(vec(Sigma),j))
   gamr <- (-1)^r*dmvnorm(mu,mean=rep(0,d),sigma=Sigma)*sum(w %*% v)
   
   return(gamr)
 }
 
-## gamma functional for AMISE 
+## gamma functional for normal mixture AMISE 
 gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H)
 {
   Sigmainv <- chol2inv(chol(Sigma))
-  w <- vec(K.pow(Sigmainv %*% Sigmainv, r)) %x% vec(K.pow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
-  ##w <- K.pow(vec(Sigmainv %*% Sigmainv), r) %x% K.pow(vec(Sigmainv %*% H %*% Sigmainv), 2) %*% Sd2r4 
+  w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
   v <- rep(0,length=d^(2*r+4))
   for(j in 0:(r+2))
-    v <- v+((-1)^j*OF(2*j)*choose(2*r+4, 2*j))*(K.pow(mu,2*r-2*j+4)%x%K.pow(vec(Sigma),j))
+    v <- v+((-1)^j*OF(2*j)*choose(2*r+4, 2*j))*(Kpow(mu,2*r-2*j+4)%x%Kpow(vec(Sigma),j))
   
   gamr<-(-1)^r*dmvnorm(mu,mean=rep(0,d),sigma=Sigma)*sum(w %*% v)
 
@@ -68,15 +100,13 @@ gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H)
 # Omega matrix
 ###############################################################################
 
-
-
-omega <- function(mus, Sigmas, k, a, H, d, r, Sd2r)
+omega <- function(mus, Sigmas, k, a, H, r)
 {
-  ## the (i,j) element of Omega matrix is dmvnorm(0, mu_i - mu_j,
-  ## a*H + Sigma_i + Sigma_j)
- 
+  ## the (i,j) element of Omega matrix is
+  ## dmvnorm(0, mu_i - mu_j, a*H + Sigma_i + Sigma_j)
+
   if (k == 1)
-    omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, d=d, r=r, Sd2r=Sd2r)  ##dmvnorm(x=mus, mean=mus, sigma=a*H + 2*Sigmas)
+    omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)##gamma.r.norec(mu=rep(0,d),Sigma=a*H + 2*Sigmas, d=d, r=r, Sd2r=Sd2r)  
   else
   {   
     if (is.matrix(mus)) d <- ncol(mus)
@@ -90,7 +120,7 @@ omega <- function(mus, Sigmas, k, a, H, d, r, Sd2r)
       {
         Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
         muj <- mus[j,]    
-        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, d=d, r=r, Sd2r=Sd2r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
+        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, r=r) ##gamma.r.norec(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, d=d, r=r, Sd2r=Sd2r) 
       }
     }
   }
@@ -99,16 +129,13 @@ omega <- function(mus, Sigmas, k, a, H, d, r, Sd2r)
 }
 
 
-omega.1d <- function(mus, sigmas, k, a, h, d=1, r, Sd2r)
+omega.1d <- function(mus, sigmas, k, a, h, r)
 {
-  ## the (i,j) element of Omega matrix is dmvnorm(0, mu_i - mu_j,
-  ## a*H + sigma_i + sigma_j)
-
   H <- h^2
   Sigmas <- sigmas^2
   
   if (k == 1)
-    omega.mat <- gamma.r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), d=d, r=r, Sd2r=Sd2r)  ##dmvnorm(x=mus, mean=mus, sigma=a*H + 2*Sigmas)
+    omega.mat <- gamma.r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), r=r)  
   else
   {   
     omega.mat <- matrix(0, nr=k, nc=k)
@@ -120,7 +147,7 @@ omega.1d <- function(mus, sigmas, k, a, h, d=1, r, Sd2r)
       {
         Sigmaj <- Sigmas[j]
         muj <- mus[j]    
-        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj), d=d, r=r, Sd2r=Sd2r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
+        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj),  r=r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
       }
     }
   }
@@ -154,22 +181,27 @@ mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   else d <- ncol(mus)
   k <- length(props)
   r <- deriv.order
-  Sd2r <- Sdr(d,2*r)
-
+  
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
   if (k == 1) 
   {
+    ##Sd2r <- Sdr(d,2*r)
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
-        (1-1/samp)*omega(mus, Sigmas, 1, 2, H, d, r, Sd2r) -
-        2*omega(mus, Sigmas, 1, 1, H, d, r, Sd2r) +
-          omega(mus, Sigmas, 1, 0, H, d, r, Sd2r)
+      (1-1/samp)*omega(mus, Sigmas, 1, 2, H, r) -
+       2*omega(mus, Sigmas, 1, 1, H, r) +
+        omega(mus, Sigmas, 1, 0, H, r)
+    #mise <- 2^(-d-r)*pi^(-d/2)*(samp^(-1)*det(H)^(-1/2)*nu(r=r, A=H) + 
+    #        nu(r=r, A=Sigmas)*det(Sigmas)^(-1/2) +
+    #        (1-1/samp)*nu(r=r,A=H+Sigmas)*det(H+Sigmas)^(-1/2) -
+    #        2^((d+2*r+2)/2)*nu(r=r,A=H+2*Sigmas)*det(H+2*Sigmas)^(-1/2))
   }
   else
   {
+    ##Sd2r <- Sdr(d,2*r)
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
-      props %*% ((1-1/samp)*omega(mus, Sigmas, k, 2, H, d, r, Sd2r) - 
-                 2*omega(mus, Sigmas, k, 1, H, d, r, Sd2r) + 
-                 omega(mus, Sigmas, k, 0, H, d, r, Sd2r)) %*% props
+      props %*% ((1-1/samp)*omega(mus, Sigmas, k, 2, H, r) - 
+                 2*omega(mus, Sigmas, k, 1, H, r) + 
+                 omega(mus, Sigmas, k, 0, H, r)) %*% props
   }
   return(drop(mise)) 
 }
@@ -181,21 +213,21 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   r <- deriv.order
   Sd2r <- Sdr(d,2*r)
   H <- as.matrix(h^2)
-  
+ 
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
   if (k == 1) 
   {
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
-        (1-1/samp)*omega.1d(mus, sigmas, 1, 2, h, d, r, Sd2r) -
-        2*omega.1d(mus, sigmas, 1, 1, h, d, r, Sd2r) +
-          omega.1d(mus, sigmas, 1, 0, h, d, r, Sd2r)
+        (1-1/samp)*omega.1d(mus, sigmas, 1, 2, h, r) -
+        2*omega.1d(mus, sigmas, 1, 1, h, r) +
+          omega.1d(mus, sigmas, 1, 0, h, r)
   }
   else
   {
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
-      props %*% ((1-1/samp)*omega.1d(mus, sigmas, k, 2, h, d, r, Sd2r) - 
-                 2*omega.1d(mus, sigmas, k, 1, h, d, r, Sd2r) + 
-                 omega.1d(mus, sigmas, k, 0, h, d, r, Sd2r)) %*% props
+      props %*% ((1-1/samp)*omega.1d(mus, sigmas, k, 2, h, r) - 
+                 2*omega.1d(mus, sigmas, k, 1, h, r) + 
+                 omega.1d(mus, sigmas, k, 0, h, r)) %*% props
   }
   return(drop(mise)) 
 }
@@ -227,14 +259,15 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   else d <- ncol(mus)
   k <- length(props)
  
-  Sd2r4 <- Sdr(d,2*r+4)
-  ##w <- Sd2r4%*%(K.pow(vec(diag(d)),r)%x%K.pow(vec(H),2))
-  ##w <- as.vector(w)
-
   if (k == 1)
-    omega.mat <- gamma.r2(mu=rep(0,d),Sigma=2*Sigmas, d=d, r=r, Sd2r4=Sd2r4, H=H)
+  {
+    ##Sd2r4 <- Sdr(d,2*r+4)
+    ##omega.mat <- gamma.r2(mu=rep(0,d),Sigma=2*Sigmas, d=d, r=r, Sd2r4=Sd2r4, H=H)
+    omega.mat <- 2^(-d-r-2)*pi^(-d/2)*det(Sigmas)^(-1/2)*nu.rs(r=r, s=2, Sigmas, matrix.sqrt(Sigmas) %*% chol2inv(chol(H)) %*% matrix.sqrt(Sigmas))
+  }
   else
-  {   
+  {
+    Sd2r4 <- Sdr(d,2*r+4)  
     omega.mat <- matrix(0, nr=k, nc=k)
     for (i in 1:k)
     {
@@ -321,7 +354,7 @@ lambda <- function(mus, Sigmas, k, r)
   else d <- ncol(mus)
   
   if (k == 1) 
-    lambda.mat <- dmvnorm.deriv.2d(r=r, x=rep(0, length(mus)), Sigma=2*Sigmas)
+    lambda.mat <- dmvnorm.deriv(deriv.order=r, x=rep(0, length(mus)), Sigma=2*Sigmas)
   else
   {   
     if (is.matrix(mus)) d <- ncol(mus)
@@ -335,7 +368,7 @@ lambda <- function(mus, Sigmas, k, r)
       {
         Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
         muj <- mus[j,]    
-        lambda.mat[i,j] <- dmvnorm.deriv.2d(r=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
+        lambda.mat[i,j] <- dmvnorm.deriv(deriv.order=r, x=mui-muj,Sigma=Sigmai+Sigmaj)
       }
     }
   }
@@ -601,9 +634,6 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
   if (!(missing(h)))
     return(ise.mixt.1d(x=x, h=h, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order))
   
-  ##if (is.list(x))
-  ##  return (ise.mixt.pc(x, H, mus, Sigmas, props, lower, upper, gridsize,
-  ##                      stepsize))
   if (is.vector(x)) x <- matrix(x,nr=1)
   if (is.vector(mus)) mus <- matrix(mus, nr=length(props))
 
@@ -613,76 +643,29 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
   r <- deriv.order
  
   ## formula is found in thesis
-  if (r==0)
-  {
-    ise1 <- 0
-    ise2 <- 0
-    ise3 <- 0
-    
-    if (d==2)
-      ise1 <- dmvnorm.deriv.2d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
-    else if (d==3)
-      ise1 <- dmvnorm.deriv.3d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
-    else if (d==4)
-      ise1 <- dmvnorm.deriv.4d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
-    else if (d==5)
-      ise1 <- dmvnorm.deriv.5d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
-    else if (d==6)
-      ise1 <- dmvnorm.deriv.6d.sum(x=x, Sigma=2*H, inc=1, r=2*r)
 
-    for (j in 1:M)
-    {
-      Sigmaj <- Sigmas[((j-1)*d+1) : (j*d),]
-      ise2 <- ise2 + sum(props[j]*as.vector(dmvnorm.deriv(x=x, mu=mus[j,], Sigma=H + Sigmaj, r=2*r)$deriv))
-      
-      for (i in 1:M)
-      {
-        Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
-        ise3 <- ise3 + sum(props[i] * props[j] * as.vector(dmvnorm.deriv(x=mus[i,], mu=mus[j,], Sigma=Sigmai+Sigmaj, r=2*r)$deriv))
-      }
-    }  
-  }
-  else if (r >0)
+  vIdr <- vec(diag(d^r))
+  ise1 <- 0
+  ise2 <- 0
+  ise3 <- 0
+  
+  ise1 <- dmvnorm.deriv.sum(x=x, Sigma=2*H, inc=1, deriv.order=2*r)
+  for (j in 1:M)
   {
-    deriv.ind <- dmvnorm.deriv(d.index=d, index.only=TRUE, r=2*r)
-    vecIdr <- vec(diag(d^r))
-    ise1 <- rep(0, d^(2*r))
-    ise2 <- rep(0, d^(2*r))
-    ise3 <- rep(0, d^(2*r))
-    for (j in 1:nrow(deriv.ind))
+    Sigmaj <- Sigmas[((j - 1) * d + 1):(j * d), ]
+    ise2 <- ise2 + props[j] * colSums(dmvnorm.deriv(x, mu=mus[j,],Sigma= H + Sigmaj, deriv.order=2*r))
+
+    for (i in 1:M)
     {
-      ##mult <- sum(deriv.ind.str %in% deriv.ind.str.unique[j])
-      if (vecIdr[j]!=0)
-      {
-        if (d==2)
-          ise1[j] <- dmvnorm.deriv.2d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
-        else if (d==3)
-          ise1[j] <- dmvnorm.deriv.3d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
-        else if (d==4)
-          ise1[j] <- dmvnorm.deriv.4d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
-        else if (d==5)
-          ise1[j] <- dmvnorm.deriv.5d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
-        else if (d==6)
-          ise1[j] <- dmvnorm.deriv.6d.sum(x=x, Sigma=2*H, inc=1, r=deriv.ind[j,])
-        for (k in 1:M)
-        {
-          Sigmak <- Sigmas[((k-1)*d+1) : (k*d),]
-          ise2[j] <- props[k]*sum(dmvnorm.deriv(x=x, mu=mus[k,], Sigma=H + Sigmak, r=deriv.ind[j,]))
-         
-          for (m in 1:M)
-          {
-            Sigmam <- Sigmas[((m-1)*d+1) : (m*d),]
-            ise3[j] <- props[k]*props[m]*sum(dmvnorm.deriv(x=mus[m,], mu=mus[k,], Sigma=Sigmam + Sigmak, r=deriv.ind[j,]))
-          }
-        }
-          
-      }
+      Sigmai <- Sigmas[((i - 1) * d + 1):(i * d), ]
+      ise3 <- ise3 + props[i] * props[j] * dmvnorm.deriv(x=mus[i,],mu=mus[j,], Sigma = Sigmai + Sigmaj, deriv.order = 2*r)
     }
-
   }
- 
-  return((-1)^r*sum((ise1/n^2 - 2*ise2/n + ise3)))
+  
+  return((-1)^r * sum(vIdr*(ise1/n^2 - 2 * ise2/n + ise3)))
 }
+
+
 
 
 ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
@@ -695,17 +678,17 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dnorm.deriv.sum(x=x, sigma=sqrt(2)*h, inc=1, r=2*r)
+  ise1 <- dnorm.deriv.sum(x=x, sigma=sqrt(2)*h, inc=1, deriv.order=2*r)
   
   for (j in 1:M)
   {
     sigmaj <- sigmas[j]
-    ise2 <- ise2 + sum(props[j]*dnorm.deriv(x=x, mu=mus[j], sigma=sqrt(h^2 + sigmaj^2), r=2*r))
+    ise2 <- ise2 + sum(props[j]*dnorm.deriv(x=x, mu=mus[j], sigma=sqrt(h^2 + sigmaj^2), deriv.order=2*r))
     
     for (i in 1:M)
     {
       sigmai <- sigmas[i]
-      ise3 <- ise3 + sum(props[i]*props[j]*dnorm.deriv(x=mus[i], mu=mus[j], sigma=sqrt(sigmai^2+sigmaj^2), r=2*r))
+      ise3 <- ise3 + sum(props[i]*props[j]*dnorm.deriv(x=mus[i], mu=mus[j], sigma=sqrt(sigmai^2+sigmaj^2), deriv.order=2*r))
     }
   }  
 

@@ -2,8 +2,9 @@
 ### Multivariate kernel density derivative estimate 
 ###############################################################################
 
-kdde <- function(x, H, h, r, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=TRUE, bgridsize, positive=FALSE, adj.positive)
+kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=TRUE, bgridsize, positive=FALSE, adj.positive)
 {
+  r <- deriv.order
   if (is.vector(x))
   {
     if (missing(H)) d <- 1
@@ -26,13 +27,13 @@ kdde <- function(x, H, h, r, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poin
     if (positive & is.vector(x))
     {
       y <- log(x)
-      fhat <- kdde.binned(x=y, H=H, h=h, r=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+      fhat <- kdde.binned(x=y, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
       fhat$estimate <- fhat$estimate/exp(fhat$eval.points)
       fhat$eval.points <- exp(fhat$eval.points)
       fhat$x <- x
     }
     else
-      fhat <- kdde.binned(x=x, H=H, h=h, r=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+      fhat <- kdde.binned(x=x, H=H, h=h, deriv.orde=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
   }
   else
   {
@@ -73,8 +74,9 @@ kdde <- function(x, H, h, r, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poin
 ###############################################################################
 
 ### Diagonal H only
-kdde.binned <- function(x, H, h, r, bgridsize, xmin, xmax, bin.par)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par)
 {
+  r <- deriv.order
   ## linear binning
   
   if (missing(bin.par))
@@ -259,10 +261,10 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE, w)
 kfe.1d <- function(x, g, r, inc=1, binned=FALSE, bin.par)
 {
   if (!binned)
-    psir <- dnorm.deriv.sum(x=x, sigma=g, r=r, inc=inc, binned=FALSE, kfe=TRUE)
+    psir <- dnorm.deriv.sum(x=x, sigma=g, deriv.order=r, inc=inc, binned=FALSE, kfe=TRUE)
   else
     #psir <- dnorm.deriv.sum(bin.par=bin.par, sigma=g, r=r, inc=inc, kfe=TRUE, binned=TRUE)
-  { psir <- bkfe(x=bin.par$counts, bandwidth=g, drv=r, binned=TRUE, range.x=range(bin.par$eval.points)); if (inc==0)  psir <- psir - dnorm.deriv(0,mu=0,sigma=g, r=r)/sum(bin.par$counts)} 
+  { psir <- bkfe(x=bin.par$counts, bandwidth=g, drv=r, binned=TRUE, range.x=range(bin.par$eval.points)); if (inc==0)  psir <- psir - dnorm.deriv(0,mu=0,sigma=g, deriv.order=r)/sum(bin.par$counts)} 
   
   return(psir) 
 }
@@ -270,9 +272,9 @@ kfe.1d <- function(x, g, r, inc=1, binned=FALSE, bin.par)
 kfe <- function(x, G, r, inc=1, binned=FALSE, bin.par, diff=FALSE)
 { 
   if (!binned)
-    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, r=r, inc=inc, diff=diff, kfe=TRUE, binned=FALSE)
+    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, diff=diff, kfe=TRUE, binned=FALSE)
   else
-    psir <- dmvnorm.deriv.sum(bin.par=bin.par, Sigma=G, r=r, inc=inc, kfe=TRUE, binned=TRUE) 
+    psir <- dmvnorm.deriv.sum(bin.par=bin.par, Sigma=G, deriv.order=r, inc=inc, kfe=TRUE, binned=TRUE) 
 
   return(psir)
 }
@@ -358,7 +360,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
 
     K6 <- function(args)
     {
-      return(mat.K.pow(args,6)-15*mat.Kprod(mat.K.pow(args,4),rep(1,nrow(args))%x%t(vId)) + 45*mat.Kprod(mat.K.pow(args,2),rep(1,nrow(args))%x%t(K.pow(vId,2)))-15*rep(1,nrow(args))%x%t(K.pow(vId,3)))
+      return(mat.Kpow(args,6)-15*mat.Kprod(mat.Kpow(args,4),rep(1,nrow(args))%x%t(vId)) + 45*mat.Kprod(mat.Kpow(args,2),rep(1,nrow(args))%x%t(Kpow(vId,2)))-15*rep(1,nrow(args))%x%t(Kpow(vId,3)))
     }
 
     ## split into blocks because of memory limitations
@@ -398,7 +400,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
     else
       vecPsi6 <- Sdr%*%vecPsi6/nrow(args)
 
-    vecPsi6 <- (-1)^6*det(Grinv12)*K.pow(Grinv12,6)%*%vecPsi6
+    vecPsi6 <- (-1)^6*det(Grinv12)*Kpow(Grinv12,6)%*%vecPsi6
 
     return (vecPsi6)
   }
@@ -409,7 +411,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
     vecPsi4 <- rep(0,d^4)
     K4 <- function(args)
     {
-      return(mat.K.pow(args,4)-6*mat.Kprod(mat.K.pow(args,2),rep(1,nrow(args))%x%t(vId))+3*rep(1,nrow(args))%x%t(K.pow(vId,2)))
+      return(mat.Kpow(args,4)-6*mat.Kprod(mat.Kpow(args,2),rep(1,nrow(args))%x%t(vId))+3*rep(1,nrow(args))%x%t(Kpow(vId,2)))
     }
     
     if (nrow(args)>nlim)
@@ -445,7 +447,7 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
     else
       vecPsi4 <- Sdr%*%vecPsi4/nrow(args)
 
-    vecPsi4<-(-1)^4*det(Grinv12)*K.pow(Grinv12,4)%*%vecPsi4
+    vecPsi4<-(-1)^4*det(Grinv12)*Kpow(Grinv12,4)%*%vecPsi4
 
     return(vecPsi4)
   }

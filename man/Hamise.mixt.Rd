@@ -8,11 +8,8 @@
 \alias{ise.mixt}
 \alias{amise.mixt}
 \alias{mise.mixt}
-%\alias{amise.mixt.1d}
-%\alias{ise.mixt.1d}
-%\alias{mise.mixt.1d}
 
-\title{MISE- and AMISE-optimal bandwidth matrix selectors for normal
+\title{Squared error bandwidth matrix selectors for normal
   mixture densities}
 
 \description{
@@ -58,8 +55,7 @@ amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   -- Full MISE- or AMISE-optimal bandwidth matrix. Diagonal forms of
   these matrices are not available.
 
-  -- ISE, MISE or AMISE value. \code{ise} is not
-  yet available for \code{deriv.order>0}.
+  -- ISE, MISE or AMISE value. 
 }
 
 \details{ 
@@ -80,9 +76,9 @@ amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   depend on the data.}
 
 
-\references{Chac\'on J.E., Duong, T. \& Wand, M.P. (2008) \emph{Asymptotics for
+\references{Chac\'on J.E., Duong, T. \& Wand, M.P. (2009). Asymptotics for
 	general multivariate kernel density derivative
-	estimators}. In preparation.
+	estimators. \emph{Statistica Sinica}. Accepted. 
 }
 
 \examples{
@@ -104,7 +100,9 @@ props <- c(1/2, 1/2)
 samp <- 100
 H <- Hamise.mixt(mus, Sigmas, props, samp, deriv.order=2)
 x <- rmvnorm.mixt(n=samp, mus=mus, Sigmas=Sigmas, props=props)
+ise.mixt(x=x, H=H, mus=mus, Sigmas=Sigmas, props=props, deriv.order=2)
 amise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=2)
+
 }
 
 \keyword{smooth}

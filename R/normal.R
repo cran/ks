@@ -88,8 +88,9 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 ## r-th derivative at x
 ###############################################################################
 
-dnorm.deriv <- function(x, mu=0, sigma=1, r=0)
+dnorm.deriv <- function(x, mu=0, sigma=1, deriv.order=0)
 {
+  r <- deriv.order
   phi <- dnorm(x, mean=mu, sd=sigma) 
   x <- (x - mu)
   
@@ -144,46 +145,52 @@ dnorm.sum <- function(x, sigma=1, inc=1, binned=FALSE, bin.par)
     n <- sum(bin.par$counts)
     fhatr <- kde.binned(bin.par=bin.par, h=sigma)
     sumval <- sum(bin.par$counts * n * fhatr$estimate)
-    ##sumval <- bkfe(x=bin.par$counts, bandwidth=sigma, drv=0, binned=TRUE, range.x=range(bin.par$eval.points))
     if (inc == 0) 
-      sumval <- sumval - n*dnorm.deriv(x=0, mu=0, r=0, sigma=sigma)
+      sumval <- sumval - n*dnorm(x=0, mean=0, sd=sigma)
   }
   else
   {
     n <- length(x)
-    sumval <- 0
-    for (i in 1:n)
-      sumval <- sumval + sum(dnorm(x=x[i] - x, mean=0, sd=sigma))
+    if (n==1) sumval <- dnorm(x, mean=0, sd=sigma)
+    else
+    {  
+      sumval <- 0
+      for (i in 2:n)
+      {sumval <- sumval + sum(dnorm(x=x[1:(i-1)]-x[i], mean=0, sd=sigma))}
+      sumval<-2*sumval
+      if (inc == 1) 
+      sumval <- sumval + n*dnorm(x=0, mean=0, sd=sigma) 
+    }
     
-    if (inc == 0) 
-      sumval <- sumval - n*dnorm(x=0, mean=0, sd=sigma)
-   } 
-  
+  }
+ 
   return(sumval)
 }
 
-dnorm.deriv.sum <- function(x, sigma, r, inc=1, binned=FALSE, bin.par, kfe=FALSE)
+dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par, kfe=FALSE)
 {
+  r <- deriv.order
   if (binned)
   {
     if (missing(bin.par)) bin.par <- binning(x, h=sigma, supp=4+r)  
 
-    fhatr <- kdde.binned(bin.par=bin.par, h=sigma, r=r)
+    fhatr <- kdde.binned(bin.par=bin.par, h=sigma, deriv.order=r)
     n <- sum(bin.par$counts)
     sumval <- sum(bin.par$counts * n * fhatr$estimate)
-    ##sumval <- n*bkfe(x=bin.par$counts, bandwidth=sigma, drv=r, binned=TRUE, range.x=range(bin.par$eval.points))
+    if (inc == 0) 
+      sumval <- sumval - n*dnorm.deriv(x=0, mu=0, sigma=sigma, deriv.order=r)
   }
   else
   {
     n <- length(x)
     sumval <- 0
     for (i in 1:n)
-      sumval <- sumval + sum(dnorm.deriv(x=x[i] - x, mu=0, sigma=sigma, r=r)) 
+      sumval <- sumval + sum(dnorm.deriv(x=x[i] - x, mu=0, sigma=sigma, deriv.order=r)) 
+    if (inc == 0) 
+      sumval <- sumval - n*dnorm.deriv(x=0, mu=0, sigma=sigma, deriv.order=r)
   }
 
-  if (inc == 0) 
-    sumval <- sumval - n*dnorm.deriv(x=0, mu=0, sigma=sigma, r=r)
-
+  
   if (kfe)
     if (inc==1) sumval <- sumval/n^2
     else sumval <- sumval/(n*(n-1))
@@ -317,36 +324,66 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ## r-th derivative at x
 ###############################################################################
 
-### for diagonal Sigma
-dmvnorm.deriv.diag <- function(x, mu, Sigma, r)
+dmvnorm.deriv.JEC <- function (x, mu, Sigma, deriv.order=0, Sdr.mat) #### The fastest one
 {
-  if (is.vector(x))
-    x <- t(as.matrix(x))
+    if (is.vector(x)) {
+        x <- matrix(x, ncol = length(x))
+    }
+    n<-nrow(x)
+    d<-ncol(x)
+    if (missing(mu)) {
+        mu <- rep(0, length = d)
+    }
+    if (missing(Sigma)) {
+        Sigma <- diag(d)
+    }
+    r<-deriv.order
+    if (missing(Sdr.mat)) {
+        Sdr.mat <- Sdr(d=d,r=r)
+    }
+    
+    ##### Normal density at x
+    x.centred <- sweep(x, 2, mu)
+    Sigmainv<- chol2inv(chol(Sigma))
+    distval <- rowSums((x.centred %*% Sigmainv) * x.centred)  
+    
+    logdet <- sum(log(eigen(Sigma, symmetric = TRUE, only.values = TRUE)$values))
+    logretval <- -(d * log(2 * pi) + logdet + distval)/2
+    dens<-matrix(exp(logretval),nrow=n)
+    
+    ##### Vector Hermite polynomial (Holmquist, 1996)
+    
+    if(r==0){ 
+        result<-dens
+        }
 
-  if (is.data.frame(x)) x <- as.matrix(x)
-  d <- ncol(x)
-  n <- nrow(x)
-  
-  if (missing(mu)) mu <- rep(0,d)
-  if (missing(Sigma)) Sigma <- diag(d)
+    if(r>0){
+    vSigma<-vec(Sigma)
+    Hr<-rep(0,d^r)
+    ones<-rep(1,d^r)
+    for(j in 0:floor(r/2)){
+        cj<-(-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
+        vSigmaj<-Kpow(vSigma,j)
+        xr2j<-mat.Kpow(A=x.centred,pow=r-2*j)
+        Hr<-Hr+cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
+        }
+        
+    Sigmainvr<-Kpow(Sigmainv,r)        
+    SirSdr<-Sigmainvr%*%Sdr.mat    
+    Hr<-Hr%*%SirSdr
+    result<-(-1)^r*(t(ones)%x%dens)*Hr
+    }
 
-  for (i in 1:n)
-    x[i,] <- x[i,] - mu  
-  
-  if (d==2) return(dmvnorm.deriv.2d(x=x, Sigma=Sigma, r=r))
-  if (d==3) return(dmvnorm.deriv.3d(x=x, Sigma=Sigma, r=r))
-  if (d==4) return(dmvnorm.deriv.4d(x=x, Sigma=Sigma, r=r))
-  if (d==5) return(dmvnorm.deriv.5d(x=x, Sigma=Sigma, r=r))
-  if (d==6) return(dmvnorm.deriv.6d(x=x, Sigma=Sigma, r=r))
-
+    return(result)
 }
 
-### for general Sigma
-dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat, d.index, index.only=FALSE, duplicate=FALSE)
+
+dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, duplicate=TRUE, add.index=FALSE, index.only=FALSE)
 {
+  r <- deriv.order
   sumr <- sum(r)
   
-  if (missing(x)) d <- d.index
+  if (missing(x)) d <- ncol(Sigma)
   else
   {
     if (is.vector(x))
@@ -363,16 +400,11 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat, d.index, index.only=FALSE, d
   if (sumr==1) ind.mat <- diag(d)
   if (sumr==2) ind.mat <- K.sum(diag(d), diag(d))
   if (sumr==3) ind.mat <- K.sum(diag(d), K.sum(diag(d), diag(d)))
-  if (sumr==4)
-    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
-  if (sumr==5)
-    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
-  if (sumr==6)
-    ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
-  if (sumr==7)
-    ind.mat <- K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
-  if (sumr==8)
-    ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
+  if (sumr==4) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
+  if (sumr==5) ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
+  if (sumr==6) ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
+  if (sumr==7) ind.mat <- K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
+  if (sumr==8) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
 
   if (index.only) return(ind.mat)
 
@@ -380,80 +412,14 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat, d.index, index.only=FALSE, d
   
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
-
-  for (i in 1:n)
-    x[i,] <- x[i,] - mu
-  
-  if (missing(Sdr.mat) & d >=2)
-    Sdr.mat <- Sdr(d=d, r=sumr)
-
-  dens <- dmvnorm(x=x, mean=mu, sigma=Sigma) 
-  vSigma <- vec(Sigma)
-  Sigmainv <- chol2inv(chol(Sigma))
-  mvh <- matrix(0, nrow=n, ncol=d^sumr)
+  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
+  ##for (i in 1:n) x[i,] <- x[i,] - mu
  
-  if (sumr==0)
-    mvh <- dens
-   
-  if (sumr==1)
-    mvh <- x*dens
+  mvh <- dmvnorm.deriv.JEC(x=x, mu=mu, Sigma=Sigma, deriv.order=sumr, Sdr.mat=Sdr.mat)
 
-  if (sumr==2)
-  {
-    Sinv <- (Sigmainv %x% Sigmainv) %*%  Sdr.mat
-    for (i in 1:n)
-      mvh[i,]  <-  Sinv %*% ((x[i,] %x% x[i,]) - vSigma) * dens[i]
-  }
-
-  if (sumr==3)
-  {
-    Sinv <- K.pow(Sigmainv,3) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,], 3) - 3*x[i,] %x% vSigma) * dens[i]
-  }
-
-  if (sumr==4)
-  {    
-    Sinv <- K.pow(Sigmainv,4) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,], 4) - 6*K.pow(x[i,],2) %x% vSigma + 3*vSigma %x% vSigma) * dens[i]
-  }
-
-  if (sumr==5)
-  {
-    Sinv <- K.pow(Sigmainv,5) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,], 5) - 10*K.pow(x[i,],3) %x% vSigma + 15*x[i,] %x% K.pow(vSigma,2)) * dens[i]
-  }
-
-  if (sumr==6)
-  {
-    Sinv <- K.pow(Sigmainv,6) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,],6) - 15*K.pow(x[i,],4) %x% vSigma + 45*K.pow(x[i,],2) %x% K.pow(vSigma,2) - 15*K.pow(vSigma,3)) * dens[i]
-  }
-
-  if (sumr==7)
-  {
-    Sinv <- K.pow(Sigmainv,7) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,],7) - 21*K.pow(x[i,],5) %x% vSigma + 105*K.pow(x[i,],3) %x% K.pow(vSigma,2)) * dens[i]
-  }
-
-  if (sumr==8)
-  {
-    Sinv <- K.pow(Sigmainv,8) %*% Sdr.mat
-    for (i in 1:n)
-      mvh[i,] <- Sinv %*% (K.pow(x[i,],8) - 28*K.pow(x[i,],6) %x% vSigma + 210*K.pow(x[i,],4) %x% K.pow(vSigma,2) - 420*K.pow(x[i,],2) %x% K.pow(vSigma,3) + 105*K.pow(vSigma, 4)) * dens[i]
-  }
-
-  if (sumr > 8)
-    stop ("Up to 8th order derivatives only")
-
- 
   if (length(r)>1)
   {
-    mvh <- (-1)^sumr*mvh[,!duplicated(ind.mat)]
+    mvh <- mvh[,!duplicated(ind.mat)]
     deriv.ind <- unique(ind.mat)
     which.deriv <- which.mat(r, deriv.ind)
     if (is.vector(mvh)) return(mvh[which.deriv])
@@ -465,16 +431,19 @@ dmvnorm.deriv <- function(x, mu, Sigma, r, Sdr.mat, d.index, index.only=FALSE, d
     {  
       if (!duplicate)
       { 
-        mvh <- (-1)^sumr*mvh[,!duplicated(ind.mat)]
+        mvh <- mvh[,!duplicated(ind.mat)]
         ind.mat <- unique(ind.mat)
       }
     }
-    else
-      mvh <- (-1)^sumr*mvh
+    ##else
+    ##  mvh <- (-1)^sumr*mvh
 
-    return(list(deriv=mvh, deriv.ind=ind.mat))
+    if (add.index) return(list(deriv=mvh, deriv.ind=ind.mat))
+    else return(deriv=mvh)
   }
 }
+
+
 
 
 ###############################################################################
@@ -507,15 +476,9 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
   }
   else
   {
-    ### Need to rewrite this for d <=6
     d <- ncol(Sigma)
-    if (d==2) sumval <- dmvnorm.2d.sum(x=x, Sigma=Sigma, inc=inc)
-    if (d==3) sumval <- dmvnorm.3d.sum(x=x, Sigma=Sigma, inc=inc)
-    if (d==4) sumval <- dmvnorm.4d.sum(x=x, Sigma=Sigma, inc=inc)
-    if (d==5) sumval <- dmvnorm.5d.sum(x=x, Sigma=Sigma, inc=inc)
-    if (d==6) sumval <- dmvnorm.6d.sum(x=x, Sigma=Sigma, inc=inc)
 
-    if (d>6)
+    if (d>=2)
     {
       if(!diff)
       {
@@ -542,15 +505,16 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
 }
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par, diff=FALSE, kfe=FALSE)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, diff=FALSE, kfe=FALSE)
 {
+  r <- deriv.order
   if (binned)
   {
     if (!is.diagonal(Sigma))
-      stop("Binned estimation defined for diagonal Sigma only")
+        stop("Binned estimation defined for diagonal Sigma only")
     if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
-
-    fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, r=r)$estimate 
+    
+    fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, deriv.order=r)$estimate 
     n <- sum(bin.par$counts)
     d <- ncol(Sigma)
     sumval <- sum(bin.par$counts * n * fhatr)
@@ -559,6 +523,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par, diff=FA
   {
     if(!diff)
     {
+      ## can still optimise this for even order derivatives
       n <- nrow(x)
       d <- ncol(x)
       difs <- differences(x, upper=FALSE)
@@ -569,14 +534,17 @@ dmvnorm.deriv.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par, diff=FA
       d <- ncol(x)
       difs <- x
     }
-    if (is.diagonal(Sigma))
-      sumval <- sum(dmvnorm.deriv.diag(difs, mu=rep(0,d), Sigma=Sigma, r=r))
-    else
-      sumval <- sum(dmvnorm.deriv(difs, mu=rep(0,d), Sigma=Sigma, r=r))
-  }
 
+    mvh.temp <- dmvnorm.deriv(difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r)
+    if (is.matrix(mvh.temp))
+      sumval <- apply(mvh.temp,2, sum)
+    else
+      sumval <- sum(mvh.temp)
+  }
+  
   if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, r=r)
+    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv=r)
+  
   if (kfe)
     if (inc==1) sumval <- sumval/n^2
     else sumval <- sumval/(n*(n-1))
@@ -585,349 +553,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par, diff=FA
 }
 
 
-
-###############################################################################
-## Partial derivatives of the bivariate normal (mean 0) 
-## 
-## Parameters
-## x - points to evaluate at
-## Sigma - variance matrix
-## r - (r1, r2) vector of partial derivative indices 
-#
-## Returns
-## r-th partial derivative at x
-###############################################################################
-
-dmvnorm.deriv.2d <- function(x, Sigma, r) 
-{
-  if (is.vector(x))
-  {    
-    n <- 1; x1 <- x[1]; x2 <- x[2]
-  }
-  else 
-  {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
-  }
-
-  if (sum(r) == 0)
-    return(dmvnorm(x, c(0,0), Sigma))
-  ## first order derivatives  
-  else if (sum(r) == 1)
-    derivt <- .C("dmvnormd1_2d", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  ## third order derivatives
-  else if (sum(r) == 2)
-    derivt <- .C("dmvnormd2_2d", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  ## second order derivatives
-  else if (sum(r) == 3)
-    derivt <- .C("dmvnormd3_2d", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  ## fourth order derivatives
-  else if (sum(r) == 4)
-    derivt <- .C("dmvnormd4_2d", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  ## fifth order derivatives
-  else if (sum(r) == 5)
-    derivt <- .C("dmvnormd5_2d", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  ## sixth order derivatives
-  else if (sum(r) == 6)
-    derivt <- .C("dmvnormd6_2d", as.double(x1), as.double(x2), 
-            as.double(vec(Sigma)), as.integer(r), as.integer(n), 
-                 as.double(rep(0, n)), PACKAGE="ks")
-  else
-    stop("Only works for up to 6th order partial derivatives")
-  
-  return(derivt[[6]])
-}         
-
-###############################################################################
-## Partial derivatives of the 3-variate normal (mean 0, diag variance matrix) 
-##############################################################################
-
-dmvnorm.deriv.3d <- function(x, Sigma, r) 
-{
-  ####### Diagonal variance matrix implemented ONLY at the moment
-  
-  ##d <- 3
-  if (sum(r) > 6)
-    stop("Only works for up to 6th order partial derivatives")
-
-  if (is.vector(x))
-  {    
-    ##n <- 1;
-    x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; 
-  }
-  else 
-  {
-    ##n <- nrow(x);
-    x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; 
-  }
-  
-  y1 <- cbind(x1,x2)
-  y2 <- x3
-  r1 <- r[c(1,2)]
-  r2 <- r[3]
-  Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
-  Sigma2 <- Sigma[3,3]
-
-  ## Use existing 2-dim derivatives to compute 3-dim derivative for diag
-  ## variance matrix
-  derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
-  derivt2 <- dnorm.deriv(x=y2, mu=0, sigma=sqrt(Sigma2), r=r2)
-  derivt <- derivt1*derivt2
-
-  return(derivt)
-}         
-
-##############################################################################
-## Partial derivatives of the 4-variate normal (mean 0, diag variance matrix) 
-##############################################################################
-
-dmvnorm.deriv.4d <- function(x, Sigma, r) 
-{
-  ####### Diagonal variance matrix implemented ONLY at the moment
-  
-  ##d <- 4
-  if (sum(r) > 6)
-    stop("Only works for up to 6th order partial derivatives")
-
-  if (is.vector(x))
-  {    
-    ##n <- 1;
-    x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
-  }
-  else 
-  {
-    ##n <- nrow(x);
-    x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-  }
-  
-  y1 <- cbind(x1,x2)
-  y2 <- cbind(x3,x4)
-  r1 <- r[c(1,2)]
-  r2 <- r[c(3,4)]
-  Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
-  Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
-
-  ## Use existing 2-dim derivatives to compute 4-dim derivative for diag
-  ## variance matrix
-  derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
-  derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
-  derivt <- derivt1*derivt2
-
-  return(derivt)
-}
-###############################################################################
-## Partial derivatives of the 5-variate normal (mean 0, diag variance matrix) 
-## 
-## Parameters
-## x - points to evaluate at
-## Sigma - variance matrix
-## r - vector of partial derivative indices 
-#
-## Returns
-## r-th partial derivative at x
-##############################################################################
-
-dmvnorm.deriv.5d <- function(x, Sigma, r) 
-{
-  ####### Diagonal variance matrix implemented ONLY at the moment
-
-  ##d <- 5
-  if (sum(r) > 6)
-    stop("Only works for 2nd, 4th and 6th order partial derivatives")
- 
-  if (is.vector(x))
-  {    
-    ##n <- 1;
-    x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4]; x5 <- x[5]; 
-  }
-  else 
-  {
-    ##n <- nrow(x);
-    x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4]; x5 <- x[,5]; 
-  }
-  
-  y1 <- cbind(x1,x2)
-  y2 <- cbind(x3,x4)
-  y3 <- x5
-  r1 <- r[c(1,2)]
-  r2 <- r[c(3,4)]
-  r3 <- r[5]
-  Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
-  Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
-  Sigma3 <- Sigma[5,5]
-  
-  ## Use existing 2-dim derivatives to compute 5-dim derivative for diag
-  ## variance matrix
-  derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
-  derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
-  derivt3 <- dnorm.deriv(x=y3, mu=0, sigma=sqrt(Sigma3), r=r3)
-  derivt <- derivt1*derivt2*derivt3
-
-  return(derivt)
-}         
-
-
-###############################################################################
-## Partial derivatives of the 6-variate normal (mean 0, diag variance matrix) 
-## 
-## Parameters
-## x - points to evaluate at
-## Sigma - variance matrix
-## r - vector of partial derivative indices 
-#
-## Returns
-## r-th partial derivative at x
-##############################################################################
-
-dmvnorm.deriv.6d <- function(x, Sigma, r) 
-{
-  ####### Diagonal variance matrix implemented ONLY at the moment
-
-  ##d <- 6
-  if (sum(r) > 6)
-    stop("Only works for 2nd, 4th and 6th order partial derivatives")
-
-  if (is.vector(x))
-  {    
-    ##n <- 1;
-    x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4]; x5 <- x[5]; x6 <- x[6];
-  }
-  else 
-  {
-    ##n <- nrow(x);
-    x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4]; x5 <- x[,5]; x6 <- x[,6];
-  }
-  
-  y1 <- cbind(x1,x2)
-  y2 <- cbind(x3,x4)
-  y3 <- cbind(x5,x6)
-  r1 <- r[c(1,2)]
-  r2 <- r[c(3,4)]
-  r3 <- r[c(5,6)]
-  Sigma1 <- diag(c(Sigma[1,1], Sigma[2,2]))
-  Sigma2 <- diag(c(Sigma[3,3], Sigma[4,4]))
-  Sigma3 <- diag(c(Sigma[5,5], Sigma[6,6]))
-  
-  ## Use existing 2-dim derivatives to compute 6-dim derivative for diag
-  ## variance matrix
-  derivt1 <- dmvnorm.deriv.2d(y1, Sigma1, r1)
-  derivt2 <- dmvnorm.deriv.2d(y2, Sigma2, r2)
-  derivt3 <- dmvnorm.deriv.2d(y3, Sigma3, r3)
-  derivt <- derivt1*derivt2*derivt3
-
-  return(derivt)
-}         
-
-###############################################################################
-## Double sum  of K(X_i - X_j) used in density derivative estimation
-#
-## Parameters
-## x - points to evaluate
-## Sigma - variance matrix
-## inc - 0 - exclude diagonals
-##     - 1 - include diagonals
-#
-## Returns
-## Double sum at x
-###############################################################################
-
-dmvnorm.2d.sum <- function(x, Sigma, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 1; x1 <- x[1]; x2 <- x[2]
-  }
-  else
-  {
-    n <- nrow(x); d <- 2; x1 <- x[,1]; x2 <- x[,2]
-  }
-  
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_2d_sum", as.double(x1), as.double(x2),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[6]]
-  
-  ## above C function mvnorm_2d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(c(0,0), mean=c(0,0), sigma=Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(c(0,0), mean=c(0,0), sigma=Sigma) 
-  
-  return(sumval)
-}
-
-dmvnorm.deriv.2d.sum <- function(x, Sigma, r, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; x1 <- x[1]; x2 <- x[2]
-  }
-  else
-  {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
-  }
-     
-  if (sum(r)==0)
-    return(dmvnorm.2d.sum(x, Sigma, inc=inc))
-  ## 1st order derivatives
-  else if (sum(r)==1)
-    derivt <- .C("dmvnormd1_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0), PACKAGE="ks")
-  ## 2nd order derivativeselse if (sum(r)==2)
-  else if (sum(r)==2)
-    derivt <- .C("dmvnormd2_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0), PACKAGE="ks")
-  ## 3rd order derivativeselse if (sum(r)==3)
-  else if (sum(r)==3)
-    derivt <- .C("dmvnormd3_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n), as.double(0), PACKAGE="ks")
-  ## fourth order derivatives
-  else if (sum(r) == 4)
-    derivt <- .C("dmvnormd4_2d_sum", as.double(x1), as.double(x2), 
-                   as.double(vec(Sigma)), as.integer(r), as.integer(n),
-                 as.double(0), PACKAGE="ks")
-  ## fifth order derivatives
-  else if (sum(r) == 5)
-    derivt <- .C("dmvnormd5_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n),
-                 as.double(0), PACKAGE="ks")
-  ## sixth order derivatives
-  else if (sum(r) == 6)
-    derivt <- .C("dmvnormd6_2d_sum", as.double(x1), as.double(x2), 
-                 as.double(vec(Sigma)), as.integer(r), as.integer(n),
-                   as.double(0), PACKAGE="ks")
-  else
-    stop("Only works for up to 6th order partial derivatives")
-  
-  if (sum(r)==0)
-    sumval <- derivt
-    else
-      sumval <- derivt[[6]]
-  
-  ## above C functions mvnorm?_2d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma=Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm.deriv.2d(x=c(0,0), r=r, Sigma=Sigma) 
-
-  return(sumval)
-}         
-
+## Used in Hbcv
 
 dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
 {
@@ -950,331 +576,6 @@ dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
   
   return(invvec(sumval))
 } 
-
-
-###############################################################################
-## Double sum  of K(X_i - X_j) used in density derivative estimation - 3-dim
-#
-## Parameters
-## x - points to evaluate
-## Sigma - variance matrix
-## inc - 0 - exclude diagonals
-##     - 1 - include diagonals
-#
-## Returns
-## Double sum at x
-###############################################################################
-
-dmvnorm.3d.sum <- function(x, Sigma, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3];
-  }
-  
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_3d_sum", as.double(x1),as.double(x2), as.double(x3), 
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[7]]
-  
-  ## above C function mvnorm_3d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), sigma=Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), sigma=Sigma) 
-  
-  return(sumval)
-}
-
-dmvnorm.deriv.3d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
-{
-  if (is.vector(x))
-  {
-    n <- 1; x1 <- x[1]; x2 <- x[2] ; x3 <- x[3];  
-  }
-  else
-  {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3];   
-  }
-
-  d <- 3
-  sumval <- 0
-
-  if (binned)
-  {
-    ## drvkde computes include-diagonals estimate
-    fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
-                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
-    sumval <- sum(bin.par$counts * n * fhatr)
-    if (inc == 0) 
-      sumval <- sumval - n*dmvnorm.deriv.3d(x=rep(0,d), r=r, Sigma=Sigma)
-  }
-  else
-  {  
-    for (j in 1:n)
-    {  
-      y1 <- x1 - x1[j]
-      y2 <- x2 - x2[j]
-      y3 <- x3 - x3[j]
-      sumval <- sumval + sum(dmvnorm.deriv.3d(cbind(y1, y2, y3), Sigma, r))
-    }
-    
-    if (inc==0)
-      sumval <- sumval - n*dmvnorm.deriv.3d(rep(0,d), Sigma, r)
-  }
-
-  
-  return(sumval)
-}
-
-###############################################################################
-# Double sum  of K(X_i - X_j) used in density derivative estimation - 4-dim
-#
-## Parameters
-## x - points to evaluate
-## Sigma - variance matrix
-## inc - 0 - exclude diagonals
-##     - 1 - include diagonals
-#
-## Returns
-## Double sum at x
-###############################################################################
-
-dmvnorm.4d.sum <- function(x, Sigma, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-  }
-
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_4d_sum", as.double(x1), as.double(x2),
-               as.double(x3), as.double(x4),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[8]]
-    
-  ## above C function mvnorm_2d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), sigma=Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), sigma=Sigma) 
-
-  return(sumval)
-}
-
-dmvnorm.deriv.4d.sum <- function(x, Sigma, r, inc=1, binned=FALSE, bin.par)
-{
-  if (is.vector(x))
-  {
-    n <- 1; x1 <- x[1]; x2 <- x[2] ;x3 <- x[3]; x4 <- x[4]; 
-  }
-  else
-  {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-  }
-
-  d <- 4
-  sumval <- 0
-
-  if (binned)
-  {
-    ## drvkde computes include-diagonals estimate
-    fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(Sigma)),
-                       binned=TRUE, range.x=bin.par$range.x, se=FALSE)$est
-    sumval <- sum(bin.par$counts * n * fhatr)
-    if (inc == 0) 
-      sumval <- sumval - n*dmvnorm.deriv.4d(x=rep(0,d), r=r, Sigma=Sigma)
-  }
-  else
-  {  
-    for (j in 1:n)
-    {  
-      y1 <- x1 - x1[j]
-      y2 <- x2 - x2[j]
-      y3 <- x3 - x3[j]
-      y4 <- x4 - x4[j]
-      sumval <- sumval + sum(dmvnorm.deriv.4d(cbind(y1, y2, y3, y4), Sigma=Sigma, r=r))
-    }
-  
-    if (inc==0)
-      sumval <- sumval - n*dmvnorm.deriv.4d(rep(0,d), Sigma, r)
-  }
-  
-  return(sumval)
-}
-
-
-###############################################################################
-## Double sum  of K(X_i - X_j) used in density derivative estimation - 5-dim
-#
-## Parameters
-## x - points to evaluate
-## Sigma - variance matrix
-## inc - 0 - exclude diagonals
-##     - 1 - include diagonals
-#
-## Returns
-## Double sum at x
-###############################################################################
-
-dmvnorm.5d.sum <- function(x, Sigma, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
-    x5 <- x[5]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-    x5 <- x[,5]; 
-  }
-  
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_5d_sum", as.double(x1), as.double(x2),
-               as.double(x3), as.double(x4), as.double(x5),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[9]]
-
-  ## above C function mvnorm_5d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
-  
-  return(sumval)
-}
-
-dmvnorm.deriv.5d.sum <- function(x, Sigma, r, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
-    x5 <- x[5]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-    x5 <- x[,5]; 
-  }
-
-  d <- 5
-  sumval <- 0
-
-  for (j in 1:n)
-  {  
-    y1 <- x1 - x1[j]
-    y2 <- x2 - x2[j]
-    y3 <- x3 - x3[j]
-    y4 <- x4 - x4[j]
-    y5 <- x5 - x5[j]
-    sumval <- sumval + sum(dmvnorm.deriv.5d(cbind(y1, y2, y3, y4, y5),Sigma,r))
-  }
-  
-  if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv.5d(rep(0,d), Sigma, r)
-    
-  return(sumval)
-}
-
-###############################################################################
-## Double sum  of K(X_i - X_j) used in density derivative estimation - 6-dim
-#
-## Parameters
-## x - points to evaluate
-## Sigma - variance matrix
-## inc - 0 - exclude diagonals
-##     - 1 - include diagonals
-#
-## Returns
-## Double sum at x
-###############################################################################
-
-dmvnorm.6d.sum <- function(x, Sigma, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
-    x5 <- x[5]; x6 <- x[6]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-    x5 <- x[,5]; x6 <- x[,6];  
-  }
-  
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnorm_6d_sum", as.double(x1), as.double(x2),
-               as.double(x3), as.double(x4), as.double(x5), as.double(x6),
-               as.double(viSigma), as.double(det(Sigma)), as.integer(n),
-               as.double(0), PACKAGE="ks")
-  sumval <- result[[10]]
-
-  ## above C function mvnorm_6d_sum only computes the upper triangular half
-  ## so need to reflect along the diagonal and then subtract appropriate
-  ## amount to compute whole sum 
-  
-  if (inc == 0) 
-    sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), rep(0,d), Sigma)
-  else if (inc == 1)
-    sumval <- 2*sumval - n*dmvnorm(rep(0,d), rep(0,d), Sigma) 
-  
-  return(sumval)
-}
-
-dmvnorm.deriv.6d.sum <- function(x, Sigma, r, inc=1)
-{
-  if (is.vector(x))
-  {
-    n <- 1; d <- 4; x1 <- x[1]; x2 <- x[2]; x3 <- x[3]; x4 <- x[4];
-    x5 <- x[5]; x6 <- x[6]; 
-  }
-  else
-  {
-    n <- nrow(x); d <- ncol(x); x1 <- x[,1]; x2 <- x[,2]; x3 <- x[,3]; x4 <- x[,4];
-    x5 <- x[,5]; x6 <- x[,6];
-  }
-
-  d <- 6
-  sumval <- 0
-
-  for (j in 1:n)
-  {  
-    y1 <- x1 - x1[j]
-    y2 <- x2 - x2[j]
-    y3 <- x3 - x3[j]
-    y4 <- x4 - x4[j]
-    y5 <- x5 - x5[j]
-    y6 <- x6 - x6[j]
-    sumval <- sumval + sum(dmvnorm.deriv.6d(cbind(y1, y2, y3, y4, y5, y6),Sigma,r))
-  }
-  
-  if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv.6d(rep(0,d), Sigma, r)
-    
-  return(sumval)
-}
-
 
 
 ###############################################################################

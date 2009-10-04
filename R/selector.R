@@ -16,7 +16,7 @@
 gamse.even.2d <- function(r, n, psi1, psi2)
 {
   d <- 2
-  num <- -2 * dmvnorm.deriv(x=c(0,0), r=r, Sigma=diag(2))
+  num <- -2 * dmvnorm.deriv(x=c(0,0), deriv.order=r, Sigma=diag(2))
   den <- (psi1 + psi2) * n   
   g.amse <- (num/den)^(1/(2 + d + sum(r)))
   
@@ -77,7 +77,7 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       r <- derivt4[i,]
       if (is.even(r))
       {
-        K <- c(K, dmvnorm.deriv.diag(x=rep(0,d), r=r, Sigma=diag(d)))
+        K <- c(K, dmvnorm.deriv(x=rep(0,d), deriv.order=r, Sigma=diag(d)))
         A3psi <- 0
         for (j in 1:d)
         {
@@ -98,7 +98,7 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       r <- derivt6[i,]        
       if (is.even(r))
       {
-        K <- c(K, dmvnorm.deriv.diag(x=rep(0,d), r=r, Sigma=diag(d)))
+        K <- c(K, dmvnorm.deriv(x=rep(0,d), deriv.order=r, Sigma=diag(d)))
        
         A3psi <- 0
         for (j in 1:d)
@@ -470,7 +470,7 @@ psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
     G <- invvech(vechG)%*%invvech(vechG)
     G12 <- matrix.sqrt(G)
     Ginv12 <- chol2inv(chol(G12))
-    AB <- n^(-1)*det(Ginv12)*(K.pow(A=Ginv12,pow=r)%*%D4phi0)+
+    AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=r)%*%D4phi0)+
       (1/2)*(t(vec(G))%x%Id4)%*%Psi6
     return (sum(AB^2))
   }
@@ -967,11 +967,11 @@ bcv.mat <- function(x, H1, H2)
   n <- nrow(x)
   d <- 2
 
-  psi40 <- dmvnorm.deriv.2d.sum(x, Sigma=H2, r=c(4,0), inc=0)
-  psi31 <- dmvnorm.deriv.2d.sum(x, Sigma=H2, r=c(3,1), inc=0)
-  psi22 <- dmvnorm.deriv.2d.sum(x, Sigma=H2, r=c(2,2), inc=0)
-  psi13 <- dmvnorm.deriv.2d.sum(x, Sigma=H2, r=c(1,3), inc=0)
-  psi04 <- dmvnorm.deriv.2d.sum(x, Sigma=H2, r=c(0,4), inc=0)
+  psi40 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(4,0), inc=0)
+  psi31 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(3,1), inc=0)
+  psi22 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(2,2), inc=0)
+  psi13 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(1,3), inc=0)
+  psi04 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(0,4), inc=0)
     
   coeff <- c(1, 2, 1, 2, 4, 2, 1, 2, 1)
   psi.fun <- c(psi40, psi31, psi22, psi31, psi22, psi13, psi22, psi13,psi04)/(n*(n-1))
@@ -1057,7 +1057,7 @@ Hbcv <- function(x, whichbcv=1, Hstart)
     
     psi4.mat <- bcv.mat(x, H, 2*H)$psimat
     psi22 <- psi4.mat[1,3] 
-    psi00 <- dmvnorm.2d.sum(x, Sigma=2*H, inc=0)/(n*(n-1))
+    psi00 <- dmvnorm.sum(x, Sigma=2*H, inc=0)/(n*(n-1))
     psi22.deriv.xxt <- dmvnorm.deriv.2d.xxt.sum(x,r=c(2,2),Sigma=2*H)/(n*(n-1))
     psi22.deriv <- t(D2)%*% vec((Hinv %*% psi22.deriv.xxt %*% Hinv +
                                  2* psi00 *Hinv %*% Hinv - psi22*Hinv)/2) 

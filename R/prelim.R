@@ -168,6 +168,27 @@ matrix.sqrt <- function(A)
   return(Asqrt)
 }
 
+matrix.pow <- function(A, n)
+{
+  if (nrow(A)!=ncol(A)) stop("A must a a square matrix")
+  if (floor(n)!=n) stop("n must be an integer")
+  if (n==0) return(diag(ncol(A)))
+  if (n < 0) return(matrix.pow(A=chol2inv(chol(A)), n=-n))
+        
+  # trap non-integer n and return an error
+  if (n == 1) return(A)
+  result <- diag(1, ncol(A))
+  while (n > 0) {
+    if (n %% 2 != 0) {
+      result <- result %*% A
+      n <- n - 1
+    }
+    A <- A %*% A
+    n <- n / 2
+  }
+  return(result)
+}
+
 ###############################################################################
 # Duplication matrix
 # Taken from Felipe Osorio http://www.ime.usp.br/~osorio/files/dupl.q
@@ -515,7 +536,7 @@ K.mat<-function(m,n){
 
 ##### Kronecker power of a matrix A
 
-K.pow<-function(A,pow){
+Kpow<-function(A,pow){    #### WARNING! Dot omitted from original K.pow name
   if(floor(pow)!=pow)stop("pow must be an integer")
   Apow<-A
   if(pow==0){Apow<-1}
@@ -527,7 +548,7 @@ K.pow<-function(A,pow){
     
 ##### Row-wise Kronecker products and powers of matrices
     
-mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
+mat.Kprod.old<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
   n1<-nrow(U)
   n2<-nrow(V)
   if(n1!=n2)stop("U and V must have the same number of vectors")
@@ -538,31 +559,47 @@ mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
   return(P)
 }
 
-mat.K.pow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
+mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
+ n1<-nrow(U)
+ n2<-nrow(V)
+ if(n1!=n2)stop("U and V must have the same number of vectors")
+ p<-ncol(U)
+ q<-ncol(V)
+ onep<-rep(1,p)
+ oneq<-rep(1,q)
+ P<-(U%x%t(oneq))*(t(onep)%x%V)
+ return(P)
+} 
+
+
+#### WARNING! Dot omitted from original mat.K.pow name
+mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
   Apow<-A
+  if(pow==0){Apow<-matrix(1,nr=nrow(A),nc=1)}  
   if(pow>1){
     for(i in 2:pow) Apow<-mat.Kprod(Apow,A)
   }
   return(Apow)
 }
 
+
 ##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0), for r=6,4
 
 D6L0<-function(d,Sd6){
   r<-6
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd6%*%K.pow(A=vec(diag(d)),pow=r/2))
+  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd6%*%Kpow(A=vec(diag(d)),pow=r/2))
   return(DL0)
 }
     
 D4L0<-function(d,Sd4){
   r<-4
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd4%*%K.pow(A=vec(diag(d)),pow=r/2))
+  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd4%*%Kpow(A=vec(diag(d)),pow=r/2))
   return(DL0)
 }
 
 D2L0<-function(d,Sd2){
   r<-2
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd2%*%K.pow(A=vec(diag(d)),pow=r/2))
+  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd2%*%Kpow(A=vec(diag(d)),pow=r/2))
   return(DL0)
 }
 
