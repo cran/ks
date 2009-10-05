@@ -22,7 +22,7 @@ psins <- function(r, Sigma, complete=FALSE, Sdr.mat)
   d <- ncol(Sigma)
   if (complete)
   {
-    return(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), r=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat))
+    return(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat))
   }
   else
   {  

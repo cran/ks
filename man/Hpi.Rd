@@ -39,7 +39,7 @@ bandwidth plus the estimated AMISE is returned in a list.}
 
 
 \details{ \code{hpi} is the univariate plug-in 
-  selector of Sheather \& Jones (1991). \code{Hpi} is a
+  selector of Wand \& Jones (1994). \code{Hpi} is a
   multivariate generalisation of this.
 
   Use \code{Hpi} for full bandwidth matrices and \code{Hpi.diag}
@@ -68,14 +68,14 @@ bandwidth plus the estimated AMISE is returned in a list.}
 
 \references{
   Chac\'on, J.E. \& Duong, T. (2008) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Submitted.}
+  selection with unconstrained pilot matrices. \emph{Test}. Accepted.
   
   Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric
 	Statistics}, \bold{15}, 17-30.
   
   Sheather, S.J. \& Jones, M.C. (1991) A reliable data-based bandwidth selection
-  method for kernel density estimatio. \emph{Journal of the Royal
+  method for kernel density estimation. \emph{Journal of the Royal
 	Statistical Society, Series B}, \bold{53}, 683-690.
   
   Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth

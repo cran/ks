@@ -51,13 +51,13 @@ ks
 }
 \references{
   Bowman, A. \& Azzalini, A. (1997) \emph{Applied Smoothing Techniques
-    for Data Analysis}. Oxford University Press. Oxford.
+    for Data Analysis}. Oxford University Press, Oxford.
 
   Chac\'on, J.E. \& Duong, T. (2008) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Submitted.}
+  selection with unconstrained pilot matrices. \emph{Test}. Accepted.
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
-    Estimation.} Ph.D. Thesis. University of Western Australia. 
+    Estimation.} Ph.D. Thesis, University of Western Australia. 
  
   Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
     bivariate kernel density estimation. \emph{Journal of Nonparametric
@@ -73,10 +73,10 @@ ks
   American Statistical Association}. \bold{82}, 1131-1146.
 
   Scott, D.W. (1992) \emph{Multivariate Density Estimation: Theory,
-    Practice, and Visualization}. John Wiley \& Sons. New York.
+    Practice, and Visualization}. John Wiley \& Sons, New York.
 
   Silverman, B. (1986) \emph{Density Estimation for Statistics and
-  Data Analysis}. Chapman \& Hall/CRC. London.
+  Data Analysis}. Chapman \& Hall/CRC, London.
 
   Simonoff, J. S. (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.
@@ -85,12 +85,11 @@ ks
     selection. \emph{Computational Statistics}, \bold{9}, 97-116.
   
   Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}. Chapman \&
-  Hall/CRC. London.
+  Hall/CRC, London.
 }
 
-\keyword{ package }
+\keyword{package}
 
-\seealso{
-\code{\link[sm:sm-package]{sm}}, \code{\link[KernSmooth]{KernSmooth}}
+\seealso{\code{sm}, \code{KernSmooth}
 }
 
