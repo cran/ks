@@ -1,9 +1,11 @@
 README file for ks
 
 
-1.6.8 Corrected ISE for normal mixtures, from J.E. Chacon.
+1.6.8 Added 1-d LSCV selector hlscv().
+ 
+1.6.7 Corrected ISE for normal mixtures, from J.E. Chacon.
 
-1.6.6 Added MISE, AMISE, ISE functions for normal mixtures derivative. 
+1.6.6 Added MISE, AMISE, ISE functions for normal mixtures derivatives. 
       Changes to internal double sum calculations from J.E. Chacon.
 
 1.6.x -1-d binned KDE fix from M.P. Wand.
@@ -24,28 +26,28 @@ README file for ks
 1.5.x  -Added normal mixture (A)MISE-optimal selectors: hamise.mixt, 
        hmise.mixt, Hamise.mixt, Hmise.mxt.
 
-	   -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde
+       -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde
       
-	   -Added plug-in selectors for 1-d data (exactly the code for dpik from 
-       KernSmooth). For KDE, this is `hpi', for KDA, this is 
-       'hkda(..., bw="plugin")'.
+       -Added plug-in selectors for 1-d data (exactly the code for dpik from 
+       KernSmooth). For KDE, this is hpi, for KDA, this is 
+       hkda(, bw="plugin").
  
        -Made changes to specifying line colour (col rather than lcol) in 
        plot.kde, plot.kda.kde and partition class colour (partcol) in 
        plot.kda.kde. 
 
- 	   -Added plot3d() capabilities from rgl to 3-d plot - removing own axes
+       -Added plot3d() capabilities from rgl to 3-d plot - removing own axes
        drawing functions.
 
-	  -New functions to compute pilot functinal estimators hat{psi}_r(g).
-      These are exact, and are more efficient than binned estimators for small
-      samples (~100), and are available in d > 4.
+       -New functions to compute pilot functinal estimators hat{psi}_r(g).
+       These are exact, and are more efficient than binned estimators for small
+       samples (~100), and are available in d > 4.
 
 
 
 1.4.x -Vignette illustrating 2-d KDE added
- 
-	  -Binned estimation implemented for KDE with diagonal selectors and 
+      
+      -Binned estimation implemented for KDE with diagonal selectors and 
       pilot functional estimation with diagonal selectors.
 
       -Filled contour plots added as disp=filled option in plot.kde().
@@ -62,8 +64,8 @@ README file for ks
       now same order as 2-d contours. 
 
 1.3.x Multivariate (for 3 to 6 dimensions inclusive) bandwidth selectors added
-      for `Hpi', `Hpi.diag' (plugin), `Hlscv', `Hlscv.diag' and `Hscv'. 
-      NB: because `Hbcv' and `Hbcv.diag'  performed poorly for 2-d, these 
+      for Hpi(), Hpi.diag(), Hlscv(), Hlscv.diag() and Hscv(). 
+      NB: because Hbcv() and Hbcv.diag()  performed poorly for 2-d, these 
       weren't implemented in higher dimensions.
 
 
@@ -72,18 +74,18 @@ README file for ks
       To pass all the necessary checks involved some internal programming
       changes but has not affected the user interface.
     
-      -The child mortality data set `unicef' is used in the examples now.
+      -The child mortality data set unicef is used in the examples.
 
 
 
-1.1.x -S3 type objects have been introduced.  The output from `kde' are 
-      `kde' objects. The output from `kda.kde' and `pda.pde' are `dade' 
+1.1.x -S3 type objects have been introduced.  The output from kde() are 
+      `kde' objects. The output from kda.kde() and pda.pde() are `dade' 
       objects. Corresponding plot functions are called automatically by 
       invoking `plot'.
 
       -Kernel discriminant analysers are now available. Parametric (linear and 
       quadratic) discriminant analysers are accessed using  `pda'.
 
-      -`adapt' library is no longer required. This was formerly used on
-      the functions for integrated squared error computations (`ise.mixt'
-      and `iset.mixt').
+      -adapt library is no longer required. This was formerly used on
+      the functions for integrated squared error computations ise.mixt()
+      and iset.mixt().

@@ -1,7 +1,7 @@
 \name{Hlscv, Hlscv.diag, hlscv}
 \alias{Hlscv}
 \alias{Hlscv.diag}
-%\alias{hlscv}
+\alias{hlscv}
 
 
 \title{Least-squares cross-validation (LSCV) bandwidth matrix selector
@@ -11,8 +11,9 @@ LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
 Hlscv(x, Hstart)
 Hlscv.diag(x, Hstart, binned=FALSE, bgridsize)
+hlscv(x, binned=TRUE, bgridsize)
 }
-%hlscv(x, binned=TRUE, bgridsize)
+
 
 \arguments{
   \item{x}{vector or matrix of data values}
@@ -51,9 +52,7 @@ LSCV bandwidth.
   Use \code{Hlscv} for full bandwidth matrices and \code{Hlscv.diag}
   for diagonal bandwidth matrices.
   
-  %For d = 1, the selector \code{hlscv} is always computed as binned
-  %estimator.
-  For d = 2, 3, 4 and \code{binned=TRUE}, 
+  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 
   by \code{bgridsize}. Otherwise it's computed exactly.
   
@@ -63,11 +62,11 @@ LSCV bandwidth.
 \seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}
 
 \examples{
-mus <- rbind(c(-1/2,0), c(1/2,0))
-Sigmas <- rbind(diag(c(1/16, 1)), rbind(c(1/8, 1/16), c(1/16, 1/8)))
-props <- c(2/3, 1/3)
-x <- rmvnorm.mixt(1000, mus, Sigmas, props)
-Hlscv(x)
-Hlscv.diag(x, binned=TRUE)
+library(MASS)
+data(forbes)
+Hlscv(forbes)
+Hlscv.diag(forbes, binned=TRUE)
+hlscv(forbes$bp)
 }
+
 \keyword{ smooth }
