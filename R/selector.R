@@ -832,22 +832,18 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
 # LSCV(H)
 ###############################################################################
 
-lscv.1d.binned <- function(xbin.par, h)
+lscv.1d <- function(x, h, binned=FALSE, bin.par)
 {
-  n <- sum(xbin.par$counts)
-  lscv1 <- n^2*bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], drv=0, bandwidth=sqrt(2)*h, binned=TRUE)
-  lscv2 <- n^2*(bkfe(x=xbin.par$counts, range.x=xbin.par$range.x[[1]], drv=0, bandwidth=h, binned=TRUE) - dnorm(0, mean=0, sd=h)/n)
- 
-  lscv <- lscv1/n^2 - 2/(n*(n-1))*lscv2
-
-  return(lscv)
+  n <- length(x)
+  lscv1 <- dnorm.sum(x=x, sigma=sqrt(2)*h, inc=1, binned=binned, bin.par=bin.par)
+  lscv2 <- dnorm.sum(x=x, sigma=h, inc=0, binned=binned, bin.par=bin.par)
+  
+  return(lscv1/n^2 - 2/(n*(n-1))*lscv2)     
 }
 
 lscv.mat <- function(x, H, binned=FALSE, bin.par)
 {
   n <- nrow(x)
-  ##d <- ncol(x)
-
   lscv1 <- dmvnorm.sum(x, 2*H, inc=1, binned=binned, bin.par=bin.par)
   lscv2 <- dmvnorm.sum(x, H, inc=0, binned=binned, bin.par=bin.par)
   
@@ -869,20 +865,29 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par)
 hlscv <- function(x, binned=TRUE, bgridsize)
 {
   if (any(duplicated(x)))
-    stop("Data contain duplicated values: LSCV is not well-behaved in this case")
+    warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   n <- length(x)
   d <- 1
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
-  if (missing(bgridsize)) bgridsize <- 401
- 
-  xbin.par <- dfltCounts(x, gridsize=bgridsize)
 
-  lscv.1d.temp <- function(h)
-  {
-    return(lscv.1d.binned(x=xbin.par, h=h))
+  if (binned)
+  {  
+    if (missing(bgridsize)) bgridsize <- 401
+    xbin.par <- binning(x, bgridsize=bgridsize, h=hnorm)
+    lscv.1d.temp <- function(h)
+    {
+      return(lscv.1d(x=x, h=h, binned=TRUE, bin.par=xbin.par))
+    }
   }
-
+  else
+  {
+    lscv.1d.temp <- function(h)
+    {
+      return(lscv.1d(x=x, h=h, binned=FALSE))
+    }
+  }
   opt <- optimise(f=lscv.1d.temp, interval=c(0.2*hnorm, 5*hnorm, tol=.Machine$double.eps))$minimum
+  
   return(opt)
     
 }
@@ -890,7 +895,7 @@ hlscv <- function(x, binned=TRUE, bgridsize)
 Hlscv <- function(x, Hstart)
 {
   if (any(duplicated(x)))
-    stop("Data contain duplicated values: LSCV is not well-behaved in this case")
+    warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   n <- nrow(x)
   d <- ncol(x)
   ##RK <- (4*pi)^(-d/2)
@@ -924,6 +929,9 @@ Hlscv <- function(x, Hstart)
 
 Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize)
 {
+  if (any(duplicated(x)))
+    warning("Data contain duplicated values: LSCV is not well-behaved in this case")
+  
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -938,7 +946,7 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize)
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
     ## linear binning
-    bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(H.max)))
+    bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(H.max))))
   }
   
   lscv.mat.temp <- function(diagH)
