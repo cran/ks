@@ -16,9 +16,9 @@
 \usage{
 contourLevels(x, ...)
 
-\method{contourLevels}{kde}(x, prob, cont, nlevels=5, ...)
+\method{contourLevels}{kde}(x, prob, cont, nlevels=5, approx=FALSE, ...)
 
-\method{contourLevels}{kda.kde}(x, prob, cont, nlevels=5, ...)
+\method{contourLevels}{kda.kde}(x, prob, cont, nlevels=5, approx=FALSE, ...)
 }
 
 \arguments{
@@ -27,7 +27,8 @@ contourLevels(x, ...)
   \item{cont}{vector of percentages which correspond to the complement
 	of \code{prob}}
   \item{nlevels}{number of pretty contour levels} 
-  \item{...}{other parameters for \code{\link{contour}}}
+  \item{approx}{flag to compute approximate contour levels} 
+  \item{...}{other parameters}
 }
   
 
@@ -49,6 +50,10 @@ contourLevels(x, ...)
 
   If both \code{prob} and \code{cont} are missing then a pretty set of
   \code{nlevels} contours are computed.
+
+  If \code{approx=FALSE}, then the exact KDE at x is compute. Otherwise the exact 
+  KDE is replaced by the KDE at the nearest 
+  grid point. This can dramatically reduce computation time for large data sets.
 }
  
 

@@ -18,13 +18,13 @@
 
 ## bivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    abs.cont, xlim, ylim, xlab, ylab, drawpoints=FALSE,
+    abs.cont, approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE,
     drawlabels=TRUE, col, partcol, ptcol, ...)
 
 ## trivariate
 \method{plot}{kda.kde}(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-   abs.cont, colors, alphavec, xlab, ylab, zlab, drawpoints=FALSE,
-   size=3, ptcol="blue", ...)
+   abs.cont,  approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
+   drawpoints=FALSE, size=3, ptcol="blue", ...)
 
 }
 
@@ -38,6 +38,7 @@
     level curves}
   \item{abs.cont}{vector of absolute density estimate heights for contour
     level curves}
+  \item{approx.cont}{flag to compute approximate contour levels} 
   \item{xlim,ylim}{axes limits}
   \item{xlab,ylab,zlab}{axes labels}
   \item{drawpoints}{if TRUE then draw data points}

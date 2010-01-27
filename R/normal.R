@@ -199,6 +199,28 @@ dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par,
   
 }
 
+dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
+{
+  if (!(identical(all.equal(sum(props), 1), TRUE)))
+    stop("Proportions don't sum to one\n")
+
+  ## single component mixture
+  if (identical(all.equal(props[1], 1), TRUE))
+    dens <- dnorm.deriv(x, mu=mus[1], sigma=sigmas[1], deriv.order=deriv.order)
+
+  ## multiple component mixture
+  else   
+  {   
+    k <- length(props)
+    dens <- 0
+
+    ## sum of each normal density value from each component at x  
+    for (i in 1:k)
+      dens <- dens + props[i]*dnorm.deriv(x=x, mu=mus[i], sigma=sigmas[i], deriv.order=deriv.order)
+  }
+  
+  return(dens)
+}   
 
 ###############################################################################
 # Multivariate normal densities and derivatives
@@ -289,8 +311,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
   
   if (missing(mus)) mus <- rep(0,d)
   if (missing(Sigmas)) Sigmas <- diag(d)
-  ##if (missing(deriv)) deriv <- rep(0,d)
-   
+     
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
   {
@@ -401,9 +422,9 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, duplicate=TRUE, ad
   if (sumr==2) ind.mat <- K.sum(diag(d), diag(d))
   if (sumr==3) ind.mat <- K.sum(diag(d), K.sum(diag(d), diag(d)))
   if (sumr==4) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
-  if (sumr==5) ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
-  if (sumr==6) ind.mat <- K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
-  if (sumr==7) ind.mat <- K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
+  if (sumr==5) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
+  if (sumr==6) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
+  if (sumr==7) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
   if (sumr==8) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d),K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
 
   if (index.only) return(ind.mat)
@@ -413,8 +434,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, duplicate=TRUE, ad
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
   if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
-  ##for (i in 1:n) x[i,] <- x[i,] - mu
- 
+  
   mvh <- dmvnorm.deriv.JEC(x=x, mu=mu, Sigma=Sigma, deriv.order=sumr, Sdr.mat=Sdr.mat)
 
   if (length(r)>1)
@@ -443,6 +463,68 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, duplicate=TRUE, ad
   }
 }
 
+
+
+dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, duplicate=TRUE, add.index=FALSE, index.only=FALSE)
+{
+  if (!(identical(all.equal(sum(props), 1), TRUE)))
+    stop("Proportions don't sum to one\n")
+
+  if (is.vector(x)) d <- length(x)
+  else d <- ncol(x)
+  
+  if (missing(mus)) mus <- rep(0,d)
+  if (missing(Sigmas)) Sigmas <- diag(d)
+
+  r <- deriv.order
+  sumr <- sum(r)
+
+  ind.mat <- dmvnorm.deriv(x=x, mu=mus[1,], Sigma=Sigmas[1:d,], deriv.order=r, Sdr.mat, index.only=TRUE)
+  if (index.only) return(ind.mat)
+  
+  ## derivatives
+  
+  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
+  
+  ## single component mixture
+  if (identical(all.equal(props[1], 1), TRUE))
+  {
+    if (is.matrix(mus)) mus <- mus[1,]
+    dens <- dmvnorm.deriv.JEC(x=x, mu=mus, Sigma=Sigmas[1:d,], deriv.order=sumr, Sdr.mat=Sdr.mat)
+  }
+  ## multiple component mixture
+  else   
+  {   
+    k <- length(props)
+    dens <- 0
+    ## sum of each normal density value from each component at x  
+    for (i in 1:k)
+      dens <- dens + props[i]*dmvnorm.deriv.JEC(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr, Sdr.mat=Sdr.mat)  
+  }
+
+  if (length(r)>1)
+  {
+    dens <- dens[,!duplicated(ind.mat)]
+    deriv.ind <- unique(ind.mat)
+    which.deriv <- which.mat(r, deriv.ind)
+    if (is.vector(dens)) return(dens[which.deriv])
+    else return(dens[,which.deriv])
+  }
+  else
+  {
+    if (r>1)
+    {  
+      if (!duplicate)
+      { 
+        dens <- dens[,!duplicated(ind.mat)]
+        ind.mat <- unique(ind.mat)
+      }
+    }
+    
+    if (add.index) return(list(deriv=dens, deriv.ind=ind.mat))
+    else return(deriv=dens)
+  }
+}
 
 
 
@@ -513,10 +595,11 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     if (!is.diagonal(Sigma))
         stop("Binned estimation defined for diagonal Sigma only")
     if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
-    
+
+    d <- ncol(Sigma)
     fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, deriv.order=r)$estimate 
     n <- sum(bin.par$counts)
-    d <- ncol(Sigma)
+    
     sumval <- sum(bin.par$counts * n * fhatr)
   }
   else

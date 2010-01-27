@@ -15,15 +15,15 @@
   drawpoints=FALSE, ptcol="blue", col="black", jitter=TRUE, ...)
 
 ## bivariate
-\method{plot}{kde}(x, display="slice", cont=c(25,50,75), abs.cont,
-    xlab, ylab, zlab="Density function", add=FALSE, drawpoints=FALSE,
-    drawlabels=TRUE, theta=-30, phi=40, d=4,
+\method{plot}{kde}(x, display="slice", cont=c(25,50,75), abs.cont, 
+    approx.cont=FALSE, xlab, ylab, zlab="Density function", add=FALSE, 
+    drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
     ptcol="blue", col="black", ...)
 
 ## trivariate
-\method{plot}{kde}(x, cont=c(25,50,75), abs.cont, colors,add=FALSE,
-    drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, size=3,
-    ptcol="blue", ...)
+\method{plot}{kde}(x, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors,
+    add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
+    size=3, ptcol="blue", ...)
 }
 
 \arguments{
@@ -36,6 +36,7 @@
     level curves}
   \item{abs.cont}{vector of absolute density estimate heights for contour
     level curves}
+  \item{approx.cont}{flag to compute approximate contour levels} 
   \item{ptcol}{plotting colour for data points}
   \item{col}{plotting colour for density estimate (1-d, 2-d plot)}
   \item{colors}{vector of colours for each contour (3-d plot)}
@@ -104,7 +105,10 @@
   This third option is useful for plotting
   multiple density estimates with common contour levels. See
   \code{\link{contourLevels}} for details on computing contour levels
-  for \code{kde} objects.  
+  for \code{kde} objects.   
+  If \code{approx=FALSE}, then the exact KDE at x is compute. Otherwise the exact 
+  KDE is replaced by the KDE at the nearest 
+  grid point. This can dramatically reduce computation time for large data sets.
 }
  
 
@@ -143,7 +147,7 @@ plot(fhaty, abs.cont=lev, col=3, add=TRUE)
 x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
 H.pi <- Hpi.diag(x, binned=TRUE)
 fhat <- kde(x, H=H.pi, binned=TRUE) 
-plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20))
+plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20), approx.cont=TRUE)
 
 
 ## trivariate example

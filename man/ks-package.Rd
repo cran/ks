@@ -1,13 +1,10 @@
 \name{ks}
 \alias{ks}
 \docType{package}
-\title{
-ks
-}
+\title{ks}
 \description{
   Kernel density estimation and kernel discriminant analysis for
   data from 1- to 6-dimensions, with display functions.
-  
 }
 \details{
   There are three main types of functions in this package:
@@ -54,7 +51,7 @@ ks
     for Data Analysis}. Oxford University Press, Oxford.
 
   Chac\'on, J.E. \& Duong, T. (2008) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Test}. Accepted.
+  selection with unconstrained pilot matrices. \emph{Test}. In press.
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis, University of Western Australia. 
@@ -64,9 +61,8 @@ ks
   Statistics}, \bold{15}, 17-30. 
   
   Duong, T. \& Hazelton, M.L. (2005) Cross-validation bandwidth  
-    matrices for multivariate kernel density
-	estimation. \emph{Scandinavian Journal of Statistics}, \bold{32},
-	485-506. 
+    matrices for multivariate kernel density estimation. 
+   \emph{Scandinavian Journal of Statistics}, \bold{32}, 485-506. 
 
   Sain, S.R., Baggerly, K.A. \& Scott, D.W. (1994)
   Cross-validation of multivariate densities. \emph{Journal of the
@@ -82,7 +78,7 @@ ks
   Springer-Verlag. New York.
 
   Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth
-    selection. \emph{Computational Statistics}, \bold{9}, 97-116.
+  selection. \emph{Computational Statistics}, \bold{9}, 97-116.
   
   Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}. Chapman \&
   Hall/CRC, London.

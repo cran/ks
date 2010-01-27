@@ -2,20 +2,31 @@
 ### Multivariate kernel density derivative estimate 
 ###############################################################################
 
-kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=TRUE, bgridsize, positive=FALSE, adj.positive)
+kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
 {
   r <- deriv.order
+
   if (is.vector(x))
   {
-    if (missing(H)) d <- 1
+    if (missing(H)) {d <- 1; n <- length(x)}
     else
     {
-      if (is.vector(H)) d <- 1
-      else {x <- matrix(x, nrow=1); d <- ncol(x)}
+      if (is.vector(H)) { d <- 1; n <- length(x)}
+      else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
     }
   }
-  else d <- ncol(x)
-  
+  else {d <- ncol(x); n <- nrow(x)}
+
+  if (!missing(w))
+    if (!(identical(all.equal(sum(w), n), TRUE)))
+    {
+      warning("Weights don't sum to sample size - they have been scaled accordingly\n")
+      w <- w*n/sum(w)
+    }
+
+  if (missing(w)) w <- rep(1,n)
+
+
   ## compute binned estimator
   if (binned)
   {
@@ -33,16 +44,47 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
       fhat$x <- x
     }
     else
-      fhat <- kdde.binned(x=x, H=H, h=h, deriv.orde=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
   }
   else
   {
     ## compute exact (non-binned) estimator
-    stop("Non-binned estimators for density derivatives not yet implemented")
+    if (missing(gridsize)) gridsize <- default.gridsize(d)
+    
+    ## 1-dimensional    
+    if (d==1)
+    {
+      if (!missing(H) & !missing(h))
+        stop("Both H and h are both specified.")
+      
+      if (missing(h))
+        h <- sqrt(H)
+
+      if (missing(eval.points))
+        fhat <- kdde.grid.1d(x=x, h=h, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r)
+      else
+        fhat <- kdde.points.1d(x=x, h=h, eval.points=eval.points, w=w, deriv.order=r)
+    }
+    ## multi-dimensional
+    else
+    {   
+      if (is.data.frame(x)) x <- as.matrix(x)
+      
+      if (missing(eval.points))
+      {
+        if (d==2) ##stop("Not yet implemented for 2 dimensions")
+          fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r)
+        else if (d == 3) stop("Not yet implemented for 2 dimensions")
+          #fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
+        else 
+          stop("Need to specify eval.points for more than 3 dimensions")
+      }
+      else
+        fhat <- kdde.points(x, H, eval.points, w=w, deriv.order=r)
+    }
+
   }
-  
   fhat$binned <- binned
-  ##fhat$gridtype <- gridtype
 
   ## add variable names
   if (is.vector(x))
@@ -61,7 +103,7 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
     }
   }
   fhat$names <- x.names
-  class(fhat) <- "kde"
+  class(fhat) <- "kdde"
   
 
   return(fhat)
@@ -70,7 +112,8 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
 
 
 ###############################################################################
-### Multivariate binned kernel density derivative estimate 
+## Multivariate binned kernel density derivative estimate
+## for single partial derivative ONLY
 ###############################################################################
 
 ### Diagonal H only
@@ -109,21 +152,167 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par)
   else
     range.x <- lapply(bin.par$eval.points, range)
 
- 
-  fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-  eval.points <- fhat.grid$x.grid
-  fhat.grid <- fhat.grid$est
-  
+  if (d==1)
+  {  
+    fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+    eval.points <- fhat.grid$x.grid
+    fhat.grid <- fhat.grid$est
+  }
+  else
+  {
+    ##deriv.ind <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), index.only=TRUE, deriv.order=r)
+    ##fhat.grid.list <- list()
+
+    ## Needs to be optimised here to avoid duplicated computation of density derviatives
+    ##for (r2 in 1:nrow(deriv.ind))
+    ##{
+    ##fhat.grid <- drvkde(x=bin.par$counts, drv=deriv.ind[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+    ##fhat.grid.list[[r2]] <- fhat.grid$est
+    ##}
+    fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+    eval.points <- fhat.grid$x.grid
+    fhat.grid <- fhat.grid$est
+  }
   if (missing(x)) x <- NULL
   
   if (d==1)
-    fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, H=h^2, h=h)
+    fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, H=h^2, h=h, deriv.order=r)
   else
-    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H)
+    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H, deriv.order=r)
+
+  class(fhat) <- "kdde"
   
   return(fhat)
 }
 
+
+
+
+##############################################################################################
+#### Univariate kernel density derivative estimate on a grid
+##############################################################################################
+
+kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w, deriv.order=0)
+{
+  r <- deriv.order
+  if (r==0)
+    fhatr <- kde(x=x, h=h, gridsize=gridsize, supp=supp, positive=positive, adj.positive=adj.positive, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w)
+  else
+  {  
+    if (missing(xmin)) xmin <- min(x) - h*supp
+    if (missing(xmax)) xmax <- max(x) + h*supp
+    if (missing(gridtype)) gridtype <- "linear"
+  
+    y <- x
+    gridtype1 <- tolower(substr(gridtype,1,1))
+    if (gridtype1=="l")
+    {
+      gridy <- seq(xmin, xmax, length=gridsize)
+      gridtype.vec <- "linear"
+    }
+    else if (gridtype1=="s")
+    {
+      gridy.temp <- seq(sign(xmin)*sqrt(abs(xmin)), sign(xmax)*sqrt(abs(xmax)), length=gridsize)
+      gridy <- sign(gridy.temp) * gridy.temp^2
+      gridtype.vec <- "sqrt"
+    }
+  
+    n <- length(y)
+    est <- dnorm.deriv.mixt(x=gridy, mus=y, sigmas=rep(h, n), props=w/n, deriv.order=r)
+    fhatr <- list(x=y, eval.points=gridy, estimate=est, h=h, H=h^2, gridtype=gridtype.vec, deriv.order=r)
+      
+    class(fhatr) <- "kde"
+  }
+  
+  return(fhatr)
+}
+
+
+
+##############################################################################################
+## Bivariate kernel density derivative estimate on a grid
+## Computes all mixed partial derivatives for a given deriv.order
+##############################################################################################
+
+kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0)
+{
+  d <- 2
+  r <- deriv.order
+  if (r==0)
+    fhatr <- kde(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w)
+  else
+  {  
+    ## initialise grid 
+    n <- nrow(x)
+    if (is.null(gridx))
+      gridx <- make.grid.ks(x, matrix.sqrt(H), tol=supp, gridsize=gridsize, xmin=xmin, xmax=xmax, gridtype=gridtype) 
+    
+    suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
+    
+    if (is.null(grid.pts))
+    grid.pts <- find.gridpts(gridx, suppx)    
+
+    nderiv <- d^r
+    fhat.grid <- list()
+    for (k in 1:nderiv)
+      fhat.grid[[k]] <- matrix(0, nrow=length(gridx[[1]]), ncol=length(gridx[[2]]))
+
+    S2r <- Sdr(d=d, r=r)
+    for (i in 1:n)
+    {
+      ## compute evaluation points 
+      eval.x <- gridx[[1]][grid.pts$xmin[i,1]:grid.pts$xmax[i,1]]
+      eval.y <- gridx[[2]][grid.pts$xmin[i,2]:grid.pts$xmax[i,2]]
+      eval.x.ind <- c(grid.pts$xmin[i,1]:grid.pts$xmax[i,1])
+      eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
+      eval.x.len <- length(eval.x)
+      eval.pts <- permute(list(eval.x, eval.y))
+
+      ## Create list of matrices for different partial derivatives
+      fhat <- dmvnorm.deriv(x=eval.pts, mu=x[i,], Sigma=H, deriv.order=r, Sdr=S2r)
+      
+      ## place vector of density estimate values `fhat' onto grid 'fhat.grid'
+      for (k in 1:nderiv)
+        for (j in 1:length(eval.y))
+          fhat.grid[[k]][eval.x.ind, eval.y.ind[j]] <- fhat.grid[[k]][eval.x.ind, eval.y.ind[j]] + w[i]*fhat[((j-1) * eval.x.len + 1):(j * eval.x.len),k]
+    }
+    
+    for (k in 1:nderiv) fhat.grid[[k]] <- fhat.grid[[k]]/n
+    gridx1 <- list(gridx[[1]], gridx[[2]]) 
+
+    ind.mat <- fhat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=S2r, index.only=TRUE)
+    fhatr <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, deriv.order=deriv.order, deriv.ind=ind.mat)
+  }
+
+  return(fhatr)
+}
+
+
+#################################################################################################
+## Multivariate kernel density estimate using normal kernels,
+## evaluated at each sample point
+#################################################################################################
+
+kdde.points <- function(x, H, eval.points, w, deriv.order=0) 
+{
+  n <- nrow(x)
+  Hs <- numeric(0)
+  for (i in 1:n)
+    Hs <- rbind(Hs, H)
+
+  fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=deriv.order)
+
+  return(list(x=x, eval.points=eval.points, estimate=fhat, H=H))
+}
+
+kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0) 
+{
+  r <- deriv.order
+  n <- length(x)
+  fhat <- dnorm.deriv.mixt(x=eval.points, mus=x, sigmas=rep(h,n), props=w/n, deriv.order=r)
+  
+  return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, deriv.order=r))
+}
 
 #####################################################################
 ### Matt Wand's version of binned kernel density derivative estimation

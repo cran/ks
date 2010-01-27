@@ -104,13 +104,13 @@ omega <- function(mus, Sigmas, k, a, H, r)
 {
   ## the (i,j) element of Omega matrix is
   ## dmvnorm(0, mu_i - mu_j, a*H + Sigma_i + Sigma_j)
+  if (is.matrix(mus)) d <- ncol(mus)
+    else d <- length(mus)
 
   if (k == 1)
     omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)##gamma.r.norec(mu=rep(0,d),Sigma=a*H + 2*Sigmas, d=d, r=r, Sd2r=Sd2r)  
   else
-  {   
-    if (is.matrix(mus)) d <- ncol(mus)
-    else d <- length(mus)
+  {     
     omega.mat <- matrix(0, nr=k, nc=k)
     for (i in 1:k)
     {
@@ -176,7 +176,7 @@ mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 {
   if (!(missing(h)))
     return(mise.mixt.1d(h=h, mus=mus, sigmas=sigmas, props=props, samp=samp, deriv.order=deriv.order)) 
-  
+
   if (is.vector(mus)) d <- length(mus)
   else d <- ncol(mus)
   k <- length(props)
