@@ -1,5 +1,8 @@
 README file for ks
 
+1.6.9 -Added approximate option in contourLevels().
+
+      -Added kdde() kernel density derivative estimators.
 
 1.6.8 Added 1-d LSCV selector hlscv().
  
@@ -9,12 +12,12 @@ README file for ks
       Changes to internal double sum calculations from J.E. Chacon.
 
 1.6.x -1-d binned KDE fix from M.P. Wand.
-      
+
       -Streamlined code sharing with feature package (all binning code now
-      contained only in ks).
-      
+       contained only in ks).
+
       -Reorganised and renamed internal bandwidth selection functions (mostly
-      double sums of normal densities). 
+       double sums of normal densities). 
 
 
 
@@ -24,7 +27,7 @@ README file for ks
        feature using M.P. Wand's code.
 
 1.5.x  -Added normal mixture (A)MISE-optimal selectors: hamise.mixt, 
-       hmise.mixt, Hamise.mixt, Hmise.mxt.
+        hmise.mixt, Hamise.mixt, Hmise.mxt.
 
        -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde
       

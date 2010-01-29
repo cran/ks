@@ -8,13 +8,16 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
+Hscv(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize)
 Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
+  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
+    \code{"samse"} = single SAMSE pilot bandwidth,
+	\code{"unconstr"} = unconstrained pilot bandwidth matrix}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation}

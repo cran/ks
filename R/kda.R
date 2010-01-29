@@ -495,8 +495,8 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
       pr[j] <- length(which(x.group==grlab[j]))
     pr <- pr/nrow(x)
     fhat.list$prior.prob <- pr
-
     fhat.list$binned <- binned
+    fhat.list$gridded <- fhat.temp$gridded
     
     class(fhat.list) <- "kda.kde"
   }
@@ -537,6 +537,7 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
     
   fhat.list$H <- fhat.list$h^2
   fhat.list$binned <- binned
+  fhat.list$gridded <- fhat.temp$gridded
   fhat.list$x.group <- x.group
   
   if (is.null(prior.prob))
@@ -557,21 +558,20 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
 }
 ##############################################################################
 ## Contour method for kda.kde cobjects
-##
 ##############################################################################
 
-contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, ...) 
+contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, approx=FALSE,...) 
 {
   fhat <- x
   m <- length(fhat$x)
   hts <- list()
-  
+
   for (j in 1:m)
   {
     fhatj <- list(x=fhat$x[[j]], eval.points=fhat$eval.points,
-                  estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned)
+                  estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned, gridded=fhat$gridded)
     class(fhatj) <- "kde"
-    hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, nlevels=nlevels, ...)
+    hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, nlevels=nlevels, approx=approx, ...)
   }
    
   return(hts) 
@@ -687,7 +687,7 @@ plotkda.kde.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
 
 
 plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL, 
-    cont=c(25,50,75), abs.cont, xlim, ylim, xlab, ylab,
+    cont=c(25,50,75), abs.cont, approx.cont=FALSE, xlim, ylim, xlab, ylab,
     drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, partcol, ptcol, ...)
 { 
   fhat <- x
@@ -761,10 +761,9 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 
   ## common contour levels removed from >= v1.5.3 
 
-
   if (missing(abs.cont))
   {
-    hts <- contourLevels(fhat, prob=(100-cont)/100)
+    hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
     nhts <- length(hts[[1]])
   }
   else
@@ -817,7 +816,7 @@ plotkda.kde.2d <- function(x, y, y.group, prior.prob=NULL,
 
 
 plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
-    cont=c(25,50,75), abs.cont, colors, alphavec, xlab, ylab, zlab,
+    cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab,
     drawpoints=FALSE, size=3, ptcol="blue", ...)
 {
   require(rgl)
@@ -857,7 +856,7 @@ plotkda.kde.3d <- function(x, y, y.group, prior.prob=NULL,
 
   if (missing(abs.cont))
   {
-    hts <- contourLevels(fhat, prob=(100-cont)/100)
+    hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
     nhts <- length(hts[[1]])
   }
   else

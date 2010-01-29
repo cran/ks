@@ -605,7 +605,6 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   else if (substr(pilot,1,1)=="u")
     pilot <- "unconstr"
            
-  
   if (pilot=="amse" & d>2)
     stop("SAMSE pilot selectors are better for higher dimensions")
 
@@ -698,11 +697,12 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     ## back-transform
     H <- S12 %*% H %*% S12
   }
-  
+
   if (!amise)
     return(H)
   else
     return(list(H = H, PI=result$value))
+ 
 }     
 
 
@@ -1173,7 +1173,7 @@ Theta6.elem <- function(d)
   
 
 ###############################################################################
-# Estimate g_AMSE pilot bandwidth for SCV for 2 to 6 dim
+# Estimate scalar g_AMSE pilot bandwidth for SCV for 2 to 6 dim
 #
 # Parameters
 # Sigma.star - scaled/ sphered variance matrix
@@ -1231,6 +1231,63 @@ gamse.scv.nd <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par
   return(gamse)
 }
 
+###############################################################################
+# Estimate unconstrained G_AMSE pilot bandwidth for SCV for 2 to 6 dim
+# (J.E. Chacon)
+#
+# Parameters
+# Sigma.star - scaled/ sphered variance matrix
+# Hamise - (estimate) of H_AMISE 
+# n - sample size
+#
+# Returns
+# G_AMSE pilot bandwidth
+###############################################################################
+
+Gamse.scv.nd <- function(x)
+{
+  d <- ncol(x)
+  n <- nrow(x)
+  S <- var(x)
+
+  Sd4 <- Sdr(d=d, r=4)  
+  Sd6 <- Sdr(d=d, r=6)
+  rel.tol<-10^-10  
+
+  ## stage 1 of plug-in
+  G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
+  ##psi6 <- dmvnorm.deriv.sum(x,Sigma=G6,deriv.order=6,Sdr.mat=Sd6)/n^2
+  x.diff <- differences(x, upper=FALSE)
+  psihat6 <- kfe(x=x.diff, r=6, G=G6, diff=TRUE)
+ 
+  ## constants for normal reference
+  D4phi0 <- drop(dmvnorm.deriv(x=rep(0,d), deriv.order=4, Sdr.mat=Sd4))
+  Id1 <- diag(d)
+  vId <- vec(Id1)
+  Id4 <- diag(d^4)
+
+  ## asymptotic squared bias for r = 4
+  AB2r4<-function(vechG){
+    G <- invvech(vechG)%*%invvech(vechG)
+    G12 <- matrix.sqrt(G)
+    Ginv12 <- chol2inv(chol(G12))
+    AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=4)%*%D4phi0)*2^(-(d+4)/2)+
+      (t(vec(G))%x%Id4)%*%psihat6
+
+    ##return (t(AB) %*% (vec(Hamise) %*% t(vec(Hamise)) %x% diag(d^2)) %*% AB) 
+    return (sum(AB^2))
+  }
+
+  Hstart <- (4/(d+2))^(2/(d+4))*n^(-2/(d+4))*S
+  Hstart <- matrix.sqrt(Hstart)
+
+  res <- optim(vech(Hstart),AB2r4, control=list(reltol=rel.tol),method="BFGS")
+  V4 <- res$value
+  G4 <- res$par
+  G4 <- invvech(G4)%*%invvech(G4)
+
+  return(G4) 
+}
 
 ###############################################################################
 # Computes the smoothed cross validation function for 2 to 6 dim
@@ -1260,14 +1317,15 @@ scv.1d <- function(x, h, g, binned=TRUE, bin.par, inc=1)
   return(scv)
 }
 
-scv.mat <- function(x, H, G, binned=FALSE, bin.par, diff=FALSE)
+scv.mat <- function(x, H, G, binned=FALSE, bin.par, diff=FALSE, n)
 {
-  n <- nrow(x)
+  if (!diff) n <- nrow(x)  
   d <- ncol(x)
 
   scv1 <- dmvnorm.sum(x=x, Sigma=2*H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
   scv2 <- dmvnorm.sum(x=x, Sigma=H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
   scv3 <- dmvnorm.sum(x=x, Sigma=2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
+  ### need to infer no. x from difference????
   scvmat <- n^(-1)*det(H)^(-1/2)*(4*pi)^(-d/2) + n^(-2)*(scv1 - 2*scv2 + scv3)
     
   return (scvmat)
@@ -1346,7 +1404,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
+Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize)
 {
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -1355,6 +1413,18 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
     pre <- "scale"
   else if (substr(pre,1,2)=="sp")
     pre <- "sphere"
+ 
+  if (substr(pilot,1,1)=="a")
+    pilot <- "amse"
+  else if (substr(pilot,1,1)=="s")
+    pilot <- "samse"
+  else if (substr(pilot,1,1)=="u")
+    pilot <- "unconstr"
+  if (pilot=="amse" & d>2)
+    stop("SAMSE pilot selectors are better for higher dimensions")
+  if (pilot=="unconstr" & d>=6)
+    stop("Uconstrained pilots not implemented yet for 6-dim data")
+
   if(!is.matrix(x)) x <- as.matrix(x)
 
   ## pre-transform data
@@ -1365,56 +1435,69 @@ Hscv <- function(x, pre="sphere", Hstart, binned=FALSE, bgridsize)
   S.star <- var(x.star)
   n <- nrow(x.star)
 
-  if (n > 1000 & !binned)
-    warning("Hscv converges slowly for n > 1000 without binned estimation")
-  
+  ##if (n > 1000 & !binned)
+  ##  warning("Hscv converges slowly for n > 1000 without binned estimation")
+  if (d > 4) binned <- FALSE
   if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
   
-  if (d > 4) binned <- FALSE
- 
-  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
-  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
   
-  S12inv <- chol2inv(chol(S12))
-  Hamise <- S12inv %*% Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=TRUE, bgridsize=bgridsize) %*% S12inv
-
-  if (any(is.na(Hamise)))
+  if (pilot=="unconstr")
   {
-    warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
-    Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+    ## use normal reference bandwidth as initial condition 
+    if (missing(Hstart)) 
+      Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x)
+    
+    Hstart <- matrix.sqrt(Hstart)
+    G.amse <- Gamse.scv.nd(x=x)
+    x.diff <- differences(x, upper=TRUE)
+    
+    scv.unconstr.temp <- function(vechH)
+    { 
+      H <- invvech(vechH) %*% invvech(vechH)
+      scv.temp <- scv.mat(x=x.diff, H=H, G=G.amse, binned=FALSE, diff=TRUE, n=nrow(x))
+      return(drop(scv.temp))
+    }
+    result <- optim(vech(Hstart), scv.unconstr.temp, method="BFGS")
+    H <- invvech(result$par) %*% invvech(result$par)
   }
-
- 
-  if (binned)
+  else if (pilot!="unconstr")
   {
-    bin.par <- binning(x=x.star, bgridsize=bgridsize)
-    gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=TRUE, bin.par=bin.par)
-  }
-  else
-  {
-    x.star.diff <- differences(x.star, upper=FALSE)
+    Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize) 
+    
+    if (any(is.na(Hamise)))
+    {
+      warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
+      Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
+    }
+    
+    if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
+    else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
+    S12inv <- chol2inv(chol(S12))
+    Hamise <- S12inv %*% Hamise%*% S12inv  ## convert to pre-transf data scale
+    
+    x.star.diff <- differences(x.star, upper=TRUE)
     gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=FALSE)
-  }
-  G.amse <- gamse^2 * diag(d)
-  
-  ## use normal reference bandwidth as initial condition
-  if (missing(Hstart)) 
-    Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
-  else    
-    Hstart <- S12inv %*% Hstart %*% S12inv
-  Hstart <- matrix.sqrt(Hstart)
+    G.amse <- gamse^2 * diag(d)
 
-  scv.mat.temp <- function(vechH)
-  {
-    H <- invvech(vechH) %*% invvech(vechH)
-    return(scv.mat(x.star, H, G.amse))
+    ## use normal reference bandwidth as initial condition
+    if (missing(Hstart)) 
+      Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+    else    
+      Hstart <- S12inv %*% Hstart %*% S12inv
+    Hstart <- matrix.sqrt(Hstart)
+    
+    scv.mat.temp <- function(vechH)
+    {
+      H <- invvech(vechH) %*% invvech(vechH)
+      return(scv.mat(x.star.diff, H, G.amse, binned=FALSE, diff=TRUE, n=nrow(x)))
+    }
+
+    ## back-transform
+    result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
+    ##control=list(abstol=n^(-10*d)))
+    H <- invvech(result$par) %*% invvech(result$par)
+    H <- S12 %*% H %*% S12
   }
-  
-  ## back-transform
-  result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
-                                        #control=list(abstol=n^(-10*d)))
-  H <- invvech(result$par) %*% invvech(result$par)
-  H <- S12 %*% H %*% S12
  
   return(H)
 }
