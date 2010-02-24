@@ -11,9 +11,9 @@
 
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart,
-    binned=FALSE, bgridsize, amise=FALSE)
+    binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
-    binned=FALSE, bgridsize)
+    binned=FALSE, bgridsize, kfold=1)
 hpi(x, nstage=2, binned=TRUE, bgridsize)
 }
 
@@ -29,6 +29,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - required only if binned=TRUE}
   \item{amise}{flag for returning estimated AMISE}
+  \item{kfold}{value for k-fold bandwidth selection. See details below} 
   %\item{...}{other parameters as for \code{dpik} from \pkg{KernSmooth}}
 }
 
@@ -64,6 +65,10 @@ bandwidth plus the estimated AMISE is returned in a list.}
   \code{k*var(x)} where k =
   \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+
     4))}, n = sample size, d = dimension of data.
+    
+  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full	
+  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
+  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
 }
 
 \references{

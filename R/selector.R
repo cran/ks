@@ -2,13 +2,13 @@
 
 ###############################################################################
 ## Estimate g_AMSE pilot bandwidths for even orders - 2-dim
-#
+##
 ## Parameters
 ## r - (r1, r2) partial derivative
 ## n - sample size
 ## psi1 - psi_(r + (2,0))
 ## psi2 - psi_(r + (0,2))
-#
+##
 ## Returns
 ## g_AMSE pilot bandwidths for even orders
 ###############################################################################
@@ -25,9 +25,9 @@ gamse.even.2d <- function(r, n, psi1, psi2)
 
 ###############################################################################
 ## Estimate g_AMSE pilot bandwidths for odd orders - 2-dim
-#
+##
 ## Parameters
-#
+##
 ## r - (r1, r2) partial derivative
 ## n - sample size
 ## psi1 - psi_(r + (2,0))
@@ -51,14 +51,14 @@ gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
 
 
 ###############################################################################
-# Estimate g_SAMSE pilot bandwidth - 2- to 6-dim 
-#
-# Parameters
-# Sigma.star - scaled variance matrix
-# n - sample size
-#
-# Returns
-# g_SAMSE pilot bandwidth
+## Estimate g_SAMSE pilot bandwidth - 2- to 6-dim 
+##
+## Parameters
+## Sigma.star - scaled variance matrix
+## n - sample size
+##
+## Returns
+## g_SAMSE pilot bandwidth
 ###############################################################################
 
 gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
@@ -122,15 +122,15 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 }
 
 ##############################################################################
-# Estimate psi functionals for bivariate data using 1-stage plug-in - 2-dim
-#
-# Parameters
-# x.star - pre-transformed data points
-# pilot - "amse" = different AMSE pilot bandwidths
-#       - "samse" = optimal SAMSE pilot bandwidth
-#
-# Returns
-# estimated psi functionals
+## Estimate psi functionals for bivariate data using 1-stage plug-in - 2-dim
+##
+## Parameters
+## x.star - pre-transformed data points
+## pilot - "amse" = different AMSE pilot bandwidths
+##       - "samse" = optimal SAMSE pilot bandwidth
+##
+## Returns
+## estimated psi functionals
 ###############################################################################
 
 psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
@@ -284,13 +284,13 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
 
 
 ###############################################################################
-# Estimate psi functionals for 3-variate data using 1-stage plug-in - 3-dim
-#
-# Parameters
-# x.star - pre-transformed data points
-# pilot - "samse" = optimal SAMSE pilot bandwidth
-# Returns
-# estimated psi functionals
+## Estimate psi functionals for 3-variate data using 1-stage plug-in - 3-dim
+##
+## Parameters
+## x.star - pre-transformed data points
+## pilot - "samse" = optimal SAMSE pilot bandwidth
+## Returns
+## estimated psi functionals
 ###############################################################################
 
 psifun1.nd <- function(x.star, d, pilot="samse", binned, bin.par)
@@ -577,8 +577,17 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize)
   return(dpik(x=x, level=nstage, gridsize=bgridsize))
 }
 
-Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE)
+Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 {
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE))
+  }
+  
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -721,9 +730,18 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 ###############################################################################
 
 
-Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALSE, bgridsize)
+Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
+
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE))
+  }
   
   if (substr(pre,1,2)=="sc")
     x.star <- pre.scale(x)
@@ -892,10 +910,20 @@ hlscv <- function(x, binned=TRUE, bgridsize)
     
 }
   
-Hlscv <- function(x, Hstart)
+Hlscv <- function(x, Hstart, kfold=1)
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
+
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hlscv", kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hlscv", Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
+  
   n <- nrow(x)
   d <- ncol(x)
   ##RK <- (4*pi)^(-d/2)
@@ -927,10 +955,19 @@ Hlscv <- function(x, Hstart)
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, kfold=1)
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
+
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hlscv.diag", kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hlscv.diag", Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
   
   n <- nrow(x)
   d <- ncol(x)
@@ -1006,8 +1043,17 @@ bcv.mat <- function(x, H1, H2)
 # H_BCV
 ###############################################################################
 
-Hbcv <- function(x, whichbcv=1, Hstart)
+Hbcv <- function(x, whichbcv=1, Hstart, kfold=1)
 {
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
+  
   n <- nrow(x)
   d <- ncol(x)
   D2 <- rbind(c(1,0,0), c(0,1,0), c(0,1,0), c(0,0,1))
@@ -1105,8 +1151,17 @@ Hbcv <- function(x, whichbcv=1, Hstart)
 # H_BCV, diag
 ###############################################################################
 
-Hbcv.diag <- function(x, whichbcv=1, Hstart)
+Hbcv.diag <- function(x, whichbcv=1, Hstart, kfold=1)
 {
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
+  
   n <- nrow(x)
   d <- ncol(x)
   ##D2 <- rbind(c(1,0,0), c(0,1,0), c(0,1,0), c(0,0,1))
@@ -1404,8 +1459,17 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize)
+Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize, kfold=1)
 {
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
+  
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
 
@@ -1503,9 +1567,19 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize)
 }
 
 
-Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize)
+Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
+
+  ## k-fold b/w approx
+  if (kfold > 1)
+  {
+    if (missing(Hstart))
+      return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, kfold=kfold, random=FALSE))
+    else
+      return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
+  }
+  
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
   
@@ -1575,3 +1649,63 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize)
   
   return(H)
 }
+
+
+
+
+## k-fold b/w selectors
+
+hkfold <- function(x, selector, k=1, random=FALSE, ...)
+{
+  n <- length(x)
+  d <- 1
+  if (random) rand.ind <- sample(1:n)
+  else rand.ind <- 1:n
+
+  
+  m <- round(n/k,0)
+  hstar <- 0
+  if (k > 1)
+  {
+    for (i in 1:(k-1))
+    {
+      xi <- x[rand.ind[((i-1)*m+1):(i*m)]]
+      hi <- do.call(selector, args=list(x=xi, ...))
+      hstar <- hstar + hi
+    }
+  }
+  xi <- x[rand.ind[((k-1)*m+1):n]]
+  hi <- do.call(selector, args=list(x=xi, ...))
+  hstar <- hstar + hi
+
+  hstar <- hstar*k^(-(d+6)/(2*d+8))
+  return(hstar)
+}
+
+Hkfold <- function(x, selector, kfold=1, random=FALSE, ...)
+{
+  n <- nrow(x)
+  d <- ncol(x)
+  if (kfold > n) kfold <- n
+  if (random) rand.ind <- sample(1:n)
+  else rand.ind <- 1:n
+  
+  m <- round(n/kfold,0)
+  Hstar <- matrix(0, ncol=d, nrow=d)
+  if (kfold > 1)
+  {
+    for (i in 1:(kfold-1))
+    {
+      xi <- x[rand.ind[((i-1)*m+1):(i*m)],]
+      Hi <- do.call(selector, args=list(x=xi, ...))
+      Hstar <- Hstar + Hi
+    }
+  }
+  xi <- x[rand.ind[((kfold-1)*m+1):n],]
+  Hi <- do.call(selector, args=list(x=xi, ...))
+  Hstar <- Hstar + Hi
+
+  Hstar <- Hstar*kfold^(-(d+6)/(d+4))
+  return(Hstar)
+}
+

@@ -7,20 +7,22 @@
 \description{
 BCV bandwidth matrix for bivariate data.}
 \usage{
-Hbcv(x, whichbcv=1, Hstart)
-Hbcv.diag(x, whichbcv=1, Hstart)
+Hbcv(x, whichbcv=1, Hstart, kfold=1)
+Hbcv.diag(x, whichbcv=1, Hstart, kfold=1)
 }
 
 \arguments{
   \item{x}{matrix of data values}
   \item{whichbcv}{1 = BCV1, 2 = BCV2.  See details below}
-  \item{Hstart}{initial bandwidth matrix, used in numerical
-    optimisation}  
+  \item{Hstart}{initial bandwidth matrix, used in numerical optimisation}
+  \item{kfold}{value for k-fold bandwidth selection. See details below}  
 }
 
 \value{
 BCV bandwidth matrix.   
 }
+
+
 \references{Sain, S.R, Baggerly, K.A. \& Scott, D.W. (1994)
   Cross-validation of multivariate densities. \emph{Journal of the
   American Statistical Association}. \bold{82}, 1131-1146.
@@ -44,6 +46,10 @@ BCV bandwidth matrix.
 
   If \code{Hstart} is not given then it defaults to
   \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data.
+
+  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full 
+  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
+  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
 }
 
 \seealso{ \code{\link{Hlscv}}, \code{\link{Hscv}}}

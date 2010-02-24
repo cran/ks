@@ -143,12 +143,12 @@ lev <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
 plot(fhatx, abs.cont=lev)
 plot(fhaty, abs.cont=lev, col=3, add=TRUE) 
 
-## large sample - 10000 sample from bivariate standard normal 
-x <- rmvnorm.mixt(10000, c(0,0), diag(2))    
-H.pi <- Hpi.diag(x, binned=TRUE)
-fhat <- kde(x, H=H.pi, binned=TRUE) 
-plot(fhat, drawpoints=FALSE, cont=seq(10,90, by=20), approx.cont=TRUE)
-
+## large sample from bivariate normal 
+x <- rmvnorm.mixt(5000, c(0,0), invvech(c(1, 0.8, 1)))    
+H <- Hpi(x, kfold=10)
+fhat <- kde(x, H=H)
+plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      ## true density
+plot(fhat, drawlabels=FALSE, approx.cont=TRUE, add=TRUE, col=2)  ## KDE 
 
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))

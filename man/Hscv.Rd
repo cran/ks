@@ -8,8 +8,8 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize)
-Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize)
+Hscv(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize, kfold=1)
+Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
@@ -23,6 +23,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - 
 	required only if \code{binned=TRUE}}
+  \item{kfold}{value for k-fold bandwidth selection. See details below} 
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or
 	2) (1-d only)}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only)}
@@ -51,7 +52,12 @@ SCV bandwidth.
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
   
   If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data.}
+  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data.
+
+  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full 
+  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
+  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
+}
 
 \references{
   Jones, M.C., Marron, J.~S. \& Park, B.U. (1991) A simple root n
