@@ -830,6 +830,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
   {
     d <- ncol(fhat$x); n <-nrow(fhat$x); H <- fhat$H
     bgridsize <- dim(fhat$estimate)
+    if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x)
   }
 
   if (is.null(x$w)) w <- rep(1, n)
@@ -851,6 +852,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
     else fhat$gridded <- is.list(fhat$eval.points)
   }
 
+  
   if (approx & fhat$gridded)
     dobs <- find.nearest.gridpts(x=fhat$x, gridx=fhat$eval.points, f=fhat$estimate)$fx
   else

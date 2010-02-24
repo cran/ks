@@ -9,8 +9,8 @@
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
-Hlscv(x, Hstart)
-Hlscv.diag(x, Hstart, binned=FALSE, bgridsize)
+Hlscv(x, Hstart, kfold=1)
+Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, kfold=1)
 hlscv(x, binned=TRUE, bgridsize)
 }
 
@@ -22,11 +22,13 @@ hlscv(x, binned=TRUE, bgridsize)
   \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes - 
   required only if \code{binned=TRUE}}
+  \item{kfold}{value for k-fold bandwidth selection. See details below}  
 }
 
 \value{
 LSCV bandwidth.
 }
+
 \references{
   Bowman, A. (1984) An alternative method of cross-validation for the
   smoothing of kernel density estimates. \emph{Biometrika}. \bold{71},
@@ -57,7 +59,12 @@ LSCV bandwidth.
   by \code{bgridsize}. Otherwise it's computed exactly.
   
   If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data. }
+  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data. 
+
+  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full 
+  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
+  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
+}
 
 \seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}
 
