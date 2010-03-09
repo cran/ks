@@ -1,8 +1,13 @@
 README file for ks
 
-1.6.9 -Added approximate option in contourLevels().
+1.6.11 -Added own version of filled contours as option disp="filled.contour2" and different 
+        colours for disp="slice" contours.
 
-      -Added kdde() kernel density derivative estimators.
+1.6.10 -Added k-fold b/w selectors.
+
+1.6.9  -Added approximate option in contourLevels().
+
+       -Added kdde() kernel density derivative estimators.
 
 1.6.8 Added 1-d LSCV selector hlscv().
  
