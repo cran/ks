@@ -648,7 +648,6 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   else
   {
     ### symmetriser matrices for unconstrained pilot selectors
-    ##Sd2 <- Sdr(d=d, r=2)
     Sd4 <- Sdr(d=d, r=4)
     Sd6 <- Sdr(d=d, r=6)
     psi4.mat <- psimat.unconstr.nd(x=x, nstage=nstage, Sd4=Sd4, Sd6=Sd6)
@@ -1526,7 +1525,10 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
   }
   else if (pilot!="unconstr")
   {
-    Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize) 
+    ##if (binned)
+    Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize, kfold=kfold) 
+    ##else
+    ##  Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=FALSE, kfold=kfold)
     
     if (any(is.na(Hamise)))
     {
@@ -1608,7 +1610,8 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
   else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
 
   S12inv <- chol2inv(chol(S12))
-  Hamise <- S12inv %*% Hpi.diag(x=x,nstage=1, pilot="samse", pre="scale", binned=binned, bgridsize=bgridsize) %*% S12inv
+  ##Hamise <- S12inv %*% Hpi.diag(x=x.star, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize, kfold=kfold) %*% S12inv
+  Hamise <- Hpi.diag(x=x.star, nstage=1, pilot="samse", pre="scale", binned=binned, bgridsize=bgridsize, kfold=kfold)
 
   if (any(is.na(Hamise)))
   {
@@ -1619,8 +1622,7 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
  
   if (binned)
   {  
-    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(diag(Hamise)))
-    
+    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(diag(Hamise))) 
     gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bin.par=bin.par)
   }
   else
@@ -1652,8 +1654,9 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
 
 
 
-
+#############################################################################################
 ## k-fold b/w selectors
+#############################################################################################
 
 hkfold <- function(x, selector, k=1, random=FALSE, ...)
 {
@@ -1689,7 +1692,8 @@ Hkfold <- function(x, selector, kfold=1, random=FALSE, ...)
   if (kfold > n) kfold <- n
   if (random) rand.ind <- sample(1:n)
   else rand.ind <- 1:n
-  
+
+  if (n%%kfold < 10 & n%%kfold >0) kfold <- max(1, kfold-1) 
   m <- round(n/kfold,0)
   Hstar <- matrix(0, ncol=d, nrow=d)
   if (kfold > 1)

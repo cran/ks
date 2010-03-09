@@ -147,8 +147,8 @@ plot(fhaty, abs.cont=lev, col=3, add=TRUE)
 x <- rmvnorm.mixt(5000, c(0,0), invvech(c(1, 0.8, 1)))    
 H <- Hpi(x, kfold=10)
 fhat <- kde(x, H=H)
-plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      ## true density
-plot(fhat, drawlabels=FALSE, approx.cont=TRUE, add=TRUE, col=2)  ## KDE 
+plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      
+plot(fhat, drawlabels=FALSE, approx.cont=TRUE, add=TRUE, col=2)  
 
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
