@@ -120,7 +120,6 @@ x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))  
 plot(fhat)
 
-
 ## bivariate example
 data(unicef)
 H.scv <- Hscv(x=unicef)
