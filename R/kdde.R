@@ -2,7 +2,7 @@
 ### Multivariate kernel density derivative estimate 
 ###############################################################################
 
-kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
+kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
 {
   r <- deriv.order
 
@@ -38,13 +38,13 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
     if (positive & is.vector(x))
     {
       y <- log(x)
-      fhat <- kdde.binned(x=y, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+      fhat <- kdde.binned(x=y, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, single.deriv=FALSE)
       fhat$estimate <- fhat$estimate/exp(fhat$eval.points)
       fhat$eval.points <- exp(fhat$eval.points)
       fhat$x <- x
     }
     else
-      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax)
+      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, single.deriv=FALSE)
   }
   else
   {
@@ -74,7 +74,7 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
       {
         if (d==2) ##stop("Not yet implemented for 2 dimensions")
           fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r)
-        else if (d == 3) stop("Not yet implemented for 2 dimensions")
+        else if (d == 3) stop("Not yet implemented for 3 dimensions")
           #fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
         else 
           stop("Need to specify eval.points for more than 3 dimensions")
@@ -103,8 +103,11 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
     }
   }
   fhat$names <- x.names
+
+  ## rearrange list fields
+ 
+      
   class(fhat) <- "kdde"
-  
 
   return(fhat)
  }
@@ -117,11 +120,11 @@ kdde <- function(x, H, h, deriv.order, gridsize, gridtype, xmin, xmax, supp=3.7,
 ###############################################################################
 
 ### Diagonal H only
-kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, single.deriv=TRUE)
 {
   r <- deriv.order
   ## linear binning
-  
+
   if (missing(bin.par))
   {
     if (is.vector(x)) d <- 1
@@ -135,7 +138,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par)
       stop("Binned estimation defined for diagonal Sigma only")
   
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-    bin.par <- binning(x=x, H=H, h, bgridsize, xmin, xmax, supp=3.7+max(r))
+    bin.par <- binning(x=x, H=H, h, bgridsize, xmin, xmax, supp=3.7+max(r), w=w)
   }
   else
   {
@@ -160,25 +163,34 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par)
   }
   else
   {
-    ##deriv.ind <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), index.only=TRUE, deriv.order=r)
-    ##fhat.grid.list <- list()
-
-    ## Needs to be optimised here to avoid duplicated computation of density derviatives
-    ##for (r2 in 1:nrow(deriv.ind))
-    ##{
-    ##fhat.grid <- drvkde(x=bin.par$counts, drv=deriv.ind[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-    ##fhat.grid.list[[r2]] <- fhat.grid$est
-    ##}
-    fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-    eval.points <- fhat.grid$x.grid
-    fhat.grid <- fhat.grid$est
+    if (single.deriv)
+    {
+      fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+      eval.points <- fhat.grid$x.grid
+      fhat.grid <- fhat.grid$est
+      ind.mat <- r
+    }
+    else
+    {  
+      ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r,  index.only=TRUE)
+      fhat.grid <- list()
+      
+      ## Needs to be optimised here to avoid duplicated computation of density derviatives
+      for (r2 in 1:nrow(ind.mat))
+      {
+        fhat.gridr2 <- drvkde(x=bin.par$counts, drv=ind.mat[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+        fhat.grid[[r2]] <- fhat.gridr2$est
+      }
+      eval.points <- fhat.grid$x.grid
+    }
   }
+  
   if (missing(x)) x <- NULL
   
   if (d==1)
-    fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, H=h^2, h=h, deriv.order=r)
+    fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=r)
   else
-    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H, deriv.order=r)
+    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat)
 
   class(fhat) <- "kdde"
   
@@ -219,7 +231,7 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
   
     n <- length(y)
     est <- dnorm.deriv.mixt(x=gridy, mus=y, sigmas=rep(h, n), props=w/n, deriv.order=r)
-    fhatr <- list(x=y, eval.points=gridy, estimate=est, h=h, H=h^2, gridtype=gridtype.vec, deriv.order=r)
+    fhatr <- list(x=y, eval.points=gridy, estimate=est, h=h, H=h^2, gridtype=gridtype.vec, gridded=TRUE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=deriv.order)
       
     class(fhatr) <- "kde"
   }
@@ -280,8 +292,8 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
     for (k in 1:nderiv) fhat.grid[[k]] <- fhat.grid[[k]]/n
     gridx1 <- list(gridx[[1]], gridx[[2]]) 
 
-    ind.mat <- fhat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=S2r, index.only=TRUE)
-    fhatr <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, deriv.order=deriv.order, deriv.ind=ind.mat)
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=S2r, index.only=TRUE)
+    fhatr <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, gridded=TRUE, binned=FALSE, names=NULL, w=w, deriv.order=deriv.order, deriv.ind=ind.mat)
   }
 
   return(fhatr)
@@ -299,10 +311,12 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0)
   Hs <- numeric(0)
   for (i in 1:n)
     Hs <- rbind(Hs, H)
-
-  fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=deriv.order)
-
-  return(list(x=x, eval.points=eval.points, estimate=fhat, H=H))
+  r <- deriv.order
+  d <- ncol(H)
+  fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=r)
+  
+  ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=Sdr(d=d, r=r), index.only=TRUE)
+  return(list(x=x, eval.points=eval.points, estimate=fhat, H=H, gridded=FALSE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat))
 }
 
 kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0) 
@@ -311,7 +325,7 @@ kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0)
   n <- length(x)
   fhat <- dnorm.deriv.mixt(x=eval.points, mus=x, sigmas=rep(h,n), props=w/n, deriv.order=r)
   
-  return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, deriv.order=r))
+  return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, gridded=FALSE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=r))
 }
 
 #####################################################################
@@ -459,7 +473,7 @@ kfe.1d <- function(x, g, r, inc=1, binned=FALSE, bin.par)
 }
 
 kfe <- function(x, G, r, inc=1, binned=FALSE, bin.par, diff=FALSE)
-{ 
+{
   if (!binned)
     psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, diff=diff, kfe=TRUE, binned=FALSE)
   else

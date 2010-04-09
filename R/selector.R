@@ -587,7 +587,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     else
       return(Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE))
   }
-  
+
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -1468,6 +1468,7 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
     else
       return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
   }
+
   
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -1526,6 +1527,7 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
   else if (pilot!="unconstr")
   {
     ##if (binned)
+    
     Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize, kfold=kfold) 
     ##else
     ##  Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=FALSE, kfold=kfold)

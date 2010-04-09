@@ -597,9 +597,8 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
 
     d <- ncol(Sigma)
-    fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, deriv.order=r)$estimate 
     n <- sum(bin.par$counts)
-    
+    fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, deriv.order=r, single.deriv=TRUE, w=rep(1,n))$estimate 
     sumval <- sum(bin.par$counts * n * fhatr)
   }
   else
