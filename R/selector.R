@@ -627,10 +627,9 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   {
     ## linear binning
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    ##bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max)))
 
     ## for large samples, take subset for pilot estimation
-    nsub <- n ## min(n, 1e4)
+    nsub <- n 
     x.star.sub <- x.star[sample(1:n, size=nsub),] 
     bin.par.sub <- binning(x=x.star.sub, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
   }

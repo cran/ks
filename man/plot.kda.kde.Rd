@@ -124,12 +124,11 @@ plot(kda.fhat, drawlabels=FALSE, drawpoints=TRUE)
 
 ## trivariate example
 ## colour indicates species, transparency indicates density heights
-
 ir <- iris[,1:3]
 ir.gr <- iris[,5] 
-H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-plot(kda.fhat, cont=50, alpha=0.5)   
+H <- Hkda(ir, ir.gr, bw="plugin", pre="scale", bgridsize=rep(31,3))
+kda.fhat <- kda.kde(ir, ir.gr, Hs=H, compute.cont=TRUE)
+plot(kda.fhat)   
 }
 
 \keyword{ hplot}

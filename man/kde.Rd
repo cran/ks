@@ -7,7 +7,8 @@
 }
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-    binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
+    binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
+    compute.cont=FALSE, approx.cont=TRUE)
 }
 
 \arguments{
@@ -27,7 +28,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 	\code{positive=TRUE} KDE is carried out on \code{log(x +
 	  adj.positive)}. Default is the minimum of \code{x}.}
   \item{w}{vector of weights (non-negative and sum is equal to sample size)}
-
+  \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%}
+  \item{approx.cont}{flag for computing approximate probability contour levels}
 }
   
 
@@ -40,6 +42,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{H}{bandwidth matrix}
   \item{h}{scalar bandwidth (1-d only)}
   \item{w}{weights}
+  \item{cont}{probability contour levels}
 }
 
 \details{

@@ -1,8 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 
-\usepackage{amsmath,amssymb,amsthm,amsopn,natbib,anysize}
-\marginsize{2.5cm}{2.5cm}{2.5cm}{2.5cm}
-
+\usepackage{amsmath,amssymb,amsthm,amsopn,natbib,titling}
+\usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2.5cm]{geometry}
 
 \renewcommand{\today}{\begingroup
 \number \day\space  \ifcase \month \or January\or February\or March\or 
@@ -68,10 +67,12 @@ November\or December\fi
 
 \begin{document}
 
+\setlength{\droptitle}{-2em}
+
 \maketitle
 
 
-Kernel density estimation is a popular tool for visualising 
+\noindent Kernel density estimation is a popular tool for visualising 
 the distribution of data. See \citet*{simonoff1996}, for example, for
 an overview.
 When multivariate kernel density estimation is considered it is usually

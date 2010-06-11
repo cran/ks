@@ -7,7 +7,8 @@
 }
 \usage{
 kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
-        supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w)
+        supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w,
+        compute.cont=FALSE, approx.cont=TRUE)
 }
 
 \arguments{
@@ -25,6 +26,8 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{bgridsize}{vector of binning grid sizes - only required if
 	\code{binned=TRUE}}
   \item{w}{vector of weights (non-negative and sum is equal to sample size)}
+  \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%}
+  \item{approx.cont}{flag for computing approximate probability contour levels}
 }
   
 
@@ -42,6 +45,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{prior.prob}{prior probabilities}
   \item{H}{bandwidth matrices (>1-d only) or} 
   \item{h}{bandwidths (1-d only)}
+  \item{cont}{probability contour levels}
   \item{w}{weights}
 }
 
