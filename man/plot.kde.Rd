@@ -75,7 +75,9 @@
   controlled by the \code{display} parameter.
 
   If \code{display="slice"} then a slice/contour plot
-  is generated using \code{contour}.
+  is generated using \code{contour}.  
+  If \code{display="filled.contour"} or \code{"filled.contour2"} 
+  then a filled contour plot is generated.
   The default contours are at 25\%, 50\%, 75\% or
   \code{cont=c(25,50,75)} which are upper percentages of
   highest density regions. See below for alternative
@@ -98,11 +100,9 @@
 
   -- To specify contours, either one of \code{cont} or \code{abs.cont}
   is required. \code{cont} specifies upper percentages which
-  correspond to 
-  highest density regions. If \code{abs.cont=NULL} then a \code{pretty}
-  set of contours is drawn. If \code{abs.cont} is set to particular
+  correspond to probability contour regions. If \code{abs.cont} is set to particular
   values, then contours at these levels are drawn.
-  This third option is useful for plotting
+  This second option is useful for plotting
   multiple density estimates with common contour levels. See
   \code{\link{contourLevels}} for details on computing contour levels
   for \code{kde} objects.   
@@ -123,13 +123,13 @@ plot(fhat)
 ## bivariate example
 data(unicef)
 H.scv <- Hscv(x=unicef)
-fhat <- kde(x=unicef, H=H.scv)
+fhat <- kde(x=unicef, H=H.scv, compute.cont=TRUE)
 
 plot(fhat)
-plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=2)
+plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.1)
 plot(fhat, display="persp", border=NA, col="grey96", shade=0.75)
 plot(fhat, display="image", col=rev(heat.colors(100)))
-plot(fhat, display="filled")
+plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 
 ## pair of densities with same absolute contour levels
 x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
@@ -144,10 +144,10 @@ plot(fhaty, abs.cont=lev, col=3, add=TRUE)
 
 ## large sample from bivariate normal 
 x <- rmvnorm.mixt(5000, c(0,0), invvech(c(1, 0.8, 1)))    
-H <- Hpi(x, kfold=10)
-fhat <- kde(x, H=H)
+H <- Hpi(x, binned=TRUE)
+fhat <- kde(x, H=H, compute.cont=TRUE, approx.cont=TRUE)
 plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      
-plot(fhat, drawlabels=FALSE, approx.cont=TRUE, add=TRUE, col=2)  
+plot(fhat, drawlabels=FALSE,  add=TRUE, col=2)  
 
 ## trivariate example
 mus <- rbind(c(0,0,0), c(-1,1,1))
@@ -157,7 +157,7 @@ props <- c(1/2, 1/2)
 
 x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
 H.pi <- Hpi(x, pilot="samse")
-fhat <- kde(x, H=H.pi)  
+fhat <- kde(x, H=H.pi, compute.cont=TRUE)  
 plot(fhat)
 plot(fhat, axes=FALSE, box=FALSE, drawpoints=TRUE); axes3d(c('x','y','z'))
 }

@@ -436,13 +436,13 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w)
+kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE)
 {
   if (is.vector(x))
   {
     if (missing(gridsize))  gridsize <- 101
     if (missing(bgridsize)) bgridsize <- 401
-    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, eval.points=eval.points, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w)
+    fhat.list <- kda.kde.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, eval.points=eval.points, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
   }
   else
   {
@@ -487,16 +487,25 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
       fhat.list$eval.points <- fhat.temp$eval.points
       fhat.list$x <- c(fhat.list$x, list(xx))
       fhat.list$H <- c(fhat.list$H, list(H))
+      fhat.list$w <- c(fhat.list$w, list(ww))
+      
+      ## compute prob contour levels
+      if (compute.cont & missing(eval.points))
+      {
+        contlev <- contourLevels(fhat.temp, cont=1:99, approx.cont=approx.cont)
+        fhat.list$cont <- c(fhat.list$cont, list(contlev))
+      }
     }
     
+    fhat.list$binned <- binned
+    fhat.list$gridded <- fhat.temp$gridded
     fhat.list$x.group <- x.group
     pr <- rep(0, length(grlab))
     for (j in 1:length(grlab))
       pr[j] <- length(which(x.group==grlab[j]))
     pr <- pr/nrow(x)
     fhat.list$prior.prob <- pr
-    fhat.list$binned <- binned
-    fhat.list$gridded <- fhat.temp$gridded
+
     
     class(fhat.list) <- "kda.kde"
   }
@@ -504,7 +513,7 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
   return(fhat.list)
 }
 
-kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax, w)
+kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax, w, compute.cont, approx.cont)
 {
   grlab <- sort(unique(x.group))
   m <- length(grlab)
@@ -528,14 +537,22 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
       fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
     else
       fhat.temp <- kde(x=xx, h=h, eval.points=eval.points, w=ww)
-    
+
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
     fhat.list$eval.points <- fhat.temp$eval.points
     fhat.list$x <- c(fhat.list$x, list(xx))
     fhat.list$h <- c(fhat.list$h, h)
+
+    ## compute prob contour levels
+    if (compute.cont & missing(eval.points))
+    {
+      contlev <- contourLevels(fhat.temp, cont=1:99, approx.cont=approx.cont)
+      fhat.list$cont <- c(fhat.list$cont, list(contlev))
+    }
   }
     
   fhat.list$H <- fhat.list$h^2
+  fhat.list$w <- c(fhat.list$w, list(ww))
   fhat.list$binned <- binned
   fhat.list$gridded <- fhat.temp$gridded
   fhat.list$x.group <- x.group

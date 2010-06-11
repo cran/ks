@@ -235,7 +235,7 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
 #############################################################################################################
 
 
-kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
+kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE)
 {
   if (is.vector(x))
   {
@@ -335,7 +335,10 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   fhat$names <- x.names
   fhat$w <- w
   class(fhat) <- "kde"
-  
+
+  ## compute prob contour levels
+  if (compute.cont & missing(eval.points))
+    fhat$cont <- contourLevels(fhat, cont=1:99, approx.cont=approx.cont)
 
   return(fhat)
  }
@@ -699,6 +702,8 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, app
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
   if (missing(labcex)) labcex <-1
+  if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
+
   ##eval1 <- fhat$eval.points[[1]]
   ##eval2 <- fhat$eval.points[[2]]
   
@@ -714,13 +719,24 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, app
       plot(fhat$x[,1], fhat$x[,2], type="n",xlab=xlab, ylab=ylab, ...)
 
     ## compute contours
-    if (missing(approx.cont))
-      approx.cont <- (nrow(fhat$x) > 2000)
-    
     if (missing(abs.cont))
-      hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-    else if (is.null(abs.cont))
-      hts <- contourLevels(fhat, n.pretty=5)  
+    {
+      if (!is.null(fhat$cont))
+      {
+        cont.ind <- rep(FALSE, length(fhat$cont))
+        for (j in 1:length(cont))
+          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+        
+        if (all(!cont.ind))
+          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+        else
+          hts <- fhat$cont[cont.ind]
+      }
+      else
+        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+    }
+    ##else if (is.null(abs.cont))
+    ##  hts <- contourLevels(fhat, n.pretty=5)  
     else
       hts <- abs.cont 
 
@@ -757,15 +773,25 @@ plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, app
     if (display=="filled.contour2")
     {
       ## compute contours
-      if (missing(approx.cont))
-        approx.cont <- (nrow(fhat$x) > 2000)
-      
       if (missing(abs.cont))
-        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-      else if (is.null(abs.cont))
-        hts <- contourLevels(fhat, n.pretty=5)  
+      {
+        if (!is.null(fhat$cont))
+        {
+          cont.ind <- rep(FALSE, length(fhat$cont))
+          for (j in 1:length(cont))
+            cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+          
+          if (all(!cont.ind))
+            hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+          else
+            hts <- fhat$cont[cont.ind]
+        }
+        else
+          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+      }  
       else
-        hts <- abs.cont
+        hts <- abs.cont 
+      
       hts <- sort(hts)
       
       if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
@@ -812,10 +838,31 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colo
   if (missing(approx.cont))
     approx.cont <- (nrow(fhat$x) > 2000)
     
+  ##if (missing(abs.cont))
+  ##  hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+  ##else
+  ##  hts <- abs.cont
+
+  ## compute contours
   if (missing(abs.cont))
-    hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+  {
+    if (!is.null(fhat$cont))
+      {
+        cont.ind <- rep(FALSE, length(fhat$cont))
+          for (j in 1:length(cont))
+            cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+          
+        if (all(!cont.ind))
+          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+        else
+          hts <- fhat$cont[cont.ind]
+      }
+    else
+      hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+  }  
   else
-    hts <- abs.cont 
+    hts <- abs.cont
+  
   nc <- length(hts)
   
   if (missing(colors))

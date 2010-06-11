@@ -1,5 +1,7 @@
 README file for ks
 
+1.6.13 -Added flag to automatically compute probability contour levels in kde(). 
+
 1.6.11 -Added own version of filled contours as option disp="filled.contour2" and different 
         colours for disp="slice" contours.
 
