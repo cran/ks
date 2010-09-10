@@ -1,10 +1,10 @@
-\name{dkde, pkde, qkde, rkde}
+\name{dkde}
 \alias{dkde}
 \alias{pkde}
 \alias{qkde}
  \alias{rkde}
 
- \title{Functions for 1-dimensional kernel density estimates}
+ \title{Functions for univariate kernel density estimates}
 
  \description{
    Functions for 1-dimensional kernel density estimates.
@@ -49,13 +49,13 @@
 }
 
 \references{ Silverman, B. (1986) \emph{Density Estimation for Statistics and
-  Data Analysis}. Chapman \& Hall/CRC. London.}
+  Data Analysis}. Chapman & Hall/CRC. London.}
 
 \examples{
 x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
-qkde(fhat=fhat, p=p1)     ## should be close to c(-1, 0, 0.5)
+qkde(fhat=fhat, p=p1)    
 
 x1 <- rkde(fhat, n=100)
 plot(fhat)

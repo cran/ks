@@ -1,9 +1,10 @@
 \name{ks-internal}
 
 \alias{Sdr}
-\alias{ise.diff}
 \alias{dfltCounts}
-
+\alias{drvkde}
+\alias{ise.diff}
+\alias{kfe}
 
 \title{Internal functions in the ks library}
 \description{

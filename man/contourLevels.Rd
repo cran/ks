@@ -8,11 +8,6 @@
   Contour levels for \code{kde} and \code{kda.kde} objects.
 } 
 
-%%\synopsis{
-%%\method{contourLevels}{kde}(x, prob, cont, nlevels=5, ...)
-%%\method{contourLevels}{kda.kde}(x, prob, cont, nlevels=5, ...)
-%%}
-
 \usage{
 contourLevels(x, ...)
 
@@ -27,7 +22,7 @@ contourLevels(x, ...)
   \item{cont}{vector of percentages which correspond to the complement
 	of \code{prob}}
   \item{nlevels}{number of pretty contour levels} 
-  \item{approx}{flag to compute approximate contour levels} 
+  \item{approx}{flag to compute approximate contour levels. Default is FALSE.} 
   \item{...}{other parameters}
 }
   
@@ -40,20 +35,16 @@ contourLevels(x, ...)
 
 
 \details{
-  The most straightfoward is to specify \code{prob}. Heights of
+  The most straightforward is to specify \code{prob}. Heights of
   the corresponding highest density region with probability \code{prob} are
-  computed.
-
-  The \command{cont} parameter here is consistent with
+  computed. The \command{cont} parameter here is consistent with
   \command{cont} parameter from \command{plot.kde} and \command{plot.kda.kde}
-  i.e. \code{cont = (1 - prob)*100}\%.  
-
-  If both \code{prob} and \code{cont} are missing then a pretty set of
+  i.e. \code{cont=(1-prob)*100}\%. If both \code{prob} and \code{cont} are missing then a pretty set of
   \code{nlevels} contours are computed.
 
-  If \code{approx=FALSE}, then the exact KDE at x is compute. Otherwise the exact 
-  KDE is replaced by the KDE at the nearest 
-  grid point. This can dramatically reduce computation time for large data sets.
+  If \code{approx=FALSE}, then the exact KDE at \eqn{x}{x} is computed. Otherwise the exact 
+  KDE is replaced by the weighted sum of the KDE at the nearest 
+  grid points. This can dramatically reduce computation time for large data sets.
 }
  
 

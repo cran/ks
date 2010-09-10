@@ -39,8 +39,7 @@ hkda <- function(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
   return(hs)
 }
    
-Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
-                 pre="sphere", binned=FALSE, bgridsize)
+Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="sphere", binned=FALSE, bgridsize)
 {
   d <- ncol(x)
   grlab <- sort(unique(x.group))
@@ -79,8 +78,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
   return(Hs)   
 }
 
-Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse",
-                 pre="sphere", binned=FALSE, bgridsize)
+Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere", binned=FALSE, bgridsize)
 {
   d <- ncol(x)
   grlab <- sort(unique(x.group))
@@ -609,20 +607,18 @@ contourLevels.kda.kde <- function(x, prob, cont, nlevels=5, approx=FALSE,...)
 ##############################################################################
 
 
-plot.kda.kde <- function(x, y, y.group, drawpoints=FALSE, ...) 
+plot.kda.kde <- function(x, y, y.group, ...) 
 {
-  
-  
   if (is.vector(x$x[[1]]))
-    plotkda.kde.1d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...)
+    plotkda.kde.1d(x=x, y=y, y.group=y.group,  ...)
   else
   {  
     d <- ncol(x$x[[1]])
     
     if (d==2)
-      plotkda.kde.2d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...) 
+      plotkda.kde.2d(x=x, y=y, y.group=y.group, ...) 
     else if (d==3)  
-       plotkda.kde.3d(x=x, y=y, y.group=y.group, drawpoints=drawpoints, ...) 
+       plotkda.kde.3d(x=x, y=y, y.group=y.group, ...) 
   }
 }
 

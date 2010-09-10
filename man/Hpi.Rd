@@ -1,7 +1,8 @@
-\name{Hpi, Hpi.diag, hpi}
+\name{Hpi}
 \alias{Hpi}
 \alias{Hpi.diag}
 \alias{hpi}
+
 
 
 \title{Plug-in bandwidth selector}
@@ -12,8 +13,8 @@
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart,
     binned=FALSE, bgridsize, amise=FALSE, kfold=1)
-Hpi.diag(x, nstage=2, pilot="amse", pre="scale", Hstart,
-    binned=FALSE, bgridsize, kfold=1)
+Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart,
+    binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 hpi(x, nstage=2, binned=TRUE, bgridsize)
 }
 
@@ -22,69 +23,66 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
     \code{"samse"} = single SAMSE pilot bandwidth,
-	\code{"unconstr"} = unconstrained pilot bandwidth matrix}
+	\code{"unconstr"} = unconstrained pilot bandwidth}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation}
-  \item{bgridsize}{vector of binning grid sizes - required only if binned=TRUE}
-  \item{amise}{flag for returning estimated AMISE}
-  \item{kfold}{value for k-fold bandwidth selection. See details below} 
-  %\item{...}{other parameters as for \code{dpik} from \pkg{KernSmooth}}
+  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
+  \item{amise}{flag to return the minimal scaled PI value}
+  \item{kfold}{value for k-fold bandwidth selection. See details below.}
 }
 
 \value{
-Plug-in bandwidth. If \code{amise=TRUE} then the plug-in
-bandwidth plus the estimated AMISE is returned in a list.}
+Plug-in bandwidth. 
+If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 
 
 
-\details{ \code{hpi} is the univariate plug-in 
-  selector of Wand \& Jones (1994). \code{Hpi} is a
-  multivariate generalisation of this.
-
-  Use \code{Hpi} for full bandwidth matrices and \code{Hpi.diag}
+\details{\code{hpi} is the univariate plug-in 
+  selector of Wand & Jones (1994), i.e. it is exactly the same as \pkg{KernSmooth}'s \code{dpik}.
+  \code{Hpi} is a multivariate generalisation of this. Use \code{Hpi} for full bandwidth matrices and \code{Hpi.diag}
   for diagonal bandwidth matrices.
-  For AMSE pilot bandwidths, see Wand \& Jones (1994). For
-  SAMSE pilot bandwidths, see Duong \& Hazelton (2003).  The latter is a
+
+  For AMSE pilot bandwidths, see Wand & Jones (1994). For
+  SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
   with non-positive definiteness. Unconstrained pilot bandwidths are
   available for d = 1, ..., 5 (but are extremely computationally
-  intensive for the latter dimensions). See Chac\'on \& Duong (2008).
+  intensive for the latter dimensions). See Chacon & Duong (2010).
 
-  For d = 1, the selector \code{hpi} is exactly the same as
-  \pkg{KernSmooth}'s \code{dpik}. This is always computed as binned
-  estimator. For d = 2, 3, 4 and \code{binned=TRUE}, 
+  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 
-  by \code{bgridsize}. Otherwise it's computed exactly.
+  by \code{bgridsize}. Otherwise it's computed exactly. 
   
   For details on the pre-transformations in \code{pre}, see
   \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
 
   If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k =
-  \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+
+  \code{k*var(x)} where
+  \eqn{k=\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{k=4/(n*(d + 2))^(2/(d+
     4))}, n = sample size, d = dimension of data.
-    
+ 
   For large samples, k-fold bandwidth selection can significantly reduce computation time. The full	
   data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
   sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
+  (Temporarily disabled).
 }
 
 \references{
-  Chac\'on, J.E. \& Duong, T. (2008) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Test}. Accepted.
+  Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
+  selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
   
-  Duong, T. \& Hazelton, M.L. (2003) Plug-in bandwidth matrices for
+  Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric
 	Statistics}, \bold{15}, 17-30.
   
-  Sheather, S.J. \& Jones, M.C. (1991) A reliable data-based bandwidth selection
+  Sheather, S.J. & Jones, M.C. (1991) A reliable data-based bandwidth selection
   method for kernel density estimation. \emph{Journal of the Royal
 	Statistical Society, Series B}, \bold{53}, 683-690.
   
-  Wand, M.P. \& Jones, M.C. (1994) Multivariate plugin bandwidth
-  selection.  \emph{Computational Statistics}, \bold{9}, 97-116.
+  Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
+  selection. \emph{Computational Statistics}, \bold{9}, 97-116.
 }
   
 \examples{

@@ -1,4 +1,4 @@
-\name{Hscv, Hscv.diag, hscv}
+\name{Hscv}
 \alias{Hscv}
 \alias{Hscv.diag}
 \alias{hscv}
@@ -8,8 +8,10 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize, kfold=1)
-Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
+Hscv(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
+     amise=FALSE, kfold=1)
+Hscv.diag(x, pre="scale", Hstart, binned=FALSE, bgridsize, 
+     amise=FALSE, kfold=1)
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
@@ -20,23 +22,24 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 	\code{"unconstr"} = unconstrained pilot bandwidth matrix}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation}
-  \item{bgridsize}{vector of binning grid sizes - 
-	required only if \code{binned=TRUE}}
-  \item{kfold}{value for k-fold bandwidth selection. See details below} 
-  \item{nstage}{number of stages in the SCV bandwidth selector (1 or
-	2) (1-d only)}
-  \item{plot}{flag to display plot of SCV(h) vs h (1-d only)}
+  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
+  \item{amise}{flag to return the minimal scaled SCV value. Default is FALSE.}
+  \item{kfold}{value for k-fold bandwidth selection. See details below.} 
+  \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2) (1-d only)}
+  \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
 
 \value{
-SCV bandwidth.  
+SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returned too. 
 }
 
 
 \details{ \code{hsv} is the univariate SCV
-  selector of Jones, Marron \& Park (1991). \code{Hscv} is a
-  multivariate generalisation of this.
+  selector of Jones, Marron & Park (1991). \code{Hscv} is a
+  multivariate generalisation of this, see Duong \& Hazelton (2005).
+  Use \code{Hscv} for full bandwidth matrices and \code{Hscv.diag}
+  for diagonal bandwidth matrices. 
 
   For d = 1, the selector \code{hscv} is not always stable for large
   sample sizes with binning.
@@ -44,26 +47,15 @@ SCV bandwidth.
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
   
-  For d = 1, 2, 3, 4 and \code{binned=TRUE}, the 
-  estimates are computed over a binning grid defined by
-  \code{bgridsize}. Otherwise it's computed exactly. 
-  
-  For details on the pre-transformations in \code{pre}, see
-  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
-  
-  If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data.
-
-  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full 
-  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
-  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
+  For details about the advanced options for \code{amise, binned, Hstart, kfold}, 
+  see \code{\link{Hpi}}.
 }
 
 \references{
-  Jones, M.C., Marron, J.~S. \& Park, B.U. (1991) A simple root n
-  bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919--1932.
+  Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
+  bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919-1932.
 
-  Duong, T. \& Hazelton, M.L. (2005) Cross-validation bandwidth
+  Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
   of Statistics}. \bold{32}, 485-506.
 } 

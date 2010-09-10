@@ -16,7 +16,7 @@
 gamse.even.2d <- function(r, n, psi1, psi2)
 {
   d <- 2
-  num <- -2 * dmvnorm.deriv(x=c(0,0), deriv.order=r, Sigma=diag(2))
+  num <- -2 * dmvnorm.deriv(x=c(0,0), deriv.order=r, Sigma=diag(2), deriv.vec=FALSE)
   den <- (psi1 + psi2) * n   
   g.amse <- (num/den)^(1/(2 + d + sum(r)))
   
@@ -66,10 +66,14 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
   d <- ncol(Sigma.star)
   K <- numeric(); psi <- numeric()
 
-  derivt4 <- deriv.list(d=d, r=4)
-  derivt6 <- deriv.list(d=d, r=6)
- 
+  derivt4 <- dmvnorm.deriv(x=rep(0,d), deriv.order=4, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE) ##deriv.list(d=d, r=4)
+  derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE) ##deriv.list(d=d, r=6)
+
   ## 4th order g_SAMSE
+
+  K <- dmvnorm.deriv(x=rep(0,d), deriv.order=modr, Sigma=diag(d), add.index=TRUE, deriv.vec=FALSE)
+  K <- K$deriv[apply(K$deriv.ind, 1, is.even)]
+
   if (modr == 4)
   {
     for (i in 1:nrow(derivt4))
@@ -77,7 +81,6 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       r <- derivt4[i,]
       if (is.even(r))
       {
-        K <- c(K, dmvnorm.deriv(x=rep(0,d), deriv.order=r, Sigma=diag(d)))
         A3psi <- 0
         for (j in 1:d)
         {
@@ -98,8 +101,6 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       r <- derivt6[i,]        
       if (is.even(r))
       {
-        K <- c(K, dmvnorm.deriv(x=rep(0,d), deriv.order=r, Sigma=diag(d)))
-       
         A3psi <- 0
         for (j in 1:d)
           A3psi <- A3psi + psins(r=r+2*elem(j,d), Sigma=Sigma.star)
@@ -107,7 +108,7 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
       }
     }
   }
-  
+
   ## see thesis for formula
   A1 <- sum(K^2)
   A2 <- sum(K * psi)  
@@ -115,14 +116,14 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
   B1 <- (2*modr + 2*d)*A1
   B2 <- (modr + d - 2)*A2
   B3 <- A3
-  gamma <- (-B2 + sqrt(B2^2 + 4*B1*B3)) / (2*B1)
-  g.samse <- (gamma * n)^(-1/(modr + d + 2))
+  gamma1 <- (-B2 + sqrt(B2^2 + 4*B1*B3)) / (2*B1)
+  g.samse <- (gamma1 * n)^(-1/(modr + d + 2))
   
   return (g.samse)      
 }
 
 ##############################################################################
-## Estimate psi functionals for bivariate data using 1-stage plug-in - 2-dim
+## Estimate psi functionals for bivariate data using 1-stage plug-in 
 ##
 ## Parameters
 ## x.star - pre-transformed data points
@@ -133,59 +134,53 @@ gsamse.nd <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 ## estimated psi functionals
 ###############################################################################
 
-psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
+psifun1 <- function(x.star, pilot="samse", binned, bin.par)
 {
-  d <- 2
-  derivt4 <- deriv.list(d=d, r=4) ##cbind((2*d) - 0:(2*d), 0:(2*d)) 
+  d <- ncol(x.star)
   S.star <- var(x.star)
   n <- nrow(x.star)
-  
-  RK31 <- 15/(64*pi)
-  psi00 <- psins(r=c(0,0), Sigma=S.star) 
-  psihat.star <- vector()
-  g.star <- vector()
   
   ## pilots are based on 4th order derivatives
   ## compute 1 pilot for SAMSE
   if (pilot=="samse")
-    g.star <- rep(gsamse.nd(S.star, n, 4), nrow(derivt4))
- 
+  {
+    g.star <- gsamse.nd(S.star, n, 4)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, add.index=TRUE)
+  }
   ## compute 5 different pilots for AMSE
-  else if (pilot=="amse")
+  else if ((pilot=="amse") & (d==2))
+  {
+    derivt4 <- dmvnorm.deriv(x=rep(0,d), deriv.order=4, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+    RK31 <- 15/(64*pi)
+    psi00 <- psins(r=c(0,0), Sigma=S.star) 
+    psihat.star <- vector()
+    g.star <- vector()
+    
     for (k in 1:nrow(derivt4))
     { 
       r <- derivt4[k,]
       psi1 <- psins(r=r + 2*elem(1, 2), Sigma=S.star)
       psi2 <- psins(r=r + 2*elem(2, 2), Sigma=S.star)
-
+ 
       ## odd order
       if (prod(r) == 3)
-        g.star[k] <- gamse.odd.2d(r, n, psi1, psi2, psi00, RK31)
-      
+        g.star[k] <- gamse.odd.2d(r=4, n, psi1, psi2, psi00, RK31)
       ## even order
       else
-        g.star[k] <- gamse.even.2d(r, n, psi1, psi2)
+        g.star[k] <- gamse.even.2d(r=4, n, psi1, psi2)[k]
+
+      G.star <- g.star[k]^2 * diag(2)
+      psihat.star[k] <- kfe(x=x.star, bin.par=bin.par, G=G.star, deriv.order=4, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k]
     }
-  
-  if (!binned)
-    x.star.diff <- differences(x.star, upper=FALSE)
-   
-  for (k in 1:nrow(derivt4))
-  {
-    r <- derivt4[k,]
-    G.star <- g.star[k]^2 * diag(2)
-    if (binned)
-      psihat.star[k] <- kfe(bin.par=bin.par, G=G.star, r=r, binned=TRUE)
-    else 
-      psihat.star[k] <- kfe.scalar(x=x.star.diff, r=r, g=g.star[k], diff=TRUE) 
+    psihat.star <- list(psir=psihat.star, deriv.ind=derivt4)
   }
- 
+  
   return(psihat.star)
 }
 
 
 ###############################################################################
-# Estimate psi functionals for bivariate data using 2-stage plug-in - 2-dim
+# Estimate psi functionals for bivariate data using 2-stage plug-in 
 #
 # Parameters
 # x - pre-transformed data points
@@ -195,67 +190,59 @@ psifun1.2d <- function(x.star, pilot="samse", binned, bin.par)
 # estimated psi functionals
 ###############################################################################
 
-psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
+psifun2 <- function(x.star, pilot="samse", binned, bin.par)
 { 
-  d <- 2
-  derivt4 <- deriv.list(d=d, r=4)
-  derivt6 <- deriv.list(d=d, r=6)
+  d <- ncol(x.star)
   S.star <- var(x.star)
   n <- nrow(x.star)
-  
-  RK31 <- 15/(64*pi)
-  RK51 <- 945/(256*pi)
-  RK33 <- 225/(256*pi)
-  psi00 <- psins(r=c(0,0), Sigma=S.star) 
-
-  psihat6.star <- vector()
-  g6.star <- vector()
-  psihat.star <- vector()
-  g.star <- vector()
-
+ 
   ## pilots are based on 6th order derivatives
   
   ## compute 1 pilot for SAMSE    
   if (pilot=="samse")
-    g6.star <- rep(gsamse.nd(S.star, n, 6), nrow(derivt6))  
-    
+  {
+    g6.star <- gsamse.nd(S.star, n, 6)
+    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, bin.par=bin.par, add.index=FALSE)
+    g.star <- gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, bin.par=bin.par, add.index=TRUE)
+  }
   ## compute different pilots for AMSE
-  else if (pilot=="amse")
-  {       
+  else if ((pilot=="amse") & (d==2))
+  {
+    derivt4 <- dmvnorm.deriv(x=rep(0,d), deriv.order=4, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+    derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+    
+    RK31 <- 15/(64*pi)
+    RK51 <- 945/(256*pi)
+    RK33 <- 225/(256*pi)
+    psi00 <- psins(r=rep(0,d), Sigma=S.star) 
+
+    psihat6.star <- vector()
+    g6.star <- vector()
+    psihat.star <- vector()
+    g.star <- vector()
+
+    ##if (!binned) x.star.diff <- differences(x.star, upper=FALSE)
+    
     for (k in 1:nrow(derivt6))
     {
       r <- derivt6[k,]
       psi1 <- psins(r=r + 2*elem(1, 2), Sigma=S.star)
       psi2 <- psins(r=r + 2*elem(2, 2), Sigma=S.star)
       if (prod(r) == 5)
-        g6.star[k] <- gamse.odd.2d(r, n, psi1, psi2, psi00, RK51)
+        g6.star[k] <- gamse.odd.2d(r=6, n, psi1, psi2, psi00, RK51)
       else if (prod(r) == 9)
-        g6.star[k] <- gamse.odd.2d(r, n, psi1, psi2, psi00, RK33) 
+        g6.star[k] <- gamse.odd.2d(r=6, n, psi1, psi2, psi00, RK33) 
       else  
-        g6.star[k] <- gamse.even.2d(r, n, psi1, psi2)
+        g6.star[k] <- gamse.even.2d(r=6, n, psi1, psi2)[k]
+
+      G6.star <- g6.star[k]^2 * diag(d)
+      psihat6.star[k] <- kfe(x=x.star, bin.par=bin.par, deriv.order=6, G=G6.star, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k] ##kfe(x=x.star, deriv.order=r, g=g6.star[k], diff=TRUE)
     }
-  }
-
-  if (!binned) x.star.diff <- differences(x.star, upper=FALSE)
-  
-  for (k in 1:nrow(derivt6))
-  {
-    r <- derivt6[k,]
-    G6.star <- g6.star[k]^2 * diag(d)
-
-    if (binned)
-      psihat6.star[k] <- kfe(bin.par=bin.par, G=G6.star, r=r, binned=TRUE)
-    else
-      psihat6.star[k] <- kfe.scalar(x=x.star.diff, r=r, g=g6.star[k], diff=TRUE)
-  }
-
- 
-  ## pilots are based on 4th order derivatives using 6th order psi functionals
-  ## computed above 'psihat6.star'
     
-  if (pilot=="samse")
-    g.star <- rep(gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star), nrow(derivt4))  
-  else if (pilot=="amse")
+    ## pilots are based on 4th order derivatives using 6th order psi functionals
+    ## computed above 'psihat6.star'
+    
     for (k in 1:nrow(derivt4))
     {
       r <- derivt4[k,]
@@ -263,134 +250,20 @@ psifun2.2d <- function(x.star, pilot="samse", binned, bin.par)
       psi2 <- psihat6.star[7 - (r + 2*elem(2,2))[1]]
       
       if (prod(r) == 3)
-        g.star[k] <- gamse.odd.2d(r, n, psi1, psi2, psi00, RK31)
+        g.star[k] <- gamse.odd.2d(r=4, n, psi1, psi2, psi00, RK31)
       else
-        g.star[k] <- gamse.even.2d(r, n, psi1, psi2)
+        g.star[k] <- gamse.even.2d(r=4, n, psi1, psi2)[k]
+      
+      G.star <- g.star[k]^2 * diag(2)
+      psihat.star[k] <- kfe(x=x.star, bin.par=bin.par, G=G.star, deriv.order=4, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k]
     }
+    psihat.star <- list(psir=psihat.star, deriv.ind=derivt4)
+   }
   
-  for (k in 1:nrow(derivt4))
-  {
-    r <- derivt4[k,]
-    G.star <- g.star[k]^2 * diag(2)
-
-    if (binned)
-      psihat.star[k] <- kfe(bin.par=bin.par, G=G.star, r=r, binned=TRUE)
-    else 
-      psihat.star[k] <- kfe.scalar(x=x.star.diff, r=r, g=g.star[k], diff=TRUE)
-  }
-
   return(psihat.star)
 }
 
 
-###############################################################################
-## Estimate psi functionals for 3-variate data using 1-stage plug-in - 3-dim
-##
-## Parameters
-## x.star - pre-transformed data points
-## pilot - "samse" = optimal SAMSE pilot bandwidth
-## Returns
-## estimated psi functionals
-###############################################################################
-
-psifun1.nd <- function(x.star, d, pilot="samse", binned, bin.par)
-{ 
-  derivt <- Psi4.list(d)$psi
-  derivt4 <- deriv.list(d, r=4)
-  S.star <- var(x.star)
-  n <- nrow(x.star)
-
-  psihat.star <- rep(0, length=nrow(derivt))
-  g.star <- vector()
-
-  if (!binned) x.star.diff <- differences(x.star, upper=FALSE)
-   
-  ## compute 1 pilot for SAMSE
-  g.star <- gsamse.nd(S.star, n, 4, nstage=1)
-  G.star <- g.star^2 * diag(d)
- 
-  for (k in 1:nrow(derivt4))
-  {
-    r <- derivt4[k,]
-    kind <- which.mat(r, derivt)
-    if (binned)
-      psihat.star[kind] <- kfe(bin.par=bin.par, G=G.star, r=r, binned=TRUE)
-    else 
-      psihat.star[kind] <- kfe.scalar(x=x.star.diff, r=r, g=g.star, diff=TRUE)
-  }
-
-  return(psihat.star)
-}
-
-
-
-###############################################################################
-# Estimate psi functionals for 3-variate data using 2-stage plug-in - 3-dim
-#
-# Parameters
-# x.star - pre-transformed data points
-# pilot - "amse" = different AMSE pilot bandwidths
-#       - "samse" = optimal SAMSE pilot bandwidth
-#
-# Returns
-# estimated psi functionals
-###############################################################################
-
-psifun2.nd <- function(x.star, d, pilot="samse", binned, bin.par)
-{
-  derivt <- Psi4.list(d)$psi
-  derivt4 <- deriv.list(d, r=4)
-  derivt6 <- deriv.list(d, r=6)
- 
-  S.star <- var(x.star)
-  n <- nrow(x.star)
-
- 
-  if (!binned)
-    x.star.diff <- differences(x.star, upper=FALSE)
-
-  psihat6.star <- vector()
-  g6.star <- vector()
-  psihat.list.star <- vector()
-  psihat.star <- vector()
-  g.star <- vector()
-
-  ## pilots are based on 6th order derivatives
-   
-  ## compute 1 pilot for SAMSE    
-  if (pilot=="samse")
-    g6.star <- gsamse.nd(Sigma.star=S.star, n=n, modr=6)
-  G6.star <- g6.star^2 * diag(d) 
-  
-  for (k in 1:nrow(derivt6))
-  {
-    r <- derivt6[k,]
-    if (binned)
-      psihat6.star[k] <- kfe(bin.par=bin.par, G=G6.star, r=r, binned=TRUE)
-    else 
-      psihat6.star[k] <- kfe.scalar(x=x.star.diff, r=r, g=g6.star, diff=TRUE)
-  }
-  
-  ## pilots are based on 4th order derivatives using 6th order psi functionals
-  ## computed above 'psihat6.star'
-    
-  if (pilot=="samse")
-    g.star <- gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star) 
-
-  G.star <- g.star^2 * diag(d)
-  
-  for (k in 1:nrow(derivt4))
-  {
-    r <- derivt4[k,]
-    kind <- which.mat(r, derivt)
-    if (binned)
-      psihat.star[kind] <- kfe(bin.par=bin.par, G=G.star, r=r, binned=TRUE)
-    else 
-      psihat.star[kind] <- kfe.scalar(x=x.star.diff, r=r, g=g.star, diff=TRUE)
-  }  
-
-  return(psihat.star)
-}
 
 
 #############################################################################
@@ -405,19 +278,18 @@ psifun2.nd <- function(x.star, d, pilot="samse", binned, bin.par)
 ## estimated psi functionals
 #############################################################################
 
-psifun1.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
+psifun1.unconstr <- function(x, Sd4, Sd6)
 {
   n <- nrow(x)
   d <- ncol(x)
   S <- var(x)
-  
-  nlim <- 1e4
   upper <- TRUE 
 
   ## stage 1 of plug-in
   G4 <-(2^(d/2+3)/((d+4)*n))^(2/(d+8))*S
-  vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper, nlim=nlim)
-  
+  ##vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper)
+  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
+   
   return (vecPsi4)
 }
 
@@ -434,7 +306,7 @@ psifun1.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
 ## estimated psi functionals
 ############################################################################
 
-psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
+psifun2.unconstr <- function(x, Sd4, Sd6, rel.tol=10^-10)
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -442,11 +314,9 @@ psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
 
   Hstart <- (4/(d+2))^(2/(d+4))*n^(-2/(d+4))*S
   Hstart <- matrix.sqrt(Hstart)
-  nlim <- 1e4
  
   ## matrix of pairwise differences
   upper <- TRUE
-  difs <- differences(x, upper=upper)
  
   ## constants for normal reference
   D4phi0 <- D4L0(d=d, Sd4=Sd4)
@@ -454,17 +324,19 @@ psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
   vId <- vec(Id1)
 
   ## stage 1 of plug-in
-  G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
+  G6 <- (2/((d+6)*n))^(2/(d+8))*2*S ##(2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
   G612 <- matrix.sqrt(G6)
- 
-  vecPsi6 <- vecPsir(x=x, Sdr=Sd6, Gr=G6, r=6, upper=upper, nlim=nlim)
-   
+
+  ##vecPsi6 <- vecPsir(x=x, Sdr=Sd6, Gr=G6, r=6, upper=upper)
+  vecPsi6 <- kfe(x=x, G=G6, deriv.order=6, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd6)
+  
   Id4 <- diag(d^4)
   Id2 <- diag(d^2)
   Kdd2 <- K.mat(m=d,n=d^2)
   Psi6 <- (Id1%x%Kdd2%x%Id2)%*%vecPsi6
   
-  ## asymptotic squared bias for r = 4
+  ## asymptotic squared bias for r = 4 for MSE-optimal G
+ 
   AB2r4<-function(vechG){
     r <- 4
     G <- invvech(vechG)%*%invvech(vechG)
@@ -474,15 +346,14 @@ psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
       (1/2)*(t(vec(G))%x%Id4)%*%Psi6
     return (sum(AB^2))
   }
-  
-  res <- optim(vech(Hstart),AB2r4, control=list(reltol=rel.tol))
+  res <- optim(vech(Hstart), AB2r4, control=list(reltol=rel.tol))
   V4 <- res$value
   G4 <- res$par
   G4 <- invvech(G4)%*%invvech(G4)
- 
-  ## stage 2 of plug-in
 
-  vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper, nlim=nlim)
+  ## stage 2 of plug-in
+  ##vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper)
+  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
   
   return (vecPsi4)
 }
@@ -503,48 +374,23 @@ psifun2.unconstr.nd <- function(x, Sd4, Sd6, rel.tol=10^-10)
 ## matrix of psi functionals
 ############################################################################
 
-psimat.2d <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
+
+psimat <- function(x.star, nstage=1, pilot="samse", binned, bin.par)
 {
+  d <- ncol(x.star)
   if (nstage==1)
-    psi.fun <- psifun1.2d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
   else if (nstage==2)
-    psi.fun <- psifun2.2d(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
+    psi.fun <- psifun2(x.star, pilot=pilot, binned=binned, bin.par=bin.par)
 
-  psi40 <- psi.fun[1] 
-  psi31 <- psi.fun[2] 
-  psi22 <- psi.fun[3] 
-  psi13 <- psi.fun[4] 
-  psi04 <- psi.fun[5] 
-
-  coeff <- c(1, 2, 1, 2, 4, 2, 1, 2, 1)
-  psi.fun <- c(psi40, psi31, psi22, psi31, psi22, psi13, psi22, psi13, psi04)
-
-  return(matrix(coeff * psi.fun, nc=3, nr=3))
-}
-
-psimat.nd <- function(x.star, d, nstage=1, pilot="samse", binned, bin.par)
-{
-  if (nstage==1)
-    psi.fun <- psifun1.nd(x.star, d=d, pilot=pilot, binned=binned, bin.par=bin.par)
-  else if (nstage==2)
-    psi.fun <- psifun2.nd(x.star, d=d, pilot=pilot, binned=binned, bin.par=bin.par)
-
-  coeff <- Psi4.list(d)$coeff
+  Psi4 <- Psi4.list(d)
+  psi.fun.replicate <- numeric()
+  for (i in 1:length(Psi4$coeff))
+    psi.fun.replicate <- c(psi.fun.replicate, psi.fun$psir[which.mat(Psi4$psi[i,], psi.fun$deriv.ind)])
   
-  return(matrix(coeff * psi.fun, nc=d*(d+1)/2, nr=d*(d+1)/2))
+  return(matrix(Psi4$coeff * psi.fun.replicate, nc=d*(d+1)/2, nr=d*(d+1)/2))
 }
 
-###  unconstrained pilot selectors
-
-psimat.unconstr.nd <- function(x, nstage=1, Sd4, Sd6)
-{
-  if (nstage==1)
-    psi.fun <- psifun1.unconstr.nd(x=x, Sd4=Sd4, Sd6=Sd6)
-  else if (nstage==2)
-    psi.fun <- psifun2.unconstr.nd(x=x, Sd4=Sd4, Sd6=Sd6)
-
-  return(invvec(psi.fun))
-}
   
 
 #############################################################################
@@ -582,10 +428,12 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  H <- Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=FALSE)
+    ##else
+    ##  H <- Hkfold(x=x, selector="Hpi", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE)
+    ##return(H)
   }
 
   n <- nrow(x)
@@ -618,7 +466,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     stop("SAMSE pilot selectors are better for higher dimensions")
 
   if (pilot=="unconstr" & d>=6)
-    stop("Uconstrained pilots not implemented yet for 6-dim data")
+    stop("Unconstrained pilots not implemented yet for 6-dim data")
   
   if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
   if (d > 4) binned <- FALSE
@@ -635,21 +483,22 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   }
   else 
     x.star.sub <- x.star
- 
+
   ## psi4.mat is on pre-transformed data scale
   if (pilot!="unconstr")
   {
-    if (d==2)
-      psi4.mat <- psimat.2d(x.star.sub, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par.sub)
-    else 
-      psi4.mat <- psimat.nd(x.star.sub, d=d, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par.sub)
+    psi4.mat <- psimat(x.star.sub, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par.sub)
   }
   else
   {
     ### symmetriser matrices for unconstrained pilot selectors
     Sd4 <- Sdr(d=d, r=4)
     Sd6 <- Sdr(d=d, r=6)
-    psi4.mat <- psimat.unconstr.nd(x=x, nstage=nstage, Sd4=Sd4, Sd6=Sd6)
+    if (nstage==1)
+      psi.fun <- psifun1.unconstr(x=x, Sd4=Sd4, Sd6=Sd6)
+    else if (nstage==2)
+      psi.fun <- psifun2.unconstr(x=x, Sd4=Sd4, Sd6=Sd6)
+    psi4.mat <- invvec(psi.fun)
   }
 
   if (pilot=="unconstr")
@@ -668,7 +517,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
       return(drop(pi.temp))
     }
 
-    ## psi4.mat always a zero eigen-value since it has repeated rows 
+    ## psi4.mat always has a zero eigen-value since it has repeated rows 
     result <- optim(vech(Hstart), pi.temp.unconstr, method="BFGS")
     H <- invvech(result$par) %*% invvech(result$par)
   }
@@ -708,7 +557,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   if (!amise)
     return(H)
   else
-    return(list(H = H, PI=result$value))
+    return(list(H = H, PI.star=result$value))
  
 }     
 
@@ -728,17 +577,18 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 ###############################################################################
 
 
-Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
+Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
 
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=amise))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hpi.diag", kfold=kfold, random=FALSE, Hstart=Hstart, nstage=nstage, pilot=pilot, pre=pre, binned=FALSE, amise=amise))
   }
   
   if (substr(pre,1,2)=="sc")
@@ -769,11 +619,7 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   if (binned)
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    ## bin.par <- binning(x.star, bgridsize, sqrt(diag(H.max)))
-    ## for large samples, take subset for pilot estimation
-    nsub <- n ##min(n, 1e4)
-    x.star.sub <- x.star[sample(1:n, size=nsub),]  
-    bin.par.sub <- binning(x=x.star.sub, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
+    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
   }
   else
     x.star.sub <- x.star
@@ -781,10 +627,10 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
   if (d==2)
   {
     if (nstage == 1)
-      psi.fun <- psifun1.2d(x.star.sub, pilot=pilot, binned=binned, bin.par=bin.par.sub)
+      psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par)$psir
     else if (nstage == 2)
-      psi.fun <- psifun2.2d(x.star.sub, pilot=pilot, binned=binned, bin.par=bin.par.sub)
-    
+      psi.fun <- psifun2(x.star, pilot=pilot, binned=binned, bin.par=bin.par)$psir
+
     psi40 <- psi.fun[1]
     psi22 <- psi.fun[3]
     psi04 <- psi.fun[5]
@@ -793,7 +639,10 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
     h1 <- (psi04^(3/4)*RK/(psi40^(3/4)*(sqrt(psi40 * psi04)+psi22)*n))^(1/6)
     h2 <- (psi40/psi04)^(1/4) * h1
 
-    return(diag(c(s1^2*h1^2, s2^2*h2^2)))
+    H <- diag(c(s1^2*h1^2, s2^2*h2^2))
+
+    psimat4.D <- invvech(c(psi40, psi22, psi04))
+    amise.star <- drop(n^(-1)*RK*(h1*h2)^(-1) + 1/4*c(h1,h2)^2 %*% psimat4.D %*% c(h1,h2)^2)
   }
   else 
   { 
@@ -801,15 +650,13 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
       stop("SAMSE pilot selectors are better for higher dimensions")
  
     ## use normal reference bandwidth as initial condition
-
     if (missing(Hstart)) 
        Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
     else    
        Hstart <- Sinv12 %*% Hstart %*% Sinv12
-
     Hstart <- matrix.sqrt(Hstart)
     
-    psi4.mat <- psimat.nd(x.star.sub, d=d, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par.sub)    
+    psi4.mat <- psimat(x.star, nstage=nstage, pilot=pilot, binned=binned, bin.par=bin.par)    
   
     ## PI is estimate of AMISE
     pi.temp <- function(diagH)
@@ -822,13 +669,17 @@ Hpi.diag <- function(x, nstage=2, pilot="amse", pre="scale", Hstart, binned=FALS
     result <- optim(diag(Hstart), pi.temp, method="BFGS")
     H <- diag(result$par) %*% diag(result$par)
   
-  ## back-transform
-  if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
-  else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
-  H <- S12 %*% H %*% S12
-  
-  return(H)
+    ## back-transform
+    if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
+    else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
+    amise.star <- result$value
+    H <- S12 %*% H %*% S12
   }
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, PI.star=amise.star))
 }
 
 
@@ -908,7 +759,7 @@ hlscv <- function(x, binned=TRUE, bgridsize)
     
 }
   
-Hlscv <- function(x, Hstart, kfold=1)
+Hlscv <- function(x, Hstart, amise=FALSE, kfold=1)
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
@@ -916,10 +767,11 @@ Hlscv <- function(x, Hstart, kfold=1)
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hlscv", kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hlscv", Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hlscv", kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hlscv", Hstart=Hstart, kfold=kfold, random=FALSE))
   }
   
   n <- nrow(x)
@@ -938,8 +790,14 @@ Hlscv <- function(x, Hstart, kfold=1)
   }
   result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead")
                                         #control=list(abstol=n^(-10*d)))    
-  
-  return(invvech(result$par) %*% invvech(result$par))
+
+  H <- invvech(result$par) %*% invvech(result$par)
+  amise.opt <- result$value
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, LSCV=amise.opt))
 }
 
 ###############################################################################
@@ -953,7 +811,7 @@ Hlscv <- function(x, Hstart, kfold=1)
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, kfold=1)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
@@ -961,10 +819,11 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, kfold=1)
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hlscv.diag", kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hlscv.diag", Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hlscv.diag", kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hlscv.diag", Hstart=Hstart, kfold=kfold, random=FALSE))
   }
   
   n <- nrow(x)
@@ -990,8 +849,13 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, kfold=1)
     return(lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par))
   }
   result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead")
-                 
-  return(diag(result$par^2))
+  H <- diag(result$par^2)
+  amise.opt <- result$value
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, LSCV=amise.opt))
 }
 
 ###############################################################################
@@ -1010,11 +874,18 @@ bcv.mat <- function(x, H1, H2)
   n <- nrow(x)
   d <- 2
 
-  psi40 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(4,0), inc=0)
-  psi31 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(3,1), inc=0)
-  psi22 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(2,2), inc=0)
-  psi13 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(1,3), inc=0)
-  psi04 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(0,4), inc=0)
+  psi <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=4, add.index=TRUE, deriv.vec=FALSE, inc=0)
+  psi40 <- psi$sum[1]
+  psi31 <- psi$sum[2]
+  psi22 <- psi$sum[3]
+  psi13 <- psi$sum[4]
+  psi04 <- psi$sum[5]
+  
+  #psi40 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(4,0), inc=0)
+  #psi31 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(3,1), inc=0)
+  #psi22 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(2,2), inc=0)
+  #psi13 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(1,3), inc=0)
+  #psi04 <- dmvnorm.deriv.sum(x, Sigma=H2, deriv.order=c(0,4), inc=0)
     
   coeff <- c(1, 2, 1, 2, 4, 2, 1, 2, 1)
   psi.fun <- c(psi40, psi31, psi22, psi31, psi22, psi13, psi22, psi13,psi04)/(n*(n-1))
@@ -1041,15 +912,16 @@ bcv.mat <- function(x, H1, H2)
 # H_BCV
 ###############################################################################
 
-Hbcv <- function(x, whichbcv=1, Hstart, kfold=1)
+Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, kfold=1)
 {
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hbcv", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
   }
   
   n <- nrow(x)
@@ -1065,7 +937,7 @@ Hbcv <- function(x, whichbcv=1, Hstart, kfold=1)
   xdiff <- differences(x, upper=FALSE)
   if (missing(Hstart))
     Hstart <- matrix.sqrt(0.9*Hmax)
-  bin.par <- binning(x)
+  ##bin.par <- binning(x)
   bcv1.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
@@ -1132,8 +1004,13 @@ Hbcv <- function(x, whichbcv=1, Hstart, kfold=1)
     result <- optim(vech(Hstart), bcv2.mat.temp, gr=bcv2.mat.deriv,
                     method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)),
                     lower=-vech(matrix.sqrt(up.bound)))
-  
-  return(invvech(result$par) %*% invvech(result$par))
+  H <- invvech(result$par) %*% invvech(result$par)
+  amise.opt <- result$value
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, BCV=amise.opt))
 }
 
 ###############################################################################
@@ -1149,15 +1026,16 @@ Hbcv <- function(x, whichbcv=1, Hstart, kfold=1)
 # H_BCV, diag
 ###############################################################################
 
-Hbcv.diag <- function(x, whichbcv=1, Hstart, kfold=1)
+Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, kfold=1)
 {
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hbcv.diag", whichbcv=whichbcv, Hstart=Hstart, kfold=kfold, random=FALSE))
   }
   
   n <- nrow(x)
@@ -1193,7 +1071,12 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, kfold=1)
   else if (whichbcv == 2)
     result <- optim(diag(Hstart), bcv2.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound))
 
-  return(diag(result$par) %*% diag(result$par))
+  H <- diag(result$par) %*% diag(result$par)
+  amise.opt <- result$value
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, BCV=amise.opt))
 }
 
 
@@ -1240,22 +1123,10 @@ Theta6.elem <- function(d)
 
 gamse.scv.nd <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par)
 {
-  psihat6 <- vector()
   g6.star <- gsamse.nd(Sigma.star, n, 6) 
   G6.star <- g6.star^2 * diag(d)
-
-  if (!binned) x.star.diff <- differences(x.star, upper=FALSE)
-  ##else bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(G6.star)))
-    
-  derivt6 <- deriv.list(d=d, r=6)
-  for (k in 1:nrow(derivt6))
-  {
-    r <- derivt6[k,]
-    if (binned)
-      psihat6[k] <- kfe(bin.par=bin.par, G=G6.star, r=r, binned=TRUE)
-    else 
-      psihat6[k] <- kfe.scalar(x=x.star.diff, r=r, g=g6.star, diff=TRUE)
-  }   
+  derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+  psihat6.star <- kfe(x=x.star, bin.par=bin.par, deriv.order=6, G=G6.star, deriv.vec=FALSE, add.index=FALSE, binned=binned)
 
   Theta6.mat <- matrix(0, nc=d, nr=d)
   Theta6.mat.ind <- Theta6.elem(d)
@@ -1265,13 +1136,13 @@ gamse.scv.nd <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par
       temp <- Theta6.mat.ind[[i]][[j]]
       temp.sum <- 0
       for (k in 1:nrow(temp))
-        temp.sum <- temp.sum + psihat6[which.mat(temp[k,], derivt6)]
+        temp.sum <- temp.sum + psihat6.star[which.mat(temp[k,], derivt6)]
       Theta6.mat[i,j] <- temp.sum 
     }
     
   eye3 <- diag(d)
   D4 <- dupl(d)$d
-  trHamise <- tr(Hamise) ##[1,1] + Hamise[2,2] + Hamise[3,3] 
+  trHamise <- tr(Hamise) 
 
   ## required constants - see thesis
   Cmu1 <- 1/2*t(D4) %*% vec(Theta6.mat %*% Hamise)
@@ -1297,24 +1168,23 @@ gamse.scv.nd <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par
 # G_AMSE pilot bandwidth
 ###############################################################################
 
-Gamse.scv.nd <- function(x)
+Gamse.scv.nd <- function(x,  rel.tol=10^-10)
 {
   d <- ncol(x)
   n <- nrow(x)
   S <- var(x)
 
-  Sd4 <- Sdr(d=d, r=4)  
-  Sd6 <- Sdr(d=d, r=6)
-  rel.tol<-10^-10  
+  ##Sd4 <- Sdr(d=d, r=4)  
+  ##Sd6 <- Sdr(d=d, r=6)
 
   ## stage 1 of plug-in
   G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
   ##psi6 <- dmvnorm.deriv.sum(x,Sigma=G6,deriv.order=6,Sdr.mat=Sd6)/n^2
-  x.diff <- differences(x, upper=FALSE)
-  psihat6 <- kfe(x=x.diff, r=6, G=G6, diff=TRUE)
+  ##x.diff <- differences(x, upper=FALSE)
+  psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=FALSE) ##kfe(x=x.diff, r=6, G=G6, diff=TRUE)
  
   ## constants for normal reference
-  D4phi0 <- drop(dmvnorm.deriv(x=rep(0,d), deriv.order=4, Sdr.mat=Sd4))
+  D4phi0 <- drop(dmvnorm.deriv(x=rep(0,d), deriv.order=4))
   Id1 <- diag(d)
   vId <- vec(Id1)
   Id4 <- diag(d^4)
@@ -1324,8 +1194,7 @@ Gamse.scv.nd <- function(x)
     G <- invvech(vechG)%*%invvech(vechG)
     G12 <- matrix.sqrt(G)
     Ginv12 <- chol2inv(chol(G12))
-    AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=4)%*%D4phi0)*2^(-(d+4)/2)+
-      (t(vec(G))%x%Id4)%*%psihat6
+    AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=4)%*%D4phi0)*2^(-(d+4)/2) + (t(vec(G))%x%Id4)%*%psihat6
 
     ##return (t(AB) %*% (vec(Hamise) %*% t(vec(Hamise)) %x% diag(d^2)) %*% AB) 
     return (sum(AB^2))
@@ -1334,13 +1203,14 @@ Gamse.scv.nd <- function(x)
   Hstart <- (4/(d+2))^(2/(d+4))*n^(-2/(d+4))*S
   Hstart <- matrix.sqrt(Hstart)
 
-  res <- optim(vech(Hstart),AB2r4, control=list(reltol=rel.tol),method="BFGS")
+  res <- optim(vech(Hstart), AB2r4, control=list(reltol=rel.tol), method="BFGS")
   V4 <- res$value
   G4 <- res$par
   G4 <- invvech(G4)%*%invvech(G4)
 
   return(G4) 
 }
+
 
 ###############################################################################
 # Computes the smoothed cross validation function for 2 to 6 dim
@@ -1378,7 +1248,6 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, diff=FALSE, n)
   scv1 <- dmvnorm.sum(x=x, Sigma=2*H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
   scv2 <- dmvnorm.sum(x=x, Sigma=H + 2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
   scv3 <- dmvnorm.sum(x=x, Sigma=2*G, inc=1, bin.par=bin.par, binned=binned, diff=diff)
-  ### need to infer no. x from difference????
   scvmat <- n^(-1)*det(H)^(-1/2)*(4*pi)^(-d/2) + n^(-2)*(scv1 - 2*scv2 + scv3)
     
   return (scvmat)
@@ -1406,12 +1275,9 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   d <- 1
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
   if (missing(bgridsize)) bgridsize <- 401
-  ##if (missing(hmin))
   hmin <- 0.1*hnorm
-  ##if (missing(hmax))
   hmax <- 2*hnorm
 
-  ##bin.par.sub <- binning(x=x[1:min(n, 1e4)], bgridsize=bgridsize, h=hnorm)
   bin.par <- binning(x=x, bgridsize=bgridsize, h=hnorm)
   if (nstage==1)
   {
@@ -1420,19 +1286,17 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   }
   else if (nstage==2)
   {
-    ##psihat8 <- psins.1d(r=8, sigma=sigma)
-    ##psihat12 <- psins.1d(r=12, sigma=sigma)
     g1 <- (2/(7*n))^(1/9)*2^(1/2)*sigma
     g2 <- (2/(11*n))^(1/13)*2^(1/2)*sigma
 
-    psihat6 <- kfe.1d(bin.par=bin.par, binned=TRUE, r=6, g=g1, inc=1)
-    psihat10 <- kfe.1d(bin.par=bin.par, binned=TRUE, r=10, g=g2, inc=1)
+    psihat6 <- kfe.1d(x=x, bin.par=bin.par, binned=binned, deriv.order=6, g=g1, inc=1)
+    psihat10 <- kfe.1d(x=x, bin.par=bin.par, binned=binned, deriv.order=10, g=g2, inc=1)
   }
 
   g3 <- (-6/((2*pi)^(1/2)*psihat6*n))^(1/7) 
   g4 <- (-210/((2*pi)^(1/2)*psihat10*n))^(1/11)
-  psihat4 <- kfe.1d(bin.par=bin.par, binned=TRUE, r=4, g=g3, inc=1)
-  psihat8 <- kfe.1d(bin.par=bin.par, binned=TRUE, r=8, g=g4, inc=1)
+  psihat4 <- kfe.1d(x=x, bin.par=bin.par, binned=binned, deriv.order=4, g=g3, inc=1)
+  psihat8 <- kfe.1d(x=x, bin.par=bin.par, binned=binned, deriv.order=8, g=g4, inc=1)
 
   C <- (441/(64*pi))^(1/18) * (4*pi)^(-1/5) * psihat4^(-2/5) * psihat8^(-1/9)
   
@@ -1457,17 +1321,17 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize, kfold=1)
+Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize, amise=FALSE, kfold=1)
 {
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hscv", pre=pre, pilot=pilot, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
   }
-
   
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
@@ -1498,12 +1362,9 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
   S.star <- var(x.star)
   n <- nrow(x.star)
 
-  ##if (n > 1000 & !binned)
-  ##  warning("Hscv converges slowly for n > 1000 without binned estimation")
   if (d > 4) binned <- FALSE
   if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
-  
-  
+    
   if (pilot=="unconstr")
   {
     ## use normal reference bandwidth as initial condition 
@@ -1511,7 +1372,7 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
       Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x)
     
     Hstart <- matrix.sqrt(Hstart)
-    G.amse <- Gamse.scv.nd(x=x)
+    G.amse <- Gamse.scv.nd(x=x) ## Gbias.scv.nd(x=x)
     x.diff <- differences(x, upper=TRUE)
     
     scv.unconstr.temp <- function(vechH)
@@ -1525,12 +1386,8 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
   }
   else if (pilot!="unconstr")
   {
-    ##if (binned)
-    
-    Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize, kfold=kfold) 
-    ##else
-    ##  Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=FALSE, kfold=kfold)
-    
+    Hamise <- Hpi(x=x, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize) 
+
     if (any(is.na(Hamise)))
     {
       warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
@@ -1541,10 +1398,15 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
     else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
     S12inv <- chol2inv(chol(S12))
     Hamise <- S12inv %*% Hamise%*% S12inv  ## convert to pre-transf data scale
-    
-    x.star.diff <- differences(x.star, upper=TRUE)
     gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=FALSE)
     G.amse <- gamse^2 * diag(d)
+
+    x.star.diff <- differences(x.star, upper=TRUE)
+    scv.mat.temp <- function(vechH)
+    {
+      H <- invvech(vechH) %*% invvech(vechH)
+      return(scv.mat(x.star.diff, H, G.amse, binned=FALSE, diff=TRUE, n=n))
+    }
 
     ## use normal reference bandwidth as initial condition
     if (missing(Hstart)) 
@@ -1552,35 +1414,31 @@ Hscv <- function(x, pre="sphere", pilot="samse", Hstart, binned=TRUE, bgridsize,
     else    
       Hstart <- S12inv %*% Hstart %*% S12inv
     Hstart <- matrix.sqrt(Hstart)
-    
-    scv.mat.temp <- function(vechH)
-    {
-      H <- invvech(vechH) %*% invvech(vechH)
-      return(scv.mat(x.star.diff, H, G.amse, binned=FALSE, diff=TRUE, n=nrow(x)))
-    }
 
-    ## back-transform
     result <- optim(vech(Hstart), scv.mat.temp, method= "Nelder-Mead")
-    ##control=list(abstol=n^(-10*d)))
     H <- invvech(result$par) %*% invvech(result$par)
-    H <- S12 %*% H %*% S12
+    H <- S12 %*% H %*% S12  ## back-transform
   }
- 
-  return(H)
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, SCV.star=result$value))
 }
 
 
-Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
+Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 {
   if(!is.matrix(x)) x <- as.matrix(x)
 
   ## k-fold b/w approx
   if (kfold > 1)
   {
-    if (missing(Hstart))
-      return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, kfold=kfold, random=FALSE))
-    else
-      return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
+    stop("Option kfold > 1 currently disabled in this version")
+    ##if (missing(Hstart))
+    ##  return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, kfold=kfold, random=FALSE))
+    ##else
+    ##  return(Hkfold(x=x, selector="Hscv.diag", pre=pre, binned=FALSE, Hstart=Hstart, kfold=kfold, random=FALSE))
   }
   
   d <- ncol(x)
@@ -1612,22 +1470,17 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
 
   S12inv <- chol2inv(chol(S12))
   ##Hamise <- S12inv %*% Hpi.diag(x=x.star, nstage=1, pilot="samse", pre="sphere", binned=binned, bgridsize=bgridsize, kfold=kfold) %*% S12inv
-  Hamise <- Hpi.diag(x=x.star, nstage=1, pilot="samse", pre="scale", binned=binned, bgridsize=bgridsize, kfold=kfold)
+  Hamise <- Hpi.diag(x=x.star, nstage=1, pilot="samse", pre="scale", binned=binned, bgridsize=bgridsize)
 
   if (any(is.na(Hamise)))
   {
     warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
     Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
   }
-
  
-  if (binned)
-  {  
-    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(diag(Hamise))) 
-    gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bin.par=bin.par)
-  }
-  else
-    gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=FALSE)
+  if (binned) bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(diag(Hamise))) 
+  gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bin.par=bin.par)
+
   G.amse <- gamse^2 * diag(d)
   
   ## use normal reference bandwidth as initial condition
@@ -1649,8 +1502,11 @@ Hscv.diag <- function(x, pre="scale", Hstart, binned=FALSE, bgridsize, kfold=1)
   result <- optim(diag(Hstart), scv.mat.temp, method= "Nelder-Mead")
   H <- diag(result$par) %*% diag(result$par)
   H <- S12 %*% H %*% S12
-  
-  return(H)
+
+  if (!amise)
+    return(H)
+  else
+    return(list(H = H, SCV.star=result$value))
 }
 
 
@@ -1713,4 +1569,7 @@ Hkfold <- function(x, selector, kfold=1, random=FALSE, ...)
   Hstar <- Hstar*kfold^(-(d+6)/(d+4))
   return(Hstar)
 }
+
+
+
 

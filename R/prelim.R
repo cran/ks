@@ -309,20 +309,6 @@ pre.sphere <- function(x, mean.centred=FALSE)
   return (x.sphered)
 }
 
-pre.sphere.pc <- function(x.pc)
-{
-  g <- length(x.pc$nclust)
-  d <- ncol(x.pc$x)
-  x.pc1 <- x.pc
-  x.pc1$x <- matrix(0, nc=d, nr=nrow(x.pc$x))
-  for (j in 1:g)
-  {
-    xj <- x.pc$x[x.pc$ind==j,]
-    x.pc1$x[x.pc$ind==j,] <- pre.sphere(xj) 
-  }
- 
-  return (x.pc1)          
-}  
 
 ###############################################################################
 # Pre-scaling
@@ -459,31 +445,93 @@ is.diagonal <- function(x)
 ####################################################################
 
 
-differences <- function(x, upper=TRUE)
+differences <- function(x, y, upper=FALSE)
 {
+  if (missing(y)) y <- x
   if (is.vector(x)) x <- t(as.matrix(x))
-  n <- nrow(x)
+  if (is.vector(y)) y <- t(as.matrix(y))
+
+  nx <- nrow(x)
+  ny <- nrow(y)
   d <- ncol(x)
-  
-  difs <- matrix(ncol=d,nrow=n^2)
+
+  difs <- matrix(ncol=d,nrow=nx*ny)
   for (j in 1:d)
   {    
-    xj <- x[,j]
-    difxj <- as.vector(xj%*%t(rep(1,n))-rep(1,n)%*%t(xj))
-    ##The jth column of difs contains all the differences X_{ij}-X_{kj}
-    difs[,j]<-difxj
+    difs[,j] <- rep(x[,j], times=ny) - rep(y[1:ny,j], each=nx)
+    ##difs[,j] <- as.vector(x[,j]%*%t(rep(1,ny))-rep(1,nx)%*%t(y[,j]))
+    ##The jth column of difs contains all the differences X_{ij}-Y_{kj}
   }
-  
+ 
   if (upper)
   {
     ind.remove <- numeric()
-    for (j in 1:(n-1))
-      ind.remove <- c(ind.remove, (j*n+1):(j*n+j))
-    
+    for (j in 1:(nx-1))
+      ind.remove <- c(ind.remove, (j*nx+1):(j*nx+j))
+      
     return(difs[-ind.remove,])
   }
   else
     return(difs)
+}
+
+
+
+differences.JEC <- function(x, y, upper=FALSE, output.list=FALSE, nlist=10)
+{
+  if (missing(y)) y <- x
+  if (is.vector(x)) x <- t(as.matrix(x))
+  if (is.vector(y)) y <- t(as.matrix(y))
+
+  nx <- nrow(x)
+  ny <- nrow(y)
+  d <- ncol(x)
+
+  if (output.list)
+  {
+    difs <- list()
+    if (nlist < 1) nlist <- 1
+    nn <- nx %/% nlist
+
+    for (i in 1:nlist)
+    {
+      difs.temp <- matrix(ncol=d,nrow=nn*ny)
+      for (j in 1:d)
+        difs.temp[,j] <- as.vector(x[((i-1)* nn+1):(i*nn),j]%*%t(rep(1,ny))-rep(1,nn)%*%t(y[,j])) 
+      
+      difs[[i]] <- difs.temp
+    }
+   
+    if (nx %% nlist >0)
+    {
+      difs.temp <- matrix(ncol=d,nrow=(nx %% nlist)*ny) 
+      for (j in 1:d)
+        difs.temp[,j] <- as.vector(x[(nlist*nn+1):nx,j]%*%t(rep(1,ny))-rep(1,nx-nn*nlist)%*%t(y[,j]))
+      difs <- c(difs, list(difs.temp))
+    }
+    
+    return(difs)
+  }
+  else
+  {
+    difs <- matrix(ncol=d,nrow=nx*ny)
+    for (j in 1:d)
+    {    
+      difs[,j] <- as.vector(x[,j]%*%t(rep(1,ny))-rep(1,nx)%*%t(y[,j]))
+      ##The jth column of difs contains all the differences X_{ij}-Y_{kj}
+    }
+ 
+    if (upper)
+    {
+      ind.remove <- numeric()
+      for (j in 1:(nx-1))
+        ind.remove <- c(ind.remove, (j*nx+1):(j*nx+j))
+      
+      return(difs[-ind.remove,])
+    }
+    else
+      return(difs)
+  }
 }
 
 
@@ -631,61 +679,6 @@ Sdr<-function(d,r){
 ##############################################################################
 
 
-deriv.list <- function(d, r)
-{
-  derivt <- numeric()
-
-  if (d==2)
-  {
-    for (j1 in r:0)
-      for (j2 in r:0)
-        if (sum(c(j1,j2))==r)
-          derivt <- rbind(derivt, c(j1,j2))
-  }
-  if (d==3)
-  {
-    for (j1 in r:0)
-      for (j2 in r:0)
-        for (j3 in r:0)
-          if (sum(c(j1,j2,j3))==r)
-            derivt <- rbind(derivt, c(j1,j2,j3))
-  }
-  if (d==4)
-  {
-    for (j1 in r:0)
-      for (j2 in r:0)
-        for (j3 in r:0)
-          for (j4 in r:0)
-            if (sum(c(j1,j2,j3,j4))==r)
-              derivt <- rbind(derivt, c(j1,j2,j3,j4))
-  }
-
-  if (d==5)
-  {
-    for (j1 in r:0)
-      for (j2 in r:0)
-        for (j3 in r:0)
-          for (j4 in r:0)
-            for (j5 in r:0)
-              if (sum(c(j1,j2,j3,j4,j5))==r)
-                derivt <- rbind(derivt, c(j1,j2,j3,j4,j5))
-  }
-  
-  if (d==6)
-  {
-    for (j1 in r:0)
-      for (j2 in r:0)
-        for (j3 in r:0)
-          for (j4 in r:0)
-            for (j5 in r:0)
-              for (j6 in r:0)
-                if (sum(c(j1,j2,j3,j4,j5,j6))==r)
-                  derivt <- rbind(derivt, c(j1,j2,j3,j4,j5,j6))
-  }
-
-  return(derivt)
-
-}
 
 
 RKfun <- function(r)
