@@ -1,4 +1,5 @@
 \name{kde}
+\alias{kda.kde}
 \alias{kde}
 
 \title{Kernel density estimate for multivariate data}
@@ -9,33 +10,38 @@
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
     compute.cont=FALSE, approx.cont=TRUE)
+
+kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
+    supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w,
+    compute.cont=FALSE, approx.cont=TRUE)
 }
 
 \arguments{
   \item{x}{matrix of data values}
-  \item{H}{bandwidth matrix}
-  \item{h}{scalar bandwidth}
+  \item{x.group}{vector of group labels}
+  \item{H,Hs}{bandwidth matrix(ces)}
+  \item{h,hs}{scalar bandwidth(s)}
+  \item{prior.prob}{vector of prior probabilities}
   \item{gridsize}{vector of number of grid points}
   \item{gridtype}{not yet implemented}
   \item{xmin}{vector of minimum values for grid}
   \item{xmax}{vector of maximum values for grid}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
   \item{eval.points}{points at which density estimate is evaluated}
-  \item{binned}{flag for binned estimation (default is FALSE)}
-  \item{bgridsize}{vector of binning grid sizes - required if \code{binned=TRUE}}
-  \item{positive}{flag if 1-d data are positive (default is FALSE)}
+  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
+  \item{positive}{flag if 1-d data are positive. Default is FALSE.}
   \item{adj.positive}{adjustment added to data i.e. when
 	\code{positive=TRUE} KDE is carried out on \code{log(x +
 	  adj.positive)}. Default is the minimum of \code{x}.}
   \item{w}{vector of weights (non-negative and sum is equal to sample size)}
-  \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%}
-  \item{approx.cont}{flag for computing approximate probability contour levels}
+  \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%. Default is FALSE.}
+  \item{approx.cont}{flag for computing approximate probability contour levels. Default is TRUE.}
 }
   
 
 \value{
-  Kernel density estimate is an object of class \code{kde} which is a
-  list with 4 fields
+  --The result from \code{kde} is a kernel density estimate which is an object of class \code{kde}: 
   \item{x}{data points - same as input}
   \item{eval.points}{points at which the density estimate is evaluated}
   \item{estimate}{density estimate at \code{eval.points}}
@@ -43,6 +49,18 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{h}{scalar bandwidth (1-d only)}
   \item{w}{weights}
   \item{cont}{probability contour levels}
+
+  --The result from \code{kda.kde} is a density estimate
+  for discriminant analysis is an object of class \code{kda.kde}:
+  \item{x}{data points - same as input}
+  \item{x.group}{group labels - same as input}
+  \item{eval.points}{points that density estimate is evaluated at}
+  \item{estimate}{density estimate at \code{eval.points}}  
+  \item{prior.prob}{prior probabilities}
+  \item{H}{bandwidth matrices (>1-d only) or} 
+  \item{h}{bandwidths (1-d only)}
+  \item{cont}{probability contour levels}
+  \item{w}{weights}
 }
 
 \details{
@@ -60,18 +78,17 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   and \code{eval.points} must be specified.
 
   The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
-  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximim of the
-  diagonal elements of \code{H}.
+  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximum of the
+  diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.
 
-  The default weights \code{w} is a vector of all ones.
+  If you have prior probabilities then set \code{prior.prob} to these.
+  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  proportions as estimates of the prior probabilities.
 }
 
-\references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
-  Chapman \& Hall. London. } 
-
-\seealso{\code{\link{plot.kde}}}
+\seealso{\code{\link{plot.kde}}, \code{\link{plot.kda.kde}}}
 
 \examples{
-### See examples in ? plot.kde  
+### See examples in ? plot.kde, ? plot.kda.kde  
 }
 \keyword{smooth}

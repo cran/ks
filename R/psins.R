@@ -17,12 +17,12 @@ psins.1d <- function(r, sigma)
 }
 
 
-psins <- function(r, Sigma, complete=FALSE, Sdr.mat)
+psins <- function(r, Sigma, deriv.vec=FALSE, Sdr.mat)
 {
   d <- ncol(Sigma)
-  if (complete)
+  if (deriv.vec)
   {
-    return(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat))
+    return(drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat)))
   }
   else
   {  

@@ -1,4 +1,4 @@
-\name{Hlscv, Hlscv.diag, hlscv}
+\name{Hlscv}
 \alias{Hlscv}
 \alias{Hlscv.diag}
 \alias{hlscv}
@@ -9,8 +9,8 @@
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
-Hlscv(x, Hstart, kfold=1)
-Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, kfold=1)
+Hlscv(x, Hstart, amise=FALSE, kfold=1)
+Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
 hlscv(x, binned=TRUE, bgridsize)
 }
 
@@ -19,51 +19,33 @@ hlscv(x, binned=TRUE, bgridsize)
   \item{x}{vector or matrix of data values}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation}
-  \item{bgridsize}{vector of binning grid sizes - 
-  required only if \code{binned=TRUE}}
-  \item{kfold}{value for k-fold bandwidth selection. See details below}  
+  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
+  \item{amise}{flag to return the minimal LSCV value. Default is FALSE.}	
+  \item{kfold}{value for k-fold bandwidth selection. See details below.}  
 }
 
 \value{
-LSCV bandwidth.
+LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too. 
 }
 
 \references{
   Bowman, A. (1984) An alternative method of cross-validation for the
   smoothing of kernel density estimates. \emph{Biometrika}. \bold{71},
   353-360.
-  
-  Duong, T. \& Hazelton, M.L. (2005) Cross-validation
-  bandwidth matrices for multivariate kernel density estimation.
-  \emph{Scandinavian Journal of Statistics}. \bold{32}, 485-506.
 
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
   estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},
   65-78.
-  
-  Sain, S.R, Baggerly, K.A \& Scott, D.W. (1994)
-  Cross-validation of multivariate densities. \emph{Journal of the
-  American Statistical Association}. \bold{82}, 1131-1146.   
 }
 
 \details{\code{hlscv} is the univariate SCV
   selector of Bowman (1984) and Rudemo (1982). \code{Hlscv} is a
-  multivariate generalisation of this.
+  multivariate generalisation of this. Use \code{Hlscv} for full bandwidth matrices and \code{Hlscv.diag}
+  for diagonal bandwidth matrices. 
 
-  Use \code{Hlscv} for full bandwidth matrices and \code{Hlscv.diag}
-  for diagonal bandwidth matrices.
-  
-  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
-  estimates are computed over a binning grid defined 
-  by \code{bgridsize}. Otherwise it's computed exactly.
-  
-  If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where k = \eqn{\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{4/(n*(d + 2))^(2/(d+ 4))}, n = sample size, d = dimension of data. 
-
-  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full 
-  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
-  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
+  For details about the advanced options for \code{binned,Hstart,kfold}, 
+  see \code{\link{Hpi}}. 
 }
 
 \seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}

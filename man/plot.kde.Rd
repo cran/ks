@@ -6,49 +6,14 @@
   Kernel density estimate plot for 1- to 3-dimensional data.
 }
 
-\synopsis{\method{plot}{kde}(x, drawpoints=FALSE, ...)}
+%%\synopsis{\method{plot}{kde}(x, drawpoints=FALSE, ...)}
 
 \usage{
-
-## univariate
-\method{plot}{kde}(x, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, ptcol="blue", col="black", jitter=TRUE, ...)
-
-## bivariate
-\method{plot}{kde}(x, display="slice", cont=c(25,50,75), abs.cont, 
-    approx.cont=FALSE, xlab, ylab, zlab="Density function", add=FALSE, 
-    drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col="black", ...)
-
-## trivariate
-\method{plot}{kde}(x, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors,
-    add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
-    size=3, ptcol="blue", ...)
+\method{plot}{kde}(x, ...)
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde} (output from
-    \code{\link{kde}} function)}
-  \item{display}{type of display, "slice" for contour plot, "persp" for
-    perspective plot, "image" for image plot, "filled" for filled
-    contyour plot (2-d plot)}
-  \item{cont}{vector of percentages for contour
-    level curves}
-  \item{abs.cont}{vector of absolute density estimate heights for contour
-    level curves}
-  \item{approx.cont}{flag to compute approximate contour levels} 
-  \item{ptcol}{plotting colour for data points}
-  \item{col}{plotting colour for density estimate (1-d, 2-d plot)}
-  \item{colors}{vector of colours for each contour (3-d plot)}
-  \item{jitter}{if TRUE then jitter rug plot (1-d plot)}
-  \item{xlab,ylab,zlab}{axes labels}
-  \item{add}{if TRUE then add to current plot}
-  \item{theta,phi,d}{graphics parameters for perspective plots (2-d plot)}
-  \item{drawpoints}{if TRUE then draw data points on density estimate}
-  \item{drawlabels}{if TRUE then draw contour labels (2-d plot)}
-  \item{alpha}{transparency value of plotting symbol (3-d plot)}
-  \item{alphavec}{vector of transparency values for contours (3-d plot)}
-  \item{size}{size of plotting symbol (3-d plot)}
+  \item{x}{an object of class \code{kde} (output from \code{\link{kde}} function)}
   \item{...}{other graphics parameters}
 }
   
@@ -59,54 +24,78 @@
   libraries and is sent to RGL window.
 }
 
-\references{
-  Bowman, A.W. & Azzalini, A. (1997) \emph{Applied Smoothing Techniques
-    for Data Analysis}. Clarendon Press. Oxford.
-  
-  Simonoff, J. S., (1996) \emph{Smoothing Methods in Statistics}.
-  Springer-Verlag. New York.
-}
 
 \details{
-  -- The 1-d plot is a standard plot of a 1-d curve. If
+  The function headers for the different dimensional data are 
+  \preformatted{
+  ## univariate
+  plot(x, xlab, ylab="Density function", add=FALSE,
+  drawpoints=FALSE, ptcol="blue", col="black", jitter=TRUE, ...)
+
+  ## bivariate
+  plot(x, display="slice", cont=c(25,50,75), abs.cont, 
+    approx.cont=FALSE, xlab, ylab, zlab="Density function", add=FALSE, 
+    drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
+    ptcol="blue", col="black", ...)
+
+  ## trivariate
+  plot(x, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors,
+    add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
+    size=3, ptcol="blue", ...)   
+  }
+  The arguments are
+  \tabular{ll}{
+  \code{display} \tab type of display, "slice" for contour plot, "persp" for perspective plot, \cr 
+   \tab "image" for image plot, "filled.contour" for filled contour plot (1st form), \cr
+   \tab "filled.contour2" (2nd form) (2-d plot) \cr
+  \code{cont} \tab vector of percentages for contour level curves \cr
+  \code{abs.cont} \tab vector of absolute density estimate heights for contour level curves \cr
+  \code{approx.cont} \tab flag to compute approximate contour levels. Default is FALSE. \cr 
+  \code{ptcol} \tab plotting colour for data points \cr
+  \code{col} \tab plotting colour for density estimate (1-d, 2-d plot) \cr
+  \code{colors} \tab vector of colours for each contour (3-d plot) \cr
+  \code{jitter} \tab flag to jitter rug plot (1-d plot). Default is TRUE. \cr
+  \code{xlab,ylab,zlab} \tab axes labels \cr
+  \code{add} \tab flag to add to current plot. Default is FALSE.\cr
+  \code{theta,phi,d} \tab graphics parameters for perspective plots (2-d plot) \cr
+  \code{drawpoints} \tab flag to draw data points on density estimate. Default is FALSE. \cr
+  \code{drawlabels} \tab flag to draw contour labels (2-d plot). Default is TRUE.\cr
+  \code{alpha} \tab transparency value of plotting symbol (3-d plot) \cr
+  \code{alphavec} \tab vector of transparency values for contours (3-d plot) \cr
+  \code{size} \tab size of plotting symbol (3-d plot)
+  }
+  The 1-d plot is a standard plot of a 1-d curve. If
   \code{drawpoints=TRUE} then a rug plot is added.
   
-  -- There are three types of plotting displays for 2-d data available,
-  controlled by the \code{display} parameter.
-
-  If \code{display="slice"} then a slice/contour plot
+  There are different types of plotting displays for 2-d data available,
+  controlled by the \code{display} parameter.  (a) If \code{display="slice"} then a slice/contour plot
   is generated using \code{contour}.  
-  If \code{display="filled.contour"} or \code{"filled.contour2"} 
+  (b) If \code{display} is \code{"filled.contour"} or \code{"filled.contour2"} 
   then a filled contour plot is generated.
   The default contours are at 25\%, 50\%, 75\% or
   \code{cont=c(25,50,75)} which are upper percentages of
   highest density regions. See below for alternative
-  contour levels.
-  
-  If \code{display="persp"} then a perspective/wire-frame plot
+  contour levels. (c) \code{display="persp"} then a perspective/wire-frame plot
   is generated.  The default z-axis limits \code{zlim} are the default
-  from the usual \code{persp} command. 
-  
-  If \code{display="image"} then an image plot
+  from the usual \code{persp} command. (d) If \code{display="image"} then an image plot
   is generated. Default colours are the default from the usual
   \code{image} command.
 
-  -- For 3-dimensional data, the interactive plot is a series of nested
+  For 3-dimensional data, the interactive plot is a series of nested
   3-d contours. 
   The default contours are \code{cont=c(25,50,75)}. See below for
   alternative  contour levels. The
   default \code{colors} are \code{heat.colors} and the
   default opacity \code{alphavec} ranges from 0.1 to 0.5.
 
-  -- To specify contours, either one of \code{cont} or \code{abs.cont}
+  To specify contours, either one of \code{cont} or \code{abs.cont}
   is required. \code{cont} specifies upper percentages which
   correspond to probability contour regions. If \code{abs.cont} is set to particular
   values, then contours at these levels are drawn.
   This second option is useful for plotting
   multiple density estimates with common contour levels. See
-  \code{\link{contourLevels}} for details on computing contour levels
-  for \code{kde} objects.   
-  If \code{approx=FALSE}, then the exact KDE at x is compute. Otherwise the exact 
+  \code{\link{contourLevels}} for details on computing contour levels.   
+  If \code{approx=FALSE}, then the exact KDE at x is computed. Otherwise the exact 
   KDE is replaced by the KDE at the nearest 
   grid point. This can dramatically reduce computation time for large data sets.
 }
@@ -125,7 +114,6 @@ data(unicef)
 H.scv <- Hscv(x=unicef)
 fhat <- kde(x=unicef, H=H.scv, compute.cont=TRUE)
 
-plot(fhat)
 plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.1)
 plot(fhat, display="persp", border=NA, col="grey96", shade=0.75)
 plot(fhat, display="image", col=rev(heat.colors(100)))
@@ -147,18 +135,13 @@ x <- rmvnorm.mixt(5000, c(0,0), invvech(c(1, 0.8, 1)))
 H <- Hpi(x, binned=TRUE)
 fhat <- kde(x, H=H, compute.cont=TRUE, approx.cont=TRUE)
 plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      
-plot(fhat, drawlabels=FALSE,  add=TRUE, col=2)  
+plot(fhat, drawlabels=FALSE, add=TRUE, col=2)  
 
 ## trivariate example
-mus <- rbind(c(0,0,0), c(-1,1,1))
-Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
-Sigmas <- rbind(Sigma, Sigma)
-props <- c(1/2, 1/2)
-
-x <- rmvnorm.mixt(n=100, mus=mus, Sigmas=Sigmas, props=props)
+library(MASS)
+x <- iris[,1:3]
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi, compute.cont=TRUE)  
-plot(fhat)
 plot(fhat, axes=FALSE, box=FALSE, drawpoints=TRUE); axes3d(c('x','y','z'))
 }
 

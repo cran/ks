@@ -11,10 +11,8 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
 
 \arguments{
   \item{x}{matrix of data values}
-  \item{H}{bandwidth matrix}
-  \item{h}{scalar bandwidth}
-  \item{xmin}{vector of minimum values for grid}
-  \item{xmax}{vector of maximum values for grid}
+  \item{H,h}{bandwidth matrix, scalar bandwidth}
+  \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights (non-negative and sum is equal to sample size)}
@@ -29,12 +27,12 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
 }
 
 \details{
-  Code is used courtesy of Matt Wand. Default \code{bgridsize} are
+  Code is used courtesy of M.P. Wand. Default \code{bgridsize} are
   d=1: 401; d=2: rep(151, 2); d=3: rep(51, 3); d=4: rep(21,4). 
 }
 
-\references{ Wand, M.P. \& Jones, M.C. (1995) \emph{Kernel Smoothing}.
-  Chapman \& Hall. London. } 
+\references{ Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing}.
+  Chapman & Hall. London. } 
 
 \examples{
 data(unicef)

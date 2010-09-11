@@ -2,7 +2,7 @@
 ### Multivariate kernel density derivative estimate 
 ###############################################################################
 
-kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w)
+kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, deriv.vec=TRUE)
 {
   r <- deriv.order
 
@@ -38,13 +38,13 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
     if (positive & is.vector(x))
     {
       y <- log(x)
-      fhat <- kdde.binned(x=y, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, single.deriv=FALSE)
+      fhat <- kdde.binned(x=y, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w)
       fhat$estimate <- fhat$estimate/exp(fhat$eval.points)
       fhat$eval.points <- exp(fhat$eval.points)
       fhat$x <- x
     }
     else
-      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, single.deriv=FALSE)
+      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.vec=deriv.vec)
   }
   else
   {
@@ -73,14 +73,14 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
       if (missing(eval.points))
       {
         if (d==2) ##stop("Not yet implemented for 2 dimensions")
-          fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r)
+          fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec)
         else if (d == 3) stop("Not yet implemented for 3 dimensions")
-          #fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
+          ##fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
         else 
           stop("Need to specify eval.points for more than 3 dimensions")
       }
       else
-        fhat <- kdde.points(x, H, eval.points, w=w, deriv.order=r)
+        fhat <- kdde.points(x=x, H=H, eval.points=eval.points, w=w, deriv.order=r, deriv.vec=deriv.vec)
     }
 
   }
@@ -103,10 +103,6 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
     }
   }
   fhat$names <- x.names
-
-  ## rearrange list fields
- 
-      
   class(fhat) <- "kdde"
 
   return(fhat)
@@ -116,20 +112,21 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 
 ###############################################################################
 ## Multivariate binned kernel density derivative estimate
-## for single partial derivative ONLY
 ###############################################################################
 
-### Diagonal H only
-kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, single.deriv=TRUE)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE)
 {
   r <- deriv.order
+  if(length(r)>1) stop("deriv.order should be a non-negative integer.")
   ## linear binning
 
   if (missing(bin.par))
   {
-    if (is.vector(x)) d <- 1
-    else d <- ncol(x)
+    if (is.vector(x)) {d <- 1; n <- length(w)}
+    else {d <- ncol(x); n <- nrow(x)}
 
+    if (missing(w)) w <- rep(1,n)
+    
     if (d==1)
       if (missing(H)) H <- as.matrix(h^2)
       else {h <- sqrt(H); H <- as.matrix(H)}
@@ -144,11 +141,14 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
   {
     if (!is.list(bin.par$eval.points)) { d <- 1; bgridsize <- length(bin.par$eval.points)}
     else  { d <- length(bin.par$eval.points); bgridsize <- sapply(bin.par$eval.points, length)} 
-    
+
+    w <- bin.par$w
     if (d==1)
       if (missing(H)) H <- as.matrix(h^2)
       else {h <- sqrt(H); H <- as.matrix(H)}
   }
+
+  ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE)
   
   if (d==1)
     range.x <- list(range(bin.par$eval.points))
@@ -162,29 +162,39 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
     fhat.grid <- fhat.grid$est
   }
   else
-  {
-    if (single.deriv)
-    {
-      fhat.grid <- drvkde(x=bin.par$counts, drv=r, bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-      eval.points <- fhat.grid$x.grid
-      fhat.grid <- fhat.grid$est
-      ind.mat <- r
-    }
-    else
-    {  
-      ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r,  index.only=TRUE)
-      fhat.grid <- list()
-      
-      ## Needs to be optimised here to avoid duplicated computation of density derviatives
+  {  
+    fhat.grid <- list()
+
+    ## Needs to be optimised here to avoid duplicated computation of density derviatives??
+    if (r >0)
       for (r2 in 1:nrow(ind.mat))
       {
         fhat.gridr2 <- drvkde(x=bin.par$counts, drv=ind.mat[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
         fhat.grid[[r2]] <- fhat.gridr2$est
       }
-      eval.points <- fhat.grid$x.grid
+    else
+    {
+      fhat.gridr2 <- drvkde(x=bin.par$counts, drv=ind.mat[1], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+      fhat.grid[[1]] <- fhat.gridr2$est
+    }
+    eval.points <- fhat.gridr2$x.grid
+
+    if (!deriv.vec)
+    {
+      fhat.grid.vech <- list()
+      deriv.ind <- unique(ind.mat)
+
+      for (i in 1:nrow(deriv.ind))
+      {
+        which.deriv <- which.mat(deriv.ind[i,], ind.mat)[1]
+        fhat.grid.vech[[i]] <- fhat.grid[[which.deriv]]
+      }
+      ind.mat <- deriv.ind
+      fhat.grid <- fhat.grid.vech
     }
   }
-  
+
+    
   if (missing(x)) x <- NULL
   
   if (d==1)
@@ -246,7 +256,7 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
 ## Computes all mixed partial derivatives for a given deriv.order
 ##############################################################################################
 
-kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0)
+kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE)
 {
   d <- 2
   r <- deriv.order
@@ -292,7 +302,22 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
     for (k in 1:nderiv) fhat.grid[[k]] <- fhat.grid[[k]]/n
     gridx1 <- list(gridx[[1]], gridx[[2]]) 
 
-    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=S2r, index.only=TRUE)
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=S2r, only.index=TRUE)
+
+    if (!deriv.vec)
+    {
+      fhat.grid.vech <- list()
+      deriv.ind <- unique(ind.mat)
+
+      for (i in 1:nrow(deriv.ind))
+      {
+        which.deriv <- which.mat(deriv.ind[i,], ind.mat)[1]
+        fhat.grid.vech[[i]] <- fhat.grid[[which.deriv]]
+      }
+      ind.mat <- deriv.ind
+      fhat.grid <- fhat.grid.vech
+    }
+
     fhatr <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, gridded=TRUE, binned=FALSE, names=NULL, w=w, deriv.order=deriv.order, deriv.ind=ind.mat)
   }
 
@@ -305,7 +330,7 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
 ## evaluated at each sample point
 #################################################################################################
 
-kdde.points <- function(x, H, eval.points, w, deriv.order=0) 
+kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE) 
 {
   n <- nrow(x)
   Hs <- numeric(0)
@@ -313,10 +338,11 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0)
     Hs <- rbind(Hs, H)
   r <- deriv.order
   d <- ncol(H)
-  fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=r)
+  fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=r, deriv.vec=deriv.vec, add.index=TRUE)
+
+  ##ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=Sdr(d=d, r=r), only.index=TRUE)
   
-  ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, Sdr=Sdr(d=d, r=r), index.only=TRUE)
-  return(list(x=x, eval.points=eval.points, estimate=fhat, H=H, gridded=FALSE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat))
+  return(list(x=x, eval.points=eval.points, estimate=fhat$deriv, H=H, gridded=FALSE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=fhat$deriv.ind))
 }
 
 kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0) 
@@ -461,84 +487,44 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE, w)
 ## Kernel functional estimation
 #############################################################################
 
-kfe.1d <- function(x, g, r, inc=1, binned=FALSE, bin.par)
+kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
 {
+  r <- deriv.order
   if (!binned)
     psir <- dnorm.deriv.sum(x=x, sigma=g, deriv.order=r, inc=inc, binned=FALSE, kfe=TRUE)
   else
-    #psir <- dnorm.deriv.sum(bin.par=bin.par, sigma=g, r=r, inc=inc, kfe=TRUE, binned=TRUE)
-  { psir <- bkfe(x=bin.par$counts, bandwidth=g, drv=r, binned=TRUE, range.x=range(bin.par$eval.points)); if (inc==0)  psir <- psir - dnorm.deriv(0,mu=0,sigma=g, deriv.order=r)/sum(bin.par$counts)} 
+  {
+    if (missing(bin.par)) bin.par <- binning(x, h=g)
+    psir <- bkfe(x=bin.par$counts, bandwidth=g, drv=r, binned=TRUE, range.x=range(bin.par$eval.points))
+    if (inc==0)  psir <- psir - dnorm.deriv(0,mu=0,sigma=g, deriv.order=r)/sum(bin.par$counts)
+  } 
   
   return(psir) 
 }
 
-kfe <- function(x, G, r, inc=1, binned=FALSE, bin.par, diff=FALSE)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat)
 {
-  if (!binned)
-    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, diff=diff, kfe=TRUE, binned=FALSE)
-  else
-    psir <- dmvnorm.deriv.sum(bin.par=bin.par, Sigma=G, deriv.order=r, inc=inc, kfe=TRUE, binned=TRUE) 
-
-  return(psir)
-}
-
-
-
-#############################################################################
-## Estimation of psi_r (no binning, arbitrary d) for G = g^2 I
-##
-## Code by Jose E. Chacon. Received  04/09/2007
-## x - data matrix (or differences matrix)
-## r - derivative
-## g - scalar pilot bandwidth
-## diff - flag for x is data or differences matrix
-## upper - compute upper diagonal of differences matrix
-#############################################################################
-    
-##psir.hat  function(x, r, g, diff=FALSE, upper=diff)
-kfe.scalar <- function(x, g, r, diff=FALSE)
-{    
-  if(!diff)
-  {
-    n <- nrow(x)
-    d <- ncol(x)
-    if (d != length(r))
-      stop("The length of r must equal the number of columns of x")
-    
-    difs <- differences(x, upper=FALSE)}
-  else
-  {
-    n <- sqrt(nrow(x)) ##(-1 + sqrt(1+8*nrow(x)))/2
-    d <- ncol(x)
-    difs <- x
-  }
+  r <- deriv.order
+  d <- ncol(x)
+  if (missing(bin.par) & binned) bin.par <- binning(x=x, H=G)
   
-  sderiv <- sum(r)
-  arg <- difs/g
-  darg <- dmvnorm(arg)/(g^(sderiv+d))
-  for (j in 1:d)
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par, deriv.vec=deriv.vec)
+  
+  if (add.index)
   {
-    hmold0 <- 1
-    hmold1 <- arg[,j]
-    hmnew <- 1
-    if (r[j] ==1){hmnew<-hmold1}
-    if (r[j] >= 2) ## Multiply by the corresponding Hermite polynomial, coordinate-wise, using Fact C.1.4 in W&J (1995) and Willink (2005, p.273)
-      for (i in (2:r[j]))
-      {
-        hmnew <- arg[,j] * hmold1 - (i - 1) * hmold0
-        hmold0 <- hmold1
-        hmold1 <- hmnew
-      }
-    darg <- hmnew * darg
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
+  
+    if (deriv.vec) return(list(psir=psir, deriv.ind=ind.mat))
+    else return(list(psir=psir, deriv.ind=unique(ind.mat)))
   }
-
-  psir <- mean(darg)*(-1)^sderiv      
-  return(psir)
+  else return(psir=psir)
 }
 
 
 #############################################################################
 ## Estimation of vec Psi_r (no binning, arbitrary d) for unconstrained G
+## Code by Jose E. Chacon 04/09/2007
+## Has been absorbed into kfe 08/09/2010
 #############################################################################
 
 vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
@@ -558,102 +544,58 @@ vecPsir <- function(x, Gr, Sdr, r, upper, nlim=1e4)
   args <- t(Grinv12%*%t(difs))
 
   if (r==6)
-  {  
-    vecPsi6 <- rep(0,d^6)
-
-    K6 <- function(args)
+  {
+    Kr <- function(args)
     {
       return(mat.Kpow(args,6)-15*mat.Kprod(mat.Kpow(args,4),rep(1,nrow(args))%x%t(vId)) + 45*mat.Kprod(mat.Kpow(args,2),rep(1,nrow(args))%x%t(Kpow(vId,2)))-15*rep(1,nrow(args))%x%t(Kpow(vId,3)))
     }
-
-    ## split into blocks because of memory limitations
-    if (nrow(args) > nlim)
-    {
-      num.loops <- nrow(args) %/% nlim
-      for (j in 1:num.loops)
-      {
-        args.temp <- args[((j-1)* nlim+1):(j*nlim),]
-        hmnew.temp <- K6(args.temp)
-        vecPsi6  <- vecPsi6 + colSums(dmvnorm(args.temp)*hmnew.temp)
-        ##cat(j, " ")
-      }
-    
-      if (nrow(args) %% nlim >0)
-      {
-        args.temp <- args[(num.loops*nlim+1):nrow(args),]
-        hmnew.temp <- K6(args.temp)
-        vecPsi6  <- vecPsi6 + colSums(dmvnorm(args.temp)*hmnew.temp)
-      }
-    }
-    else
-    {
-      hmnew <- K6(args)
-      vecPsi6 <- colSums(dmvnorm(args)*hmnew)
-    }
-    ##cat("\n")
-
-    if (upper)
-    {
-      ## adjust for upper triangular form of differences matrix
-      args0 <- t(rep(0,d))
-      hmnew0 <- K6(args0)
-      vecPsi6 <- 2*vecPsi6 - as.vector(n*dmvnorm(args0)*hmnew0)
-      vecPsi6 <- Sdr%*%vecPsi6/n^2
-    }
-    else
-      vecPsi6 <- Sdr%*%vecPsi6/nrow(args)
-
-    vecPsi6 <- (-1)^6*det(Grinv12)*Kpow(Grinv12,6)%*%vecPsi6
-
-    return (vecPsi6)
   }
-
-  
-  if (r==4)
+  else if (r==4)
   {
-    vecPsi4 <- rep(0,d^4)
-    K4 <- function(args)
+    Kr <- function(args)
     {
       return(mat.Kpow(args,4)-6*mat.Kprod(mat.Kpow(args,2),rep(1,nrow(args))%x%t(vId))+3*rep(1,nrow(args))%x%t(Kpow(vId,2)))
     }
-    
-    if (nrow(args)>nlim)
-    {
-      num.loops <- nrow(args) %/% nlim
-      for (j in 1:num.loops)
-      {
-        args.temp <- args[((j-1)* nlim+1):(j*nlim),]
-        hmnew.temp <- K4(args.temp)
-        vecPsi4  <- vecPsi4 + colSums(dmvnorm(args.temp)*hmnew.temp)
-      }
-    
-      if (nrow(args) %% nlim >0)
-      {
-        args.temp <- args[(num.loops*nlim+1):nrow(args),]
-        hmnew.temp <- K4(args.temp)
-        vecPsi4  <- vecPsi4 + colSums(dmvnorm(args.temp)*hmnew.temp)
-      }   
-    }
-    else
-    {
-      hmnew <- K4(args)
-      vecPsi4 <- colSums(dmvnorm(args)*hmnew)
-    }
-    
-    if (upper)
-    {
-      args0 <- t(rep(0,d))
-      hmnew0 <- K4(args0)
-      vecPsi4 <- 2*vecPsi4 - as.vector(n*dmvnorm(args0)*hmnew0)
-      vecPsi4 <- Sdr%*%vecPsi4/n^2
-    }
-    else
-      vecPsi4 <- Sdr%*%vecPsi4/nrow(args)
-
-    vecPsi4<-(-1)^4*det(Grinv12)*Kpow(Grinv12,4)%*%vecPsi4
-
-    return(vecPsi4)
   }
+
+  if (nrow(args) > nlim)
+  {
+    vecPsir <- rep(0, d^r)
+    num.loops <- nrow(args) %/% nlim
+    for (j in 1:num.loops)
+    {
+      args.temp <- args[((j-1)* nlim+1):(j*nlim),]
+      hmnew.temp <- Kr(args.temp)
+      vecPsir  <- vecPsir + colSums(dmvnorm(args.temp)*hmnew.temp)
+    }
+    
+    if (nrow(args) %% nlim >0)
+    {
+      args.temp <- args[(num.loops*nlim+1):nrow(args),]
+      hmnew.temp <- Kr(args.temp)
+      vecPsir  <- vecPsir + colSums(dmvnorm(args.temp)*hmnew.temp)
+    }
+  }
+  else
+  {
+    hmnew <- Kr(args)
+    vecPsir <- colSums(dmvnorm(args)*hmnew)
+  }
+
+  if (upper)
+  {
+    ## adjust for upper triangular form of differences matrix
+    args0 <- t(rep(0,d))
+    hmnew0 <- Kr(args0)
+    vecPsir <- 2*vecPsir - as.vector(n*dmvnorm(args0)*hmnew0)
+    vecPsir <- Sdr%*%vecPsir/n^2
+    }
+  else
+    vecPsir <- Sdr%*%vecPsir/nrow(args)
+  
+  vecPsir <- (-1)^r*det(Grinv12)*Kpow(Grinv12,r)%*%vecPsir
+
+  return(vecPsir)
 }
 
 

@@ -636,33 +636,33 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 ## fhat - output from call to `kde'
 #######################################################################################
 
-plot.kde <- function(x, drawpoints=FALSE, ...)
+plot.kde <- function(x, ...)
 { 
   fhat <- x
 
   if (is.vector(fhat$x))
-    plotkde.1d.v2(fhat, drawpoints=drawpoints, ...)
+    plotkde.1d(fhat, ...)
   else
   {
     d <- ncol(fhat$x)
 
     if (d==2) 
     {
-      plotret <- plotkde.2d.v2(fhat, drawpoints=drawpoints, ...)
+      plotret <- plotkde.2d(fhat, ...)
       invisible(plotret)
     }
     else if (d==3)
     {
-      plotkde.3d(fhat, drawpoints=drawpoints, ...)
-       invisible()
+      plotkde.3d(fhat, ...)
+      invisible()
     }
     else 
       stop ("Plot function only available for 1, 2 or 3-dimensional data")
   }
 }
 
-plotkde.1d.v2 <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=TRUE, ptcol="blue", jitter=FALSE, ...) ##col="black", ...)
+plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
+  drawpoints=FALSE, ptcol="blue", jitter=FALSE, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
   
@@ -690,9 +690,9 @@ plotkde.1d.v2 <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 #########################################################################################
 
-plotkde.2d.v2 <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=FALSE,
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=FALSE,
     xlab, ylab, zlab="Density function", cex=1, pch=1, labcex,  
-    add=FALSE, drawpoints=TRUE, drawlabels=TRUE, theta=-30, phi=40, d=4,
+    add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
     ptcol="blue", col, lwd=1, ...) ##shade=0.75, border=NA, persp.col="grey", ...)
 {
   disp1 <- substr(display,1,1)
@@ -888,9 +888,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colo
 
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))
-      contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]],
-              y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE,
-                color=colors[i], alpha=alphavec[i], ...)
+      contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], ...)
     
 }
 

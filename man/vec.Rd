@@ -1,4 +1,4 @@
-\name{vec, vech, invvec, invvech}
+\name{vec}
 \alias{vec}
 \alias{vech}
 \alias{invvec}
@@ -12,45 +12,35 @@ columns into a single vector of length \eqn{d^2}{d^2}. The vech (vector
 half) operator
 takes a symmetric \eqn{d \times d}{d x d} matrix and stacks the lower
 triangular half into a single vector of length \eqn{d(d+1)/2}{d(d+1)/2}.
-
 The functions invvec and invvech are the inverses of vec and
 vech i.e. they form matrices from vectors. 
-
 }
 
 \usage{
-vec(x, byrow = FALSE)
+vec(x, byrow=FALSE)
 vech(x)
-invvec(x, ncol, nrow, byrow = FALSE)
+invvec(x, ncol, nrow, byrow=FALSE)
 invvech(x)
 }
 
 \arguments{
   \item{x}{vector or matrix}
   \item{ncol,nrow}{number of columns and rows for inverse of vech}
-  \item{byrow}{flag for stacking row-wise or column-wise (default)}  
+  \item{byrow}{flag for stacking row-wise or column-wise (default is FALSE)}  
   }
   
 
-%\value{}
-
-
-%\details{}
-
-\references{ Magnus, J.R. \& Neudecker H.M. (1999) \emph{Matrix
-  Differential Calculus with Applications in Statistiscs and
-  Econometrics (revised edition)}, Wiley \& Sons. Chichester.
+\references{ Magnus, J.R. & Neudecker H.M. (1999) \emph{Matrix
+  Differential Calculus with Applications in Statistics and
+  Econometrics (revised edition)}, Wiley & Sons. Chichester.
 }
 
 
 
 \examples{
 x <- matrix(1:9, nrow=3, ncol=3)
-y <- (x + t(x))/2
 vec(x)
-vech(y)
 invvec(vec(x))
-invvech(vech(y))
 }
 
 \keyword{algebra}

@@ -1,5 +1,12 @@
 README file for ks
 
+1.7.0 -Added KDE-based 2-sample test kde.test().
+      -Modified output of plotmixt().
+      -Added "double.loop" option to kfe() for large samples - increases running time, reduces memory. 
+      -Modified dmvnorm.deriv.sum() gto improve memory memory management for large samples.
+      -Cleaned up code for plug-in bandwidth selectors and kernel functional estimators.
+      -Cleaned up help files. 
+
 1.6.13 -Added flag to automatically compute probability contour levels in kde(). 
 
 1.6.11 -Added own version of filled contours as option disp="filled.contour2" and different 
