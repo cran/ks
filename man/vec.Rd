@@ -26,7 +26,7 @@ invvech(x)
 \arguments{
   \item{x}{vector or matrix}
   \item{ncol,nrow}{number of columns and rows for inverse of vech}
-  \item{byrow}{flag for stacking row-wise or column-wise (default is FALSE)}  
+  \item{byrow}{flag for stacking row-wise or column-wise. Default is FALSE.}  
   }
   
 

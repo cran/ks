@@ -829,7 +829,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 
 
 plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors, alphavec, size=3, ptcol="blue", add=FALSE, 
-  xlab, ylab, zlab, drawpoints=FALSE, alpha=1, ...)
+  xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
   require(rgl)
@@ -876,20 +876,18 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colo
   if (missing(alphavec))
     alphavec <- seq(0.1,0.5,length=nc)
 
-  
-  ##if (!add) clear3d()
-  
   bg3d(col="white")
-  
   if (drawpoints)
-    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
-    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, ...)
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
 
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))
-      contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], ...)
-    
+      contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+
+  if (box) box3d()
+  if (axes) axes3d()
 }
 
 

@@ -42,7 +42,7 @@ A list with fields
 
 
 \details{--The null hypothesis is \eqn{H_0: f_1 \equiv f_2}{f_1 = f_2} where \eqn{f_1, f_2}{f_1, f_2} 
-  are the respective density functions. The measure of discrepancy is the integrated L2 error (MISE)
+  are the respective density functions. The measure of discrepancy is the integrated L2 error (ISE)
   \eqn{T = \int [f_1(\bold{x}) - f_2(\bold{x})]^2 \, d \bold{x}}{int [ f_1(x) - f_2(x)]^2 dx}. If 
   we rewrite this as \eqn{T = \psi_1 - \psi_{12} - \psi_{21} + \psi_2}{T = psi_1 - psi_12 - psi_21 + psi_2} 
   where \eqn{\psi_{uv} = \int f_u (\bold{x}) f_v (\bold{x})  \, d \bold{x}}{psi_uv = int f_u(x) f_v(x) dx},

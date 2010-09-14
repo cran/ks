@@ -40,11 +40,7 @@
 
 \details{ 
   \code{pkde} uses the Simpson's rule is used for the numerical
-  integration.
-  %So shares the limitations of this numerical method. %\code{dkde} is a
-  %shortcut for \code{kde(x=fhat$x, h=fhat$h,
-  %eval.points=fhat$x)$estimate}.
-  \code{rkde} uses
+  integration. \code{rkde} uses
   Silverman (1986)'s method to generate a random sample from a KDE.
 }
 
@@ -56,13 +52,7 @@ x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
 qkde(fhat=fhat, p=p1)    
-
-x1 <- rkde(fhat, n=100)
-plot(fhat)
-fhat1 <- kde(x=x1, h=hpi(x1))
-plot(fhat1, add=TRUE, col=2)
-fhat2 <- dkde(x=x1, fhat=fhat1)
-points(x1, fhat2, col=3)
+y <- rkde(fhat=fhat, n=100)
 }
 
 \keyword{ smooth}

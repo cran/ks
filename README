@@ -1,11 +1,18 @@
 README file for ks
 
+1.7.1 -Reinstated single partial derivative of mv normal for scalar variance matrix dmvnorm.deriv.scalar.sum()
+       for use in AMSE pilot plug-in selectors. 
+      -More efficient form of kdde().
+  
 1.7.0 -Added KDE-based 2-sample test kde.test().
       -Modified output of plotmixt().
       -Added "double.loop" option to kfe() for large samples - increases running time, reduces memory. 
       -Modified dmvnorm.deriv.sum() gto improve memory memory management for large samples.
       -Cleaned up code for plug-in bandwidth selectors and kernel functional estimators.
       -Cleaned up help files. 
+      -Disabled kfold b/w selectors. 
+
+
 
 1.6.13 -Added flag to automatically compute probability contour levels in kde(). 
 
@@ -15,7 +22,6 @@ README file for ks
 1.6.10 -Added k-fold b/w selectors.
 
 1.6.9  -Added approximate option in contourLevels().
-
        -Added kdde() kernel density derivative estimators.
 
 1.6.8 Added 1-d LSCV selector hlscv().
@@ -26,10 +32,8 @@ README file for ks
       Changes to internal double sum calculations from J.E. Chacon.
 
 1.6.x -1-d binned KDE fix from M.P. Wand.
-
       -Streamlined code sharing with feature package (all binning code now
        contained only in ks).
-
       -Reorganised and renamed internal bandwidth selection functions (mostly
        double sums of normal densities). 
 
@@ -42,35 +46,25 @@ README file for ks
 
 1.5.x  -Added normal mixture (A)MISE-optimal selectors: hamise.mixt, 
         hmise.mixt, Hamise.mixt, Hmise.mxt.
-
-       -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde
-      
+       -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde   
        -Added plug-in selectors for 1-d data (exactly the code for dpik from 
-       KernSmooth). For KDE, this is hpi, for KDA, this is 
-       hkda(, bw="plugin").
- 
+        KernSmooth). For KDE, this is hpi, for KDA, this is 
+        hkda(, bw="plugin").
        -Made changes to specifying line colour (col rather than lcol) in 
-       plot.kde, plot.kda.kde and partition class colour (partcol) in 
-       plot.kda.kde. 
-
+        plot.kde, plot.kda.kde and partition class colour (partcol) in 
+        plot.kda.kde. 
        -Added plot3d() capabilities from rgl to 3-d plot - removing own axes
-       drawing functions.
-
+        drawing functions.
        -New functions to compute pilot functinal estimators hat{psi}_r(g).
-       These are exact, and are more efficient than binned estimators for small
-       samples (~100), and are available in d > 4.
+        These are exact, and are more efficient than binned estimators for small
+        samples (~100), and are available in d > 4.
 
 
-
-1.4.x -Vignette illustrating 2-d KDE added
-      
+1.4.x -Vignette illustrating 2-d KDE added      
       -Binned estimation implemented for KDE with diagonal selectors and 
-      pilot functional estimation with diagonal selectors.
-
+       pilot functional estimation with diagonal selectors.
       -Filled contour plots added as disp=filled option in plot.kde().
-
       -compare.kda.cv() and compare.cv() modified to improve speed.
-
       -Hscv.diag() and Hbcv.diag() added for completeness.
 
 
@@ -88,21 +82,18 @@ README file for ks
 
 
 1.2.x -Package checked by CRAN testers and accepted on the CRAN website. 
-      To pass all the necessary checks involved some internal programming
-      changes but has not affected the user interface.
-    
+       To pass all the necessary checks involved some internal programming
+       changes but has not affected the user interface.
       -The child mortality data set unicef is used in the examples.
 
 
 
 1.1.x -S3 type objects have been introduced.  The output from kde() are 
-      `kde' objects. The output from kda.kde() and pda.pde() are `dade' 
-      objects. Corresponding plot functions are called automatically by 
-      invoking `plot'.
-
+       `kde' objects. The output from kda.kde() and pda.pde() are `dade' 
+       objects. Corresponding plot functions are called automatically by 
+       invoking `plot'.
       -Kernel discriminant analysers are now available. Parametric (linear and 
-      quadratic) discriminant analysers are accessed using  `pda'.
-
+       quadratic) discriminant analysers are accessed using  `pda'.
       -adapt library is no longer required. This was formerly used on
-      the functions for integrated squared error computations ise.mixt()
-      and iset.mixt().
+       the functions for integrated squared error computations ise.mixt()
+       and iset.mixt().

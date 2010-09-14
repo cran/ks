@@ -145,7 +145,7 @@ psifun1 <- function(x.star, pilot="samse", binned, bin.par)
   if (pilot=="samse")
   {
     g.star <- gsamse.nd(S.star, n, 4)
-    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, add.index=TRUE)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, binned=binned, add.index=TRUE)
   }
   ## compute 5 different pilots for AMSE
   else if ((pilot=="amse") & (d==2))
@@ -161,16 +161,16 @@ psifun1 <- function(x.star, pilot="samse", binned, bin.par)
       r <- derivt4[k,]
       psi1 <- psins(r=r + 2*elem(1, 2), Sigma=S.star)
       psi2 <- psins(r=r + 2*elem(2, 2), Sigma=S.star)
- 
+
       ## odd order
       if (prod(r) == 3)
         g.star[k] <- gamse.odd.2d(r=4, n, psi1, psi2, psi00, RK31)
       ## even order
       else
         g.star[k] <- gamse.even.2d(r=4, n, psi1, psi2)[k]
+      ##G.star <- g.star[k]^2 * diag(2)
 
-      G.star <- g.star[k]^2 * diag(2)
-      psihat.star[k] <- kfe(x=x.star, bin.par=bin.par, G=G.star, deriv.order=4, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k]
+      psihat.star[k] <- kfe.scalar(x=x.star, deriv.order=r, g=g.star[k], binned=binned, bin.par=bin.par)
     }
     psihat.star <- list(psir=psihat.star, deriv.ind=derivt4)
   }
@@ -235,9 +235,8 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par)
         g6.star[k] <- gamse.odd.2d(r=6, n, psi1, psi2, psi00, RK33) 
       else  
         g6.star[k] <- gamse.even.2d(r=6, n, psi1, psi2)[k]
-
-      G6.star <- g6.star[k]^2 * diag(d)
-      psihat6.star[k] <- kfe(x=x.star, bin.par=bin.par, deriv.order=6, G=G6.star, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k] ##kfe(x=x.star, deriv.order=r, g=g6.star[k], diff=TRUE)
+      
+      psihat6.star[k] <- kfe.scalar(x=x.star, deriv.order=r, g=g6.star[k], binned=binned, bin.par=bin.par) 
     }
     
     ## pilots are based on 4th order derivatives using 6th order psi functionals
@@ -253,9 +252,8 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par)
         g.star[k] <- gamse.odd.2d(r=4, n, psi1, psi2, psi00, RK31)
       else
         g.star[k] <- gamse.even.2d(r=4, n, psi1, psi2)[k]
-      
-      G.star <- g.star[k]^2 * diag(2)
-      psihat.star[k] <- kfe(x=x.star, bin.par=bin.par, G=G.star, deriv.order=4, deriv.vec=FALSE, add.index=FALSE, binned=binned)[k]
+
+      psihat.star[k] <- kfe.scalar(x=x.star, deriv.order=r, g=g.star[k],  binned=binned, bin.par=bin.par) 
     }
     psihat.star <- list(psir=psihat.star, deriv.ind=derivt4)
    }

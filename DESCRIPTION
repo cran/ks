@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.7.0
-Date: 2010/09/10
+Version: 1.7.1
+Date: 2010/09/14
 Title: Kernel smoothing
 Author: Tarn Duong <tarn.duong@gmail.com>
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
@@ -9,6 +9,6 @@ Suggests: rgl (>= 0.66), misc3d (>= 0.4-0), kernlab
 Description: Kernel smoothers for univariate and multivariate data
 License: GPL (>= 2)
 URL: http://www.mvstat.net/tduong
-Packaged: 2010-09-10 15:57:05 UTC; tduong
+Packaged: 2010-09-14 10:20:15 UTC; tduong
 Repository: CRAN
-Date/Publication: 2010-09-11 09:11:48
+Date/Publication: 2010-09-14 11:51:02
