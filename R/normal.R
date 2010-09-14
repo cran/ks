@@ -345,56 +345,6 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ## r-th derivative at x
 ###############################################################################
 
-dmvnorm.deriv.JEC <- function (x, mu, Sigma, deriv.order=0, Sdr.mat) #### The fastest one
-{
-  if (is.vector(x)) {
-    x <- matrix(x, ncol = length(x))
-  }
-  n<-nrow(x)
-  d<-ncol(x)
-  if (missing(mu)) {
-    mu <- rep(0, length = d)
-  }
-  if (missing(Sigma)) {
-    Sigma <- diag(d)
-  }
-  r<-deriv.order
-  
-  ## Normal density at x
-  x.centred <- sweep(x, 2, mu)
-  Sigmainv<- chol2inv(chol(Sigma))
-  distval <- rowSums((x.centred %*% Sigmainv) * x.centred)  
-  
-  logdet <- sum(log(eigen(Sigma, symmetric = TRUE, only.values = TRUE)$values))
-  logretval <- -(d * log(2 * pi) + logdet + distval)/2
-  dens<-matrix(exp(logretval),nrow=n)
-  
-  ## Vector Hermite polynomial (Holmquist, 1996)
-    
-  if(r==0){ 
-    result<-dens
-  }
-  
-  if(r>0){
-    vSigma<-vec(Sigma)
-    Hr<-rep(0,d^r)
-    ones<-rep(1,d^r)
-    for(j in 0:floor(r/2)){
-      cj<-(-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
-      vSigmaj<-Kpow(vSigma,j)
-      xr2j<-mat.Kpow(A=x.centred,pow=r-2*j)
-      Hr<-Hr+cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
-    }
-    
-    Sigmainvr<-Kpow(Sigmainv,r)        
-    SirSdr<-Sigmainvr%*%Sdr.mat    
-    Hr<-Hr%*%SirSdr
-    result<-(-1)^r*(t(ones)%x%dens)*Hr
-  }
-  
-  return(result)
-}
-
 
 dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
 {
@@ -414,17 +364,17 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
   }
   
   ## matrix of derivative indices
+  ind.mat <- 0
+  sumr.counter <- sumr
+  if (sumr>=1) ind.mat <- diag(d)
+  {
+    while (sumr.counter >1)
+    {
+      ind.mat <- K.sum(diag(d), ind.mat)
+      sumr.counter <- sumr.counter - 1
+    }
+  }
 
-  if (sumr==0) ind.mat <- 0
-  else if (sumr==1) ind.mat <- diag(d)
-  else if (sumr==2) ind.mat <- K.sum(diag(d), diag(d))
-  else if (sumr==3) ind.mat <- K.sum(diag(d), K.sum(diag(d), diag(d)))
-  else if (sumr==4) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))
-  else if (sumr==5) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))
-  else if (sumr==6) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))
-  else if (sumr==7) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d)))))))
-  else if (sumr==8) ind.mat <- K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), K.sum(diag(d), diag(d))))))))
-  
   if (only.index)
     if (deriv.vec) return (ind.mat)
     else return(unique(ind.mat))
@@ -434,7 +384,40 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
   if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
-  mvh <- dmvnorm.deriv.JEC(x=x, mu=mu, Sigma=Sigma, deriv.order=sumr, Sdr.mat=Sdr.mat)
+
+  ## Code by Jose Chacon 
+  ## Normal density at x
+  x.centred <- sweep(x, 2, mu)
+  Sigmainv<- chol2inv(chol(Sigma))
+  distval <- rowSums((x.centred %*% Sigmainv) * x.centred)  
+  
+  logdet <- sum(log(eigen(Sigma, symmetric = TRUE, only.values = TRUE)$values))
+  logretval <- -(d * log(2 * pi) + logdet + distval)/2
+  dens<-matrix(exp(logretval),nrow=n)
+  
+  ## Vector Hermite polynomial (Holmquist, 1996)
+    
+  if(r==0){ 
+    mvh<-dens
+  }
+  
+  if(r>0){
+    vSigma<-vec(Sigma)
+    Hr<-rep(0,d^r)
+    ones<-rep(1,d^r)
+    for(j in 0:floor(r/2)){
+      cj<-(-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
+      vSigmaj<-Kpow(vSigma,j)
+      xr2j<-mat.Kpow(A=x.centred,pow=r-2*j)
+      Hr<-Hr+cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
+    }
+    
+    Sigmainvr<-Kpow(Sigmainv,r)        
+    SirSdr<-Sigmainvr%*%Sdr.mat    
+    Hr<-Hr%*%SirSdr
+    mvh<-(-1)^r*(t(ones)%x%dens)*Hr
+  }  
+  ##mvh <- dmvnorm.deriv.JEC(x=x, mu=mu, Sigma=Sigma, deriv.order=sumr, Sdr.mat=Sdr.mat)
   
   if (!deriv.vec)
   { 
@@ -473,7 +456,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
   if (identical(all.equal(props[1], 1), TRUE))
   {
     if (is.matrix(mus)) mus <- mus[1,]
-    dens <- dmvnorm.deriv.JEC(x=x, mu=mus, Sigma=Sigmas[1:d,], deriv.order=sumr, Sdr.mat=Sdr.mat)
+    dens <- dmvnorm.deriv(x=x, mu=mus, Sigma=Sigmas[1:d,], deriv.order=sumr, Sdr.mat=Sdr.mat)
   }
   ## multiple component mixture
   else   
@@ -482,7 +465,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
     dens <- 0
     ## sum of each normal density value from each component at x  
     for (i in 1:k)
-      dens <- dens + props[i]*dmvnorm.deriv.JEC(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr, Sdr.mat=Sdr.mat)  
+      dens <- dens + props[i]*dmvnorm.deriv(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr, Sdr.mat=Sdr.mat)  
   }
 
   if (!deriv.vec)
@@ -556,37 +539,8 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
 }
 
 
-## Multivariate Hermite polynomial from Holmquist, Lin Algebra & Appl 1996, Appendix
-## code by Jose E. Chacon 04/09/2007
-## Pre-multiplying symmetriser matrix not required since it precedes D^r phi(x) in
-## the full normal density derivative expression
 
-Hermite <- function(x, Sigma, r)
-{
-  ##d <- ncol(x)
-  ##Id1 <- diag(d)
-  vecSigma <- vec(Sigma)
- 
-  if (r==0)
-    Hermx <- rep(1, nrow(x))
-  else if (r==1)
-    Hermx <- x
-  else if (r==2)
-    Hermx <- mat.Kpow(x,2) - rep(1,nrow(x))%x%t(vecSigma)
-  else if (r==3)
-    Hermx <- mat.Kpow(x,3) - 3*x %x% t(vecSigma)
-  else if (r==4)
-    Hermx <- mat.Kpow(x,4) -  6*mat.Kprod(mat.Kpow(x,2),rep(1,nrow(x))%x%t(vecSigma)) + 3*rep(1,nrow(x))%x%t(Kpow(vecSigma,2))
-  else if (r==5)
-    Hermx <- mat.Kpow(x,5) - 10*mat.Kprod(mat.Kpow(x,3),rep(1,nrow(x))%x%t(vecSigma)) + 15*x%x%t(Kpow(vecSigma,2))
-  else if (r==6)
-    Hermx <- mat.Kpow(x,6) - 15*mat.Kprod(mat.Kpow(x,4),rep(1,nrow(x))%x%t(vecSigma)) + 45*mat.Kprod(mat.Kpow(x,2),rep(1,nrow(x))%x%t(Kpow(vecSigma,2)))-15*rep(1,nrow(x))%x%t(Kpow(vecSigma,3))
-
-  return(Hermx)
-}
-
-
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, diff=FALSE, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -648,6 +602,92 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   }
   else return(sum=sumval)
 }
+
+## Single partial derivative of the multivariate normal with scalar variance matrix sigma^2 I_d  
+## Code by Jose  Chacon 04/09/2007
+
+
+dmvnorm.deriv.scalar <- function(x, mu, sigma, deriv.order, binned=FALSE)
+{
+  r <- deriv.order
+  d <- ncol(x)
+
+  sderiv <- sum(r)
+  arg <- x/sigma
+  darg <- dmvnorm(arg, mean=mu)/(sigma^(sderiv+d))
+  for (j in 1:d)
+  {
+    hmold0 <- 1
+    hmold1 <- arg[,j]
+    hmnew <- 1
+    if (r[j] ==1){hmnew<-hmold1}
+    if (r[j] >= 2) ## Multiply by the corresponding Hermite polynomial, coordinate-wise, using Fact C.1.4 in W&J (1995) and Willink (2005, p.273)
+      for (i in (2:r[j]))
+      {
+        hmnew <- arg[,j] * hmold1 - (i - 1) * hmold0
+        hmold0 <- hmold1
+        hmold1 <- hmnew
+      }
+    darg <- hmnew * darg
+  }
+  
+  val <- darg*(-1)^sderiv
+  return(val)
+}
+
+
+dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, double.loop=FALSE, binned=FALSE, bin.par)
+{
+  r <- deriv.order
+  d <- ncol(x)
+  n <- nrow(x)
+
+  if (binned)
+  {
+    if (missing(bin.par)) bin.par <- binning(x, H=diag(d)*sigma^2)  
+    n <- sum(bin.par$counts)
+
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), Sigma=diag(d), deriv.order=sum(r), deriv.vec=TRUE, only.index=TRUE)
+    fhatr <- kdde.binned(bin.par=bin.par, H=sigma^2*diag(d), deriv.order=sum(r), deriv.vec=TRUE, w=rep(1,n), deriv.index=which.mat(r=r, ind.mat)[1])
+    ##fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sigma, binned=TRUE, se=FALSE)
+    sumval <- sum(bin.par$counts * n * fhatr$est[[1]])
+  }
+  else
+  {
+    if (double.loop)
+    {
+      sumval <- 0
+      for (i in 1:nrow(x))
+        sumval <- sumval + sum(dmvnorm.deriv.scalar(x, mu=x[i,], sigma=sigma, deriv.order=r))
+    }
+    else
+    {
+      ngroup <- round(n^2/1e6)+1
+      nn <- n %/% ngroup
+      sumval <- 0
+      for (i in 1:ngroup)
+      {
+        difs <- differences(x=x, y=x[((i-1)*nn+1):(i*nn),])
+        sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
+      }
+      if (n %% ngroup >0)
+      {
+        difs <- differences(x=x, y=x[(ngroup*nn+1):n,])
+      sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
+      }
+    }
+  }
+
+  if (inc==0)
+    sumval <- sumval - n*dmvnorm.deriv.scalar(x=t(as.matrix(rep(0,d))), mu=rep(0,d), sigma=sigma, deriv.order=r)
+  
+  if (kfe)
+    if (inc==1) sumval <- sumval/n^2
+      else sumval <- sumval/(n*(n-1))
+  
+  return(sumval)
+}
+
 
 
 ## Used in Hbcv

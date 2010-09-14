@@ -10,8 +10,7 @@
   (a) computing kernel estimators, (b) computing bandwidth selectors and (c) displaying kernel estimators.
 
   --For kernel density estimation, \code{\link{kde}} computes  
-  \deqn{\hat{f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x;H) = 
-  n^(-1) sum_i K_H (x - X_i).} There are several varieties of bandwidth matrix selectors 
+  \deqn{\hat{f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x;H) = n^(-1) sum_i K_H (x - X_i).} There are several varieties of bandwidth matrix selectors 
   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
   \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) \cr
@@ -32,12 +31,10 @@
   bandwidth matrices for each group in the training data, by calling the above selectors.
   
   --For kernel density derivative estimation, the main function is \code{\link{kdde}}
-  \deqn{\widehat{{\sf D}^{\otimes r}f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)^(r)(x;H) = 
-  n^(-1) sum_i D^r K_H (x - X_i).} Only normal scale selectors currently implemented.
+  \deqn{\widehat{{\sf D}^{\otimes r}f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)^(r)(x;H) = n^(-1) sum_i D^r K_H (x - X_i).} Only normal scale selectors currently implemented.
 
   --For kernel functional estimation, \code{kfe} computes the \eqn{r}{r}-th order integrated density functional  
-  \deqn{\hat{{\bold \psi}}_r (\bold{{\rm H}}) = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)_r = 
-  n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selector is \code{\link{Hpi.kfe}}.
+  \deqn{\hat{{\bold \psi}}_r (\bold{{\rm H}}) = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)_r = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selector is \code{\link{Hpi.kfe}}.
 
   --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators 
   feasible for large samples, though it is only implemented for diagonal bandwidth
@@ -66,7 +63,7 @@
     Practice, and Visualization}. John Wiley & Sons, New York.
 
   Silverman, B. (1986) \emph{Density Estimation for Statistics and
-  Data Analysis}. Chapman \& Hall/CRC, London.
+  Data Analysis}. Chapman & Hall/CRC, London.
 
   Simonoff, J. S. (1996) \emph{Smoothing Methods in Statistics}.
   Springer-Verlag. New York.

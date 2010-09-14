@@ -114,7 +114,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 ## Multivariate binned kernel density derivative estimate
 ###############################################################################
 
-kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE , deriv.index)
 {
   r <- deriv.order
   if(length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -148,8 +148,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
       else {h <- sqrt(H); H <- as.matrix(H)}
   }
 
-  ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE)
-  
+
   if (d==1)
     range.x <- list(range(bin.par$eval.points))
   else
@@ -162,46 +161,50 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
     fhat.grid <- fhat.grid$est
   }
   else
-  {  
-    fhat.grid <- list()
+  {
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=TRUE)
+    ind.mat.unique <- unique(ind.mat)
 
-    ## Needs to be optimised here to avoid duplicated computation of density derviatives??
+    fhat.grid <- list()
     if (r >0)
-      for (r2 in 1:nrow(ind.mat))
+    {
+      if (missing(deriv.index))
       {
-        fhat.gridr2 <- drvkde(x=bin.par$counts, drv=ind.mat[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-        fhat.grid[[r2]] <- fhat.gridr2$est
+        for (r2 in 1:nrow(ind.mat.unique))
+        {
+          fhat.temp <- drvkde(x=bin.par$counts, drv=ind.mat.unique[r2,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+          map.index <- which.mat(ind.mat.unique[r2,], ind.mat)
+          if (deriv.vec)
+            for (m in 1:length(map.index)) fhat.grid[[map.index[m]]] <- fhat.temp$est
+          else
+            fhat.grid[[r2]] <- fhat.temp$est
+        }
+        eval.points <- fhat.temp$x.grid
+        if (!deriv.vec) ind.mat <- ind.mat.unique
       }
+      else
+      {
+        fhat.grid[[1]] <- drvkde(x=bin.par$counts, drv=ind.mat[deriv.index,], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+        eval.points <- fhat.grid[[1]]$x.grid
+        fhat.grid[[1]] <- fhat.grid[[1]]$est
+        ind.mat <- ind.mat[deriv.index,]
+      }
+    }
     else
     {
-      fhat.gridr2 <- drvkde(x=bin.par$counts, drv=ind.mat[1], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-      fhat.grid[[1]] <- fhat.gridr2$est
-    }
-    eval.points <- fhat.gridr2$x.grid
-
-    if (!deriv.vec)
-    {
-      fhat.grid.vech <- list()
-      deriv.ind <- unique(ind.mat)
-
-      for (i in 1:nrow(deriv.ind))
-      {
-        which.deriv <- which.mat(deriv.ind[i,], ind.mat)[1]
-        fhat.grid.vech[[i]] <- fhat.grid[[which.deriv]]
-      }
-      ind.mat <- deriv.ind
-      fhat.grid <- fhat.grid.vech
+      fhat.grid[[1]] <- drvkde(x=bin.par$counts, drv=ind.mat[1], bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
+      eval.points <- fhat.grid[[1]]$x.grid
+      fhat.grid[[1]] <- fhat.grid[[1]]$est
     }
   }
 
-    
   if (missing(x)) x <- NULL
   
   if (d==1)
     fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=r)
   else
     fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat)
-
+    
   class(fhat) <- "kdde"
   
   return(fhat)
@@ -518,6 +521,17 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FAL
     else return(list(psir=psir, deriv.ind=unique(ind.mat)))
   }
   else return(psir=psir)
+}
+
+
+kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE)
+{
+  r <- deriv.order
+  d <- ncol(x)
+  if (missing(bin.par) & binned) bin.par <- binning(x=x, H=g^2*diag(d))
+  
+  psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par)
+  return(psir)
 }
 
 

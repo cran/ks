@@ -1,19 +1,23 @@
-\name{plot.kde}
+\name{plot}
 \alias{plot.kde}
+\alias{plot.kda.kde}
 
 \title{Kernel density estimate plot for 1- to 3-dimensional data}
 \description{
   Kernel density estimate plot for 1- to 3-dimensional data.
 }
 
-%%\synopsis{\method{plot}{kde}(x, drawpoints=FALSE, ...)}
-
 \usage{
 \method{plot}{kde}(x, ...)
+
+\method{plot}{kda.kde}(x, y, y.group, ...)
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde} (output from \code{\link{kde}} function)}
+  \item{x}{an object of class \code{kde} (output from \code{\link{kde}}) or 
+    an object of class \code{kda.kde} (output from \code{\link{kda.kde}})}
+  \item{y}{matrix of test data points}
+  \item{y.group}{vector of group labels for test data points}
   \item{...}{other graphics parameters}
 }
   
@@ -26,7 +30,7 @@
 
 
 \details{
-  The function headers for the different dimensional data are 
+  For \code{kde} objects, the function headers for the different dimensional data are 
   \preformatted{
   ## univariate
   plot(x, xlab, ylab="Density function", add=FALSE,
@@ -43,27 +47,49 @@
     add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
     size=3, ptcol="blue", ...)   
   }
-  The arguments are
-  \tabular{ll}{
-  \code{display} \tab type of display, "slice" for contour plot, "persp" for perspective plot, \cr 
-   \tab "image" for image plot, "filled.contour" for filled contour plot (1st form), \cr
-   \tab "filled.contour2" (2nd form) (2-d plot) \cr
-  \code{cont} \tab vector of percentages for contour level curves \cr
-  \code{abs.cont} \tab vector of absolute density estimate heights for contour level curves \cr
-  \code{approx.cont} \tab flag to compute approximate contour levels. Default is FALSE. \cr 
-  \code{ptcol} \tab plotting colour for data points \cr
-  \code{col} \tab plotting colour for density estimate (1-d, 2-d plot) \cr
-  \code{colors} \tab vector of colours for each contour (3-d plot) \cr
-  \code{jitter} \tab flag to jitter rug plot (1-d plot). Default is TRUE. \cr
-  \code{xlab,ylab,zlab} \tab axes labels \cr
-  \code{add} \tab flag to add to current plot. Default is FALSE.\cr
-  \code{theta,phi,d} \tab graphics parameters for perspective plots (2-d plot) \cr
-  \code{drawpoints} \tab flag to draw data points on density estimate. Default is FALSE. \cr
-  \code{drawlabels} \tab flag to draw contour labels (2-d plot). Default is TRUE.\cr
-  \code{alpha} \tab transparency value of plotting symbol (3-d plot) \cr
-  \code{alphavec} \tab vector of transparency values for contours (3-d plot) \cr
-  \code{size} \tab size of plotting symbol (3-d plot)
+  For \code{kda.kde} objects, the function headers for the different dimensional data are 
+  \preformatted{
+  ## univariate
+  plot(x, y, y.group, prior.prob=NULL, xlim, ylim,
+    xlab="x", ylab="Weighted density function", drawpoints=FALSE,
+    col, ptcol, jitter=TRUE, ...)
+
+  ## bivariate
+  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
+    abs.cont, approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE,
+    drawlabels=TRUE, col, partcol, ptcol, ...)
+
+  ## trivariate
+  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
+    abs.cont,  approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
+    drawpoints=FALSE, size=3, ptcol="blue", ...)
   }
+ 
+  The arguments are
+  \describe{
+  \item{\code{display}}{type of display, "slice" for contour plot, "persp" for perspective plot, 
+    "image" for image plot, "filled.contour" for filled contour plot (1st form),
+   "filled.contour2" (2nd form) (2-d plot)}
+  \item{\code{cont}}{vector of percentages for contour level curves}
+  \item{\code{abs.cont} }{ vector of absolute density estimate heights for contour level curves}
+  \item{\code{approx.cont} }{ flag to compute approximate contour levels. Default is FALSE.} 
+  \item{\code{ptcol} }{ plotting colour for data points}
+  \item{\code{col} }{ plotting colour for density estimate (1-d, 2-d plot)}
+  \item{\code{colors} }{ vector of colours for each contour (3-d plot)}
+  \item{\code{jitter} }{ flag to jitter rug plot (1-d plot). Default is TRUE.}
+  \item{\code{xlim, ylim} }{ axes limits}
+  \item{\code{xlab,ylab,zlab} }{ axes labels}
+  \item{\code{add} }{ flag to add to current plot. Default is FALSE.}
+  \item{\code{theta,phi,d} }{ graphics parameters for perspective plots (2-d plot)}
+  \item{\code{drawpoints} }{ flag to draw data points on density estimate. Default is FALSE.}
+  \item{\code{drawlabels} }{ flag to draw contour labels (2-d plot). Default is TRUE.}
+  \item{\code{alpha} }{ transparency value of plotting symbol (3-d plot)}
+  \item{\code{alphavec} }{ vector of transparency values for contours (3-d plot)}
+  \item{\code{size} }{ size of plotting symbol (3-d plot)}
+  \item{\code{prior.prob} }{ vector of prior probabilities}  
+  \item{\code{partcol} }{ vector of colours for partition classes (1-d, 2-d plot)} 
+  }
+
   The 1-d plot is a standard plot of a 1-d curve. If
   \code{drawpoints=TRUE} then a rug plot is added.
   
@@ -101,9 +127,11 @@
 }
  
 
-\seealso{\code{\link{kde}}}
+\seealso{\code{\link{kde}}, \code{\link{kda.kde}}}
 
 \examples{
+## kde examples
+
 ## univariate example
 x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))  
@@ -113,7 +141,6 @@ plot(fhat)
 data(unicef)
 H.scv <- Hscv(x=unicef)
 fhat <- kde(x=unicef, H=H.scv, compute.cont=TRUE)
-
 plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.1)
 plot(fhat, display="persp", border=NA, col="grey96", shade=0.75)
 plot(fhat, display="image", col=rev(heat.colors(100)))
@@ -142,7 +169,32 @@ library(MASS)
 x <- iris[,1:3]
 H.pi <- Hpi(x, pilot="samse")
 fhat <- kde(x, H=H.pi, compute.cont=TRUE)  
-plot(fhat, axes=FALSE, box=FALSE, drawpoints=TRUE); axes3d(c('x','y','z'))
+plot(fhat, drawpoints=TRUE)
+
+## kda.kde examples
+
+## univariate example
+ir <- iris[,1]
+ir.gr <- iris[,5]
+hs <- hkda(x=ir, x.gr=ir.gr)
+kda.fhat <- kda.kde(ir, ir.gr, hs=hs, xmin=3, xmax=9)
+plot(kda.fhat, xlab="Sepal length")
+
+## bivariate example
+ir <- iris[,1:2]
+ir.gr <- iris[,5]
+H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
+kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
+plot(kda.fhat, abs.cont=0)
+
+## trivariate example
+## colour indicates species, transparency indicates density heights
+ir <- iris[,1:3]
+ir.gr <- iris[,5] 
+H <- Hkda(ir, ir.gr, bw="plugin")
+kda.fhat <- kda.kde(ir, ir.gr, Hs=H, compute.cont=TRUE)
+plot(kda.fhat)   
 }
+
 
 \keyword{hplot}

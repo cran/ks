@@ -82,8 +82,6 @@ in the \proglang{R} packages \pkg{sm} \citep*{sm} and \pkg{KernSmooth}
 We introduce a new \proglang{R} package \pkg{ks} 
 which implements diagonal and unconstrained data-driven bandwidth matrices
 for kernel density estimation,
-%The main theoretical advances underlying this package 
-%are in the development of new methods for the latter for general dimensions.
 which can also be used for multivariate kernel
 discriminant analysis.  
 The \pkg{ks} package implements selectors for 1- to 6-dimensional
@@ -245,41 +243,9 @@ plot(fhat.cv2, main="SCV diagonal", cex.main=1.4)
 \label{fig:cv}
 \end{figure}
 
-
-%So far the calls to \code{kde} compute $\hat{f}$ exactly. This exact 
-%computation is $O(n^2)$ complexity which becomes infeasible for large
-%sample sizes, say $n=10\ 000$ on a current desktop PC. 
-% One common technique for increasing computational
-%speed for these large samples is binned kernel estimation, 
-%%see \citet*[Appendix~D]{wand1994} 
-%as implemented in
-%\pkg{KernSmooth} \citep*{KernSmooth}. 
-%Binning converts the data sample of size $n$ to a grid of size $m$,
-%so binned estimation remains $O(m)$ regardless of the sample size.
-%A suitable binning grid size for bivariate data is $m = 151^2$.
-
-
-%Binned estimation is only defined 
-%with diagonal bandwidth matrices. Applicable cases include 
-%kernel density estimators with diagonal bandwidth matrices and
-%the pilot estimators for the plug-in and SCV selectors. 
-%In the \code{Hpi}, \code{Hpi.diag}, \code{Hscv}, \code{Hscv.diag}
-%and \code{kde} commands, we set \code{binned=TRUE}, e.g. 
-
-
-
-
-
-%\section{General recommendations}
-%\label{sec:rec}
-%The different bandwidth selectors available in \pkg{ks} may
-%now pose a problem of too much choice.
 The unconstrained bandwidth selectors will be better than their diagonal counterparts
 when the data have large mass oriented obliquely to the co-ordinate axes,
 like for the dumbbell data. 
-%Amongst the unconstrained selectors, %we advise against using the BCV selector. 
-%The LSCV selector is useful in some cases though its performance is 
-%known to be highly variable. 
 The unconstrained plug-in and the SCV selectors
 can be viewed as generally recommended selectors.
 

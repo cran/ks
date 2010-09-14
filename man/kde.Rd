@@ -51,7 +51,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{cont}{probability contour levels}
 
   --The result from \code{kda.kde} is a density estimate
-  for discriminant analysis is an object of class \code{kda.kde}:
+  for discriminant analysis which is an object of class \code{kda.kde}:
   \item{x}{data points - same as input}
   \item{x.group}{group labels - same as input}
   \item{eval.points}{points that density estimate is evaluated at}
