@@ -233,12 +233,6 @@ plot(fhat.cv1, main="SCV", cex.main=1.4)
 <<fig=TRUE,echo=FALSE,print=FALSE>>=
 plot(fhat.cv2, main="SCV diagonal", cex.main=1.4)
 @ 
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv1}
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv2} \\
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv3}
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv4} \\
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv5}
-%\includegraphics[height=6.8cm,width=6.8cm]{figures/db-cv6}
 \caption{Kernel density estimates with cross validation selectors}
 \label{fig:cv}
 \end{figure}

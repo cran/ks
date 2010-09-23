@@ -1,5 +1,7 @@
 README file for ks
 
+1.7.2 -Changed p-value calculation for kde.test().
+
 1.7.1 -Reinstated single partial derivative of mv normal for scalar variance matrix dmvnorm.deriv.scalar.sum()
        for use in AMSE pilot plug-in selectors. 
       -More efficient form of kdde().

@@ -159,7 +159,7 @@ kde.points.iter <- function(x, H, eval.points)
   if (ne %% ngroup >0)
   {
     difs <- differences(x=x, y=eval.points[(ngroup*nn+1):ne,])
-    fhat <- dmvnorm(x=difs, mean=c(0,0), sigma=H)
+    fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
     fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
     fhat.sum <- fhat.sum + sum(fhat)
     fhat.sumsq <- fhat.sumsq + sum(fhat^2)
@@ -172,19 +172,10 @@ kde.points.iter <- function(x, H, eval.points)
 ## Test statistic for 2-sample test
 #######################################################################################################
 
-kde.test <- function(x1, x2, H1, H2, fhat1, fhat2, double.loop=FALSE, binned=FALSE)
+kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE)
 {
   n1 <- nrow(x1)
   n2 <- nrow(x2)
-
-  ##pre1 <- substr(pre, 1, 2)
-  ##if (pre1=="sc")
-  ##{  
-  ##  x.pre <- pre.scale(rbind(x1, x2))
-  ##  S <- diag(diag(var(rbind(x1, x2))))
-  ##  x1 <- x.pre[1:n1,]
-  ##  x2 <- x.pre[(n1+1):(n1+n2),]
-  ##}
 
   d <- ncol(x1)
   n <- nrow(x1)
@@ -198,10 +189,46 @@ kde.test <- function(x1, x2, H1, H2, fhat1, fhat2, double.loop=FALSE, binned=FAL
     if (binned) H2 <- Hpi.diag.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=TRUE)
     else H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0)
 
-  psi1 <- kfe(x=x1, G=H1, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
-  psi2 <- kfe(x=x2, G=H2, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
-  psi.hat <- (n1*psi1 + n2*psi2)/(n1+n2)
+  if (missing(psi1)) psi1 <- kfe(x=x1, G=H1, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
+  if (missing(psi2)) psi2 <- kfe(x=x2, G=H2, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
+  
+  if (!missing(fhat1))
+  {
+    fhat1 <- find.nearest.gridpts(x=rbind(x1,x2), gridx=fhat1$eval.points, f=fhat1$estimate)$fx
+    psi12 <- sum(tail(fhat1, n=n2))/n2
+    var.fhat1 <- var(head(fhat1, n=n1))
+  }
+  else
+  {  
+    if (missing(var.fhat1))
+    {
+      fhat1.x1.params <- kde.points.iter(x=x1, H=H1, eval.points=x1)
+      var.fhat1 <- (fhat1.x1.params$sumsq - fhat1.x1.params$sum^2/n1)/(n1-1)
+    }
+    
+    fhat1.x2.params <- kde.points.iter(x=x1, H=H1, eval.points=x2)
+    psi12 <- fhat1.x2.params$sum/n2
+  }
 
+  if (!missing(fhat2))
+  {
+    fhat2 <- find.nearest.gridpts(x=rbind(x1,x2), gridx=fhat2$eval.points, f=fhat2$estimate)$fx
+    psi21 <- sum(head(fhat2, n=n1))/n1
+    var.fhat2 <- var(tail(fhat2, n=n2))
+  }
+  else
+  {
+    if (missing(var.fhat2))
+    {
+      fhat2.x2.params <- kde.points.iter(x=x2, H=H2, eval.points=x2)
+      var.fhat2 <- (fhat2.x2.params$sumsq - fhat2.x2.params$sum^2/n2)/(n2-1)
+    }
+    fhat2.x1.params <- kde.points.iter(x=x2, H=H2, eval.points=x1)
+    psi21 <- fhat2.x1.params$sum/n1
+  }
+
+  if(0)
+  {  
   if (missing(fhat1))
   {
     fhat1.x1.params <- kde.points.iter(x=x1, H=H1, eval.points=x1)
@@ -231,23 +258,17 @@ kde.test <- function(x1, x2, H1, H2, fhat1, fhat2, double.loop=FALSE, binned=FAL
     psi21 <- sum(head(fhat2, n=n1))/n1
     var.fhat2 <- var(tail(fhat2, n=n2))
   }
+  }
   
   ## test statistic + its parameters  
   T.hat <- drop(psi1 + psi2 - (psi12 + psi21))
   muT.hat <- (n1^(-1)*det(H1)^(-1/2) + n2^(-1)*det(H2)^(-1/2))*K0
   varT.hat <- (n1*var.fhat1 + n2*var.fhat2)/(n1+n2) *(1/n1+1/n2) 
 
-  ##if (pre1=="sc")
-  ##{
-  ##  T.hat <- det(S)^(1/2)*T.hat
-  ##  muT.hat <- det(S)^(1/2)*muT.hat
-  ## varT.hat <- det(S)*varT.hat
-  ##}
-  
   ## p-value
   zstat <- (T.hat-muT.hat)/sqrt(varT.hat)
-  ##pval <- (1-pnorm(q=T.hat, mean=muT.hat, sd=sqrt(varT.hat)))
-  pval <- 2*(1-pnorm(q=abs(zstat)))
+  pval <- 1-pnorm(zstat)
+  ##pval <- 2*(1-pnorm(q=abs(zstat)))
 
   val <- list(Tstat=T.hat, zstat=zstat, pvalue=pval, mean=muT.hat, var=varT.hat, var.fhat1=var.fhat1, var.fhat2=var.fhat2, n1=n1, n2=n2, H1=H1, H2=H2, psi1=psi1, psi12=psi12, psi21=psi21, psi2=psi2)
   return(val)
