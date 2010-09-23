@@ -8,7 +8,8 @@
   Kernel density based two-sample comparison test for 2- to 6-dimensional data.}
 
 \usage{
-kde.test(x1, x2, H1, H2, fhat1, fhat2, double.loop=FALSE, binned=FALSE)
+kde.test(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1,
+    var.fhat2, double.loop=FALSE, binned=FALSE)
 Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, 
     amise=FALSE)
 }
@@ -17,6 +18,8 @@ Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE,
   \item{x,x1,x2}{matrices of data values}
   \item{H1,H2}{bandwidth matrices. If these are missing, then 2-stage plug-in selectors are computed. See \code{\link{Hpi}}.}
   \item{fhat1,fhat2}{gridded \code{kde} objects - output from \code{\link{kde}} (for 2- or 3-d data)}
+  \item{psi1,psi2}{0-th order kernel functional estimates}
+  \item{var.fhat1,var.fhat2}{sample variance of KDE estimates evaluated at x1, x2}
   \item{double.loop}{flag to iterate through double loop for unbinned estimation. Default is FALSE.}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
