@@ -505,13 +505,13 @@ kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
   return(psir) 
 }
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
   if (missing(bin.par) & binned) bin.par <- binning(x=x, H=G)
   
-  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par, deriv.vec=deriv.vec)
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par, deriv.vec=deriv.vec, verbose=verbose)
   
   if (add.index)
   {

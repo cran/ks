@@ -202,9 +202,9 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par)
   if (pilot=="samse")
   {
     g6.star <- gsamse.nd(S.star, n, 6)
-    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, bin.par=bin.par, add.index=FALSE)
+    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=FALSE, binned=binned, bin.par=bin.par, add.index=FALSE)
     g.star <- gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star)
-    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, double.loop=(n>5000), binned=binned, bin.par=bin.par, add.index=TRUE)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=FALSE, binned=binned, bin.par=bin.par, add.index=TRUE)
   }
   ## compute different pilots for AMSE
   else if ((pilot=="amse") & (d==2))
@@ -285,8 +285,7 @@ psifun1.unconstr <- function(x, Sd4, Sd6)
 
   ## stage 1 of plug-in
   G4 <-(2^(d/2+3)/((d+4)*n))^(2/(d+8))*S
-  ##vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper)
-  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
+  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
    
   return (vecPsi4)
 }
@@ -326,7 +325,7 @@ psifun2.unconstr <- function(x, Sd4, Sd6, rel.tol=10^-10)
   G612 <- matrix.sqrt(G6)
 
   ##vecPsi6 <- vecPsir(x=x, Sdr=Sd6, Gr=G6, r=6, upper=upper)
-  vecPsi6 <- kfe(x=x, G=G6, deriv.order=6, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd6)
+  vecPsi6 <- kfe(x=x, G=G6, deriv.order=6, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd6)
   
   Id4 <- diag(d^4)
   Id2 <- diag(d^2)
@@ -351,7 +350,7 @@ psifun2.unconstr <- function(x, Sd4, Sd6, rel.tol=10^-10)
 
   ## stage 2 of plug-in
   ##vecPsi4 <- vecPsir(x=x, Sdr=Sd4, Gr=G4, r=4, upper=upper)
-  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, double.loop=FALSE, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
+  vecPsi4 <- kfe(x=x, G=G4, deriv.order=4, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd4)
   
   return (vecPsi4)
 }

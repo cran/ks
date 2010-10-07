@@ -627,6 +627,39 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
   return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, gridded=FALSE))
 }
 
+#### sum of KDE evaluated at eval.points
+
+kde.points.sum <- function(x, H, eval.points, verbose=FALSE)
+{
+  nx <- nrow(x)
+  ne <- nrow(eval.points)
+  d <- ncol(x)
+  n.per.group <- max(c(round(1e6/(nx*ne)),1))
+  ngroup <- max(ne%/%n.per.group+1,1)
+  n.seq <- seq(1, ne, by=n.per.group)
+  if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
+
+  fhat.sum <- 0
+  fhat.sumsq <- 0
+
+  if (verbose) { cat("\nProgress for KDE evaluation at points\n"); pb <- txtProgressBar()}
+
+  if (length(n.seq)> 1)
+  {
+    for (i in 1:(length(n.seq)-1))
+    {  
+      if (verbose) setTxtProgressBar(pb, i/ngroup) ##cat(i, "\b/", ngroup, " ") 
+      difs <- differences(x=x, y=eval.points[n.seq[i]:(n.seq[i+1]-1),])
+      fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
+      fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
+      fhat.sum <- fhat.sum + sum(fhat)
+      fhat.sumsq <- fhat.sumsq + sum(fhat^2)
+    }
+  }
+  if (verbose) close(pb)
+ 
+  return(list(sum=fhat.sum, sumsq=fhat.sumsq))
+}
 
 
 #######################################################################################
