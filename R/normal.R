@@ -540,7 +540,7 @@ dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
 
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -564,29 +564,40 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   }
   else
   {
+    if (verbose) { cat("\nProgress for normal density derivative double sums\n") ; pb <- txtProgressBar()}
     if (double.loop)
     {
+      ngroup <- n
       sumval <- 0
       for (i in 1:nrow(x))
+      {
+        if (verbose) setTxtProgressBar(pb, i/ngroup) ##cat(i, "\b/", ngroup, " ") 
         sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
+      }
     }
     else
     {
-      ngroup <- round(n^2/1e6)+1
-      nn <- n %/% ngroup
+      n.per.group <- max(c(round(1e6/(n*d^r)),1))
+      ngroup <- max(n%/%n.per.group+1,1)
       sumval <- 0
-      for (i in 1:ngroup)
+      n.seq <- seq(1, n, by=n.per.group)
+      if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
+
+      if (length(n.seq)> 1)
       {
-        difs <- differences(x=x, y=x[((i-1)*nn+1):(i*nn),])
-        sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
-        ##cat(i, " ")
+        for (i in 1:(length(n.seq)-1))
+        {  
+          difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+          sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
+          if (verbose) setTxtProgressBar(pb, i/ngroup)##cat(i, "\b/", ngroup, " ") 
+        }
       }
-      if (n %% ngroup >0)
-      {
-        difs <- differences(x=x, y=x[(ngroup*nn+1):n,])
-        sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
-      }
+     else
+     {
+       sumval <- apply(dmvnorm.deriv(x=x, mu=x, Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
+     }
     }
+    if (verbose) close(pb)
   }
   if (inc==0)
     sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat)

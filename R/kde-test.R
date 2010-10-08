@@ -5,7 +5,7 @@
 ## Plug-in bandwidth
 ###############################################################################
 
-Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, amise=FALSE)
+Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, amise=FALSE, verbose=FALSE)
 {
   if (deriv.order!=0) stop("Currently only deriv.order=0 is implemented")
   
@@ -35,11 +35,11 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, amise
     result <- optim(vech(Hstart), amse2.temp, method="BFGS")
     H2 <- invvech(result$par) %*% invvech(result$par)
     
-    psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE)
+    psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE, verbose=verbose)
   }
   else
     psi2.hat <- psins(r=2, Sigma=var(x), deriv.vec=TRUE)
- 
+
   ## stage 2
   amse.temp <- function(vechH)
   { 
@@ -59,7 +59,7 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, amise
 }
 
 
-Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, double.loop=FALSE, amise=FALSE)
+Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, double.loop=FALSE, amise=FALSE, verbose=FALSE)
 {
   if (deriv.order!=0) stop("Currently only deriv.order=0 is implemented")
 
@@ -91,7 +91,7 @@ Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, doubl
 
     
     if (binned) bin.par <- binning(x, H=H2)
-    psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE, binned=binned, bin.par=bin.par) 
+    psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE, binned=binned, bin.par=bin.par, verbose=verbose) 
   }
   else
     psi2.hat <- psins(r=2, Sigma=var(x), deriv.vec=TRUE)
@@ -137,42 +137,13 @@ xi <- function(x, G)
 }
 
 
-kde.points.iter <- function(x, H, eval.points)
-{
-  nx <- nrow(x)
-  ne <- nrow(eval.points)
-  d <- ncol(x)
-  ngroup <- round(nx*ne/1e6)+1
-  nn <- ne %/% ngroup
-  fhat.sum <- 0
-  fhat.sumsq <- 0
-  
-  for (i in 1:ngroup)
-  {
-    difs <- differences(x=x, y=eval.points[((i-1)*nn+1):(i*nn),])
-    fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
-    fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
-    fhat.sum <- fhat.sum + sum(fhat)
-    fhat.sumsq <- fhat.sumsq + sum(fhat^2)
-  }
 
-  if (ne %% ngroup >0)
-  {
-    difs <- differences(x=x, y=eval.points[(ngroup*nn+1):ne,])
-    fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
-    fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
-    fhat.sum <- fhat.sum + sum(fhat)
-    fhat.sumsq <- fhat.sumsq + sum(fhat^2)
-  }
-
-  return(list(sum=fhat.sum, sumsq=fhat.sumsq))
-}
 
 #######################################################################################################
 ## Test statistic for 2-sample test
 #######################################################################################################
 
-kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE)
+kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE, verbose=FALSE)
 {
   n1 <- nrow(x1)
   n2 <- nrow(x2)
@@ -180,17 +151,17 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
   d <- ncol(x1)
   n <- nrow(x1)
   K0 <- drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0))
-
+ 
   ## kernel estimation for components of test statistic
   if (missing(H1))
-    if (binned) H1 <- Hpi.diag.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=TRUE)
-    else H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0)
+    if (binned) H1 <- Hpi.diag.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=TRUE, verbose=verbose)
+    else H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, verbose=verbose)
   if (missing(H2))
-    if (binned) H2 <- Hpi.diag.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=TRUE)
-    else H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0)
+    if (binned) H2 <- Hpi.diag.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=TRUE, verbose=verbose)
+    else H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, verbose=verbose)
 
-  if (missing(psi1)) psi1 <- kfe(x=x1, G=H1, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
-  if (missing(psi2)) psi2 <- kfe(x=x2, G=H2, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned)
+  if (missing(psi1)) psi1 <- kfe(x=x1, G=H1, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned, verbose=verbose)
+  if (missing(psi2)) psi2 <- kfe(x=x2, G=H2, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned, verbose=verbose)
   
   if (!missing(fhat1))
   {
@@ -202,12 +173,14 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
   {  
     if (missing(var.fhat1))
     {
-      fhat1.x1.params <- kde.points.iter(x=x1, H=H1, eval.points=x1)
-      var.fhat1 <- (fhat1.x1.params$sumsq - fhat1.x1.params$sum^2/n1)/(n1-1)
+      #fhat1.x1.params <- kde.points.sum(x=x1, H=H1, eval.points=x1)
+      #var.fhat1 <- (fhat1.x1.params$sumsq - fhat1.x1.params$sum^2/n1)/(n1-1)
+      S1 <- var(x1)
+      H1.r1 <- Hamise.mixt(mus=rep(0,d), Sigmas=S1, samp=n1, props=1, deriv.order=1)
+      fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
+      var.fhat1 <- drop(fhat1.r1 %*% S1 %*% t(fhat1.r1))
     }
-    
-    fhat1.x2.params <- kde.points.iter(x=x1, H=H1, eval.points=x2)
-    psi12 <- fhat1.x2.params$sum/n2
+    psi12 <- kde.points.sum(x=x1, H=H1, eval.points=x2, verbose=verbose)$sum/n2
   }
 
   if (!missing(fhat2))
@@ -220,55 +193,22 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
   {
     if (missing(var.fhat2))
     {
-      fhat2.x2.params <- kde.points.iter(x=x2, H=H2, eval.points=x2)
-      var.fhat2 <- (fhat2.x2.params$sumsq - fhat2.x2.params$sum^2/n2)/(n2-1)
+      #fhat2.x2.params <- kde.points.sum(x=x2, H=H2, eval.points=x2)
+      #var.fhat2 <- (fhat2.x2.params$sumsq - fhat2.x2.params$sum^2/n2)/(n2-1)
+      S2 <- var(x2)
+      H2.r1 <- Hamise.mixt(mus=rep(0,d), Sigmas=S2, samp=n2, props=1, deriv.order=1)
+      fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
+      var.fhat2 <- drop(fhat2.r1 %*% S2 %*% t(fhat2.r1))
     }
-    fhat2.x1.params <- kde.points.iter(x=x2, H=H2, eval.points=x1)
-    psi21 <- fhat2.x1.params$sum/n1
+    psi21 <- kde.points.sum(x=x2, H=H2, eval.points=x1, verbose=verbose)$sum/n1
   }
 
-  if(0)
-  {  
-  if (missing(fhat1))
-  {
-    fhat1.x1.params <- kde.points.iter(x=x1, H=H1, eval.points=x1)
-    fhat1.x2.params <- kde.points.iter(x=x1, H=H1, eval.points=x2)
-    ##fhat1 <- kde(x=x1, H=H1, eval.points=rbind(x1,x2))$estimate
-    var.fhat1 <- (fhat1.x1.params$sumsq - fhat1.x1.params$sum^2/n1)/(n1-1)
-    psi12 <- fhat1.x2.params$sum/n2
-  }
-  else
-  {
-    fhat1 <- find.nearest.gridpts(x=rbind(x1,x2), gridx=fhat1$eval.points, f=fhat1$estimate)$fx
-    psi12 <- sum(tail(fhat1, n=n2))/n2
-    var.fhat1 <- var(head(fhat1, n=n1))
-  }
-  
-  if (missing(fhat2))
-  {
-    fhat2.x1.params <- kde.points.iter(x=x2, H=H2, eval.points=x1)
-    fhat2.x2.params <- kde.points.iter(x=x2, H=H2, eval.points=x2)
-    #fhat2 <- kde(x=x2, H=H2, eval.points=rbind(x1,x2))$estimate
-    var.fhat2 <- (fhat2.x2.params$sumsq - fhat2.x2.params$sum^2/n2)/(n2-1)
-    psi21 <- fhat2.x1.params$sum/n1
-  }
-  else
-  {
-    fhat2 <- find.nearest.gridpts(x=rbind(x1,x2), gridx=fhat2$eval.points, f=fhat2$estimate)$fx
-    psi21 <- sum(head(fhat2, n=n1))/n1
-    var.fhat2 <- var(tail(fhat2, n=n2))
-  }
-  }
-  
   ## test statistic + its parameters  
   T.hat <- drop(psi1 + psi2 - (psi12 + psi21))
   muT.hat <- (n1^(-1)*det(H1)^(-1/2) + n2^(-1)*det(H2)^(-1/2))*K0
-  varT.hat <- (n1*var.fhat1 + n2*var.fhat2)/(n1+n2) *(1/n1+1/n2) 
-
-  ## p-value
+  varT.hat <- 3*(n1*var.fhat1 + n2*var.fhat2)/(n1+n2) *(1/n1+1/n2) 
   zstat <- (T.hat-muT.hat)/sqrt(varT.hat)
   pval <- 1-pnorm(zstat)
-  ##pval <- 2*(1-pnorm(q=abs(zstat)))
 
   val <- list(Tstat=T.hat, zstat=zstat, pvalue=pval, mean=muT.hat, var=varT.hat, var.fhat1=var.fhat1, var.fhat2=var.fhat2, n1=n1, n2=n2, H1=H1, H2=H2, psi1=psi1, psi12=psi12, psi21=psi21, psi2=psi2)
   return(val)
