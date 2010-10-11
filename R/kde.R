@@ -634,7 +634,7 @@ kde.points.sum <- function(x, H, eval.points, verbose=FALSE)
   nx <- nrow(x)
   ne <- nrow(eval.points)
   d <- ncol(x)
-  n.per.group <- max(c(round(1e6/(nx*ne)),1))
+  n.per.group <- max(c(round(1e6/ne),1))
   ngroup <- max(ne%/%n.per.group+1,1)
   n.seq <- seq(1, ne, by=n.per.group)
   if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
@@ -642,7 +642,7 @@ kde.points.sum <- function(x, H, eval.points, verbose=FALSE)
   fhat.sum <- 0
   fhat.sumsq <- 0
 
-  if (verbose) { cat("\nProgress for KDE evaluation at points\n"); pb <- txtProgressBar()}
+  if (verbose) pb <- txtProgressBar() ##{ cat("\nProgress for KDE evaluation at points\n"); pb <- txtProgressBar()}
 
   if (length(n.seq)> 1)
   {

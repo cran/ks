@@ -564,14 +564,14 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   }
   else
   {
-    if (verbose) { cat("\nProgress for normal density derivative double sums\n") ; pb <- txtProgressBar()}
+    if (verbose) pb <- txtProgressBar() #{ cat("\nProgress for normal density derivative double sums\n") ; pb <- txtProgressBar()}
     if (double.loop)
     {
       ngroup <- n
       sumval <- 0
       for (i in 1:nrow(x))
       {
-        if (verbose) setTxtProgressBar(pb, i/ngroup) ##cat(i, "\b/", ngroup, " ") 
+        if (verbose) setTxtProgressBar(pb, i/ngroup) 
         sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
       }
     }
