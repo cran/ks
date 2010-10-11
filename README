@@ -1,5 +1,9 @@
 README file for ks
 
+1.7.4 -Fixed small bug in partitioning method for kde.points.sum().
+
+1.7.3 -Changed partitioning method for dmvnorm.deriv.sum() and kde.points.sum().
+
 1.7.2 -Changed p-value calculation for kde.test().
 
 1.7.1 -Reinstated single partial derivative of mv normal for scalar variance matrix dmvnorm.deriv.scalar.sum()
