@@ -26,7 +26,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{gridtype}{not yet implemented}
   \item{xmin}{vector of minimum values for grid}
   \item{xmax}{vector of maximum values for grid}
-  \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
+  \item{supp}{effective support for standard normal.}
   \item{eval.points}{points at which density estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
@@ -34,7 +34,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{adj.positive}{adjustment added to data i.e. when
 	\code{positive=TRUE} KDE is carried out on \code{log(x +
 	  adj.positive)}. Default is the minimum of \code{x}.}
-  \item{w}{vector of weights (non-negative and sum is equal to sample size)}
+  \item{w}{vector of weights (non-negative and sum is equal to sample size). Default is a vector of all ones.}
   \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%. Default is FALSE.}
   \item{approx.cont}{flag for computing approximate probability contour levels. Default is TRUE.}
 }
@@ -77,6 +77,9 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   For d > 4, the kernel density estimate is computed exactly
   and \code{eval.points} must be specified.
 
+  \code{supp} is the effective support for a normal kernel, i.e.  
+  all values outside \code{[-supp, supp] x ... x [-supp, supp]} is set to zero.  
+  
   The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
   is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.

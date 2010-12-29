@@ -1,4 +1,14 @@
-README file for ks
+Change log file for ks
+
+1.8.0 -Added density derivative selectors Hpi(,deriv.order=r), Hlscv(,deriv.order=r) for r>0 from J. Chacon.
+      -Changed vech(H) terms to vec(H) in AMISE estimators.
+      -Changed default binning gridsize for 3-d data from rep(51,3) to rep(31,3).
+      -Added verbose option to b/w selectors (in double sum) for tracking progress
+      -Changed LSCV, SCV selectors optimisation from Nelder-Mead to BFGS.
+      -Changed Fortran linear bining code to C (and fixed bugs in Fortran code). 
+      -Added modification to linear binning for boundary points.
+      -Removed explicit derivatives in BCV selector optimisation.
+ 
 
 1.7.4 -Fixed small bug in partitioning method for kde.points.sum().
 

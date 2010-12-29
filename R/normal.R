@@ -136,53 +136,21 @@ dnorm.deriv <- function(x, mu=0, sigma=1, deriv.order=0)
 ## Double sum at x
 ###############################################################################
 
-dnorm.sum <- function(x, sigma=1, inc=1, binned=FALSE, bin.par)
-{
-  d <- 1
-  if (binned)
-  {
-    if (missing(bin.par)) bin.par <- binning(x, h=sigma)  
-    n <- sum(bin.par$counts)
-    fhatr <- kde.binned(bin.par=bin.par, h=sigma)
-    sumval <- sum(bin.par$counts * n * fhatr$estimate)
-    if (inc == 0) 
-      sumval <- sumval - n*dnorm(x=0, mean=0, sd=sigma)
-  }
-  else
-  {
-    n <- length(x)
-    if (n==1) sumval <- dnorm(x, mean=0, sd=sigma)
-    else
-    {  
-      sumval <- 0
-      for (i in 2:n)
-      {sumval <- sumval + sum(dnorm(x=x[1:(i-1)]-x[i], mean=0, sd=sigma))}
-      sumval<-2*sumval
-      if (inc == 1) 
-      sumval <- sumval + n*dnorm(x=0, mean=0, sd=sigma) 
-    }
-    
-  }
- 
-  return(sumval)
-}
 
 dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par, kfe=FALSE)
 {
   r <- deriv.order
+  n <- length(x)
   if (binned)
   {
-    if (missing(bin.par)) bin.par <- binning(x, h=sigma, supp=4+r)  
-
-    fhatr <- kdde.binned(bin.par=bin.par, h=sigma, deriv.order=r)
-    n <- sum(bin.par$counts)
-    sumval <- sum(bin.par$counts * n * fhatr$estimate)
+    if (missing(bin.par)) bin.par <- binning(x, h=sigma, supp=4+r) 
+    est <- kdde.binned(x=x, H=sigma^2, h=sigma, deriv.order=r, bin.par=bin.par)$estimate
+    sumval <- sum(bin.par$counts*est*n)
     if (inc == 0) 
       sumval <- sumval - n*dnorm.deriv(x=0, mu=0, sigma=sigma, deriv.order=r)
   }
   else
   {
-    n <- length(x)
     sumval <- 0
     for (i in 1:n)
       sumval <- sumval + sum(dnorm.deriv(x=x[i] - x, mu=0, sigma=sigma, deriv.order=r)) 
@@ -190,7 +158,6 @@ dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par,
       sumval <- sumval - n*dnorm.deriv(x=0, mu=0, sigma=sigma, deriv.order=r)
   }
 
-  
   if (kfe)
     if (inc==1) sumval <- sumval/n^2
     else sumval <- sumval/(n*(n-1))
@@ -370,14 +337,16 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
   {
     while (sumr.counter >1)
     {
-      ind.mat <- K.sum(diag(d), ind.mat)
+      ind.mat <- Ksum(diag(d), ind.mat)
       sumr.counter <- sumr.counter - 1
     }
   }
-
+  ind.mat.minimal <- unique(ind.mat)
+  ind.mat.minimal.logical <- !duplicated(ind.mat)
+  
   if (only.index)
     if (deriv.vec) return (ind.mat)
-    else return(unique(ind.mat))
+    else return(ind.mat.minimal)
   
   ## compute derivatives
 
@@ -387,42 +356,85 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
   ## Code by Jose Chacon 
   ## Normal density at x
+  
   x.centred <- sweep(x, 2, mu)
   Sigmainv<- chol2inv(chol(Sigma))
   distval <- rowSums((x.centred %*% Sigmainv) * x.centred)  
   
   logdet <- sum(log(eigen(Sigma, symmetric = TRUE, only.values = TRUE)$values))
   logretval <- -(d * log(2 * pi) + logdet + distval)/2
-  dens<-matrix(exp(logretval),nrow=n)
   
   ## Vector Hermite polynomial (Holmquist, 1996)
     
   if(r==0){ 
-    mvh<-dens
+    mvh <- matrix(exp(logretval), nrow=n)
   }
+
   
   if(r>0){
     vSigma<-vec(Sigma)
-    Hr<-rep(0,d^r)
-    ones<-rep(1,d^r)
-    for(j in 0:floor(r/2)){
-      cj<-(-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
-      vSigmaj<-Kpow(vSigma,j)
-      xr2j<-mat.Kpow(A=x.centred,pow=r-2*j)
-      Hr<-Hr+cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
-    }
-    
-    Sigmainvr<-Kpow(Sigmainv,r)        
-    SirSdr<-Sigmainvr%*%Sdr.mat    
-    Hr<-Hr%*%SirSdr
-    mvh<-(-1)^r*(t(ones)%x%dens)*Hr
-  }  
-  ##mvh <- dmvnorm.deriv.JEC(x=x, mu=mu, Sigma=Sigma, deriv.order=sumr, Sdr.mat=Sdr.mat)
+    ones <- rep(1,d^r)
+    Sigmainvr <- Kpow(Sigmainv,r)        
+    SirSdr <- Sigmainvr %*% Sdr.mat    
+
+    ind.mat.minimal.rep <- list()
+    for (j in 1:nrow(ind.mat.minimal)) ind.mat.minimal.rep[[j]] <- which.mat(ind.mat.minimal[j,], ind.mat) 
   
-  if (!deriv.vec)
-  { 
-    mvh <- mvh[,!duplicated(ind.mat)]
-    ind.mat <- unique(ind.mat)
+    ## break up computation into blocks to not exceed memory limits
+    n.per.group <- max(c(round(1e6/d^r),2))
+    ##ngroup <- max(n%/%n.per.group+1,1)
+    n.seq <- seq(1, n, by=n.per.group)
+    if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
+
+    if (length(n.seq)> 1)
+    {
+      mvh.minimal <- numeric()
+      for (i in 1:(length(n.seq)-1))
+      {
+        Hr <- 0
+        for (j in 0:floor(r/2))
+        {
+          cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
+          vSigmaj <- Kpow(vSigma,j)
+          dens <- matrix(exp(logretval[n.seq[i]:(n.seq[i+1]-1)]), nrow=n.seq[i+1]- n.seq[i])
+          xr2j <- mat.Kpow(A=x.centred[n.seq[i]:(n.seq[i+1]-1),], pow=r-2*j)
+          Hr <- Hr + cj*mat.Kprod(U=xr2j, V=matrix(rep(vSigmaj, n.seq[i+1]- n.seq[i]), nrow=n.seq[i+1]- n.seq[i],byrow=TRUE))
+        }
+        mvh.temp <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
+        mvh.minimal <- rbind(mvh.minimal, mvh.temp[,ind.mat.minimal.logical])
+      }
+    }
+    else
+    {
+      Hr <- 0
+      for (j in 0:floor(r/2))
+      {
+        cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
+        vSigmaj <- Kpow(vSigma,j)
+        dens <- matrix(exp(logretval), nrow=n)
+        xr2j <- mat.Kpow(A=x.centred, pow=r-2*j)
+        Hr <- Hr + cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
+      }
+      mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
+      mvh.minimal <- mvh[,ind.mat.minimal.logical]
+    }
+
+    if (is.vector(mvh.minimal)) mvh.minimal <- matrix(mvh.minimal, nrow=1)
+  }
+
+  
+  if (r>0)
+  {  
+    if (deriv.vec)
+    {
+      mvh <- matrix(0, nrow=n, ncol=d^r)
+      for (j in 1:length(ind.mat.minimal.rep)) mvh[,ind.mat.minimal.rep[[j]]] <- mvh.minimal[,j]
+    }
+    if (!deriv.vec)
+    {
+      mvh <- mvh.minimal
+      ind.mat <- ind.mat.minimal
+    }
   }
   
   if (add.index) return(list(deriv=mvh, deriv.ind=ind.mat))
@@ -493,54 +505,9 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
 ## Double sum at x
 ##############################################################################
 
-dmvnorm.sum <- function(x, Sigma, inc=1, binned=FALSE, bin.par, diff=FALSE)
-{
-  if (binned)
-  {
-    if (!is.diagonal(Sigma))
-      stop("Binned estimation defined for diagonal Sigma only")
-    if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
-    
-    fhatr <- kde.binned(bin.par=bin.par, H=Sigma)$estimate 
-    n <- sum(bin.par$counts)
-    d <- ncol(Sigma)
-    sumval <- sum(bin.par$counts * n * fhatr)
-    if (inc == 0) 
-      sumval <- sumval - n*dmvnorm(x=rep(0,d), mean=rep(0,d), sigma=Sigma)
-  }
-  else
-  {
-    d <- ncol(Sigma)
-
-    if (d>=2)
-    {
-      if(!diff)
-      {
-        n <- nrow(x)
-        d <- ncol(x)
-        difs <- differences(x, upper=TRUE)
-      }
-      else
-      {
-        n <- (-1 + sqrt(1+8*nrow(x)))/2
-        d <- ncol(x)
-        difs <- x
-      }
-      sumval <- sum(dmvnorm(difs, mean=rep(0,d), sigma=Sigma))
-      
-      if (inc==0)
-        sumval <- 2*sumval - 2*n*dmvnorm(rep(0,d), mean=rep(0,d), sigma=Sigma)
-      if (inc==1)
-        sumval <- 2*sumval - n*dmvnorm(rep(0,d), mean=rep(0,d), sigma=Sigma) 
-    }
-  
-  }
-  return(sumval)
-}
 
 
-
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -548,23 +515,48 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
 
   if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
-
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  
   if (binned)
   {
-    if (!is.diagonal(Sigma)) stop("Binned estimation defined for diagonal Sigma only")
-    if (missing(bin.par)) bin.par <- binning(x, H=Sigma)  
-
+    ##if (!is.diagonal(Sigma)) stop("Binned estimation defined for diagonal Sigma only")
     d <- ncol(Sigma)
-    n <- sum(bin.par$counts)
+    n <- nrow(x)
 
-    fhatr <- kdde.binned(bin.par=bin.par, H=Sigma, deriv.order=r, deriv.vec=deriv.vec, w=rep(1,n))$estimate 
-    sumval <- numeric()
-    for (i in 1:length(fhatr))
-      sumval[i] <- sum(bin.par$counts * n * fhatr[[i]])
+    if (is.diagonal(Sigma))
+    {
+      if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
+      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate 
+      if (r>0)
+      {
+        sumval <- rep(0, length(est))
+        for (j in 1:length(est)) sumval[j] <- sum(bin.par$counts * n * est[[j]])
+      }
+      else
+        sumval <- sum(bin.par$counts * n * est)
+    }
+    ## transformation approach from Jose E. Chacon 06/12/2010
+    else
+    {
+      Sigmainv12 <- matrix.sqrt(chol2inv(chol(Sigma)))
+      y <- x %*% Sigmainv12
+      if (missing(bin.par)) bin.par <- binning(x=y, H=diag(d), bgridsize=bgridsize)  
+
+      est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate
+      if (r>0)
+      {
+        sumval <- rep(0, length(est))
+        for (j in 1:length(est)) sumval[j] <- sum(bin.par$counts * n * est[[j]]) 
+      }
+      else
+        sumval <- sum(bin.par$counts * n * est)
+
+      sumval <- det(Sigmainv12) * sumval  %*% Kpow(Sigmainv12, pow=r)
+    }
   }
   else
   {
-    if (verbose) pb <- txtProgressBar() #{ cat("\nProgress for normal density derivative double sums\n") ; pb <- txtProgressBar()}
+    if (verbose) pb <- txtProgressBar() 
     if (double.loop)
     {
       ngroup <- n
@@ -589,7 +581,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
         {  
           difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
           sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
-          if (verbose) setTxtProgressBar(pb, i/ngroup)##cat(i, "\b/", ngroup, " ") 
+          if (verbose) setTxtProgressBar(pb, i/ngroup) 
         }
       }
      else
@@ -701,31 +693,6 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
 
 
 
-## Used in Hbcv
-
-dmvnorm.deriv.2d.xxt.sum <- function(x, Sigma, r)
-{
-  if (is.vector(x))
-  {
-    n <- 1; x1 <- x[1]; x2 <- x[2]
-  }
-  else
-  {
-    n <- nrow(x); x1 <- x[,1]; x2 <- x[,2]
-  }
-  viSigma <- vec(chol2inv(chol(Sigma)))
-  result <- .C("dmvnormd4_2d_xxt_sum", as.double(x1), as.double(x2),
-               as.double(viSigma), as.integer(r), as.integer(n), 
-               as.double(rep(0,4)), PACKAGE="ks")
-  
-  ## above C functions dmvnorm4_2d_xxt_sum only computes the upper triangular
-  ## half so need to reflect along the diagonal to compute whole sum
-  sumval <- 2*result[[6]]
-  
-  return(invvec(sumval))
-} 
-
-
 ###############################################################################
 ## Compute moments of multivariate normal mixture
 ###############################################################################
@@ -797,11 +764,11 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   d <- ncol(Sigmas)
   
   if (dist=="n")
-    dens <- dmvnorm.mixt(xy, mu=mus, Sigma=Sigmas, props=props)
+    dens <- dmvnorm.mixt(xy, mus=mus, Sigmas=Sigmas, props=props)
   else if (dist=="t")
-    dens <- dmvt.mixt(xy, mu=mus, Sigma=Sigmas, props=props, dfs=dfs)
+    dens <- dmvt.mixt(xy, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
 
-  dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
+  dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
 
   if (dist=="n")
   {
@@ -887,11 +854,11 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
   for (i in 1:length(z))
   {
     if (dist=="n")
-      dens <- dmvnorm.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, props=props)
+      dens <- dmvnorm.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, props=props)
     else if (dist=="t")
-      dens <- dmvt.mixt(cbind(xy, z[i]), mu=mus, Sigma=Sigmas, dfs=dfs, props=props)
+      dens <- dmvt.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, dfs=dfs, props=props)
     
-    dens.mat <- matrix(dens, nc=length(x), byrow=FALSE)
+    dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
     dens.array[,,i] <- dens.mat
   }
 
@@ -924,7 +891,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
     if (missing(alphavec))
       alphavec <- seq(0.1,0.5,length=nc)
     
-    ##plot3d(x, y, z, type="n", add=add, ...)
     if (!add) clear3d()
     
     for (i in 1:nc) 

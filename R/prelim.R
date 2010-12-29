@@ -53,19 +53,6 @@ vech <- function(x)
   
 }
 
-# Analogue for stacked matrix
-vech.cat <- function(x)
-{
-  d <- ncol(x)
-  num <- nrow(x)/ncol(x)
-  vechx <- vector()
-  
-  for (j in 1:num)
-    vechx <- c(vechx, vech(x[((j-1)*d+1) : (j*d),]))
-                   
-  return(vechx)
-}
-
   
 ###############################################################################
 # Inverse vec operator 
@@ -111,7 +98,7 @@ invvech <- function(x)
   d <- (-1 + sqrt(8*length(x) + 1))/2
   if (round(d) != d)
     stop("Number of elements in x will not form a square matrix.")
-  invvechx <- matrix(0, nr = d, nc = d)
+  invvechx <- matrix(0, nrow=d, ncol=d)
 
   for (j in 1:d)
     invvechx[j:d,j] <- x[1:(d-j+1)+ (j-1)*(d - 1/2*(j-2))]
@@ -151,42 +138,19 @@ elem <- function(i, d)
   return(elem.vec)
 }      
 
-###############################################################################
-# Matrix square root - taken from Stephen Lake 
-# http://www5.biostat.wustl.edu/s-news/s-news-archive/200109/msg00067.html
-###############################################################################
+### Commutation matrix (taken from MCMCglmmm library)
 
-matrix.sqrt <- function(A)
-{
-  if (length(A)==1)
-    return(sqrt(A))
-  sva <- svd(A)
-  if (min(sva$d)>=0)
-    Asqrt <- sva$u %*% diag(sqrt(sva$d)) %*% t(sva$v)
-  else
-    stop("Matrix square root is not defined")
-  return(Asqrt)
-}
-
-matrix.pow <- function(A, n)
-{
-  if (nrow(A)!=ncol(A)) stop("A must a a square matrix")
-  if (floor(n)!=n) stop("n must be an integer")
-  if (n==0) return(diag(ncol(A)))
-  if (n < 0) return(matrix.pow(A=chol2inv(chol(A)), n=-n))
-        
-  # trap non-integer n and return an error
-  if (n == 1) return(A)
-  result <- diag(1, ncol(A))
-  while (n > 0) {
-    if (n %% 2 != 0) {
-      result <- result %*% A
-      n <- n - 1
+comm <- function(m,n){
+  K<-matrix(0,m*n, m*n)
+  H<-matrix(0,m,n)
+  for(i in 1:m){
+    for(j in 1:n){ 
+      H[i,j]<-1
+      K<-K+kronecker(H,t(H))
+      H[i,j]<-0
     }
-    A <- A %*% A
-    n <- n / 2
   }
-  return(result)
+  return(K)
 }
 
 ###############################################################################
@@ -282,6 +246,48 @@ invdupl <- function(order, ret.q = FALSE)
     obj
 }
 
+
+
+
+###############################################################################
+# Matrix square root - taken from Stephen Lake 
+# http://www5.biostat.wustl.edu/s-news/s-news-archive/200109/msg00067.html
+###############################################################################
+
+matrix.sqrt <- function(A)
+{
+  if (length(A)==1)
+    return(sqrt(A))
+  sva <- svd(A)
+  if (min(sva$d)>=0)
+    Asqrt <- sva$u %*% diag(sqrt(sva$d)) %*% t(sva$v)
+  else
+    stop("Matrix square root is not defined")
+  return(Asqrt)
+}
+
+matrix.pow <- function(A, n)
+{
+  if (nrow(A)!=ncol(A)) stop("A must a a square matrix")
+  if (floor(n)!=n) stop("n must be an integer")
+  if (n==0) return(diag(ncol(A)))
+  if (n < 0) return(matrix.pow(A=chol2inv(chol(A)), n=-n))
+        
+  # trap non-integer n and return an error
+  if (n == 1) return(A)
+  result <- diag(1, ncol(A))
+  while (n > 0) {
+    if (n %% 2 != 0) {
+      result <- result %*% A
+      n <- n - 1
+    }
+    A <- A %*% A
+    n <- n / 2
+  }
+  return(result)
+}
+
+
 ###############################################################################
 # Pre-sphering
 # Parameters
@@ -302,9 +308,10 @@ pre.sphere <- function(x, mean.centred=FALSE)
     for (i in 1:ncol(x))
       x[,i] <- x[,i] - xmean[i]
   }
-  x.sphered <- matrix(0, nc=ncol(x), nr=nrow(x))
-  for (i in 1:nrow(x))
-    x.sphered[i,] <- Sinv12 %*% x[i,]    
+  x.sphered <- x %*% Sinv12
+  ##x.sphered <- matrix(0, ncol=ncol(x), nrow=nrow(x))
+  ##for (i in 1:nrow(x))
+  ##  x.sphered[i,] <- Sinv12 %*% x[i,]    
 
   return (x.sphered)
 }
@@ -344,6 +351,7 @@ pre.scale <- function(x, mean.centred=FALSE)
 # i  - if r==mat[i,]
 # NA - otherwise
 ###############################################################################
+
 which.mat <- function(r, mat)
 {
   ind <- numeric()
@@ -353,7 +361,6 @@ which.mat <- function(r, mat)
 
   return(ind)  
 }
-
 
 
 ###############################################################################
@@ -387,23 +394,6 @@ permute <- function (args)
   }
   do.call("cbind", cargs)
 } 
-
-
-###############################################################################
-# For a list of matrices, this returns the dimensions of each matrix
-###############################################################################
-
-list.length <- function(x)
-{
-  ell <- length(x)
-  len <- matrix(0, nr=ell, nc=2)
-  for (i in 1:ell)
-    len[i,] <- dim(x[[i]])
-
-  return(len)
-}
-
-###############################################################################
 
 permute.mat <- function(order)
 {
@@ -476,97 +466,9 @@ differences <- function(x, y, upper=FALSE)
 }
 
 
-
-differences.JEC <- function(x, y, upper=FALSE, output.list=FALSE, nlist=10)
-{
-  if (missing(y)) y <- x
-  if (is.vector(x)) x <- t(as.matrix(x))
-  if (is.vector(y)) y <- t(as.matrix(y))
-
-  nx <- nrow(x)
-  ny <- nrow(y)
-  d <- ncol(x)
-
-  if (output.list)
-  {
-    difs <- list()
-    if (nlist < 1) nlist <- 1
-    nn <- nx %/% nlist
-
-    for (i in 1:nlist)
-    {
-      difs.temp <- matrix(ncol=d,nrow=nn*ny)
-      for (j in 1:d)
-        difs.temp[,j] <- as.vector(x[((i-1)* nn+1):(i*nn),j]%*%t(rep(1,ny))-rep(1,nn)%*%t(y[,j])) 
-      
-      difs[[i]] <- difs.temp
-    }
-   
-    if (nx %% nlist >0)
-    {
-      difs.temp <- matrix(ncol=d,nrow=(nx %% nlist)*ny) 
-      for (j in 1:d)
-        difs.temp[,j] <- as.vector(x[(nlist*nn+1):nx,j]%*%t(rep(1,ny))-rep(1,nx-nn*nlist)%*%t(y[,j]))
-      difs <- c(difs, list(difs.temp))
-    }
-    
-    return(difs)
-  }
-  else
-  {
-    difs <- matrix(ncol=d,nrow=nx*ny)
-    for (j in 1:d)
-    {    
-      difs[,j] <- as.vector(x[,j]%*%t(rep(1,ny))-rep(1,nx)%*%t(y[,j]))
-      ##The jth column of difs contains all the differences X_{ij}-Y_{kj}
-    }
- 
-    if (upper)
-    {
-      ind.remove <- numeric()
-      for (j in 1:(nx-1))
-        ind.remove <- c(ind.remove, (j*nx+1):(j*nx+j))
-      
-      return(difs[-ind.remove,])
-    }
-    else
-      return(difs)
-  }
-}
-
-
 ##### Odd factorial
 
 OF<-function(m){factorial(m)/(2^(m/2)*factorial(m/2))} 
-
-
-#####  Matrix square root
-
-#matrix.sqrt <- function(A) {
-#  d<-ncol(A)
-#  if(d==1){A12<-sqrt(A)}
-#  else{
-#    xe <- eigen(A)
-#    xe1 <- xe$values
-#    if(all(xe1 >= 0)) {
-#      xev1 <- diag(sqrt(xe1))
-#    }
-#    xval1 <- cbind(xe$vectors)
-#    xval1i <- solve(xval1)
-#    A12 <- xval1 %*% xev1 %*% xval1i}
-#  return(A12)
-#}
-
-
-K.sum <- function(A,B)
-{
-  AB <- numeric()
-  for (i in 1:nrow(A))
-    for (j in 1:nrow(B))
-      AB <- rbind(AB, A[i,] + B[j,])
-
-  return(AB)
-}
 
 
 ##### Commutation matrix of order m,n
@@ -580,6 +482,19 @@ K.mat<-function(m,n){
   }}
   return(K)        
 }
+
+## Kronecker sum
+
+Ksum <- function(A,B)
+{
+  AB <- numeric()
+  for (i in 1:nrow(A))
+    for (j in 1:nrow(B))
+      AB <- rbind(AB, A[i,] + B[j,])
+
+  return(AB)
+}
+
 
 
 ##### Kronecker power of a matrix A
@@ -596,17 +511,6 @@ Kpow<-function(A,pow){    #### WARNING! Dot omitted from original K.pow name
     
 ##### Row-wise Kronecker products and powers of matrices
     
-mat.Kprod.old<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
-  n1<-nrow(U)
-  n2<-nrow(V)
-  if(n1!=n2)stop("U and V must have the same number of vectors")
-  p<-ncol(U)
-  q<-ncol(V)
-  P<-U[,1]*V
-  if(p>1){for(j in 2:p){P<-cbind(P,U[,j]*V)}}
-  return(P)
-}
-
 mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
  n1<-nrow(U)
  n2<-nrow(V)
@@ -623,7 +527,7 @@ mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
 #### WARNING! Dot omitted from original mat.K.pow name
 mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
   Apow<-A
-  if(pow==0){Apow<-matrix(1,nr=nrow(A),nc=1)}  
+  if(pow==0){Apow<-matrix(1,nrow=nrow(A), ncol=1)}  
   if(pow>1){
     for(i in 2:pow) Apow<-mat.Kprod(Apow,A)
   }
@@ -631,25 +535,13 @@ mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power
 }
 
 
-##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0), for r=6,4
+##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0)
 
-D6L0<-function(d,Sd6){
-  r<-6
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd6%*%Kpow(A=vec(diag(d)),pow=r/2))
-  return(DL0)
-}
-    
-D4L0<-function(d,Sd4){
-  r<-4
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd4%*%Kpow(A=vec(diag(d)),pow=r/2))
+DrL0<-function(d,r,Sdr){
+  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sdr%*%Kpow(A=vec(diag(d)),pow=r/2))
   return(DL0)
 }
 
-D2L0<-function(d,Sd2){
-  r<-2
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sd2%*%Kpow(A=vec(diag(d)),pow=r/2))
-  return(DL0)
-}
 
 
 T<-function(d,r){    #### Second version, recursive
@@ -674,84 +566,30 @@ Sdr<-function(d,r){
 }
 
 
-##############################################################################
-## Density derivative (psi) functional estimators 
-##############################################################################
-
-
-
-
-RKfun <- function(r)
-{
-  if (r==0)
-    val <- 1/(2*sqrt(pi))
-  else if (r==1)
-    val <- 1/(4*sqrt(pi))
-  else if (r==2)
-    val <- 3/(8*sqrt(pi)) 
-  else if (r==3)
-    val <- 15/(16*sqrt(pi))
-  else if (r==4)
-    val <- 105/(32*sqrt(pi))
-  else if (r==5)
-    val <- 945/(64*sqrt(pi))
-  else if (r==6)
-    val <- 10395/(128*sqrt(pi))
-  else if (r==7)
-    val <- 135135/(256*sqrt(pi))
-  else if (r==8)
-    val <- 2027025/(512*sqrt(pi))
-  
-  return(val)
-}
-
-
 ########################################################################
-### Identifying elements of Psi_4 matrix
+### Identifying elements of Theta_6 matrix
 ########################################################################
 
-Psi4.elem <- function(k, kprime, d)
+Theta6.elem <- function(d)
 {
-  ind <- function(k, d)  
-  {
-    j <- 1
-    dprime <- 1/2*d*(d+1)
-    if (k > dprime) stop ("k is larger than d'")
-    while (j < d & !(((j-1)*d -1/2*(j-2)*(j-1) < k) & (k <= j*d -1/2*j*(j-1))))
-      j <- j+1
-    i <- k - (j-1)*d + 1/2*j*(j-1)
-    
-    return(c(i,j))
-  }
-
-  ij <- ind(k, d)
-  ei <- elem(ij[1],d)
-  ej <- elem(ij[2],d)
-  ipjp <- ind(kprime, d)
-  eip <- elem(ipjp[1],d)
-  ejp <- elem(ipjp[2],d)
-  psi4.ind <- ei + eip + ej + ejp
-  coeff <- (2 - (ij[1]==ij[2])) * (2 - (ipjp[1]==ipjp[2]))
+  Theta6.mat <- list()
+  Theta6.mat[[d]] <- list()
+  for (i in 1:d)
+    Theta6.mat[[i]] <- list()
   
-  return (c(coeff, psi4.ind))
-}
-
-
-Psi4.list <- function(d)
-{
-  coeff <- vector()
-  psifun <- vector()
-  dprime <- 1/2*d*(d+1)
-  for (k in 1:dprime)
-    for (kprime in 1:dprime)
-    {
-      coeff <- c(coeff, Psi4.elem(k, kprime, d)[1])
-      psifun <- rbind(psifun, Psi4.elem(k, kprime, d)[-1]) 
+  for (i in 1:d)
+    for (j in 1:d)
+    {  
+      temp <- numeric()
+      for (k in 1:d)     
+        for (ell in 1:d)    
+          temp <- rbind(temp, elem(i,d)+2*elem(k,d)+2*elem(ell,d)+elem(j,d))
+      
+      Theta6.mat[[i]][[j]] <- temp
     }
-
-  return(list(coeff=coeff, psi=psifun))  
+  
+  return(Theta6.mat)
 }
-
 
 default.gridsize <- function(d)
 {
@@ -761,6 +599,20 @@ default.gridsize <- function(d)
     gridsize <- rep(151,d)
   else if (d==3)
     gridsize <- rep(51, d)
+  else if (d==4)
+    gridsize <- rep(21, d)
+
+  return(gridsize)
+}
+
+default.bgridsize <- function(d)
+{
+  if (d==1)
+    gridsize <- 401
+  else if (d==2)
+    gridsize <- rep(151,d)
+  else if (d==3)
+    gridsize <- rep(31, d)
   else if (d==4)
     gridsize <- rep(21, d)
 

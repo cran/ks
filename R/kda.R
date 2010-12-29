@@ -227,7 +227,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
   
   grlab <- sort(unique(x.group))
   m <- length(grlab)
-  comp <- matrix(0, nr=m, nc=m)
+  comp <- matrix(0, nrow=m, ncol=m)
   
   for (i in 1:m)
     for (j in 1:m)
@@ -238,7 +238,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
     er <- vector()
     for (i in 1:m)
       er[i] <- 1-comp[i,i]/rowSums(comp)[i]
-    er <- matrix(er, nc=1)
+    er <- matrix(er, ncol=1)
     er <- rbind(er, 1 - sum(diag(comp))/sum(comp)) 
     rownames(er) <- c(as.character(paste(grlab, "(true)")), "Total")
     colnames(er) <- "error"
@@ -475,7 +475,7 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
       
       ## compute individual density estimate
       if (binned)
-        fhat.temp <- kde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax, w=ww)
+        fhat.temp <- kdde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax, w=ww, deriv.order=0)
       else if (is.null(eval.points))
         fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
       else
@@ -530,7 +530,7 @@ kda.kde.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, 
     
     ## compute individual density estimate
     if (binned)
-      fhat.temp <- kde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, w=ww)
+      fhat.temp <- kdde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, w=ww, deriv.order=0)
     else if (is.null(eval.points))
       fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
     else

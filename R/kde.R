@@ -1,6 +1,6 @@
 ##################################################################################
 ## Multivariate kernel density estimators
-#########################################
+#################################################################################
 
 
 ##################################################################################
@@ -80,8 +80,8 @@ make.supp <- function(x, H, tol)
   n <- nrow(x)
   d <- ncol(x)
   tol.H <- tol * diag(H)
-  xmin <- matrix(0, nr=n, nc=d)
-  xmax <- matrix(0, nr=n, nc=d)
+  xmin <- matrix(0, nrow=n, ncol=d)
+  xmax <- matrix(0, nrow=n, ncol=d)
 
   for (i in 1:n)
   {
@@ -110,7 +110,7 @@ find.gridpts <- function(gridx, suppx)
   xmin <- suppx$xmin
   d <- ncol(xmax)
   n <- nrow(xmax)
-  gridpts.min <- matrix(0, nc=d, nr=n)
+  gridpts.min <- matrix(0, ncol=d, nrow=n)
   gridpts.max <- gridpts.min
   
   for (i in 1:n)
@@ -260,21 +260,22 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   ## compute binned estimator
   if (binned)
   {
-    if (!missing(eval.points))
-      stop("Both binned=TRUE and eval.points are non-empty.")
-    
+    if (!missing(eval.points)) stop("Both binned=TRUE and eval.points are non-empty.")
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
     
     if (positive & d==1)
     {
       y <- log(x)
-      fhat <- kde.binned(x=y, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w)
+      fhat <- kdde.binned(x=y, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
       fhat$estimate <- fhat$estimate/exp(fhat$eval.points)
       fhat$eval.points <- exp(fhat$eval.points)
       fhat$x <- x
     }
     else
-      fhat <- kde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w)
+    {
+      if (d>1){ if (!identical(diag(diag(H)), H)) stop("Binned estimation defined for diagonal H only")}
+      fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
+    }
   }
   else
   {
@@ -343,60 +344,6 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   return(fhat)
  }
 
-########################################################################################
-#### Multivariate binned kernel density estimate using normal kernels
-########################################################################################
-
-
-kde.binned <- function(x, H, h, bgridsize, xmin, xmax, bin.par, w)
-{
-  ## linear binning
-  if (missing(bin.par))
-  {
-    if (is.vector(x)) d <- 1
-    else d <- ncol(x)
-
-    if (d==1)
-      if (missing(H)) H <- as.matrix(h^2)
-      else {h <- sqrt(H); H <- as.matrix(H)}
-
-    if (!is.diagonal(H) & d > 1)
-      stop("Binned estimation defined for diagonal H only")
-
-    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-    bin.par <- binning(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, supp=3.7, w=w)
-  }
-  else
-  {
-    if (!is.list(bin.par$eval.points)) { d <- 1; bgridsize <- length(bin.par$eval.points)}
-    else  { d <- length(bin.par$eval.points); bgridsize <- sapply(bin.par$eval.points, length)} 
-
-    if (d==1)
-      if (missing(H)) H <- as.matrix(h^2)
-      else {h <- sqrt(H); H <- as.matrix(H)}
-  }
-  
-  if (d==1)
-    range.x <- list(range(bin.par$eval.points))
-  else
-    range.x <- lapply(bin.par$eval.points, range)
-
-  fhat.grid <- drvkde(x=bin.par$counts, drv=rep(0,d), bandwidth=sqrt(diag(H)), binned=TRUE, range.x=range.x, se=FALSE, gridsize=bgridsize)
-  eval.points <- fhat.grid$x.grid
-  fhat.grid <- fhat.grid$est
-  fhat.grid[fhat.grid<0] <- 0
-  
-  if (missing(x)) x <- NULL
-  
-  if (d==1)
-     fhat <- list(x=x, eval.points=unlist(eval.points), estimate=fhat.grid, H=h^2, h=h, gridded=TRUE)
-  else
-    fhat <- list(x=x, eval.points=eval.points, estimate=fhat.grid, H=H, gridded=TRUE)
-
-  return(fhat)
-}
-
-
 #########################################################################################
 ## Univariate kernel density estimate on a grid
 #########################################################################################
@@ -442,7 +389,7 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, 
     ## compute transformation KDE
     fhat$estimate <- fhat$estimate / exp(gridy)
     fhat$x <- x
-    fhat$eval.points <- gridx ## exp(gridy) - adj.positive
+    fhat$eval.points <- gridx 
   }
   
   class(fhat) <- "kde"
@@ -570,9 +517,6 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 
   return(fhat.list)
 }
-
-
-
 
 
 ##########################################################################################
@@ -940,36 +884,22 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
   fhat <- x
   if (is.vector(fhat$x))
   {
-    d <- 1; n <- length(fhat$x); H <- as.matrix(fhat$H)
-    bgridsize <- length(fhat$estimate)
+    d <- 1; n <- length(fhat$x)
   }
   else
   {
-    d <- ncol(fhat$x); n <-nrow(fhat$x); H <- fhat$H
-    bgridsize <- dim(fhat$estimate)
+    d <- ncol(fhat$x); n <-nrow(fhat$x)
     if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x)
   }
 
   if (is.null(x$w)) w <- rep(1, n)
   else w <- x$w
 
-  ##if (missing(binned)) binned <- fhat$binned
-  
-  ## for large sample sizes, use binned approx. 
-  ##if (n >= 5e3 & d <= 4 & fhat$binned)
-  ##{
-  ##  bin.par <- binning(fhat$x, bgridsize=bgridsize, H=H, supp=3.7, w=w)
-  ##  dobs <- rep(fhat$estimate, round(bin.par$counts,0))
-  ##  dobs <- dobs[dobs>0]
-  ##}
-
   if (is.null(fhat$gridded))
   {
     if (d==1) fhat$gridded <- fhat$binned
     else fhat$gridded <- is.list(fhat$eval.points)
   }
-
-  
   
   if (missing(prob) & missing(cont))
     hts <- pretty(x$estimate, n=nlevels) 
