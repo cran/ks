@@ -1,14 +1,15 @@
 Package: ks
-Version: 1.7.4
-Date: 2010/10/11
+Version: 1.8.0
+Date: 2010/12/29
 Title: Kernel smoothing
 Author: Tarn Duong <tarn.duong@gmail.com>
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
-Depends: R (>= 1.4.0), KernSmooth, mvtnorm
-Suggests: rgl (>= 0.66), misc3d (>= 0.4-0), kernlab
+Depends: R (>= 1.4.0), stats, KernSmooth, mvtnorm, rgl (>= 0.66),
+        misc3d (>= 0.4-0)
+Suggests: kernlab, MASS
 Description: Kernel smoothers for univariate and multivariate data
 License: GPL (>= 2)
 URL: http://www.mvstat.net/tduong
-Packaged: 2010-10-11 14:42:15 UTC; tduong
+Packaged: 2011-01-04 11:05:32 UTC; tduong
 Repository: CRAN
-Date/Publication: 2010-10-11 19:13:58
+Date/Publication: 2011-01-04 16:39:02

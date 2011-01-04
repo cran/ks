@@ -8,7 +8,7 @@
 \usage{
 kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, 
     eval.points, binned=FALSE, bgridsize, positive=FALSE, 
-    adj.positive, w, deriv.vec=TRUE)
+    adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -28,9 +28,10 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{adj.positive}{adjustment added to data i.e. when
 	\code{positive=TRUE} KDE is carried out on \code{log(x +
 	  adj.positive)}. Default is the minimum of \code{x}.}
-  \item{w}{vector of weights (non-negative and sum is equal to sample size)}
+  \item{w}{vector of weights (non-negative and sum is equal to sample size). Default is a vector of all ones.}
   \item{deriv.vec}{flag to compute all derivatives in vectorised derivative. Default is TRUE. 
-       If FALSE then only the unique derivatives are computed (vectorised half form).}
+       If FALSE then only the unique derivatives are computed.}
+  \item{verbose}{flag to print out progress information. Default is FALSE.}
 }
   
 

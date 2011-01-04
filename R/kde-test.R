@@ -17,7 +17,7 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, amise
   Hstart <- matrix.sqrt(Hstart)
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
-  m2K2 <- 1/2*(4*pi)^(-d/2)*vec(diag(d))
+  ##m2K2 <- 1/2*(4*pi)^(-d/2)*vec(diag(d))
   ##m0K2 <- (4*pi)^(-d/2)
   
   if (nstage==2)
@@ -71,7 +71,7 @@ Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, doubl
   Hstart <- matrix.sqrt(Hstart)
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
-  m2K2 <- 1/2*(4*pi)^(-d/2)*vec(diag(d))
+  ##m2K2 <- 1/2*(4*pi)^(-d/2)*vec(diag(d))
 
   if (nstage==2)
   {  
@@ -147,9 +147,7 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
 {
   n1 <- nrow(x1)
   n2 <- nrow(x2)
-
   d <- ncol(x1)
-  n <- nrow(x1)
   K0 <- drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0))
  
   ## kernel estimation for components of test statistic

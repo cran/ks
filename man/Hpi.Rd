@@ -12,9 +12,9 @@
 
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart,
-    binned=FALSE, bgridsize, amise=FALSE, kfold=1)
+    binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
 Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart,
-    binned=FALSE, bgridsize, amise=FALSE, kfold=1)
+    binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
 hpi(x, nstage=2, binned=TRUE, bgridsize)
 }
 
@@ -22,8 +22,9 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{x}{vector or matrix of data values}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
-    \code{"samse"} = single SAMSE pilot bandwidth,
-	\code{"unconstr"} = unconstrained pilot bandwidth}
+    \code{"samse"} = single SAMSE pilot bandwidth, 
+    \code{"vamse"} = single VAMSE pilot bandwidth, 
+    \code{"unconstr"} = unconstrained pilot bandwidth}
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
@@ -31,6 +32,8 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal scaled PI value}
   \item{kfold}{value for k-fold bandwidth selection. See details below.}
+  \item{deriv.order}{derivative order}
+  \item{verbose}{flag to print out progress information. Default is FALSE.}
 }
 
 \value{
@@ -48,8 +51,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
   with non-positive definiteness. Unconstrained pilot bandwidths are
-  available for d = 1, ..., 5 (but are extremely computationally
-  intensive for the latter dimensions). See Chacon & Duong (2010).
+  from Chacon & Duong (2010). VAMSE pilots are a hybrid of SAMSE and unconstrained pilots.
 
   For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 

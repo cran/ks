@@ -9,9 +9,9 @@
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
-Hlscv(x, Hstart, amise=FALSE, kfold=1)
-Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1)
-hlscv(x, binned=TRUE, bgridsize)
+Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+hlscv(x, binned=TRUE, bgridsize, deriv.order=0)
 }
 
 
@@ -22,7 +22,9 @@ hlscv(x, binned=TRUE, bgridsize)
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal LSCV value. Default is FALSE.}	
-  \item{kfold}{value for k-fold bandwidth selection. See details below.}  
+  \item{kfold}{value for k-fold bandwidth selection. See details below.} 
+  \item{deriv.order}{derivative order} 
+  \item{verbose}{flag to print out progress information. Default is FALSE.}
 }
 
 \value{

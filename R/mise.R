@@ -58,7 +58,7 @@ gamma.r <- function(mu, Sigma, r)
   return(v)
 }
 
-## gamma functional for normal mixture MISE 
+## gamma functional (non-recursive) for normal mixture MISE 
 gamma.r.norec <- function(mu, Sigma, d, r, Sd2r)
 {
   Sigmainv <- chol2inv(chol(Sigma))
@@ -108,10 +108,10 @@ omega <- function(mus, Sigmas, k, a, H, r)
     else d <- length(mus)
 
   if (k == 1)
-    omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)##gamma.r.norec(mu=rep(0,d),Sigma=a*H + 2*Sigmas, d=d, r=r, Sd2r=Sd2r)  
+    omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)  
   else
   {     
-    omega.mat <- matrix(0, nr=k, nc=k)
+    omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
       Sigmai <- Sigmas[((i-1)*d+1):(i*d),]
@@ -120,7 +120,7 @@ omega <- function(mus, Sigmas, k, a, H, r)
       {
         Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
         muj <- mus[j,]    
-        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, r=r) ##gamma.r.norec(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, d=d, r=r, Sd2r=Sd2r) 
+        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, r=r) 
       }
     }
   }
@@ -138,7 +138,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
     omega.mat <- gamma.r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), r=r)  
   else
   {   
-    omega.mat <- matrix(0, nr=k, nc=k)
+    omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
       Sigmai <- Sigmas[i]
@@ -147,7 +147,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
       {
         Sigmaj <- Sigmas[j]
         muj <- mus[j]    
-        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj),  r=r) ## dmvnorm(x=mui, mean=muj, sigma=a*H + Sigmai + Sigmaj)
+        omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj),  r=r) 
       }
     }
   }
@@ -185,19 +185,13 @@ mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
   if (k == 1) 
   {
-    ##Sd2r <- Sdr(d,2*r)
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
       (1-1/samp)*omega(mus, Sigmas, 1, 2, H, r) -
        2*omega(mus, Sigmas, 1, 1, H, r) +
         omega(mus, Sigmas, 1, 0, H, r)
-    #mise <- 2^(-d-r)*pi^(-d/2)*(samp^(-1)*det(H)^(-1/2)*nu(r=r, A=H) + 
-    #        nu(r=r, A=Sigmas)*det(Sigmas)^(-1/2) +
-    #        (1-1/samp)*nu(r=r,A=H+Sigmas)*det(H+Sigmas)^(-1/2) -
-    #        2^((d+2*r+2)/2)*nu(r=r,A=H+2*Sigmas)*det(H+2*Sigmas)^(-1/2))
   }
   else
   {
-    ##Sd2r <- Sdr(d,2*r)
     mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
       props %*% ((1-1/samp)*omega(mus, Sigmas, k, 2, H, r) - 
                  2*omega(mus, Sigmas, k, 1, H, r) + 
@@ -211,7 +205,6 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   d <- 1
   k <- length(props)
   r <- deriv.order
-  Sd2r <- Sdr(d,2*r)
   H <- as.matrix(h^2)
  
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
@@ -261,14 +254,12 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
  
   if (k == 1)
   {
-    ##Sd2r4 <- Sdr(d,2*r+4)
-    ##omega.mat <- gamma.r2(mu=rep(0,d),Sigma=2*Sigmas, d=d, r=r, Sd2r4=Sd2r4, H=H)
     omega.mat <- 2^(-d-r-2)*pi^(-d/2)*det(Sigmas)^(-1/2)*nu.rs(r=r, s=2, Sigmas, matrix.sqrt(Sigmas) %*% chol2inv(chol(H)) %*% matrix.sqrt(Sigmas))
   }
   else
   {
     Sd2r4 <- Sdr(d,2*r+4)  
-    omega.mat <- matrix(0, nr=k, nc=k)
+    omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
       Sigmai <- Sigmas[((i-1)*d+1):(i*d),]
@@ -305,7 +296,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
     omega.mat <- gamma.r2(mu=rep(0,d),Sigma=2*sigmas^2, d=d, r=r, Sd2r4=Sd2r4, H=H)
   else
   {   
-    omega.mat <- matrix(0, nr=k, nc=k)
+    omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
       Sigmai <- sigmas[i]^2
@@ -359,7 +350,7 @@ lambda <- function(mus, Sigmas, k, r)
   {   
     if (is.matrix(mus)) d <- ncol(mus)
     else d <- length(mus)
-    lambda.mat <- matrix(0, nr=k, nc=k)
+    lambda.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
       Sigmai <- Sigmas[((i-1)*d+1) : (i*d),]
@@ -629,13 +620,13 @@ Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 # ISE 
 ###############################################################################
 
-ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
+ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, bgridsize)
 {
   if (!(missing(h)))
-    return(ise.mixt.1d(x=x, h=h, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order))
+    return(ise.mixt.1d(x=x, h=h, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order, binned=binned))
   
-  if (is.vector(x)) x <- matrix(x,nr=1)
-  if (is.vector(mus)) mus <- matrix(mus, nr=length(props))
+  if (is.vector(x)) x <- matrix(x, nrow=1)
+  if (is.vector(mus)) mus <- matrix(mus, nrow=length(props))
 
   d <- ncol(x)
   n <- nrow(x)
@@ -649,7 +640,7 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dmvnorm.deriv.sum(x=x, Sigma=2*H, inc=1, deriv.order=2*r)
+  ise1 <- dmvnorm.deriv.sum(x=x, Sigma=2*H, inc=1, deriv.order=2*r, binned=binned, bgridsize=bgridsize)
   for (j in 1:M)
   {
     Sigmaj <- Sigmas[((j - 1) * d + 1):(j * d), ]
@@ -665,12 +656,9 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0)
   return((-1)^r * sum(vIdr*(ise1/n^2 - 2 * ise2/n + ise3)))
 }
 
-
-
-
-ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
+ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0, binned=FALSE)
 {  
-  d <- 1
+  ##d <- 1
   n <- length(x)
   M <- length(props)
   r <- deriv.order 
@@ -678,7 +666,7 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0)
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dnorm.deriv.sum(x=x, sigma=sqrt(2)*h, inc=1, deriv.order=2*r)
+  ise1 <- dnorm.deriv.sum(x=x, sigma=sqrt(2)*h, inc=1, deriv.order=2*r, binned=binned)
   
   for (j in 1:M)
   {

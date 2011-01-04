@@ -10,7 +10,8 @@
   (a) computing kernel estimators, (b) computing bandwidth selectors and (c) displaying kernel estimators.
 
   --For kernel density estimation, \code{\link{kde}} computes  
-  \deqn{\hat{f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x;H) = n^(-1) sum_i K_H (x - X_i).} There are several varieties of bandwidth matrix selectors 
+  \deqn{\hat{f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x;H) = n^(-1) sum_i K_H (x - X_i).} 
+  There are several varieties of bandwidth matrix selectors 
   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
   \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) \cr
@@ -23,6 +24,9 @@
   \item normal scale selectors \code{\link{hmise.mixt}},
   \code{\link{hamise.mixt}} (1-d); and \code{\link{Hmise.mixt}},
   \code{\link{Hamise.mixt}}, \code{\link{Hmise.mixt.diag}}, \code{\link{Hamise.mixt.diag}} (2- to 6-d).}
+  For 1-d data, the bandwidth \eqn{h}{h} is the standard deviation of the normal kernel, whereas for multivariate data, the bandwidth matrix 
+  \eqn{H}{H} is the variance matrix.
+  
   For display, its \code{plot} method calls \code{\link{plot.kde}}.
 
   --For kernel discriminant analysis, \code{\link{kda.kde}} computes density estimates for each the 

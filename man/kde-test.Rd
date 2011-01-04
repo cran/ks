@@ -22,7 +22,7 @@ Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE,
   \item{var.fhat1,var.fhat2}{sample variance of KDE estimates evaluated at x1, x2}
   \item{double.loop}{flag to iterate through double loop for unbinned estimation. Default is FALSE.}
   \item{binned}{flag for binned estimation. Default is FALSE.}
-  \item{verbose}{flag to print out progress information. Default is FALSE}
+  \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
