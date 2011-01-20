@@ -32,7 +32,7 @@ void massdist2d(double *x1, double *x2,	int *n,
 		int *M1, int *M2, double *weight, double *est)
 {
   double fx1, fx2, wi, xdelta1, xdelta2, xpos1, xpos2;   
-  int i, i1, i2, ix1, ix2, ixmax1, ixmin1, ixmax2, ixmin2, MM1, MM2;
+  int i, ix1, ix2, ixmax1, ixmin1, ixmax2, ixmin2, MM1, MM2;
   
   MM1 = M1[0];
   MM2 = M2[0];

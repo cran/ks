@@ -9,9 +9,9 @@
 
 \usage{
 kde.test(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1,
-    var.fhat2, double.loop=FALSE, binned=FALSE, verbose=FALSE)
-Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE, 
-    amise=FALSE, verbose=FALSE)
+    var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE)
+Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize, 
+    double.loop=FALSE, amise=FALSE, verbose=FALSE)
 }
 
 \arguments{
@@ -22,6 +22,7 @@ Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, double.loop=FALSE,
   \item{var.fhat1,var.fhat2}{sample variance of KDE estimates evaluated at x1, x2}
   \item{double.loop}{flag to iterate through double loop for unbinned estimation. Default is FALSE.}
   \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{Hstart}{initial bandwidth matrix, used in numerical
@@ -50,7 +51,7 @@ A list with fields
   \eqn{T = \int [f_1(\bold{x}) - f_2(\bold{x})]^2 \, d \bold{x}}{int [ f_1(x) - f_2(x)]^2 dx}. If 
   we rewrite this as \eqn{T = \psi_1 - \psi_{12} - \psi_{21} + \psi_2}{T = psi_1 - psi_12 - psi_21 + psi_2} 
   where \eqn{\psi_{uv} = \int f_u (\bold{x}) f_v (\bold{x})  \, d \bold{x}}{psi_uv = int f_u(x) f_v(x) dx},
-  then we can use kernel functional estimators. Duong (2010) shows that this test statistic has a null 
+  then we can use kernel functional estimators. Duong (2011) shows that this test statistic has a null 
   distribution which is asymptotically normal, so no bootstrap resampling is required to compute an approximate
   p-value.   
 
@@ -63,7 +64,7 @@ A list with fields
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
     selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
 
-  Duong, T. (2010) Multivariate kernel density based two-sample comparisons without 
+  Duong, T. (2011) Multivariate kernel density based two-sample comparisons without 
     bootstrap resampling. Submitted.
 }
   

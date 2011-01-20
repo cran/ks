@@ -1,5 +1,8 @@
 Change log file for ks
 
+1.8.1 -Modified p-value calculation for large -ve Z-statistics. 
+      -Fixed bug for binned estimation for unconstrained bandwidths for kde() 
+
 1.8.0 -Added density derivative selectors Hpi(,deriv.order=r), Hlscv(,deriv.order=r) for r>0 from J. Chacon.
       -Changed vech(H) terms to vec(H) in AMISE estimators.
       -Changed default binning gridsize for 3-d data from rep(51,3) to rep(31,3).

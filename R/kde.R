@@ -273,7 +273,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     }
     else
     {
-      if (d>1){ if (!identical(diag(diag(H)), H)) stop("Binned estimation defined for diagonal H only")}
+      ##if (d>1){ if (!identical(diag(diag(H)), H)) stop("Binned estimation defined for diagonal H only")}
       fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
     }
   }
@@ -573,35 +573,44 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 
 #### sum of KDE evaluated at eval.points
 
-kde.points.sum <- function(x, H, eval.points, verbose=FALSE)
+kde.points.sum <- function(x, H, eval.points, verbose=FALSE, binned=FALSE, bgridsize)
 {
   nx <- nrow(x)
   ne <- nrow(eval.points)
   d <- ncol(x)
-  n.per.group <- max(c(round(1e6/ne),1))
-  ngroup <- max(ne%/%n.per.group+1,1)
-  n.seq <- seq(1, ne, by=n.per.group)
-  if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
-
-  fhat.sum <- 0
-  fhat.sumsq <- 0
-
-  if (verbose) pb <- txtProgressBar() ##{ cat("\nProgress for KDE evaluation at points\n"); pb <- txtProgressBar()}
-
-  if (length(n.seq)> 1)
+  
+  if (binned)
   {
-    for (i in 1:(length(n.seq)-1))
-    {  
-      if (verbose) setTxtProgressBar(pb, i/ngroup) ##cat(i, "\b/", ngroup, " ") 
-      difs <- differences(x=x, y=eval.points[n.seq[i]:(n.seq[i+1]-1),])
-      fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
-      fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
-      fhat.sum <- fhat.sum + sum(fhat)
-      fhat.sumsq <- fhat.sumsq + sum(fhat^2)
-    }
+    fhatx <- kdde(x=x, deriv.order=0, H=H, binned=TRUE, bgridsize=bgridsize)
+    fhat <- find.nearest.gridpts(x=eval.points, gridx=fhatx$eval.points, f=fhatx$estimate)$fx
+    fhat.sum <- sum(fhat)
+    fhat.sumsq <- sum(fhat^2)
   }
-  if (verbose) close(pb)
- 
+  else
+  {
+    if (verbose) pb <- txtProgressBar() 
+    n.per.group <- max(c(round(1e6/ne),1e3))
+    ngroup <- max(ne%/%n.per.group+1,1)
+    n.seq <- seq(1, ne, by=n.per.group)
+    if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
+
+    fhat.sum <- 0
+    fhat.sumsq <- 0
+    if (length(n.seq)> 1)
+    {
+      for (i in 1:(length(n.seq)-1))
+      {  
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
+        difs <- differences(x=x, y=eval.points[n.seq[i]:(n.seq[i+1]-1),])
+        fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
+        fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
+        fhat.sum <- fhat.sum + sum(fhat)
+        fhat.sumsq <- fhat.sumsq + sum(fhat^2)
+      }
+    }
+    if (verbose) close(pb)
+  }
+    
   return(list(sum=fhat.sum, sumsq=fhat.sumsq))
 }
 
@@ -809,8 +818,8 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colo
   xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
-  require(rgl)
-  require(misc3d)
+  ##require(rgl)
+  ##require(misc3d)
   
   if (missing(approx.cont))
     approx.cont <- (nrow(fhat$x) > 2000)
@@ -842,23 +851,18 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colo
   
   nc <- length(hts)
   
-  if (missing(colors))
-    colors <- rev(heat.colors(nc))
-
+  if (missing(colors)) colors <- rev(heat.colors(nc))
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
   if (missing(zlab)) zlab <- fhat$names[3]
-  ##if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
-  
-  if (missing(alphavec))
-    alphavec <- seq(0.1,0.5,length=nc)
+  if (missing(alphavec)) alphavec <- seq(0.1,0.5,length=nc)
 
-  bg3d(col="white")
   if (drawpoints)
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-
+  bg3d(col="white")
+  
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))
       contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
