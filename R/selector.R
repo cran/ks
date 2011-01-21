@@ -157,7 +157,7 @@ psifun1 <- function(x.star, Sd2r4, pilot="samse", binned, bin.par, deriv.order=0
   {
     Sd2r6 <- Sdr(d=d, r=2*r+6)
     D2r4L0 <- DrL0(d=d, r=2*r+4, Sdr=Sd2r4)
-    psi2r6.ns <- psins(r=2*r+6, Sigma=S.star, deriv.vec=TRUE, Sdr=Sd2r6) 
+    psi2r6.ns <- psins(r=2*r+6, Sigma=S.star, deriv.vec=TRUE, Sdr.mat=Sd2r6) 
     A1 <- sum(D2r4L0^2)
     A2 <- sum(t(D2r4L0) * t(psi2r6.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))
     A3 <- sum((t(psi2r6.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))^2)
@@ -236,7 +236,7 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
     Sd2r8 <- Sdr(d=d, r=2*r+8)
     D2r4L0 <- DrL0(d=d, r=2*r+4, Sdr=Sd2r4)
     D2r6L0 <- DrL0(d=d, r=2*r+6, Sdr=Sd2r6)
-    psi2r8.ns <- psins(r=2*r+8, Sigma=S.star, deriv.vec=TRUE, Sdr=Sd2r8) 
+    psi2r8.ns <- psins(r=2*r+8, Sigma=S.star, deriv.vec=TRUE, Sdr.mat=Sd2r8) 
     A1 <- sum(D2r6L0^2)
     A2 <- sum(t(D2r6L0) * t(psi2r8.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+6))))
     A3 <- sum((t(psi2r8.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+6))))^2)
@@ -252,9 +252,9 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
   ## compute 1 pilot for SAMSE    
   else if (pilot=="samse")
   {
-    g6.star <- gsamse.nd(S.star, n, 6, Sdr=Sd2r6)
+    g6.star <- gsamse.nd(S.star, n, 6, Sdr.mat=Sd2r6)
     psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=FALSE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r6, add.index=FALSE, verbose=verbose)
-    g.star <- gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star, Sdr=Sd2r4)
+    g.star <- gsamse.nd(S.star, n, 4, nstage=2, psihat=psihat6.star, Sdr.mat=Sd2r4)
     psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r4, add.index=TRUE, verbose=verbose)
   }
   ## compute different pilots for AMSE
@@ -475,6 +475,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   Sd2r4 <- Sdr(d=d, r=2*r+4)
   if (nstage==2) Sd2r6 <- Sdr(d=d, r=2*r+6)
 
+  
   if (pilot=="unconstr")
   {
     ## psi4.mat is on data scale
@@ -499,9 +500,9 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 
     ## psi4.mat is on pre-transformed data scale
     if (nstage==1)
-      psi.fun <- psifun1(x=x.star, Sd2r4=Sd2r4, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
+      psi.fun <- psifun1(x.star, Sd2r4=Sd2r4, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
     else if (nstage==2)
-      psi.fun <- psifun2(x=x.star, Sd2r4=Sd2r4, Sd2r6=Sd2r6, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
+      psi.fun <- psifun2(x.star, Sd2r4=Sd2r4, Sd2r6=Sd2r6, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
     psi2r4.mat <- invvec(psi.fun)
 
     ## use normal reference bandwidth as initial condition 
@@ -994,7 +995,7 @@ gamse.scv.nd <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bi
 {
   if (nstage==0)
   {
-    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE, Sdr=Sd6) 
+    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE, Sdr.mat=Sd6) 
   }
   else if (nstage==1)
   {  
@@ -1035,7 +1036,7 @@ gvamse.scv.nd <- function(x.star, Sd6, Sd4, d, Sigma.star, Hamise, n, binned=FAL
 {
   if (nstage==0)
   {
-    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE, Sdr=Sd6) 
+    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE, Sdr.mat=Sd6) 
   }
   else if (nstage==1)
   {  
@@ -1086,7 +1087,7 @@ Gamse.scv.nd <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol=
   }
   else if (nstage==0)
   {
-    psihat6 <- psins(r=6, Sigma=S, deriv.vec=TRUE, Sdr=Sd6) 
+    psihat6 <- psins(r=6, Sigma=S, deriv.vec=TRUE, Sdr.mat=Sd6) 
   }
   
   ## constants for normal reference
@@ -1311,9 +1312,9 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
     Hamise <- S12inv %*% Hamise%*% S12inv  ## convert to pre-transf data scale
 
     if (pilot=="amse" | pilot=="samse")
-      gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
+      gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
     else if (pilot=="vamse")
-      gamse <- gvamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1)
+      gamse <- gvamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1)
     G.amse <- gamse^2 * diag(d)
 
     scv.mat.temp <- function(vechH)
@@ -1401,9 +1402,9 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   Sd6 <- Sdr(d=d, r=6)
 
   if (pilot=="amse" | pilot=="samse")
-    gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
+    gamse <- gamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
   else if (pilot=="vamse")
-    gamse <- gvamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, H=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1)
+    gamse <- gvamse.scv.nd(x.star=x.star, d=d, Sigma.star=S.star, Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1)
   G.amse <- gamse^2 * diag(d)
   
   ## use normal reference bandwidth as initial condition

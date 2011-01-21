@@ -372,20 +372,20 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
   
   if(r>0){
-    vSigma<-vec(Sigma)
+    vSigma <- vec(Sigma)
     ones <- rep(1,d^r)
     Sigmainvr <- Kpow(Sigmainv,r)        
-    SirSdr <- Sigmainvr %*% Sdr.mat    
-
+    
     ind.mat.minimal.rep <- list()
     for (j in 1:nrow(ind.mat.minimal)) ind.mat.minimal.rep[[j]] <- which.mat(ind.mat.minimal[j,], ind.mat) 
-  
+
+    SirSdr <- Sigmainvr %*% Sdr.mat    
+
     ## break up computation into blocks to not exceed memory limits
     n.per.group <- max(c(round(1e6/d^r),2))
-    ##ngroup <- max(n%/%n.per.group+1,1)
     n.seq <- seq(1, n, by=n.per.group)
     if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
-
+    
     if (length(n.seq)> 1)
     {
       mvh.minimal <- numeric()
@@ -418,11 +418,11 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
       mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
       mvh.minimal <- mvh[,ind.mat.minimal.logical]
     }
-
+    
     if (is.vector(mvh.minimal)) mvh.minimal <- matrix(mvh.minimal, nrow=1)
   }
-
   
+  ## add derivative indices
   if (r>0)
   {  
     if (deriv.vec)
@@ -581,7 +581,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
         {  
           difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
           sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
-          if (verbose) setTxtProgressBar(pb, i/ngroup) 
+          if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
         }
       }
      else
@@ -652,7 +652,6 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
 
     ind.mat <- dmvnorm.deriv(x=rep(0,d), Sigma=diag(d), deriv.order=sum(r), deriv.vec=TRUE, only.index=TRUE)
     fhatr <- kdde.binned(bin.par=bin.par, H=sigma^2*diag(d), deriv.order=sum(r), deriv.vec=TRUE, w=rep(1,n), deriv.index=which.mat(r=r, ind.mat)[1])
-    ##fhatr <- drvkde(x=bin.par$counts, drv=r, bandwidth=sigma, binned=TRUE, se=FALSE)
     sumval <- sum(bin.par$counts * n * fhatr$est[[1]])
   }
   else
@@ -704,7 +703,7 @@ moments.mixt <- function (mus, Sigmas, props)
   d <- ncol(Sigmas)
   k <- length(props)
   mn <- rep(0, d)
-  va <- matrix(0, nr=d, nc=d)
+  va <- matrix(0, nrow=d, ncol=d)
   for (i in 1:k)
   {
     mn <- mn + props[i] * mus[i,]

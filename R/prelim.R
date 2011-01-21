@@ -555,16 +555,41 @@ T<-function(d,r){    #### Second version, recursive
   return(Tmat)
 }
 
+
+Trow <- function(d,r,row=1){    #### Second version, recursive
+  Id <- diag(d)
+  Tmat <- Id
+  Kdd <- K.mat(d,d)
+  if (r>1)
+  {
+    for (j in 2:r)
+    {
+     Idj2Kdd <- diag(d^(j-2)) %x% Kdd
+     browser()
+     Tmat <- Idj2Kdd %*% ((Tmat %x% Id) + Idj2Kdd) %*% Idj2Kdd
+   }
+  } 
+  return(Tmat)
+}
+
 ## symmetriser matrix
 
-Sdr<-function(d,r){
-  if(r==0)S<-1
+Sdr<-function(d, r){
+  if (r==0) S<-1
   else{
-    S<-diag(d)
-    if(r>=2){for(j in 2:r){S<-(S%x%diag(d))%*%T(d,j)/j}}}
+    S <- diag(d)
+    if (r>=2)
+      for(j in 2:r)
+        S <- S %x% diag(d) %*% T(d,j)/j
+  }
   return(S)
 }
 
+Sdrx <- function(d,r,x)
+{
+  xtemp <- x
+    
+}
 
 ########################################################################
 ### Identifying elements of Theta_6 matrix
@@ -601,7 +626,9 @@ default.gridsize <- function(d)
     gridsize <- rep(51, d)
   else if (d==4)
     gridsize <- rep(21, d)
-
+  else
+    gridsize <- NA
+  
   return(gridsize)
 }
 
@@ -615,7 +642,9 @@ default.bgridsize <- function(d)
     gridsize <- rep(31, d)
   else if (d==4)
     gridsize <- rep(21, d)
-
+  else
+    gridsize <- NA
+  
   return(gridsize)
 }
 

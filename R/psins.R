@@ -6,9 +6,7 @@
 
 psins.1d <- function(r, sigma)
 {
-  ##return(dnorm.deriv(x=0, r=r, sigma=sqrt(2)*sigma))
-  
-  if (r %%2 ==0)
+  if (r %% 2 ==0)
     psins <- (-1)^(r/2)*factorial(r)/((2*sigma)^(r+1)*factorial(r/2)*pi^(1/2))
   else
     psins <- 0

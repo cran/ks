@@ -31,7 +31,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   if (binned)
   {
     if (!missing(eval.points)) stop("Both binned=TRUE and eval.points are non-empty.")
-    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     ##if (!identical(diag(diag(H)), H) & d > 1) stop("Binned estimation defined for diagonal H only")
     
     if (positive & is.vector(x))
@@ -117,7 +117,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
 {
   r <- deriv.order
   if (length(r)>1) stop("deriv.order should be a non-negative integer.")
-  
+
   ## linear binning
   if (missing(bin.par))
   {
@@ -131,7 +131,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
       else {h <- sqrt(H); H <- as.matrix(H)}
 
     if (d==1) Hd <- H else Hd <- diag(diag(H))
-    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     
     bin.par <- binning(x=x, H=Hd, h=h, bgridsize, xmin, xmax, supp=3.7+max(r), w=w)
   }
@@ -155,8 +155,8 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
   }
   else
   {
-    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=TRUE)
-    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose)
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=deriv.vec)
+    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose, deriv.vec=deriv.vec)
   }
 
   if (missing(x)) x <- NULL
@@ -190,7 +190,7 @@ kdde.binned.1d <- function(h, deriv.order, bin.par)
   return(list(eval.points=bin.par$eval.points, estimate=est))
 }
 
-kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE)
+kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deriv.vec=TRUE)
 {
   d <- ncol(H)
   r <- deriv.order
@@ -204,9 +204,8 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE)
   if (d==2) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2])
   if (d==3) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3])
   if (d==4) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3], (b[4]-a[4])*(0:L[4])/M[4])
-  ##nxgrid <- nrow(xgrid)
-
-  deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE) ##Keval$deriv.ind
+  
+  deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE, deriv.vec=FALSE)
 
   Keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, deriv.vec=FALSE)
@@ -221,7 +220,8 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE)
   if (!(is.null(nderiv)))
     for (s in 1:nderiv)
     {
-      deriv.rep.index <- which.mat(deriv.index.minimal[s,], deriv.index)
+      if (deriv.vec) deriv.rep.index <- which.mat(deriv.index.minimal[s,], deriv.index)
+      else deriv.rep.index <- s
       Kevals <- array(Keval[,s], dim=L+1)
       if (r==0) sf <- rep(1,d)
       else sf <- (-1)^deriv.index.minimal[s,]
@@ -429,7 +429,6 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, doub
     psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE)
   }
   psir <- drop(psir)
-  
   
   if (add.index)
   {

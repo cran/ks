@@ -86,6 +86,8 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
   selection. \emph{Computational Statistics}, \bold{9}, 97-116.
 }
+
+\seealso{\code{\link{Hpi}}}
   
 \examples{
 data(unicef)
