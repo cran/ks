@@ -8,7 +8,7 @@
 Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize, double.loop=FALSE, amise=FALSE, verbose=FALSE)
 {
   if (deriv.order!=0) stop("Currently only deriv.order=0 is implemented")
-  
+   
   n <- nrow(x)
   d <- ncol(x)
 
@@ -34,7 +34,6 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
     }
     result <- optim(vech(Hstart), amse2.temp, method="BFGS")
     H2 <- invvech(result$par) %*% invvech(result$par)
-    
     psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE, binned=binned, verbose=verbose)
   }
   else
@@ -141,17 +140,20 @@ xi <- function(x, G)
 ## Test statistic for 2-sample test
 #######################################################################################################
 
-kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE)
+kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE, pre.scale=FALSE)
 {
   n1 <- nrow(x1)
   n2 <- nrow(x2)
   d <- ncol(x1)
   K0 <- drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0))
 
-  x12.star <- pre.scale(rbind(x1,x2))
-  x1 <- x12.star[1:n1,]
-  x2 <- x12.star[(n1+1):(n1+n2),]
-  
+  if (pre.scale)
+  {
+    x12.star <- pre.scale(rbind(x1,x2))
+    x1 <- x12.star[1:n1,]
+    x2 <- x12.star[(n1+1):(n1+n2),]
+  }
+
   ## kernel estimation for components of test statistic
   if (missing(H1))
     H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
@@ -175,7 +177,15 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
     {
       S1 <- var(x1)
       H1.r1 <- Hamise.mixt(mus=rep(0,d), Sigmas=S1, samp=n1, props=1, deriv.order=1)
-      fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
+      if (binned)
+      {
+        fhat1.r1.est <- kdde(x=x1, H=H1.r1, deriv.order=1, binned=TRUE)
+        fhat1.r1 <- matrix(0, nrow=1, ncol=d)
+        for (i in 1:d)
+          fhat1.r1[,i] <- find.nearest.gridpts(x=apply(x1,2, mean), gridx=fhat1.r1.est$eval.points, f=fhat1.r1.est$estimate[[i]])$fx
+      }
+      else
+        fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
       var.fhat1 <- drop(fhat1.r1 %*% S1 %*% t(fhat1.r1))
     }
     psi12 <- kde.points.sum(x=x1, H=H1, eval.points=x2, verbose=verbose, binned=binned, bgridsize=bgridsize)$sum/n2
@@ -193,7 +203,15 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
     {
       S2 <- var(x2)
       H2.r1 <- Hamise.mixt(mus=rep(0,d), Sigmas=S2, samp=n2, props=1, deriv.order=1)
-      fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
+      if (binned)
+      {
+        fhat2.r1.est <- kdde(x=x2, H=H2.r1, deriv.order=1, binned=TRUE)
+        fhat2.r1 <- matrix(0, nrow=1, ncol=d)
+        for (i in 1:d)
+          fhat2.r1[,i] <- find.nearest.gridpts(x=apply(x2,2, mean), gridx=fhat2.r1.est$eval.points, f=fhat2.r1.est$estimate[[i]])$fx
+      }
+      else
+        fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
       var.fhat2 <- drop(fhat2.r1 %*% S2 %*% t(fhat2.r1))
     }
     psi21 <- kde.points.sum(x=x2, H=H2, eval.points=x1, verbose=verbose, binned=binned, bgridsize=bgridsize)$sum/n1

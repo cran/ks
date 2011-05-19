@@ -142,7 +142,7 @@ data(unicef)
 H.scv <- Hscv(x=unicef)
 fhat <- kde(x=unicef, H=H.scv, compute.cont=TRUE)
 plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.1)
-plot(fhat, display="persp", border=NA, col="grey96", shade=0.75)
+plot(fhat, display="persp", border=NA, shade=0.3)
 plot(fhat, display="image", col=rev(heat.colors(100)))
 plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 
@@ -158,11 +158,10 @@ plot(fhatx, abs.cont=lev)
 plot(fhaty, abs.cont=lev, col=3, add=TRUE) 
 
 ## large sample from bivariate normal 
-x <- rmvnorm.mixt(5000, c(0,0), invvech(c(1, 0.8, 1)))    
+x <- rmvnorm.mixt(10000, c(0,0), invvech(c(1, 0.8, 1)))    
 H <- Hpi(x, binned=TRUE)
-fhat <- kde(x, H=H, compute.cont=TRUE, approx.cont=TRUE)
-plotmixt(mus=c(0,0), Sigmas=invvech(c(1, 0.8, 1)), props=1)      
-plot(fhat, drawlabels=FALSE, add=TRUE, col=2)  
+fhat <- kde(x, H=H, binned=TRUE)      
+plot(fhat, display="persp", border=NA, shade=0.1)  
 
 ## trivariate example
 library(MASS)

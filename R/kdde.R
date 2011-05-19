@@ -113,7 +113,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 ## Multivariate binned kernel density derivative estimate
 ###############################################################################
 
-kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, Sdr.mat, verbose=FALSE)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, Sdr.mat, verbose=FALSE, approx.taylor=FALSE)
 {
   r <- deriv.order
   if (length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -156,7 +156,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
   else
   {
     ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=deriv.vec)
-    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose, deriv.vec=deriv.vec)
+    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose, deriv.vec=deriv.vec, approx.taylor=approx.taylor)
   }
 
   if (missing(x)) x <- NULL
@@ -190,7 +190,7 @@ kdde.binned.1d <- function(h, deriv.order, bin.par)
   return(list(eval.points=bin.par$eval.points, estimate=est))
 }
 
-kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deriv.vec=TRUE)
+kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deriv.vec=TRUE, approx.taylor=FALSE)
 {
   d <- ncol(H)
   r <- deriv.order
@@ -200,7 +200,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deri
   M <- sapply(bin.par$eval.points, length)
   L <- pmin(ceiling((4+r)*max(sqrt(abs(diag(H))))*(M-1)/(b-a)), M-1)
 
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=r)
+  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d, r=r)
   if (d==2) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2])
   if (d==3) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3])
   if (d==4) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3], (b[4]-a[4])*(0:L[4])/M[4])
@@ -208,10 +208,9 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deri
   deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE, deriv.vec=FALSE)
 
-  Keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, deriv.vec=FALSE)
+  Keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, deriv.vec=FALSE, approx.taylor=approx.taylor)
   Keval <- Keval$deriv/n
   if (r==0) Keval <- as.matrix(Keval, ncol=1)
-  
   est <- list()
   if (verbose) pb <- txtProgressBar() 
 
@@ -409,7 +408,7 @@ kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
   return(psir) 
 }
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE, kfold=1)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE, kfold=1, kfold.random=FALSE, approx.taylor=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -418,15 +417,20 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, doub
   ##if (missing(double.loop)) double.loop <- (n*d^r/kfold > 1e6)
   if (kfold > 1)
   {
-    kfold.group <- sample(size=n, 1:kfold, replace=TRUE)
+    if (kfold.random) kfold.group <- sample(size=n, 1:kfold, replace=TRUE)
+    else kfold.group <- rep(1:kfold, length=n)
     psir <- 0
     for (k in 1:kfold)
-      psir <- psir + dmvnorm.deriv.sum(x=x[which(kfold.group==k),], Sigma=G, deriv.order=r, inc=inc, binned=FALSE, deriv.vec=deriv.vec, add.index=FALSE, double.loop=double.loop, Sdr.mat=Sdr.mat, verbose=verbose, kfe=TRUE)
-    psir <- psir/kfold
+    {
+      k.ind <- which(kfold.group==k)
+      psir <- psir + length(k.ind)*dmvnorm.deriv.sum(x=x[k.ind,], Sigma=G, deriv.order=r, inc=0, binned=FALSE, deriv.vec=deriv.vec, add.index=FALSE, double.loop=double.loop, Sdr.mat=Sdr.mat, verbose=verbose, kfe=TRUE, approx.taylor=approx.taylor)
+    }
+    if (inc==1) psir <- psir + dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=G, deriv.order=r)
+    psir <- psir/n
   }
   else
   {  
-    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE)
+    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, approx.taylor=approx.taylor)
   }
   psir <- drop(psir)
   
