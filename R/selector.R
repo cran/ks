@@ -428,7 +428,7 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize)
   return(dpik(x=x, level=nstage, gridsize=bgridsize))
 }
 
-Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -523,14 +523,25 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   }
 
   Hstart <- matrix.sqrt(Hstart)
-  result <- optim(vech(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
-  H <- invvech(result$par) %*% invvech(result$par)
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=vech(Hstart), f=pi.temp, print.level=2*as.numeric(verbose))    
+    H <- invvech(result$estimate) %*% invvech(result$estimate)
+    amise.star <- result$minimum
+  }
+  else
+  {
+    result <- optim(vech(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    H <- invvech(result$par) %*% invvech(result$par)
+    amise.star <- result$value
+  }
   if (pilot!="unconstr")  H <- S12 %*% H %*% S12     ## back-transform
 
   if (!amise)
     return(H)
   else
-    return(list(H = H, PI.star=result$value))
+    return(list(H = H, PI.star=amise.star))
 }     
 
 
@@ -549,7 +560,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 ###############################################################################
 
 
-Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   if(!is.matrix(x)) x <- as.matrix(x)
 
@@ -622,8 +633,7 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   { 
     if (pilot=="amse")
       stop("SAMSE pilot selectors are better for higher dimensions")
-
-
+    
     ## use normal reference bandwidth as initial condition
     if (missing(Hstart)) 
        Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
@@ -645,13 +655,23 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
     return(drop(pi.temp)) 
     }
 
-    result <- optim(diag(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
-    H <- diag(result$par) %*% diag(result$par)
-  
+    optim.fun1 <- tolower(substr(optim.fun,1,1))
+    if (optim.fun1=="n")
+    {
+      result <- nlm(p=diag(Hstart), f=pi.temp, print.level=2*as.numeric(verbose))    
+      H <- diag(result$estimate^2)
+      amise.star <- result$minimum
+    }
+    else if (optim.fun1=="o")
+    {  
+      result <- optim(diag(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+      H <- diag(result$par) %*% diag(result$par)
+      amise.star <- result$value
+    }
+
     ## back-transform
     if (pre=="scale") S12 <- diag(sqrt(diag(var(x))))
     else if (pre=="sphere") S12 <- matrix.sqrt(var(x))
-    amise.star <- result$value
     H <- S12 %*% H %*% S12
   }
 
@@ -687,17 +707,64 @@ lscv.1d <- function(x, h, binned, bin.par, deriv.order=0)
   return((-1)^r*(lscv1 - 2*lscv2))     
 }
 
-lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0, verbose=FALSE, Sd2r, kfold)
+lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0, verbose=FALSE, Sd2r, kfold, kfold.random, double.loop=FALSE, decouple=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
+  n <- nrow(x)
+
+  if (decouple)
+  {
+    ## fast version from J.E. Chacon 06/05/2011    
+    
+    maxd <- 6
+    n.per.group <- max(c(round(10^maxd/(n*d^r),10^(6-maxd))))
+    ngroup <- max(n%/%n.per.group+1,1)
+    sumval <- 0
+    n.seq <- seq(1, n, by=n.per.group)
+    if (tail(n.seq,n=1) <= n) n.seq <- c(n.seq, n+1)
+    n.seqlen <- length(n.seq)
+ 
+    Hinv <- chol2inv(chol(H))
+    vecHinv <- vec(Hinv)
+    detH <- det(H)
+    lscv1 <-0; lscv2 <- 0;
+    if (n.seqlen> 1)
+    {
+      for (i in 1:(n.seqlen-1))
+      {
+        difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+        m <- rowSums((difs %*% Hinv) * difs)
+        em2 <-exp(-m/2)
+        lscv1 <- lscv1 + (2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(em2))
+        lscv2 <- lscv2 + (2*pi)^(-d/2)*detH^(-1/2)*sum(em2)       
+      }
+    }
+    else
+    {
+      difs <- differences(x=x)
+      m <- rowSums((difs %*% Hinv) * difs)
+      em2 <-exp(-m/2)
+      lscv1 <- lscv1 + (2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(em2))
+      lscv2 <- lscv2 + (2*pi)^(-d/2)*detH^(-1/2)*sum(em2)  
+    }
+    lscv1 <- lscv1/n^2
+    lscv2 <- lscv2 - n*(2*pi)^(-d/2)*detH^(-1/2)
+    lscv2 <- lscv2/(n*(n-1))
+    lscv <- lscv1 - 2*lscv2
+    lscv <- (-1)^r*sum(vec(diag(d^r))*lscv)
+  }
+  else
+  {  
+    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, verbose=verbose, kfold=kfold, kfold.random=kfold.random, double.loop=double.loop)$psir
+    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, verbose=verbose, kfold=kfold, kfold.random=kfold.random, double.loop=double.loop)$psir
+    lscv <- drop(lscv1 - 2*lscv2)
+    lscv <- (-1)^r*sum(vec(diag(d^r))*lscv)
+  }
   
-  lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, verbose=verbose, kfold=kfold)$psir
-  lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, verbose=verbose, kfold=kfold)$psir
-  lscv <- drop(lscv1 - 2*lscv2)
-  lscv <- (-1)^r*sum(vec(diag(d^r))*lscv)  
   return(lscv)  
 }
+
 
    
 ###############################################################################
@@ -732,7 +799,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, deriv.order=0)
     
 }
   
-Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
@@ -742,24 +809,38 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deri
   r <- deriv.order 
 
   ## use normal reference selector as initial condn
-  if (missing(Hstart)) Hstart <- matrix.sqrt((4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
+  Hnorm <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+  if (missing(Hstart)) Hstart <- matrix.sqrt(Hnorm)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  
   if (d > 4) binned <- FALSE
-  Sd2r <- Sdr(d=d, r=2*r)
+  ##Sd2r <- Sdr(d=d, r=2*r)
+  ##if (missing(truncate.lim)) truncate.lim <- c(0.2, 1.5)
+  if (binned) bin.par <- binning(x=x, H=diag(diag(Hnorm)))
   
   lscv.mat.temp <- function(vechH)
   {
-    ##  ensures that H is positive definite
     H <- invvech(vechH) %*% invvech(vechH)
-    val <- lscv.mat(x=x, H=H, binned=binned, bgridsize=bgridsize, deriv.order=r, Sd2r=Sd2r, verbose=FALSE, kfold=kfold)
-    return(val)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, verbose=FALSE, kfold=kfold, kfold.random=FALSE, decouple=TRUE)
+    ## truncate Hlscv to suitable range
+    ##if (truncate) {if ((det(H) < truncate.lim[1]*det(Hnorm)) | (det(H) > truncate.lim[2]*det(Hnorm))) lscv <- 2*abs(lscv) + lscv}
+    return(lscv)  
   }
-  result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))     
 
-  H <- invvech(result$par) %*% invvech(result$par)
-  amise.opt <- result$value
-
+  ##result <- optim(vech(Hstart), lscv.mat.temp, control=list(trace=as.numeric(verbose)), method="BFGS")     
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=vech(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))    
+    H <- invvech(result$estimate) %*% invvech(result$estimate)
+    amise.opt <- result$minimum
+  }
+  else if (optim.fun1=="o")
+  {
+    result <- optim(vech(Hstart), lscv.mat.temp, control=list(trace=as.numeric(verbose)), method="Nelder-Mead")     
+    H <- invvech(result$par) %*% invvech(result$par)
+    amise.opt <- result$value
+  }
+  
   if (!amise)
     return(H)
   else
@@ -777,11 +858,12 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deri
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
-
+  if (kfold > 1) stop("Option kfold > 1 currently disabled in this version")
+  
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
@@ -799,16 +881,26 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1,
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
     bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(H.max))))
   }
-  
+
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    return(lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, verbose=FALSE, kfold=kfold))
+    return(lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, verbose=FALSE, kfold=kfold, decouple=TRUE))
   }
-  result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
-  H <- diag(result$par^2)
-  amise.opt <- result$value
-
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=diag(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))    
+    H <- diag(result$estimate^2)
+    amise.opt <- result$minimum
+  }
+  else if (optim.fun1=="o")
+  {
+    result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+    H <- diag(result$par^2)
+    amise.opt <- result$value
+  }
+  
   if (!amise)
     return(H)
   else
@@ -890,7 +982,6 @@ Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, kfold=1, verbose=FALSE)
   {
     H <- invvech(vechH) %*% invvech(vechH)
     ## ensures that H is positive definite
-
     return(bcv.mat(x, H, H)$bcv)
   }
     
@@ -900,17 +991,10 @@ Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, kfold=1, verbose=FALSE)
     return(bcv.mat(x, H, 2*H)$bcv)
   }
 
-  if (whichbcv==1)
-    result <- optim(vech(Hstart), bcv1.mat.temp, #gr=bcv1.mat.deriv,
-                    method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)),
-                    lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose)))
-  else if (whichbcv==2)
-    result <- optim(vech(Hstart), bcv2.mat.temp, #gr=bcv2.mat.deriv,
-                    method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)),
-                    lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose)))
+  result <- optim(vech(Hstart), get(paste("bcv", whichbcv, ".mat.temp", sep="")), method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)), lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose)))
   H <- invvech(result$par) %*% invvech(result$par)
   amise.opt <- result$value
-
+  
   if (!amise)
     return(H)
   else
@@ -965,12 +1049,8 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, kfold=1, verbose=FALSE
     H <- diag(diagH) %*% diag(diagH)
     return(bcv.mat(x, H, 2*H)$bcv)
   }
-  
-  if (whichbcv == 1)
-    result <- optim(diag(Hstart), bcv1.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose)))
-  else if (whichbcv == 2)
-    result <- optim(diag(Hstart), bcv2.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose)))
 
+  result <- optim(diag(Hstart),get(paste("bcv", whichbcv, ".mat.temp", sep="")), method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose)))
   H <- diag(result$par) %*% diag(result$par)
   amise.opt <- result$value
   if (!amise)
@@ -1228,7 +1308,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, verbose=FALSE)
+Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, verbose=FALSE, optim.fun="nlm")
 {
   ## k-fold b/w approx
   if (kfold > 1)
@@ -1294,12 +1374,23 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
       scv.temp <- scv.mat(x=x, H=H, G=G.amse, binned=binned, bgridsize=bgridsize, verbose=FALSE, Sdr.mat=Sd0)
       return(drop(scv.temp))
     }
-    result <- optim(vech(Hstart), scv.unconstr.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
-    H <- invvech(result$par) %*% invvech(result$par)
+    optim.fun1 <- tolower(substr(optim.fun,1,1))
+    if (optim.fun1=="n")
+    {
+      result <- nlm(p=vech(Hstart), f=scv.unconstr.temp, print.level=2*as.numeric(verbose))    
+      H <- invvech(result$estimate) %*% invvech(result$estimate)
+      amise.star <- result$minimum
+    }
+    else if (optim.fun1=="o")
+    {  
+      result <- optim(vech(Hstart), scv.unconstr.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+      H <- invvech(result$par) %*% invvech(result$par)
+      amise.star <- result$value
+    }
   }
   else if (pilot!="unconstr")
   {
-    Hamise <- Hpi(x=x, nstage=1, pilot=pilot, pre="sphere", binned=binned, bgridsize=bgridsize, verbose=verbose) 
+    Hamise <- Hpi(x=x, nstage=1, pilot=pilot, pre="sphere", binned=binned, bgridsize=bgridsize, verbose=verbose, optim.fun=optim.fun) 
     if (any(is.na(Hamise)))
     {
       warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
@@ -1330,19 +1421,30 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
       Hstart <- S12inv %*% Hstart %*% S12inv
     Hstart <- matrix.sqrt(Hstart)
 
-    result <- optim(vech(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
-    H <- invvech(result$par) %*% invvech(result$par)
+    optim.fun1 <- tolower(substr(optim.fun,1,1))
+    if (optim.fun1=="n")
+    {
+      result <- nlm(p=vech(Hstart), f=scv.mat.temp, print.level=2*as.numeric(verbose))    
+      H <- invvech(result$estimate) %*% invvech(result$estimate)
+      amise.star <- result$minimum
+    }
+    else if (optim.fun1=="o")
+    {  
+      result <- optim(vech(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+      H <- invvech(result$par) %*% invvech(result$par)
+      amise.star <- result$value
+    }
     H <- S12 %*% H %*% S12  ## back-transform
   }
 
   if (!amise)
     return(H)
   else
-    return(list(H = H, SCV.star=result$value))
+    return(list(H = H, SCV.star=amise.star))
 }
 
 
-Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, verbose=FALSE)
+Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, verbose=FALSE, optim.fun="nlm")
 {
   if(!is.matrix(x)) x <- as.matrix(x)
 
@@ -1423,14 +1525,25 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   }
   
   ## back-transform
-  result <- optim(diag(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
-  H <- diag(result$par) %*% diag(result$par)
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=diag(Hstart), f=scv.mat.temp, print.level=2*as.numeric(verbose))    
+    H <- diag(result$estimate) %*% diag(result$estimate)
+    amise.star <- result$minimum
+  }
+  else if (optim.fun1=="o")
+  {  
+    result <- optim(diag(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+    H <- diag(result$par) %*% diag(result$par)
+    amise.star <- result$value
+  }
   H <- S12 %*% H %*% S12
 
   if (!amise)
     return(H)
   else
-    return(list(H = H, SCV.star=result$value))
+    return(list(H = H, SCV.star=amise.star))
 }
 
 
@@ -1466,7 +1579,7 @@ hkfold <- function(x, selector, k=1, random=FALSE, ...)
   return(hstar)
 }
 
-Hkfold <- function(x, selector, kfold=1, random=FALSE, ...)
+Hkfold <- function(x, selector, kfold=1, random=FALSE, verbose=FALSE, ...)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1477,14 +1590,20 @@ Hkfold <- function(x, selector, kfold=1, random=FALSE, ...)
   if (n%%kfold < 10 & n%%kfold >0) kfold <- max(1, kfold-1) 
   m <- round(n/kfold,0)
   Hstar <- matrix(0, ncol=d, nrow=d)
+
+  if (verbose) pb <- txtProgressBar() 
+  
   if (kfold > 1)
   {
     for (i in 1:(kfold-1))
     {
+      if (verbose) setTxtProgressBar(pb, i/(kfold-1)) 
       xi <- x[rand.ind[((i-1)*m+1):(i*m)],]
       Hi <- do.call(selector, args=list(x=xi, ...))
       Hstar <- Hstar + Hi
     }
+    if (verbose) close(pb) 
+    
   }
   xi <- x[rand.ind[((kfold-1)*m+1):n],]
   Hi <- do.call(selector, args=list(x=xi, ...))

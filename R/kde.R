@@ -589,8 +589,8 @@ kde.points.sum <- function(x, H, eval.points, verbose=FALSE, binned=FALSE, bgrid
   else
   {
     if (verbose) pb <- txtProgressBar() 
-    n.per.group <- max(c(round(1e6/ne),1e3))
-    ngroup <- max(ne%/%n.per.group+1,1)
+    n.per.group <- max(c(round(1e6/sqrt(ne*nx)),1))
+    ##ngroup <- max(ne%/%n.per.group+1,1)
     n.seq <- seq(1, ne, by=n.per.group)
     if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
 
@@ -607,6 +607,13 @@ kde.points.sum <- function(x, H, eval.points, verbose=FALSE, binned=FALSE, bgrid
         fhat.sum <- fhat.sum + sum(fhat)
         fhat.sumsq <- fhat.sumsq + sum(fhat^2)
       }
+    }
+    else
+    {
+      fhat <- dmvnorm(x=x, mean=eval.points, sigma=H)
+      fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
+      fhat.sum <- sum(fhat)
+      fhat.sumsq <- sum(fhat^2)
     }
     if (verbose) close(pb)
   }
@@ -690,15 +697,20 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   if (missing(labcex)) labcex <-1
   if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
 
-  ##eval1 <- fhat$eval.points[[1]]
-  ##eval2 <- fhat$eval.points[[2]]
-  
   ## perspective/wireframe plot
   if (disp1=="p")
-    plotret <- persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate,
-          theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  {
+    hts <- seq(0, 1.1*max(fhat$estimate), length=100)
+    if (missing(col)) col <- c("white", rev(heat.colors(length(hts))))
+    if (length(col)<100) col <- rep(col, length=100)
+    z <- fhat$estimate
+    nrz <- nrow(z)
+    ncz <- ncol(z)
+    zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+    facetcol <- cut(zfacet, length(hts)+1)
+    plotret <- persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], ...)
           ##shade=shade, border=border, col=persp.col, ...)
-  
+  }
   else if (disp1=="s") 
   {
     if (!add)
@@ -725,7 +737,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     ##  hts <- contourLevels(fhat, n.pretty=5)  
     else
       hts <- abs.cont 
-
+    
     hts <- sort(hts)
     
     if (missing(col)) col <- 1 #rev(heat.colors(length(hts)))
@@ -738,9 +750,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       else scale <- 1
 
       if (hts[i]>0)
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
-                fhat$estimate*scale, level=hts[i]*scale, add=TRUE, 
-                drawlabels=drawlabels, labcex=labcex, col=col[i], lwd=lwd, ...)
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, labcex=labcex, col=col[i], lwd=lwd, ...)
     }
  
     ## add points 
@@ -796,7 +806,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
           if (missing(abs.cont)) scale <- cont[i]/hts[i]
           else scale <- 1
           
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, labcex=labcex, lwd=lwd, ...)
+          if (lwd >=1) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, labcex=labcex, lwd=lwd, ...)
         }
       }
     }

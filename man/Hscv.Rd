@@ -8,10 +8,10 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize,
-     amise=FALSE, kfold=1, verbose=FALSE)
-Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, bgridsize, 
-     amise=FALSE, kfold=1, verbose=FALSE)
+Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, 
+     bgridsize, amise=FALSE, kfold=1, verbose=FALSE, optim.fun="nlm")
+Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, 
+     bgridsize, amise=FALSE, kfold=1, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
@@ -28,6 +28,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{amise}{flag to return the minimal scaled SCV value. Default is FALSE.}
   \item{kfold}{value for k-fold bandwidth selection. See details below.} 
   \item{verbose}{flag to print out progress information. Default is FALSE.}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
@@ -47,7 +48,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
   with non-positive definiteness. Unconstrained pilot bandwidths are
-  from Chacon & Duong (2010). VAMSE pilots are a hybrid of SAMSE and unconstrained pilots.
+  from Chacon & Duong (2011). VAMSE pilots are a hybrid of SAMSE and unconstrained pilots.
 
   For d = 1, the selector \code{hscv} is not always stable for large
   sample sizes with binning.
@@ -60,8 +61,8 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 }
 
 \references{
-  Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
+  Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for smoothed cross
+   validation. Under revision.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric

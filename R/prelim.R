@@ -435,7 +435,7 @@ is.diagonal <- function(x)
 ####################################################################
 
 
-differences <- function(x, y, upper=FALSE)
+differences <- function(x, y, upper=FALSE, ff=FALSE, Kpow=0)
 {
   if (missing(y)) y <- x
   if (is.vector(x)) x <- t(as.matrix(x))
@@ -445,11 +445,12 @@ differences <- function(x, y, upper=FALSE)
   ny <- nrow(y)
   d <- ncol(x)
 
-  difs <- matrix(ncol=d,nrow=nx*ny)
+  if (ff) difs <- ff(init=0, dim=c(nx*ny,d))
+  else difs <- matrix(ncol=d,nrow=nx*ny)
+
   for (j in 1:d)
-  {    
+  {
     difs[,j] <- rep(x[,j], times=ny) - rep(y[1:ny,j], each=nx)
-    ##difs[,j] <- as.vector(x[,j]%*%t(rep(1,ny))-rep(1,nx)%*%t(y[,j]))
     ##The jth column of difs contains all the differences X_{ij}-Y_{kj}
   }
  

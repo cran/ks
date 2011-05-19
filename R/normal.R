@@ -313,7 +313,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ###############################################################################
 
 
-dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
+dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, approx.taylor=FALSE)
 {
   r <- deriv.order
   if(length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -352,7 +352,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
+  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d, r=sumr)
 
   ## Code by Jose Chacon 
   ## Normal density at x
@@ -369,22 +369,31 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
   if(r==0){ 
     mvh <- matrix(exp(logretval), nrow=n)
   }
-
-  
-  if(r>0){
-    vSigma <- vec(Sigma)
-    ones <- rep(1,d^r)
-    Sigmainvr <- Kpow(Sigmainv,r)        
-    
+  else if (r>0)
+  {
     ind.mat.minimal.rep <- list()
     for (j in 1:nrow(ind.mat.minimal)) ind.mat.minimal.rep[[j]] <- which.mat(ind.mat.minimal[j,], ind.mat) 
 
-    SirSdr <- Sigmainvr %*% Sdr.mat    
-
+    vSigma <- vec(Sigma)
+    ones <- rep(1,d^r)
+    Sigmainvr <- Kpow(Sigmainv,r)        
+    if (approx.taylor)
+    {
+      r.end <- 0
+      SirSdr <- Sigmainvr
+    }
+    else
+    {
+      r.end <- floor(r/2)
+      SirSdr <- Sigmainvr %*% Sdr.mat    
+    }
+    
     ## break up computation into blocks to not exceed memory limits
     n.per.group <- max(c(round(1e6/d^r),2))
     n.seq <- seq(1, n, by=n.per.group)
+    
     if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
+    else if (tail(n.seq,n=1)==n) n.seq[length(n.seq)] <- n.seq[length(n.seq)]+1
     
     if (length(n.seq)> 1)
     {
@@ -392,7 +401,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
       for (i in 1:(length(n.seq)-1))
       {
         Hr <- 0
-        for (j in 0:floor(r/2))
+        for (j in 0:r.end)
         {
           cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
           vSigmaj <- Kpow(vSigma,j)
@@ -407,7 +416,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
     else
     {
       Hr <- 0
-      for (j in 0:floor(r/2))
+      for (j in 0:r.end)
       {
         cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
         vSigmaj <- Kpow(vSigma,j)
@@ -422,6 +431,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
     if (is.vector(mvh.minimal)) mvh.minimal <- matrix(mvh.minimal, nrow=1)
   }
   
+
   ## add derivative indices
   if (r>0)
   {  
@@ -430,7 +440,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
       mvh <- matrix(0, nrow=n, ncol=d^r)
       for (j in 1:length(ind.mat.minimal.rep)) mvh[,ind.mat.minimal.rep[[j]]] <- mvh.minimal[,j]
     }
-    if (!deriv.vec)
+    else
     {
       mvh <- mvh.minimal
       ind.mat <- ind.mat.minimal
@@ -507,26 +517,25 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
 
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, approx.taylor=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
   ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
 
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
+  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d,r=r)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   
   if (binned)
   {
-    ##if (!is.diagonal(Sigma)) stop("Binned estimation defined for diagonal Sigma only")
     d <- ncol(Sigma)
     n <- nrow(x)
 
     if (is.diagonal(Sigma))
     {
       if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
-      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate 
+      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose, approx.taylor=approx.taylor)$estimate 
       if (r>0)
       {
         sumval <- rep(0, length(est))
@@ -542,7 +551,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       y <- x %*% Sigmainv12
       if (missing(bin.par)) bin.par <- binning(x=y, H=diag(d), bgridsize=bgridsize)  
 
-      est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate
+      est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose, approx.taylor=approx.taylor)$estimate
       if (r>0)
       {
         sumval <- rep(0, length(est))
@@ -564,7 +573,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       for (i in 1:nrow(x))
       {
         if (verbose) setTxtProgressBar(pb, i/ngroup) 
-        sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
+        sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2 , sum)
       }
     }
     else
@@ -573,26 +582,26 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       ngroup <- max(n%/%n.per.group+1,1)
       sumval <- 0
       n.seq <- seq(1, n, by=n.per.group)
-      if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
+      if (tail(n.seq,n=1) <= n) n.seq <- c(n.seq, n+1)
 
       if (length(n.seq)> 1)
       {
         for (i in 1:(length(n.seq)-1))
         {  
           difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
-          sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 ,sum)
+          sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2, sum)
           if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
         }
       }
      else
      {
-       sumval <- apply(dmvnorm.deriv(x=x, mu=x, Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
+       sumval <- apply(dmvnorm.deriv(x=x, mu=x, Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2 , sum)
      }
     }
     if (verbose) close(pb)
   }
   if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat)
+    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor)
   
   if (kfe)
     if (inc==1) sumval <- sumval/n^2
@@ -675,7 +684,7 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
       if (n %% ngroup >0)
       {
         difs <- differences(x=x, y=x[(ngroup*nn+1):n,])
-      sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
+        sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
       }
     }
   }
@@ -740,7 +749,7 @@ plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", draw=TRUE, ...)
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
     xlim, ylim, gridsize, display="slice", cont=c(25,50,75), abs.cont,
     lty, xlab="x", ylab="y", zlab="Density function",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e5, draw=TRUE, ...)
+    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e5, draw=TRUE, col, ...)
 {
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
@@ -788,31 +797,46 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   if (draw)
   {  
     disp <- substr(display,1,1)
-    
     if (disp=="p")
-      persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, ...)
-
+    {
+      hts <- seq(0, 1.1*max(dens.mat), length=100)
+      if (missing(col)) col <- c("white", rev(heat.colors(length(hts))))
+      z <- dens.mat
+      nrz <- nrow(z)
+      ncz <- ncol(z)
+      zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+      facetcol <- cut(zfacet, length(hts)+1)
+      persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], ...)
+    }
     else if (disp=="s")
     {
-      if (!add)
-        plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
-      if (missing(lty))
-        lty <- 1
+      if (missing(col)) col <- 1
+      if (!add) plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
+      if (missing(lty)) lty <- 1
   
       for (i in 1:length(hts)) 
       {
         scale <- cont[i]/hts[i]
         if (missing(abs.cont))
-          contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, lty=lty, ...)
+          contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, lty=lty, col=col, ...)
         else
-          contour(x, y, dens.mat, level=hts[i], add=TRUE, drawlabels=drawlabels, lty=lty, ...)
+          contour(x, y, dens.mat, level=hts[i], add=TRUE, drawlabels=drawlabels, lty=lty, col=col,...)
       }
     }
-    
     else if (disp=="i")
-      image(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
+    {
+      if (missing(col)) col <- c("white", rev(heat.colors(100)))
+      image(x, y, dens.mat, xlab=xlab, ylab=ylab, col=col, ...)
+    }
     else if (disp=="f")
-    filled.contour(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
+    {
+      if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
+      if (!add) plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
+      clev <- c(-0.01*max(abs(dens.mat)), sort(hts), max(c(dens.mat, hts)) + 0.01*max(abs(dens.mat)))
+      image(x, y, dens.mat, xlab=xlab, ylab=ylab, add=TRUE, col=col[1:(length(hts)+1)], breaks=clev, ...)
+
+      ##filled.contour(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
+    }
   }
   
   if (exists("hts"))

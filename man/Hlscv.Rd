@@ -9,8 +9,10 @@
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
-Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
-Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, 
+      deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, kfold=1, 
+      deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hlscv(x, binned=TRUE, bgridsize, deriv.order=0)
 }
 
@@ -25,6 +27,7 @@ hlscv(x, binned=TRUE, bgridsize, deriv.order=0)
   \item{kfold}{value for k-fold bandwidth selection. See details below.} 
   \item{deriv.order}{derivative order} 
   \item{verbose}{flag to print out progress information. Default is FALSE.}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}  
 }
 
 \value{

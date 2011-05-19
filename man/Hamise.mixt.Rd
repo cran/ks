@@ -32,7 +32,8 @@ hamise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
 hmise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
 
 amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
-ise.mixt(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, bgridsize)  
+ise.mixt(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, 
+         binned=FALSE, bgridsize)  
 mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 }
 

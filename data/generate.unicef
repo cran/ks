@@ -1,9 +1,0 @@
-
-## 
-unicef.tab <- read.table(file="unicef.full.dat", na.strings='-')
-unicef <- na.omit(unicef.tab[unicef.tab[,10] <= 1000,c(1,4,11)])
-rownames(unicef) <- unicef[,1]
-unicef <- unicef[,-1]
-colnames(unicef) <- c("GNI","Ave life exp")
-
-save(unicef, file="unicef.RData", ascii=TRUE, version=2)

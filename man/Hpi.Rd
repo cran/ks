@@ -11,10 +11,12 @@
   Plug-in bandwidth for for 1- to 6-dimensional data.}
 
 \usage{
-Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart,
-    binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
-Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart,
-    binned=FALSE, bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE)
+Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
+    bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, 
+    optim.fun="nlm")
+Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, 
+    bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, 
+    optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize)
 }
 
@@ -34,6 +36,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{kfold}{value for k-fold bandwidth selection. See details below.}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
 }
 
 \value{

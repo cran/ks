@@ -9,7 +9,8 @@
 
 \usage{
 kde.test(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1,
-    var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE)
+    var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE,
+    pre.scale=FALSE)
 Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize, 
     double.loop=FALSE, amise=FALSE, verbose=FALSE)
 }
@@ -24,6 +25,7 @@ Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
+  \item{pre.scale}{flag to pre-scale combined data set. Default is FALSE.}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
