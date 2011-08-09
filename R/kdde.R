@@ -113,7 +113,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 ## Multivariate binned kernel density derivative estimate
 ###############################################################################
 
-kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, Sdr.mat, verbose=FALSE, approx.taylor=FALSE)
+kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
   if (length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -156,7 +156,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
   else
   {
     ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=deriv.vec)
-    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose, deriv.vec=deriv.vec, approx.taylor=approx.taylor)
+    fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, Sdr.mat=Sdr.mat, verbose=verbose, deriv.vec=deriv.vec)
   }
 
   if (missing(x)) x <- NULL
@@ -190,7 +190,7 @@ kdde.binned.1d <- function(h, deriv.order, bin.par)
   return(list(eval.points=bin.par$eval.points, estimate=est))
 }
 
-kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deriv.vec=TRUE, approx.taylor=FALSE)
+kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deriv.vec=TRUE)
 {
   d <- ncol(H)
   r <- deriv.order
@@ -200,7 +200,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deri
   M <- sapply(bin.par$eval.points, length)
   L <- pmin(ceiling((4+r)*max(sqrt(abs(diag(H))))*(M-1)/(b-a)), M-1)
 
-  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d, r=r)
+  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=r)
   if (d==2) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2])
   if (d==3) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3])
   if (d==4) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3], (b[4]-a[4])*(0:L[4])/M[4])
@@ -208,7 +208,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deri
   deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, only.index=TRUE, deriv.vec=FALSE)
 
-  Keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, deriv.vec=FALSE, approx.taylor=approx.taylor)
+  Keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, Sdr.mat=Sdr.mat, deriv.vec=FALSE)
   Keval <- Keval$deriv/n
   if (r==0) Keval <- as.matrix(Keval, ncol=1)
   est <- list()
@@ -402,36 +402,20 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
 kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
 {
   r <- deriv.order
-  psir <- dnorm.deriv.sum(x=x, sigma=g, deriv.order=r, inc=inc, binned=binned, bin.par=bin.par, kfe=TRUE)
-  if (inc==0)  psir <- psir - dnorm.deriv(0, mu=0, sigma=g, deriv.order=r)/length(x)
+  n <- length(x)
+  psir <- dnorm.deriv.sum(x=x, sigma=g, deriv.order=r, inc=1, binned=binned, bin.par=bin.par, kfe=TRUE)
+  if (inc==0)  psir <- (n^2*psir - n*dnorm.deriv(0, mu=0, sigma=g, deriv.order=r))/(n*(n-1))
   
   return(psir) 
 }
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE, kfold=1, kfold.random=FALSE, approx.taylor=FALSE)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
-
-  ##if (missing(double.loop)) double.loop <- (n*d^r/kfold > 1e6)
-  if (kfold > 1)
-  {
-    if (kfold.random) kfold.group <- sample(size=n, 1:kfold, replace=TRUE)
-    else kfold.group <- rep(1:kfold, length=n)
-    psir <- 0
-    for (k in 1:kfold)
-    {
-      k.ind <- which(kfold.group==k)
-      psir <- psir + length(k.ind)*dmvnorm.deriv.sum(x=x[k.ind,], Sigma=G, deriv.order=r, inc=0, binned=FALSE, deriv.vec=deriv.vec, add.index=FALSE, double.loop=double.loop, Sdr.mat=Sdr.mat, verbose=verbose, kfe=TRUE, approx.taylor=approx.taylor)
-    }
-    if (inc==1) psir <- psir + dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=G, deriv.order=r)
-    psir <- psir/n
-  }
-  else
-  {  
-    psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, approx.taylor=approx.taylor)
-  }
+  
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE)
   psir <- drop(psir)
   
   if (add.index)
@@ -445,15 +429,280 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, doub
 }
 
 
-kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE)
+kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, double.loop=FALSE, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
   if (missing(bin.par) & binned) bin.par <- binning(x=x, H=g^2*diag(d))
   
-  psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par)
+  psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par, verbose=verbose)
   return(psir)
 }
+
+#############################################################################
+## Eta functional:
+## eta(x; G) = (vec^T I)^{otimes r} D^{otimes 2r} phi_G(x_i - y_j)
+#############################################################################
+
+### eta.kfe.y.1d is not really faster than kfe.1d 
+eta.kfe.y.1d <- function(x, y, g, deriv.order=0, inc=1, verbose=FALSE)
+{
+  d <- 1
+  r <- deriv.order/2
+  if (missing(y)) y <- x
+  nx <- length(x)
+  ny <- length(y)
+  
+  n.seq <- block.indices(nx, ny, d=1, r=0, diff=FALSE)
+  eta <- 0
+  if (verbose) pb <- txtProgressBar() 
+  
+  if (r==0)
+  {
+    a <- x^2
+    for (i in 1:(length(n.seq)-1))
+    {
+      if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+      nytemp <- n.seq[i+1] - n.seq[i]
+      ytemp <- y[n.seq[i]:(n.seq[i+1]-1)]
+      aytemp <- ytemp^2
+      M <- a %*%t(rep(1,nytemp)) + rep(1, nx)%*%t(aytemp) - 2*(x %*% t(ytemp))
+      em2 <- exp(-M/(2*g^2))
+      eta <- eta + (2*pi)^(-d/2)*g^(-1)*sum(em2)
+    }
+  }
+  else if (r>0)
+  {
+    a <- x^2
+    for (i in 1:(length(n.seq)-1))
+    {
+      if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+      nytemp <- n.seq[i+1] - n.seq[i]
+      ytemp <- y[n.seq[i]:(n.seq[i+1]-1)]
+      aytemp <- ytemp^2 
+      M <- a %*% t(rep(1,nytemp)) + rep(1,nx)%*%t(aytemp) - 2*(x %*%t(ytemp))
+      edv2 <- exp(-M/(2*g^2))
+
+      kappas <- matrix(nrow=as.numeric(nx*nytemp), ncol=r)
+      for (i in 1:r)
+      {
+        aytemp <- ytemp^2
+        dvi1 <- (a %*% t(rep(1,nytemp)) + rep(1,nx) %*% t(aytemp) - 2*(x%*%t(ytemp)))/g^(2*(i+1))
+        kappas[,i] <- (-2)^(i-1)*factorial(i-1)*(-g^(-2*i)+i*dvi1)
+      }
+      
+      nus <- matrix(nrow=as.numeric(nx*nytemp), ncol=r+1)        
+      nus[,1] <- 1        
+      for (j in 1:r)
+      {
+        js<-0:(j-1)
+        if (j==1) nus[,2] <- kappas[,1]
+        else nus[,j+1] <- rowSums(kappas[,j:1]*nus[,1:j]/matrix(rep(factorial(js)*factorial(rev(js)),nx*nytemp),nrow=nx*nytemp,byrow=TRUE))*factorial(j-1)
+      }
+      eta <- eta + (2*pi)^(-d/2)*g^(-1)*sum(edv2*nus[,r+1])
+    }
+  }
+  if (verbose) close(pb)
+  if (inc==0) eta <- (eta - nx*dnorm.deriv(x=0, mu=0, sigma=g, deriv.order=deriv.order))/(nx*(ny-1))
+  if (inc==1) eta <- eta/(nx*ny) 
+  
+  return(eta)
+}
+
+### eta.kfe.y is  faster than kfe
+
+eta.kfe.y <- function(x, G, deriv.order=0, inc=1, y, verbose=FALSE, symm=FALSE)
+{
+  if (is.vector(x)) x <- matrix(x, nrow=1)
+  d <- ncol(x)
+  r <- deriv.order/2
+  if (missing(y)) y <- x
+  if (is.vector(y)) y <- matrix(y, nrow=1)
+  
+  nx <- as.numeric(nrow(x))
+  ny <- as.numeric(nrow(y)) 
+  Ginv <- chol2inv(chol(G))
+  G2inv <- Ginv%*%Ginv
+  G3inv <- G2inv%*%Ginv
+  trGinv <- sum(diag(Ginv))
+  trG2inv <- sum(diag(G2inv))   
+  detG <- det(G)
+
+  if (!symm)
+  {
+    ## indices for separating into blocks for double sum calculation
+    n.seq <- block.indices(nx, ny, d=d, r=r, diff=FALSE)
+
+    if (verbose) pb <- txtProgressBar() 
+    ## fast version w/o symmetriser matrices adapted from J.E. Chacon 06/05/2011
+
+    if (r==0)
+    {
+      xG <- x%*%Ginv
+      a <- rowSums(xG*x)
+      eta <- 0
+      for (i in 1:(length(n.seq)-1))
+      {
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+        nytemp <- n.seq[i+1] - n.seq[i]
+        ytemp <- matrix(y[n.seq[i]:(n.seq[i+1]-1),], ncol=d)
+        aytemp <- rowSums((ytemp %*% Ginv) *ytemp)
+        M <- a%*%t(rep(1,nytemp)) + rep(1, nx)%*%t(aytemp) - 2*(xG%*%t(ytemp))
+        em2 <- exp(-M/2)
+        eta <- eta + (2*pi)^(-d/2)*detG^(-1/2)*sum(em2)
+      }
+    } 
+    else if (r==1)
+    {
+      xG <- x%*%Ginv
+      xG2 <- x%*%G2inv
+      a <- rowSums(xG*x)
+      a2 <- rowSums(xG2*x)
+
+      eta <- 0
+      for (i in 1:(length(n.seq)-1))
+      {
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+        nytemp <- n.seq[i+1] - n.seq[i]
+        ytemp <- matrix(y[n.seq[i]:(n.seq[i+1]-1),], nrow=nytemp)
+        aytemp <- rowSums((ytemp %*% Ginv) *ytemp)
+        aytemp2 <- rowSums((ytemp %*% G2inv) *ytemp)
+        M  <- a%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp)-2*(xG%*%t(ytemp))
+        M2 <- a2%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp2)-2*(xG2%*%t(ytemp))
+        eta <- eta + (2*pi)^(-d/2)*detG^(-1/2)*sum(exp(-M/2)*(M2-trGinv))
+      }
+    }
+    else if (r==2)
+    {
+      xG <- x%*%Ginv
+      xG2 <- x%*%G2inv
+      xG3 <- x%*%G3inv
+      a <- rowSums(xG*x)
+      a2 <- rowSums(xG2*x)
+      a3 <- rowSums(xG3*x)
+
+      eta <- 0
+      for (i in 1:(length(n.seq)-1))
+      {
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+        nytemp <- n.seq[i+1] - n.seq[i]
+        ytemp <- matrix(y[n.seq[i]:(n.seq[i+1]-1),], ncol=d)
+        aytemp <- rowSums((ytemp %*% Ginv) *ytemp)
+        aytemp2 <- rowSums((ytemp %*% G2inv) *ytemp)
+        aytemp3 <- rowSums((ytemp %*% G3inv) *ytemp)
+        M  <- a%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp)-2*(xG%*%t(ytemp))
+        M2 <- a2%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp2)-2*(xG2%*%t(ytemp))
+        M3 <- a3%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp3)-2*(xG3%*%t(ytemp))
+        eta <- eta + (2*pi)^(-d/2)*detG^(-1/2)*sum(exp(-M/2)*(2*trG2inv-4*M3+(-trGinv+M2)^2))
+      }
+    }
+    else if (r>2)
+    {
+      xG <- x%*%Ginv
+      a <- rowSums(xG*x)
+      eta <- 0
+      for (i in 1:(length(n.seq)-1))
+      {
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+        nytemp <- n.seq[i+1] - n.seq[i]
+        ytemp <- matrix(y[n.seq[i]:(n.seq[i+1]-1),], ncol=d)
+        aytemp <- rowSums((ytemp %*% Ginv) *ytemp)
+        M <- a %*% t(rep(1,nytemp)) + rep(1,nx)%*%t(aytemp) - 2*(xG%*%t(ytemp))
+        edv2 <- exp(-M/2)
+
+        P0<-Ginv
+        kappas <- matrix(nrow=as.numeric(nx*nytemp), ncol=r)
+        for (i in 1:r)
+        {
+          Gi1inv <- P0%*%Ginv
+          trGi0inv <- sum(diag(P0))
+        
+          xGi1inv <- x%*%Gi1inv
+          xGi1invx <- rowSums(xGi1inv*x)
+          aytemp <- rowSums((ytemp %*% Gi1inv) *ytemp)
+          dvi1 <- xGi1invx%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp)-2*(xGi1inv%*%t(ytemp))
+          kappas[,i] <- (-2)^(i-1)*factorial(i-1)*(-trGi0inv+i*dvi1)
+          P0 <- Gi1inv
+        }
+        
+        nus <- matrix(nrow=as.numeric(nx*nytemp), ncol=r+1)        
+        nus[,1] <- 1        
+        for (j in 1:r)
+        {
+          js<-0:(j-1)
+          if (j==1) nus[,2] <- kappas[,1]
+          else nus[,j+1] <- rowSums(kappas[,j:1]*nus[,1:j]/matrix(rep(factorial(js)*factorial(rev(js)),nx*nytemp),nrow=nx*nytemp,byrow=TRUE))*factorial(j-1)
+        }
+        eta <- eta + (2*pi)^(-d/2)*detG^(-1/2)*sum(edv2*nus[,r+1])
+      }
+      if (verbose) close(pb)
+    }
+  }
+  else
+  {
+    n.seq <- block.indices(nx, ny, d=d, r=r, diff=TRUE)
+    if (verbose) pb <- txtProgressBar() 
+    eta <- 0
+    for (i in 1:(length(n.seq)-1))
+    {  
+      if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
+      difs <- differences(x=x, y=y[n.seq[i]:(n.seq[i+1]-1),])
+      fhat <- dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=G, deriv.order=deriv.order)
+      fhat <- fhat %*% Kpow(vec(diag(d)), r)
+      eta <- eta + sum(fhat)
+    }
+    if (verbose) close(pb)
+  }
+
+  if (inc==0) eta <- (eta - (-1)^r*nx*nu(r=r, A=Ginv)*(2*pi)^(-d/2)*detG^(-1/2))/(nx*(ny-1))
+  if (inc==1) eta <- eta/(nx*ny)
+  
+  return(eta)
+}
+
+
+#############################################################################
+## Eta functional:
+## eta(x; A, B) = (vec^T A)^{otimes r} D^{otimes 2r} phi_B(x_i - x_j)
+#############################################################################
+
+eta.kfe <- function(x, r, A, B, verbose=FALSE)
+{
+  r <- r/2
+  d <- ncol(x)
+  n <- nrow(x)
+
+  ## Adapted from J.E. Chacon's LSCV implementation 
+   
+  if (r==0) eta.val <- eta.kfe.y(x=x, y=x, G=B, verbose=verbose, symm=FALSE)
+  else
+  {
+    sumval <- 0
+    n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
+    n.seqlen <- length(n.seq)
+    Binv <- chol2inv(chol(B))
+    Binv12 <- matrix.sqrt(Binv)
+    B12AB12 <- Binv12 %*% A %*% Binv12
+    BAB <- Binv %*% A %*% Binv
+    eta.val <- 0
+
+    if (verbose) pb <- txtProgressBar()
+    for (i in 1:(n.seqlen-1))
+    {
+      if (verbose) setTxtProgressBar(pb, i/(n.seqlen-1))
+      difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+      ##Bdifs <- difs %*% Binv12
+      phiB <- dmvnorm.mixt(x=difs, mu=rep(0,d), Sigma=B)
+      eta.val <- eta.val + sum(phiB*nu.noncent(r=r, A=BAB, mu=difs, Sigma=-B))   ##sum(phiB*nu.noncent(r=r, A=B12AB12, mu=Bdifs, Sigma=-diag(d)))     
+    }
+    if (verbose) close(pb)
+    eta.val <- eta.val/n^2
+  }
+   
+  return(eta.val)
+}
+
+
 
 
 #####################################################################

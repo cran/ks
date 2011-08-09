@@ -59,20 +59,13 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   ISE is a random variable that depends on the data
   \code{x}. MISE and AMISE are non-random and don't
   depend on the data. For normal mixture densities, ISE, MISE and AMISE 
-  have exact formulas for all dimensions. See Chacon, Duong & Wand (2010).
-%
-%  If \code{Hstart} is not given then it defaults to
-%  \code{k*var(x)} where k =
-% \eqn{\left[\frac{4}{n(d+2r+2)}\right]^{2/(d+2r+4)}}{4/(n*(d + 2r +
-%	2))^(2/(d+ 2r+ 4))}, n = sample size, d = dimension of data, r=
-%  derivative order. The default for \code{hstart} is the square root of
-%  this expression.
+  have exact formulas for all dimensions. See Chacon, Duong & Wand (2011).
 }
 
 
-\references{Chacon J.E., Duong, T. & Wand, M.P. (2010). Asymptotics for
+\references{Chacon J.E., Duong, T. & Wand, M.P. (2011). Asymptotics for
 	general multivariate kernel density derivative
-	estimators. \emph{Statistica Sinica}. In press. 
+	estimators. \emph{Statistica Sinica}. \bold{21}, 807-840.  
 }
 
 \examples{

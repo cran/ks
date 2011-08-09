@@ -55,22 +55,15 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="
     if (!missing(Hstart)) 
     {
       Hstarty <- Hstart[((i-1)*d+1) : (i*d),]
-      if (bw=="l")        
-        H <- Hlscv(y, Hstart=Hstarty)
-      else if (bw=="s")
-        H <- Hscv(y, pre=pre, Hstart=Hstarty, binned=binned, bgridsize=bgridsize)
-      else if (bw=="p")
-        H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, Hstart=Hstarty,
-                 binned=binned, bgridsize=bgridsize) 
+      if (bw=="l") H <- Hlscv(y, Hstart=Hstarty)
+      else if (bw=="s") H <- Hscv(y, pre=pre, Hstart=Hstarty, binned=binned, bgridsize=bgridsize)
+      else if (bw=="p") H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, Hstart=Hstarty, binned=binned, bgridsize=bgridsize) 
     }
     else
     {
-      if (bw=="l")
-        H <- Hlscv(y)
-      else if (bw=="s")
-        H <- Hscv(y, pre=pre, binned=binned, bgridsize=bgridsize)
-      else if (bw=="p")
-        H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
+      if (bw=="l") H <- Hlscv(y)
+      else if (bw=="s") H <- Hscv(y, pre=pre, binned=binned, bgridsize=bgridsize)
+      else if (bw=="p") H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
     }
     Hs <- rbind(Hs, H)
   }
@@ -91,12 +84,9 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sph
   for (i in 1:m)
   {
     y <- x[x.group==grlab[i],]
-    if (bw=="l")
-      H <- Hlscv.diag(y, binned=binned, bgridsize=bgridsize)
-    else if (bw=="p") 
-      H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
-    else if (bw=="s")
-      H <- Hscv.diag(y, pre=pre, binned=binned, bgridsize=bgridsize)
+    if (bw=="l") H <- Hlscv.diag(y, binned=binned, bgridsize=bgridsize)
+    else if (bw=="p") H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
+    else if (bw=="s") H <- Hscv.diag(y, pre=pre, binned=binned, bgridsize=bgridsize)
     Hs <- rbind(Hs, H)
   }
 

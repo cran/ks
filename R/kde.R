@@ -273,7 +273,6 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     }
     else
     {
-      ##if (d>1){ if (!identical(diag(diag(H)), H)) stop("Binned estimation defined for diagonal H only")}
       fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
     }
   }
@@ -571,55 +570,6 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
   return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, gridded=FALSE))
 }
 
-#### sum of KDE evaluated at eval.points
-
-kde.points.sum <- function(x, H, eval.points, verbose=FALSE, binned=FALSE, bgridsize)
-{
-  nx <- nrow(x)
-  ne <- nrow(eval.points)
-  d <- ncol(x)
-  
-  if (binned)
-  {
-    fhatx <- kdde(x=x, deriv.order=0, H=H, binned=TRUE, bgridsize=bgridsize)
-    fhat <- find.nearest.gridpts(x=eval.points, gridx=fhatx$eval.points, f=fhatx$estimate)$fx
-    fhat.sum <- sum(fhat)
-    fhat.sumsq <- sum(fhat^2)
-  }
-  else
-  {
-    if (verbose) pb <- txtProgressBar() 
-    n.per.group <- max(c(round(1e6/sqrt(ne*nx)),1))
-    ##ngroup <- max(ne%/%n.per.group+1,1)
-    n.seq <- seq(1, ne, by=n.per.group)
-    if (tail(n.seq,n=1) <= ne) n.seq <- c(n.seq, ne+1)
-
-    fhat.sum <- 0
-    fhat.sumsq <- 0
-    if (length(n.seq)> 1)
-    {
-      for (i in 1:(length(n.seq)-1))
-      {  
-        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
-        difs <- differences(x=x, y=eval.points[n.seq[i]:(n.seq[i+1]-1),])
-        fhat <- dmvnorm(x=difs, mean=rep(0,d), sigma=H)
-        fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
-        fhat.sum <- fhat.sum + sum(fhat)
-        fhat.sumsq <- fhat.sumsq + sum(fhat^2)
-      }
-    }
-    else
-    {
-      fhat <- dmvnorm(x=x, mean=eval.points, sigma=H)
-      fhat <- apply(matrix(fhat, nrow=nx), 2, sum)/nx
-      fhat.sum <- sum(fhat)
-      fhat.sumsq <- sum(fhat^2)
-    }
-    if (verbose) close(pb)
-  }
-    
-  return(list(sum=fhat.sum, sumsq=fhat.sumsq))
-}
 
 
 #######################################################################################
@@ -686,7 +636,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=FALSE,
     xlab, ylab, zlab="Density function", cex=1, pch=1, labcex,  
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col, lwd=1, ...) ##shade=0.75, border=NA, persp.col="grey", ...)
+    ptcol="blue", col, lwd=1, ...) 
 {
   disp1 <- substr(display,1,1)
   if (!is.list(fhat$eval.points))
@@ -766,33 +716,32 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   }
   else if (disp1=="f")
   {
+    ## compute contours
+    if (missing(abs.cont))
+    {
+      if (!is.null(fhat$cont))
+      {
+        cont.ind <- rep(FALSE, length(fhat$cont))
+        for (j in 1:length(cont))
+          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+        
+        if (all(!cont.ind))
+          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+        else
+          hts <- fhat$cont[cont.ind]
+      }
+      else
+        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+    }  
+    else
+      hts <- abs.cont 
+    hts <- sort(hts)
+    if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
+    
+    clev <- c(-0.01*max(abs(fhat$estimate)), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
+    
     if (display=="filled.contour2")
     {
-      ## compute contours
-      if (missing(abs.cont))
-      {
-        if (!is.null(fhat$cont))
-        {
-          cont.ind <- rep(FALSE, length(fhat$cont))
-          for (j in 1:length(cont))
-            cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-          
-          if (all(!cont.ind))
-            hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-          else
-            hts <- fhat$cont[cont.ind]
-        }
-        else
-          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-      }  
-      else
-        hts <- abs.cont 
-      
-      hts <- sort(hts)
-      
-      if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
-      
-      clev <- c(-0.01*max(abs(fhat$estimate)), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
       image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
 
       ## draw contours         
@@ -811,7 +760,10 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       }
     }
     else
-       filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, ...)
+    {
+      if (tail(hts, n=1) < max(fhat$estimate)) hts <- c(hts,  max(fhat$estimate))
+      filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, level=hts, ...)
+    }
   }
   if (disp1=="p")  invisible(plotret)
   else invisible()

@@ -24,11 +24,6 @@ rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
     n.samp <- sample(1:k, n, replace=TRUE, prob=props) 
     n.prop <- numeric(0)
 
-    ## alternative method for component membership
-    ##runif.memb <- runif(n=n)
-    ##memb <- findInterval(runif.memb, c(0,cumsum(props)), rightmost.closed=TRUE)
-    ##n.prop <- table(memb)
-    
     ## compute number taken from each mixture
     for (i in 1:k)
       n.prop <- c(n.prop, sum(n.samp == i))
@@ -313,7 +308,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ###############################################################################
 
 
-dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, approx.taylor=FALSE)
+dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
 {
   r <- deriv.order
   if(length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -352,7 +347,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
-  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d, r=sumr)
+  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
 
   ## Code by Jose Chacon 
   ## Normal density at x
@@ -377,57 +372,21 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
     vSigma <- vec(Sigma)
     ones <- rep(1,d^r)
     Sigmainvr <- Kpow(Sigmainv,r)        
-    if (approx.taylor)
-    {
-      r.end <- 0
-      SirSdr <- Sigmainvr
-    }
-    else
-    {
-      r.end <- floor(r/2)
-      SirSdr <- Sigmainvr %*% Sdr.mat    
-    }
+    r.end <- floor(r/2)
+    SirSdr <- Sigmainvr %*% Sdr.mat    
     
-    ## break up computation into blocks to not exceed memory limits
-    n.per.group <- max(c(round(1e6/d^r),2))
-    n.seq <- seq(1, n, by=n.per.group)
-    
-    if (tail(n.seq,n=1) < n) n.seq <- c(n.seq, n+1)
-    else if (tail(n.seq,n=1)==n) n.seq[length(n.seq)] <- n.seq[length(n.seq)]+1
-    
-    if (length(n.seq)> 1)
+    Hr <- 0
+    for (j in 0:r.end)
     {
-      mvh.minimal <- numeric()
-      for (i in 1:(length(n.seq)-1))
-      {
-        Hr <- 0
-        for (j in 0:r.end)
-        {
-          cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
-          vSigmaj <- Kpow(vSigma,j)
-          dens <- matrix(exp(logretval[n.seq[i]:(n.seq[i+1]-1)]), nrow=n.seq[i+1]- n.seq[i])
-          xr2j <- mat.Kpow(A=x.centred[n.seq[i]:(n.seq[i+1]-1),], pow=r-2*j)
-          Hr <- Hr + cj*mat.Kprod(U=xr2j, V=matrix(rep(vSigmaj, n.seq[i+1]- n.seq[i]), nrow=n.seq[i+1]- n.seq[i],byrow=TRUE))
-        }
-        mvh.temp <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
-        mvh.minimal <- rbind(mvh.minimal, mvh.temp[,ind.mat.minimal.logical])
-      }
+      cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
+      vSigmaj <- Kpow(vSigma,j)
+      dens <- matrix(exp(logretval), nrow=n)
+      xr2j <- mat.Kpow(A=x.centred, pow=r-2*j)
+      Hr <- Hr + cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
     }
-    else
-    {
-      Hr <- 0
-      for (j in 0:r.end)
-      {
-        cj <- (-1)^j*factorial(r)/(factorial(j)*2^j*factorial(r-2*j))
-        vSigmaj <- Kpow(vSigma,j)
-        dens <- matrix(exp(logretval), nrow=n)
-        xr2j <- mat.Kpow(A=x.centred, pow=r-2*j)
-        Hr <- Hr + cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
-      }
-      mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
-      mvh.minimal <- mvh[,ind.mat.minimal.logical]
-    }
-    
+    mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
+    mvh.minimal <- mvh[,ind.mat.minimal.logical]
+  
     if (is.vector(mvh.minimal)) mvh.minimal <- matrix(mvh.minimal, nrow=1)
   }
   
@@ -517,15 +476,16 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
 
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, approx.taylor=FALSE)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, offset)
 {
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
   ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
 
-  if (missing(Sdr.mat) & !approx.taylor) Sdr.mat <- Sdr(d=d,r=r)
+  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  if (missing(offset)) offset <- rep(0,d)
   
   if (binned)
   {
@@ -535,7 +495,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     if (is.diagonal(Sigma))
     {
       if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
-      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose, approx.taylor=approx.taylor)$estimate 
+      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate 
       if (r>0)
       {
         sumval <- rep(0, length(est))
@@ -551,7 +511,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       y <- x %*% Sigmainv12
       if (missing(bin.par)) bin.par <- binning(x=y, H=diag(d), bgridsize=bgridsize)  
 
-      est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose, approx.taylor=approx.taylor)$estimate
+      est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, Sdr.mat=Sdr.mat, verbose=verbose)$estimate
       if (r>0)
       {
         sumval <- rep(0, length(est))
@@ -573,40 +533,28 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       for (i in 1:nrow(x))
       {
         if (verbose) setTxtProgressBar(pb, i/ngroup) 
-        sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2 , sum)
+        sumval <- sumval + apply(dmvnorm.deriv(x, mu=x[i,], Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2 , sum)
       }
     }
     else
     {
-      n.per.group <- max(c(round(1e6/(n*d^r)),1))
-      ngroup <- max(n%/%n.per.group+1,1)
+      n.seq <- block.indices(n, n, d=d, r=r, diff=TRUE)
       sumval <- 0
-      n.seq <- seq(1, n, by=n.per.group)
-      if (tail(n.seq,n=1) <= n) n.seq <- c(n.seq, n+1)
-
-      if (length(n.seq)> 1)
-      {
-        for (i in 1:(length(n.seq)-1))
-        {  
-          difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
-          sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2, sum)
-          if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
-        }
+      for (i in 1:(length(n.seq)-1))
+      {  
+        difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+        sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2, sum)
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
       }
-     else
-     {
-       sumval <- apply(dmvnorm.deriv(x=x, mu=x, Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor), 2 , sum)
-     }
     }
     if (verbose) close(pb)
   }
-  if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, approx.taylor=approx.taylor)
   
-  if (kfe)
-    if (inc==1) sumval <- sumval/n^2
-    else sumval <- sumval/(n*(n-1))
-
+  if (inc==0)
+    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat)
+  
+  if (kfe) { if (inc==1) sumval <- sumval/n^2 else sumval <- sumval/(n*(n-1)) }
+  
   if (add.index)
   {
     if (deriv.vec) return(list(sum=sumval, deriv.ind=ind.mat))
@@ -648,7 +596,7 @@ dmvnorm.deriv.scalar <- function(x, mu, sigma, deriv.order, binned=FALSE)
 }
 
 
-dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, double.loop=FALSE, binned=FALSE, bin.par)
+dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, double.loop=FALSE, binned=FALSE, bin.par, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -665,6 +613,7 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
   }
   else
   {
+    if (verbose) pb <- txtProgressBar() 
     if (double.loop)
     {
       sumval <- 0
@@ -673,20 +622,16 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
     }
     else
     {
-      ngroup <- round(n^2/1e6)+1
-      nn <- n %/% ngroup
+      n.seq <- block.indices(n, n, d=d, r=r, diff=TRUE)
       sumval <- 0
-      for (i in 1:ngroup)
-      {
-        difs <- differences(x=x, y=x[((i-1)*nn+1):(i*nn),])
+      for (i in 1:(length(n.seq)-1))
+      {  
+        difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
         sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
-      }
-      if (n %% ngroup >0)
-      {
-        difs <- differences(x=x, y=x[(ngroup*nn+1):n,])
-        sumval <- sumval + sum(dmvnorm.deriv.scalar(x=difs, mu=rep(0,d), sigma=sigma, deriv.order=r))
+        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
       }
     }
+    if (verbose) close(pb)
   }
 
   if (inc==0)
@@ -694,7 +639,7 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
   
   if (kfe)
     if (inc==1) sumval <- sumval/n^2
-      else sumval <- sumval/(n*(n-1))
+    else sumval <- sumval/(n*(n-1))
   
   return(sumval)
 }

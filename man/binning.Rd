@@ -13,7 +13,7 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
   \item{x}{matrix of data values}
   \item{H,h}{bandwidth matrix, scalar bandwidth}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
-  \item{supp}{effective support for standard normal is [\code{-supp, supp}]}
+  \item{supp}{effective support for standard normal is [\code{-supp,supp}]}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights (non-negative and sum is equal to sample size). Default is a vector of all ones.}
 }

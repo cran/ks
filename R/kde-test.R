@@ -17,9 +17,7 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
   Hstart <- matrix.sqrt(Hstart)
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
-  ##m2K2 <- 1/2*(4*pi)^(-d/2)*vec(diag(d))
-  ##m0K2 <- (4*pi)^(-d/2)
-  
+
   if (nstage==2)
   {  
     ## stage 1
@@ -33,6 +31,7 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
       return(sum((amse2.temp)^2)) 
     }
     result <- optim(vech(Hstart), amse2.temp, method="BFGS")
+    
     H2 <- invvech(result$par) %*% invvech(result$par)
     psi2.hat <- kfe(x=x, G=H2, deriv.order=2, double.loop=double.loop, add.index=FALSE, binned=binned, verbose=verbose)
   }
@@ -113,31 +112,7 @@ Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, doubl
 
 
 #######################################################################################################
-## Kernel estimator of xi = int f(x)^3 dx = int f(x)^2 f(x) dx
-#######################################################################################################
-
-xi <- function(x, G)
-{
-  n <- nrow(x)
-  d <- ncol(x)
-  difs <- differences(x, upper=FALSE)
-  K12 <- dmvnorm(difs, mean=rep(0,d), sigma=G)
-  K12K13 <- 0
-
-  for (i in 1:n)
-  {
-    K12K13 <- K12K13 + sum(K12[((i-1)*n+1):(i*n)] %x% K12[((i-1)*n+1):(i*n)])
-    ##cat(i)
-  }
-
-  return(K12K13/n^3)
-}
-
-
-
-
-#######################################################################################################
-## Test statistic for 2-sample test
+## Test statistic for multivariate 2-sample test
 #######################################################################################################
 
 kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE, pre.scale=FALSE)
@@ -155,15 +130,12 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
   }
 
   ## kernel estimation for components of test statistic
-  if (missing(H1))
-    H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
-    ##else H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, verbose=verbose)
-  if (missing(H2))
-    H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
-    ##else H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, verbose=verbose)
+  if (missing(H1)) H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
+  if (missing(H2)) H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
 
-  if (missing(psi1)) psi1 <- kfe(x=x1, G=H1, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
-  if (missing(psi2)) psi2 <- kfe(x=x2, G=H2, deriv.order=0, double.loop=double.loop, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+  symm <- FALSE ## don't use symemtriser matrices in psi functional calculations
+  if (missing(psi1)) psi1 <- eta.kfe.y(x=x1, y=x1, G=H1, verbose=verbose, symm=symm)      
+  if (missing(psi2)) psi2 <- eta.kfe.y(x=x2, y=x2, G=H2, verbose=verbose, symm=symm)
 
   if (!missing(fhat1))
   {
@@ -188,7 +160,7 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
         fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
       var.fhat1 <- drop(fhat1.r1 %*% S1 %*% t(fhat1.r1))
     }
-    psi12 <- kde.points.sum(x=x1, H=H1, eval.points=x2, verbose=verbose, binned=binned, bgridsize=bgridsize)$sum/n2
+    psi12 <- eta.kfe.y(x=x1, G=H1, y=x2, verbose=verbose, symm=symm) 
   }
 
   if (!missing(fhat2))
@@ -214,7 +186,7 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
         fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
       var.fhat2 <- drop(fhat2.r1 %*% S2 %*% t(fhat2.r1))
     }
-    psi21 <- kde.points.sum(x=x2, H=H2, eval.points=x1, verbose=verbose, binned=binned, bgridsize=bgridsize)$sum/n1
+    psi21 <- eta.kfe.y(x=x2, G=H2, y=x1, verbose=verbose)
   }
 
   ## test statistic + its parameters
