@@ -1,14 +1,9 @@
 
 #############################################################################
-## Basic important vectors and matrices
+## Basic vectors and matrices and their operations
 #############################################################################
   
-###############################################################################
-# Vec operator 
-#
-# Takes square matrix x and returns its elements stacked column wise in a
-# vector
-###############################################################################
+## Vec operator 
 
 vec <- function(x, byrow=FALSE)
 {
@@ -23,12 +18,7 @@ vec <- function(x, byrow=FALSE)
   return(vecx)           
 }
 
-###############################################################################
-# Vech operator 
-# 
-# Takes matrix x and returns its elements that in the lower triangular half, 
-# stacked column wise in a vector
-###############################################################################
+## Vech operator
 
 vech <- function(x)
 {
@@ -54,11 +44,7 @@ vech <- function(x)
 }
 
   
-###############################################################################
-# Inverse vec operator 
-#
-# Takes vector x and stacks its elements into columns of a matrix. 
-###############################################################################
+## Inverse vec operator 
     
 invvec <- function(x, ncol, nrow, byrow=FALSE)
 {
@@ -84,11 +70,7 @@ invvec <- function(x, ncol, nrow, byrow=FALSE)
   return(invvecx)
 }
 
-###############################################################################
-# Inverse vech operator 
-#
-# Takes vector x and stacks its elements into a symmetric matrix 
-###############################################################################
+## Inverse vech operator 
 
 invvech <- function(x)
 {
@@ -108,7 +90,7 @@ invvech <- function(x)
   return(invvechx)
 }
 
-##### Trace of matrix
+## Trace of matrix
 
 tr <- function(A)
 {
@@ -124,11 +106,7 @@ tr <- function(A)
 }
 
 
-###############################################################################
-# Elementary vector 
-# 
-# Creates a vector of length d and with 1 at i-th component and 0 elsewhere 
-###############################################################################
+## Elementary vector 
     
 elem <- function(i, d)
 {
@@ -138,7 +116,7 @@ elem <- function(i, d)
   return(elem.vec)
 }      
 
-### Commutation matrix (taken from MCMCglmmm library)
+## Commutation matrix (taken from MCMCglmmm library)
 
 comm <- function(m,n){
   K<-matrix(0,m*n, m*n)
@@ -309,9 +287,6 @@ pre.sphere <- function(x, mean.centred=FALSE)
       x[,i] <- x[,i] - xmean[i]
   }
   x.sphered <- x %*% Sinv12
-  ##x.sphered <- matrix(0, ncol=ncol(x), nrow=nrow(x))
-  ##for (i in 1:nrow(x))
-  ##  x.sphered[i,] <- Sinv12 %*% x[i,]    
 
   return (x.sphered)
 }
@@ -410,6 +385,27 @@ permute.mat <- function(order)
     q
 }
 
+
+Theta6.elem <- function(d)
+{
+  Theta6.mat <- list()
+  Theta6.mat[[d]] <- list()
+  for (i in 1:d)
+    Theta6.mat[[i]] <- list()
+  
+  for (i in 1:d)
+    for (j in 1:d)
+    {  
+      temp <- numeric()
+      for (k in 1:d)     
+        for (ell in 1:d)    
+          temp <- rbind(temp, elem(i,d)+2*elem(k,d)+2*elem(ell,d)+elem(j,d))
+      
+      Theta6.mat[[i]][[j]] <- temp
+    }
+  
+  return(Theta6.mat)
+}
 
 
 ###############################################################################
@@ -566,7 +562,6 @@ Trow <- function(d,r,row=1){    #### Second version, recursive
     for (j in 2:r)
     {
      Idj2Kdd <- diag(d^(j-2)) %x% Kdd
-     browser()
      Tmat <- Idj2Kdd %*% ((Tmat %x% Id) + Idj2Kdd) %*% Idj2Kdd
    }
   } 
@@ -586,66 +581,14 @@ Sdr<-function(d, r){
   return(S)
 }
 
-Sdrx <- function(d,r,x)
+
+## default block indices for double sums
+block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6)
 {
-  xtemp <- x
-    
+  if (diff) npergroup <- max(c(block.limit %/% (nx*d^r), 1))
+  else npergroup <- max(c(block.limit %/% nx,1))
+  nseq <- seq(1, ny, by=npergroup)
+  if (tail(nseq,n=1) <= ny) nseq <- c(nseq, ny+1)
+  if (length(nseq)==1) nseq <- c(1, ny+1)
+  return(nseq)
 }
-
-########################################################################
-### Identifying elements of Theta_6 matrix
-########################################################################
-
-Theta6.elem <- function(d)
-{
-  Theta6.mat <- list()
-  Theta6.mat[[d]] <- list()
-  for (i in 1:d)
-    Theta6.mat[[i]] <- list()
-  
-  for (i in 1:d)
-    for (j in 1:d)
-    {  
-      temp <- numeric()
-      for (k in 1:d)     
-        for (ell in 1:d)    
-          temp <- rbind(temp, elem(i,d)+2*elem(k,d)+2*elem(ell,d)+elem(j,d))
-      
-      Theta6.mat[[i]][[j]] <- temp
-    }
-  
-  return(Theta6.mat)
-}
-
-default.gridsize <- function(d)
-{
-  if (d==1)
-    gridsize <- 401
-  else if (d==2)
-    gridsize <- rep(151,d)
-  else if (d==3)
-    gridsize <- rep(51, d)
-  else if (d==4)
-    gridsize <- rep(21, d)
-  else
-    gridsize <- NA
-  
-  return(gridsize)
-}
-
-default.bgridsize <- function(d)
-{
-  if (d==1)
-    gridsize <- 401
-  else if (d==2)
-    gridsize <- rep(151,d)
-  else if (d==3)
-    gridsize <- rep(31, d)
-  else if (d==4)
-    gridsize <- rep(21, d)
-  else
-    gridsize <- NA
-  
-  return(gridsize)
-}
-

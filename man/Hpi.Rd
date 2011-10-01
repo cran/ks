@@ -12,11 +12,9 @@
 
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, 
-    optim.fun="nlm")
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, kfold=1, deriv.order=0, verbose=FALSE, 
-    optim.fun="nlm")
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize)
 }
 
@@ -25,15 +23,16 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
     \code{"samse"} = single SAMSE pilot bandwidth, 
-    \code{"vamse"} = single VAMSE pilot bandwidth, 
-    \code{"unconstr"} = unconstrained pilot bandwidth}
+    \code{"unconstr"} = unconstrained pilot bandwidth,
+    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order>0, 
+    \code{"dscalar"} = single pilot bandwidth for deriv.order>0,
+    \code{"dunconstr"} = unconstrained pilot bandwidth for deriv.order>0},
   \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal scaled PI value}
-  \item{kfold}{value for k-fold bandwidth selection. See details below.}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
@@ -54,7 +53,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
   with non-positive definiteness. Unconstrained pilot bandwidths are
-  from Chacon & Duong (2010). VAMSE pilots are a hybrid of SAMSE and unconstrained pilots.
+  from Chacon & Duong (2010). 
 
   For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 

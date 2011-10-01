@@ -56,7 +56,7 @@ x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
 Hx <- Hpi(x)
 fhatx <- kde(x=x, H=Hx)
 lev1 <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
-lev2 <- contourLevels(fhatx, cont=c(75, 50, 25))      ## lev1 == lev2
+lev2 <- contourLevels(fhatx, cont=c(75, 50, 25))      ## lev1==lev2
 
 ## kda.kde
 library(MASS)

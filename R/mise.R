@@ -5,54 +5,101 @@
 
 ## nu, gamma.r, gamma.r2 written by Jose Chacon 10/2008
 
-nu <- function(r,A, inverse=FALSE)
+nu <- function(r, A)
 { ###Using the recursive formula provided in Kan (2008)
-  if (!inverse) A <- solve(A)
+  ##if (!inverse) A <- solve(A)
   ei <- eigen(A)$values
-  tr <- numeric(r)
+  tr.vec <- numeric(r)
   for(p in 1:r)
-    tr[p] <- sum(ei^p)
+    tr.vec[p] <- sum(ei^p)
 
-  nu <- 1
+  nu.val <- 1
   if (r>=1)
   {
     for(p in 1:r)
     {
-      a<-sum(tr[1:p]*rev(nu))/(2*p)
-      nu<-c(nu,a)
+      a <- sum(tr.vec[1:p]*rev(nu.val))/(2*p)
+      nu.val <- c(nu.val,a)
     }
   } 
-  return(factorial(r)*2^r*nu[r+1])   
+  return(factorial(r)*2^r*nu.val[r+1])   
 }   
 
-nu.rs <- function(r, s, A, B, inverse=FALSE)
+nu.rs <- function(r, s, A, B)
 {
   if (s==0)
-    return(nu(r=r, A=A, inverse=inverse))
+    return(nu(r=r, A=A))
   
   if (s >=1)
   {
-    nu <- 0
+    nu.val <- 0
     for (i in 0:r)
       for (j in 0:(s-1))
-      {
-        if (!inverse)
-          nu <- nu + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,-(r-i))%*%matrix.pow(B,-(s-j)))*nu.rs(r=i,s=j, A=A, B=B, inverse=inverse)
-        else
-          nu <- nu + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,(r-i))%*%matrix.pow(B,(s-j)))*nu.rs(r=i,s=j, A=A, B=B, inverse=inverse)
-      }
-    return(nu)
+        nu.val <- nu.val + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,r-i)%*%matrix.pow(B,s-j))*nu.rs(r=i,s=j, A=A, B=B)
+       
+    return(nu.val)
   }
 }
-## gamma functional for normal mixture MISE
 
+
+## non-central nu functionals
+nu.noncent <- function(r, A, mu, Sigma) 
+{
+  if (is.vector(mu)) n <- 1
+  else n <- nrow(mu)
+  
+  if (r==0)
+    nu.val <- rep(1,n)
+  else if (r>=1)
+  {
+    nu.val <- 0
+    for (j in 0:(r-1))
+    {
+      ASigmarj1 <- matrix.pow(A%*% Sigma, r-j-1)
+      nu.val <- nu.val + choose(r-1, j)*2^(r-j-1)*factorial(r-j-1)*(tr(ASigmarj1 %*% A %*% Sigma) + (r-j)*apply((mu %*% ASigmarj1 %*% A) * mu, 1, sum))*nu.noncent(r=j, A=A, mu=mu, Sigma=Sigma)
+    }
+  }
+  return (nu.val)
+}
+
+nu.noncent.scalar <- function(r, a, b, mu2.sum, d)
+{
+  n <- length(mu2.sum)
+  if (r==0)
+    nu.val <- rep(1,n)
+  else if (r>=1)
+  {
+    nu.val <- 0
+    for (j in 0:(r-1))
+      nu.val <- nu.val + (a^(2*r-2*j))*choose(r-1, j)*((-2)^(r-j-1)*factorial(r-j-1)*(-d + (r-j)*b^2*mu2.sum))*nu.noncent.scalar(r=j, a=a, b=b, mu2.sum=mu2.sum, d=d)
+  }
+  return (nu.val)
+}
+
+
+nu.noncent.rs <- function(r, s, A, B, mu, Sigma)
+{
+  if (s==0) return(nu.noncent(r=r, A=A, mu=mu, Sigma=Sigma))
+  
+  if (s>=1)
+  {
+    nu.val <- 0
+    for (i in 0:r)
+      for (j in 0:(s-1))
+        nu.val <- nu.val + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,(r-i))%*%matrix.pow(B,(s-j)))*nu.noncent.rs(r=i,s=j, A=A, B=B)
+       
+    return(nu.val)
+  }
+}
+
+## gamma functional for normal mixture MISE
 gamma.r <- function(mu, Sigma, r)
 {
   Sigmainv <- chol2inv(chol(Sigma))
   d <- ncol(Sigma)
   v <- 0
   for (j in 0:r)
-    v <- v + (-1)^j*choose(2*r, 2*j)*OF(2*j)*nu.rs(r=r-j, s=j, A=Sigmainv%*%mu%*%t(mu)%*%Sigmainv, B=Sigmainv, inverse=TRUE)
+    v <- v + (-1)^j*choose(2*r, 2*j)*OF(2*j)*nu.rs(r=r-j, s=j, A=Sigmainv%*%mu%*%t(mu)%*%Sigmainv, B=Sigmainv)
    
   v <- (-1)^r*v*drop(dmvnorm.deriv(x=rep(0,d), mu=mu, Sigma=Sigma,deriv.order=0)/OF(2*r))
   return(v)
@@ -110,7 +157,7 @@ omega <- function(mus, Sigmas, k, a, H, r)
   if (k == 1)
     omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)  
   else
-  {     
+  {
     omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
@@ -127,7 +174,6 @@ omega <- function(mus, Sigmas, k, a, H, r)
   
   return(omega.mat)
 }
-
 
 omega.1d <- function(mus, sigmas, k, a, h, r)
 {
@@ -156,8 +202,6 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
 }
 
 
-
-
 ##############################################################################
 # Exact MISE for normal mixtures
 #
@@ -181,21 +225,18 @@ mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   else d <- ncol(mus)
   k <- length(props)
   r <- deriv.order
-  
+
+  Hinv <- chol2inv(chol(H))
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
   if (k == 1) 
   {
-    mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
-      (1-1/samp)*omega(mus, Sigmas, 1, 2, H, r) -
-       2*omega(mus, Sigmas, 1, 1, H, r) +
-        omega(mus, Sigmas, 1, 0, H, r)
+    mise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
+      (1-1/samp)*omega(mus, Sigmas, 1, 2, H, r) - 2*omega(mus, Sigmas, 1, 1, H, r) + omega(mus, Sigmas, 1, 0, H, r)
   }
   else
   {
-    mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
-      props %*% ((1-1/samp)*omega(mus, Sigmas, k, 2, H, r) - 
-                 2*omega(mus, Sigmas, k, 1, H, r) + 
-                 omega(mus, Sigmas, k, 0, H, r)) %*% props
+    mise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
+      props %*% ((1-1/samp)*omega(mus, Sigmas, k, 2, H, r) - 2*omega(mus, Sigmas, k, 1, H, r) +  omega(mus, Sigmas, k, 0, H, r)) %*% props
   }
   return(drop(mise)) 
 }
@@ -206,18 +247,18 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   k <- length(props)
   r <- deriv.order
   H <- as.matrix(h^2)
- 
+  Hinv <- chol2inv(chol(H))
   ## formula is found in Wand & Jones (1993) and Chacon, Duong & Wand (2008)
   if (k == 1) 
   {
-    mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
+    mise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + 
         (1-1/samp)*omega.1d(mus, sigmas, 1, 2, h, r) -
         2*omega.1d(mus, sigmas, 1, 1, h, r) +
           omega.1d(mus, sigmas, 1, 0, h, r)
   }
   else
   {
-    mise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
+    mise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
       props %*% ((1-1/samp)*omega.1d(mus, sigmas, k, 2, h, r) - 
                  2*omega.1d(mus, sigmas, k, 1, h, r) + 
                  omega.1d(mus, sigmas, k, 0, h, r)) %*% props
@@ -254,7 +295,8 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
  
   if (k == 1)
   {
-    omega.mat <- 2^(-d-r-2)*pi^(-d/2)*det(Sigmas)^(-1/2)*nu.rs(r=r, s=2, Sigmas, matrix.sqrt(Sigmas) %*% chol2inv(chol(H)) %*% matrix.sqrt(Sigmas))
+    Sigmasinv <- chol2inv(chol(Sigmas))
+    omega.mat <- 2^(-d-r-2)*pi^(-d/2)*det(Sigmas)^(-1/2)*nu.rs(r=r, s=2, Sigmasinv, matrix.sqrt(Sigmasinv) %*% H %*% matrix.sqrt(Sigmasinv))
   }
   else
   {
@@ -273,13 +315,9 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
     }
   }
 
-  if (k == 1) {
-    amise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
-  }
-  else {
-    amise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
-      (props %*% omega.mat %*% props)/4
-  }
+  Hinv <- chol2inv(chol(H)) 
+  if (k == 1)amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
+  else amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + (props %*% omega.mat %*% props)/4
  
   return(drop(amise))
 }
@@ -293,31 +331,28 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   Sd2r4 <- Sdr(d,2*r+4)
 
   if (k == 1)
-    omega.mat <- gamma.r2(mu=rep(0,d),Sigma=2*sigmas^2, d=d, r=r, Sd2r4=Sd2r4, H=H)
+    omega.mat <- gamma.r2(mu=rep(0,d),Sigma=as.matrix(2*sigmas^2), d=d, r=r, Sd2r4=Sd2r4, H=H)
   else
   {   
     omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
-      Sigmai <- sigmas[i]^2
+      Sigmai <- as.matrix(sigmas[i]^2)
       mui <- mus[i]
       for (j in 1:k)
       {
-        Sigmaj <- sigmas[j]^2
+        Sigmaj <- as.matrix(sigmas[j]^2)
         muj <- mus[j]    
         omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, Sd2r4=Sd2r4, H=H)
       }
     }
   }
 
-  if (k == 1) {
-    amise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
-  }
-  else {
-    amise <- 2^(-r)*nu(r,H)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) +
-      (props %*% omega.mat %*% props)/4
-  }
- 
+  Hinv <- h^(-2)
+  
+  if (k == 1) amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
+  else amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + (props %*% omega.mat %*% props)/4
+  
   return(drop(amise))
 }
 
@@ -372,10 +407,6 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
 {  
   d <- ncol(Sigmas)
   k <- length(props)
-  
-  ##h1 <- sqrt(H[1,1])
-  ##h2 <- sqrt(H[2,2])
-  ##h12 <- H[1,2]
 
   ## formula is found in Wand & Jones (1993)
   if (k == 1) 
@@ -451,21 +482,17 @@ Hmise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     Hstart <- (4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
   }
   
-  Hstart <- vech(matrix.sqrt(Hstart))
-
-  # input vech(H) into mise.mixt.temp because optim can only optimise
-  # over vectors and not matrices
   mise.mixt.temp <- function(vechH)
   {  
     H <- invvech(vechH) %*% invvech(vechH)
-    ## using H <- invvech(vechH) %*% invvech(vechH) ensures that H
-    ## is positive definite
-    
     return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
   }
 
-  result <- optim(Hstart, mise.mixt.temp, method="Nelder-Mead")
-  Hmise <- invvech(result$par) %*% invvech(result$par) 
+  Hstart <- vech(matrix.sqrt(Hstart))
+  result <- nlm(p=Hstart, f=mise.mixt.temp)
+  Hmise <- invvech(result$estimate) %*% invvech(result$estimate)
+  ##result <- optim(Hstart, mise.mixt.temp, method="Nelder-Mead")
+  ##Hmise <- invvech(result$par) %*% invvech(result$par) 
   
   return(Hmise)
 }   
@@ -480,16 +507,17 @@ Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     x <- rmvnorm.mixt(10000, mus, Sigmas, props)
     Hstart <- (4/(samp*(d + 2)))^(2/(d + 4)) * var(x)
   }  
-  Hstart <- diag(matrix.sqrt(Hstart))
 
   mise.mixt.temp <- function(diagH)
   {  
     H <- diag(diagH) %*% diag(diagH)
     return(mise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
   }
-
-  result <- optim(Hstart, mise.mixt.temp, method = "Nelder-Mead")
-  Hmise <- diag(result$par) %*% diag(result$par) 
+  Hstart <- diag(matrix.sqrt(Hstart))
+  result <- nlm(p=Hstart, f=mise.mixt.temp)
+  Hmise <- diag(result$estimate) %*% diag(result$estimate)
+  ##result <- optim(Hstart, mise.mixt.temp, method = "Nelder-Mead")
+  ##Hmise <- diag(result$par) %*% diag(result$par) 
   
   return(Hmise)
 }   
@@ -548,23 +576,18 @@ Hamise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     ## use normal reference estimate as initial condition
     if (missing(Hstart)) 
     {
-      x <- rmvnorm.mixt(10000, mus, Sigmas, props)
+      x <- rmvnorm.mixt(10000, mus=mus, Sigmas=Sigmas, props=props)
       Hstart <- matrix.sqrt((4/ (samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
     }
     
-    ## input vech(H) into mise.mixt.temp because optim can only optimise
-    ## over vectors and not matrices    
-    Hstart <- vech(Hstart)
     amise.mixt.temp <- function(vechH)
     {
       H <- invvech(vechH) %*% invvech(vechH)
-      ## ensures that H is positive definite
-      
       return(amise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
     }
-    
-    result <- optim(Hstart, amise.mixt.temp, method="BFGS")
-    Hamise <- invvech(result$par) %*% invvech(result$par) 
+
+    result <- nlm(p=vech(Hstart), f=amise.mixt.temp)
+    Hamise <- invvech(result$estimate) %*% invvech(result$estimate)
   }
   
   return(Hamise)
@@ -581,20 +604,16 @@ Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
   {
     x <- rmvnorm.mixt(10000, mus, Sigmas, props)
     Hstart <- matrix.sqrt((4/ (samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(x))
-    }
+  }
   
-  ## input vech(H) into mise.mixt.temp because optim can only optimise
-  ## over vectors and not matrices    
-  Hstart <- diag(Hstart)
   amise.mixt.temp <- function(diagH)
   {
     H <- diag(diagH) %*% diag(diagH)
-    ## ensures that H is positive definite
     return(amise.mixt(H=H, mus=mus, Sigmas=Sigmas, props=props, samp=samp, deriv.order=deriv.order))
   }
     
-  result <- optim(Hstart, amise.mixt.temp, method="BFGS")
-  Hamise <- diag(result$par) %*% diag(result$par) 
+  result <- nlm(p=diag(Hstart), f=amise.mixt.temp)
+  Hamise <- diag(result$estimate) %*% diag(result$estimate)
   
   return(Hamise)
 }   
@@ -640,25 +659,42 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=
   ise2 <- 0
   ise3 <- 0
   
-  ise1 <- dmvnorm.deriv.sum(x=x, Sigma=2*H, inc=1, deriv.order=2*r, binned=binned, bgridsize=bgridsize)
-  for (j in 1:M)
+  if (binned)
   {
-    Sigmaj <- Sigmas[((j - 1) * d + 1):(j * d), ]
-    ise2 <- ise2 + props[j] * colSums(dmvnorm.deriv(x, mu=mus[j,],Sigma= H + Sigmaj, deriv.order=2*r))
-
-    for (i in 1:M)
+    ise1 <- dmvnorm.deriv.sum(x=x, Sigma=2*H, inc=1, deriv.order=2*r, binned=binned, bgridsize=bgridsize)
+    for (j in 1:M)
     {
-      Sigmai <- Sigmas[((i - 1) * d + 1):(i * d), ]
-      ise3 <- ise3 + props[i] * props[j] * dmvnorm.deriv(x=mus[i,],mu=mus[j,], Sigma = Sigmai + Sigmaj, deriv.order = 2*r)
+      Sigmaj <- Sigmas[((j - 1) * d + 1):(j * d), ]
+      ise2 <- ise2 + props[j] * colSums(dmvnorm.deriv(x, mu=mus[j,],Sigma=H + Sigmaj, deriv.order=2*r))
+      for (i in 1:M)
+      {
+        Sigmai <- Sigmas[((i - 1) * d + 1):(i * d), ]
+        ise3 <- ise3 + props[i] * props[j] * dmvnorm.deriv(x=mus[i,],mu=mus[j,], Sigma = Sigmai + Sigmaj, deriv.order = 2*r)
+      }
     }
+    ise <- (-1)^r * sum(vIdr*(ise1/n^2 - 2 * ise2/n + ise3))
   }
-  
-  return((-1)^r * sum(vIdr*(ise1/n^2 - 2 * ise2/n + ise3)))
+  else
+  {
+    ise1 <- eta.kfe.y(x=x, G=2*H, inc=1, deriv.order=2*r)
+    for (j in 1:M)
+    {
+      Sigmaj <- Sigmas[((j-1)*d + 1):(j*d), ]
+      ise2 <- ise2 + props[j] * eta.kfe.y(x=x, y=mus[j,], G=H + Sigmaj, deriv.order=2*r, inc=1)
+      for (i in 1:M)
+      {
+        Sigmai <- Sigmas[((i-1)*d + 1):(i*d), ]
+        ise3 <- ise3 + props[i] * props[j] * eta.kfe.y(x=mus[i,], y=mus[j,], G=Sigmai + Sigmaj, deriv.order=2*r, inc=1)
+      }
+    }
+    ise <- (-1)^r*(ise1 - 2*ise2 + ise3)
+  }
+
+  return(ise)
 }
 
 ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0, binned=FALSE)
 {  
-  ##d <- 1
   n <- length(x)
   M <- length(props)
   r <- deriv.order 

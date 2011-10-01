@@ -1,8 +1,35 @@
+
+### Default grid sizes
+
+default.gridsize <- function(d)
+{
+  if (d==1)      gridsize <- 401
+  else if (d==2) gridsize <- rep(151,d)
+  else if (d==3) gridsize <- rep(51, d)
+  else if (d==4) gridsize <- rep(21, d)
+  else gridsize <- NA
+  
+  return(gridsize)
+}
+
+default.bgridsize <- function(d)
+{
+  if (d==1)      gridsize <- 401
+  else if (d==2) gridsize <- rep(151,d)
+  else if (d==3) gridsize <- rep(31, d)
+  else if (d==4) gridsize <- rep(21, d)
+  else  gridsize <- NA
+  
+  return(gridsize)
+}
+
+
 ########################################################################
 ## Linear binning
 ## Courtesy of M Wand 2005
 ## Extended by T Duong to 3- and 4-dim 2006
 ########################################################################
+
 
 
 binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
@@ -501,5 +528,7 @@ symconv4D.ks <- function(rr, ss, skewflag=rep(1,4) , fftflag=rep(TRUE,2))
    tt <- fft(RR*SS,TRUE)               # invert element-wise product of FFT's 
    return((Re(tt)/(P1*P2*P3*P4))[1:M1,1:M2,1:M3,1:M4]) # return normalized truncated tt
 }
+
+
 
 

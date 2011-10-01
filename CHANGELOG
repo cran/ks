@@ -1,5 +1,17 @@
 Change log file for ks
 
+1.8.3 -Added computationally efficient density derivative b/w selectors 
+       Hpi(deriv.order=), Hscv(deriv.order=), 
+       and their diagonal counterparts Hpi.diag(), Hlscv.diag(), 
+      -Added computationally efficient kernel functional estimators in eta.kfe.y() 
+       used in kde.test().
+      -New pilot selectors for density derivatives.   
+      -Added abs.cont capability to plot(, disp="filled.contour")
+      -Removed explicit expressions in psins() for d>2, replaced by eta.kfe()
+       evaluations.
+      -Removed psins() and Theta6() evaluations in gsamse and gamse.scv 
+      -Removed kfold arguments  
+ 
 1.8.2 -Fixed bug in kde.points.sum() to avoid allocating large matrices for
        unbalanced sample sizes for x and eval.points.  
       -Fixed bug in dmvnorm.deriv.sum() which had excluded last partition class for double.loop=FALSE.
