@@ -762,7 +762,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
     {
       if (tail(hts, n=1) < max(fhat$estimate)) hts <- c(hts,  max(fhat$estimate))
-      filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, level=hts, ...)
+      filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, levels=hts, ...)
     }
   }
   if (disp1=="p")  invisible(plotret)

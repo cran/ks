@@ -18,7 +18,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
   \item{x}{vector or matrix of data values}
-  \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
+  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
     \code{"samse"} = single SAMSE pilot bandwidth,
     \code{"unconstr"} = unconstrained pilot bandwidth matrix,
@@ -60,7 +60,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
   
-  For details about the advanced options for \code{amise, binned, Hstart}, 
+  For details about the advanced options for \code{binned, Hstart}, 
   see \code{\link{Hpi}}.
 }
 
@@ -82,7 +82,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919-1932.
 } 
 
-\seealso{ \code{\link{Hlscv}}, \code{\link{Hbcv}}, \code{\link{Hpi}}}
+\seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hpi}}}
 
 \examples{
 data(unicef)

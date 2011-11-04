@@ -38,10 +38,8 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   \item{bw}{bandwidth: \code{"plugin"} = plug-in, \code{"lscv"} = LSCV, 
     \code{"scv"} = SCV} 
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
-    \code{"samse"} = single SAMSE pilot bandwidth}
-  \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} =
-    pre-sphering}
+  \item{pilot}{pilot selector: see \code{\link{Hpi}}, \code{\link{Hscv}}}
+  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
     numerical optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
@@ -104,9 +102,6 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
   need to be set.  For LSCV selectors, none of them are required. 
   \code{Hkda.diag} makes analogous calls to diagonal selectors.
-
-  For details on the pre-transformations in \code{pre}, see
-  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
 
   --If you have prior probabilities then set \code{prior.prob} to these.
   Otherwise \code{prior.prob=NULL} is the default i.e. use the sample

@@ -48,22 +48,7 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
 }
 
 \details{ 
-  For d = 1, 2, 3, 4, 
-  and if \code{eval.points} is not specified, then the
-  density derivative estimate is computed over a grid 
-  defined by \code{gridsize} (if \code{binned=FALSE}) or
-  by \code{bgridsize} (if \code{binned=TRUE}). 
-
-  For d = 1, 2, 3, 4, 
-  and if \code{eval.points} is specified, then the
-  density derivative estimate is computed exactly at \code{eval.points}.
-  
-  For d > 4, the kernel density derivative estimate is computed exactly
-  and \code{eval.points} must be specified.
-
-  The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
-  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximum of the
-  diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.
+  Binning/exact estimation behaviour is the same as for \code{\link{kde}}.
 
   For each partial derivative, for grid estimation, the estimate is a list whose elements 
   correspond to the partial derivative indices in the rows of \code{deriv.ind}. 

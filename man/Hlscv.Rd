@@ -52,7 +52,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   see \code{\link{Hpi}}. 
 }
 
-\seealso{ \code{\link{Hbcv}}, \code{\link{Hscv}}}
+\seealso{\code{\link{Hbcv}}, \code{\link{Hpi}}, \code{\link{Hscv}}}
 
 \examples{
 library(MASS)

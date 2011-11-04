@@ -509,7 +509,7 @@ eta.kfe.y.1d <- function(x, y, g, deriv.order=0, inc=1, verbose=FALSE)
   return(eta)
 }
 
-### eta.kfe.y is  faster than kfe
+### eta.kfe.y can be faster than kfe
 
 eta.kfe.y <- function(x, G, deriv.order=0, inc=1, y, verbose=FALSE, symm=FALSE)
 {
@@ -692,7 +692,7 @@ eta.kfe <- function(x, r, A, B, verbose=FALSE)
       if (verbose) setTxtProgressBar(pb, i/(n.seqlen-1))
       difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
       ##Bdifs <- difs %*% Binv12
-      phiB <- dmvnorm.mixt(x=difs, mu=rep(0,d), Sigma=B)
+      phiB <- dmvnorm.mixt(x=difs, mus=rep(0,d), Sigmas=B)
       eta.val <- eta.val + sum(phiB*nu.noncent(r=r, A=BAB, mu=difs, Sigma=-B))   ##sum(phiB*nu.noncent(r=r, A=B12AB12, mu=Bdifs, Sigma=-diag(d)))     
     }
     if (verbose) close(pb)

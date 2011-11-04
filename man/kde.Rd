@@ -78,10 +78,10 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   and \code{eval.points} must be specified.
 
   \code{supp} is the effective support for a normal kernel, i.e.  
-  all values outside \code{[-supp, supp] x ... x [-supp, supp]} is set to zero.  
+  all values outside \code{[-supp,supp]^d} are set to zero.  
   
-  The default \code{xmin} is \code{min(x) - Hmax*supp} and \code{xmax}
-  is \code{max(x) + Hmax*supp}  where \code{Hmax} is the maximum of the
+  The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
+  is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.
 
   If you have prior probabilities then set \code{prior.prob} to these.

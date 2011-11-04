@@ -27,7 +27,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
     \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order>0, 
     \code{"dscalar"} = single pilot bandwidth for deriv.order>0,
     \code{"dunconstr"} = unconstrained pilot bandwidth for deriv.order>0},
-  \item{pre}{\code{"scale"} = pre-scaling, \code{"sphere"} = pre-sphering}
+  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
@@ -58,19 +58,11 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 
   by \code{bgridsize}. Otherwise it's computed exactly. 
-  
-  For details on the pre-transformations in \code{pre}, see
-  \code{\link{pre.sphere}} and \code{\link{pre.scale}}.
-
+ 
   If \code{Hstart} is not given then it defaults to
   \code{k*var(x)} where
   \eqn{k=\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{k=4/(n*(d + 2))^(2/(d+
     4))}, n = sample size, d = dimension of data.
- 
-  For large samples, k-fold bandwidth selection can significantly reduce computation time. The full	
-  data sample is partitioned into k sub-samples and a bandwidth matrix is computed for each of these
-  sub-samples. The bandwidths are averaged and re-weighted to serve as a proxy for the full sample selector.
-  (Temporarily disabled).
 }
 
 \references{
@@ -89,7 +81,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   selection. \emph{Computational Statistics}, \bold{9}, 97-116.
 }
 
-\seealso{\code{\link{Hpi}}}
+\seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hscv}}}
   
 \examples{
 data(unicef)

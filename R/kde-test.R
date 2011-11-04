@@ -50,10 +50,8 @@ Hpi.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
   result <- optim(vech(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
   H <- invvech(result$par) %*% invvech(result$par)
   
-  if (!amise)
-    return(H)
-  else
-    return(list(H = H, PI=result$value))
+  if (!amise) return(H)
+  else return(list(H = H, PI=result$value))
 }
 
 
@@ -104,10 +102,8 @@ Hpi.diag.kfe <- function(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, doubl
   result <- optim(diag(Hstart), amse.temp, method="BFGS")
   H <- diag(result$par) %*% diag(result$par)
   
-  if (!amise)
-    return(H)
-  else
-    return(list(H = H, PI=result$value))
+  if (!amise) return(H)
+  else return(list(H = H, PI=result$value))
 }
 
 
