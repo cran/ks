@@ -79,12 +79,12 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL, Sdr.mat)
 
   K <- dmvnorm.deriv(x=rep(0,d), deriv.order=modr, Sigma=diag(d), add.index=TRUE, deriv.vec=FALSE, Sdr.mat=Sdr.mat)
   K <- K$deriv[apply(K$deriv.ind, 1, is.even)]
-
-  derivt4 <- dmvnorm.deriv(x=rep(0,d), deriv.order=4, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE) 
-  derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
-    
+ 
   if (modr==4)
   {
+    derivt4 <- dmvnorm.deriv(x=rep(0,d), deriv.order=4, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+    derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+  
     for (i in 1:nrow(derivt4))
     {
       r <- derivt4[i,]
@@ -94,7 +94,10 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL, Sdr.mat)
         for (j in 1:d)
         {
           if (nstage==1)
+          {
             A3psi <- A3psi + psins(r=r+2*elem(j,d), Sigma=Sigma.star)
+            ##A3psi <- A3psi + psins6[which.mat(r=r+2*elem(j,d), mat=derivt6)]
+          }
           else if (nstage==2)
             A3psi <- A3psi + psihat[which.mat(r=r+2*elem(j,d), mat=derivt6)]
         }
@@ -105,6 +108,8 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL, Sdr.mat)
   ## 6th order g_SAMSE
   else if (modr==6)
   {
+    derivt6 <- dmvnorm.deriv(x=rep(0,d), deriv.order=6, add.index=TRUE, deriv.vec=FALSE, only.index=TRUE)
+  
     for (i in 1:nrow(derivt6))
     {
       r <- derivt6[i,]        
@@ -179,7 +184,7 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
   {
     G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=var(x))
     g2r6.nr <- sqrt(G2r6.NR[1,1])
-    L0 <- dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), props=1)
+    L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
     eta2r6 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=diag(diag(G2r6.NR)), verbose=verbose, symm=FALSE)
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
     A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
@@ -196,7 +201,7 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
 ##################################################################################
 
 
-##################################################################################
+################################################################################
 ## Improve efficiency by re-writing with eta.kfe.y instead of explicit kfe calls
 ##################################################################################
 
@@ -250,7 +255,7 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE)
   {
     G2r4.NR <- GNR(r=2*r+4,n=n,Sigma=S)
     G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=S)
-    L0 <- dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), props=1)
+    L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
     eta2r6.2 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=G2r6.NR, verbose=verbose, symm=FALSE)
     
     AB2 <- function(vechG)
@@ -305,8 +310,8 @@ psifun1 <- function(x.star, Sd2r4, pilot="samse", binned, bin.par, deriv.order=0
   ## compute 1 pilot for SAMSE
   else if (pilot=="samse")
   {
-    ##g.star <- gsamse(S.star, n, 4, Sdr.mat=Sd2r4)
-    g.star <- gsamse.eta(S.star, n=n, modr=4)
+    ##g.star <- gsamse.eta(S.star, n=n, modr=4)
+    g.star <- gsamse(S.star, n, 4, Sdr.mat=Sd2r4)
     psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, Sdr.mat=Sd2r4,  add.index=TRUE, verbose=verbose)
   }
   ## compute 5 different pilots for AMSE
@@ -374,10 +379,16 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
   ## compute 1 pilot for SAMSE    
   else if (pilot=="samse")
   {
-    g6.star <- gsamse.eta(S.star, n=n, modr=6) 
-    ##psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r6, add.index=FALSE, verbose=verbose)
-    etahat6.star <- eta.kfe.y(x=x.star, deriv.order=6, G=g6.star^2*diag(d), verbose=verbose)
-    g.star <- gsamse.eta(S.star, n=n, modr=4, nstage=2, etahat=etahat6.star) ##psihat=psihat6.star) 
+    ## not a good idea to use gsamse.eta here
+    if(0)
+    {
+      g6.star <- gsamse.eta(S.star, n=n, modr=6)
+      etahat6.star <- eta.kfe.y(x=x.star, deriv.order=6, G=g6.star^2*diag(d), verbose=verbose)
+      g.star <- gsamse.eta(S.star, n=n, modr=4, nstage=2, etahat=etahat6.star) 
+    }
+    g6.star <- gsamse(S.star, n=n, modr=6, Sdr.mat=Sd2r6)
+    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r6, add.index=FALSE, verbose=verbose)
+    g.star <- gsamse(S.star, n=n, modr=4, nstage=2, psihat=psihat6.star)
     psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r4, add.index=TRUE, verbose=verbose)
   }
   ## compute different pilots for AMSE
@@ -1064,10 +1075,11 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   lscv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    truncate.flag <- FALSE
-    for (i in 1:d) truncate.flag <- truncate.flag | (sqrt(H[i,i]) > sqrt(Hnorm[i,i]) | sqrt(H[i,i]) < 0.2*sqrt(Hnorm[i,i]))
-    if (truncate.flag & truncate) lscv <- 1e10
-    else lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
+    ##truncate.flag <- FALSE
+    ##for (i in 1:d) truncate.flag <- truncate.flag | (sqrt(H[i,i]) > sqrt(Hnorm[i,i]) | sqrt(H[i,i]) < 0.2*sqrt(Hnorm[i,i]))
+    ##if (truncate.flag & truncate) lscv <- 1e10
+    ##else
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
     return(lscv)  
   }
     
@@ -1129,10 +1141,11 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    truncate.flag <- FALSE
-    for (i in 1:d) truncate.flag <- truncate.flag | (H[i,i] > Hnorm[i,i] | H[i,i] < 0.2*Hnorm[i,i]) 
-    if (truncate.flag & truncate) lscv <- 1e10
-    else lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
+    ##truncate.flag <- FALSE
+    ##for (i in 1:d) truncate.flag <- truncate.flag | (H[i,i] > Hnorm[i,i] | H[i,i] < 0.2*Hnorm[i,i]) 
+    ##if (truncate.flag & truncate) lscv <- 1e10
+    ##else
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
 
     return(lscv)  
   }
@@ -1259,8 +1272,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
   Hmax <- k * abs(var(x))
   up.bound <- diag(Hmax)
   
-  if (missing(Hstart))
-    Hstart <- 0.9*matrix.sqrt(Hmax)
+  if (missing(Hstart)) Hstart <- 0.9*matrix.sqrt(Hmax)
 
   bcv1.mat.temp <- function(diagH)
   {

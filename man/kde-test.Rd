@@ -17,9 +17,9 @@ Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize,
 
 \arguments{
   \item{x,x1,x2}{matrices of data values}
-  \item{H1,H2}{bandwidth matrices. If these are missing, then 2-stage plug-in selectors are computed. See \code{\link{Hpi}}.}
+  \item{H1,H2}{bandwidth matrices. If these are missing, \code{Hpi.kfe} is called by default.}
   \item{fhat1,fhat2}{gridded \code{kde} objects - output from \code{\link{kde}} (for 2- or 3-d data)}
-  \item{psi1,psi2}{0-th order kernel functional estimates}
+  \item{psi1,psi2}{zero-th order kernel functional estimates}
   \item{var.fhat1,var.fhat2}{sample variance of KDE estimates evaluated at x1, x2}
   \item{double.loop}{flag to iterate through double loop for unbinned estimation. Default is FALSE.}
   \item{binned}{flag for binned estimation. Default is FALSE.}
@@ -74,7 +74,6 @@ A list with fields
 mus1 <- rbind(c(1,-1), c(-1,1))
 Sigmas1 <- rbind(invvech(c(4/9, 4/15, 4/9)), invvech(c(4/9, 4/15, 4/9)))
 props1 <- c(1,1)/2
-
 mus2 <- rbind(c(1,-1), c(-1,1))
 Sigmas2 <- rbind(invvech(c(4/9, 14/45, 4/9)), 4/9*diag(2))
 props2 <- c(1,1)/2
@@ -84,7 +83,6 @@ samp <- 1000
 x <- rmvnorm.mixt(n=samp, mus=mus1, Sigmas=Sigmas1, props=props1)
 y <- rmvnorm.mixt(n=samp, mus=mus2, Sigmas=Sigmas2, props=props2)
 y2 <- rmvnorm.mixt(n=samp, mus=mus2, Sigmas=Sigmas2, props=props2)
-
 kde.test(x1=x, x2=y)$pvalue    ## reject H0: f1=f2
 kde.test(x1=y2, x2=y)$pvalue   ## accept H0: f1=f2
 }
