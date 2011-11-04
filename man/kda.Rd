@@ -12,20 +12,18 @@
   Kernel discriminant analysis for 1- to 6-dimensional data.
 }
 \usage{
-Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse",
-     pre="sphere", binned=FALSE, bgridsize)
-Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", 
-     pre="sphere", binned=FALSE, bgridsize)
+Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
+     binned=FALSE, bgridsize)
+Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
+     binned=FALSE, bgridsize)
 hkda(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
 
 kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 compare(x.group, est.group, by.group=FALSE)
-compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
-    by.group=FALSE, trace=FALSE, binned=FALSE, bgridsize,
-    recompute=FALSE, ...)
-compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
-    by.group=FALSE, trace=FALSE, binned=FALSE, bgridsize,
-    recompute=FALSE, ...)
+compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, 
+    trace=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, 
+    trace=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
 }
 
 \arguments{
@@ -73,8 +71,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
   \item{error}{misclassification rate (MR)}
     
   In the case where we have test data that is independent of the
-  training data, \code{compare} computes MR = (number of points wrongly classified)/
-  (total number of points).
+  training data, \code{compare} computes MR = (number of points wrongly classified)/(total number of points).
     
   In the case where we don't have independent test data e.g.
   we are classifying the training data set itself, then the cross
@@ -116,11 +113,9 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL,
 ### See examples in ? plot.kda.kde
 
 ### univariate example -- independent test data
-x <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
-       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
-y <- c(rnorm.mixt(n=100, mus=1, sigmas=1, props=1),
-       rnorm.mixt(n=100, mus=-1, sigmas=1, props=1))
+y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
 compare(x.gr, kda.gr)
 compare(x.gr, kda.gr, by.group=TRUE) 
@@ -130,6 +125,6 @@ library(MASS)
 data(iris)
 ir <- iris[,c(1,2)]
 ir.gr <- iris[,5]
-compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse") } 
-
+compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse") }
+ 
 \keyword{ smooth }

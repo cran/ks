@@ -79,17 +79,45 @@ nu.noncent.scalar <- function(r, a, b, mu2.sum, d)
 
 nu.noncent.rs <- function(r, s, A, B, mu, Sigma)
 {
-  if (s==0) return(nu.noncent(r=r, A=A, mu=mu, Sigma=Sigma))
-  
-  if (s>=1)
+  nu.val <- 0
+
+  if (r==0 & s==0) nu.val <- cumulant.rs(r=0, s=0, A=A, B=B, mu=mu, Sigma=Sigma)
+  else if (r>0 & s==0)
+  { 
+    for (i in 0:(r-1))
+      nu.val <- nu.val + choose(r-1,i) * cumulant.rs(r=r-i, s=0, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=i, s=0, A=A, B=B, mu=mu, Sigma=Sigma)
+  }
+  else if (r==0 & s>0)
   {
-    nu.val <- 0
+    for (j in 0:(s-1))
+      nu.val <- nu.val + choose(s-1,j) * cumulant.rs(r=0, s=s-j, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=0, s=j, A=A, B=B, mu=mu, Sigma=Sigma)
+  }
+  else if (r>=1 & s>=1)
+  {
     for (i in 0:r)
       for (j in 0:(s-1))
-        nu.val <- nu.val + choose(r,i)*choose(s-1,j) *factorial(r+s-i-j-1)*2^(r+s-i-j-1)*tr(matrix.pow(A,(r-i))%*%matrix.pow(B,(s-j)))*nu.noncent.rs(r=i,s=j, A=A, B=B)
-       
-    return(nu.val)
+        nu.val <- nu.val + choose(r,i)*choose(s-1,j) * cumulant.rs(r=r-i, s=s-j, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=i, s=j, A=A, B=B, mu=mu, Sigma=Sigma)
   }
+  return(nu.val)
+}
+
+cumulant.rs <- function(r, s, A, B, mu, Sigma) 
+{
+  if (is.vector(mu)) n <- 1
+  else n <- nrow(mu)
+  
+  if (r==0 & s==0) kappa.val <- rep(1,n)
+  else if (r==1 & s==0) kappa.val <- tr(A%*%Sigma) + rowSums((mu %*% A) * mu)
+  else if (r==0 & s==1) kappa.val <- tr(B%*%Sigma) + rowSums((mu %*% B) * mu)
+  else if (r==1 & s==1) kappa.val <- 2*tr(A %*% Sigma %*% B %*% Sigma) + 4*rowSums((mu %*% A %*% Sigma %*% B) * mu)
+  else if (r>1 | s>1)
+  {
+    kappa.val <- 2^(r+s-1)*factorial(r+s-2)*
+      ((r+s-1)*tr(matrix.pow(A%*%Sigma,r) %*% matrix.pow(B%*%Sigma,s))
+       +(r*(r-1) + s*(s-1) + 2*r*s)*rowSums((mu %*% matrix.pow(A, r) %*% matrix.pow(B, s) %*% matrix.pow(Sigma,r+s-1)) * mu))
+     }
+
+  return(kappa.val)
 }
 
 ## gamma functional for normal mixture MISE

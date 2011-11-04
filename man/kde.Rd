@@ -31,9 +31,8 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
-  \item{adj.positive}{adjustment added to data i.e. when
-	\code{positive=TRUE} KDE is carried out on \code{log(x +
-	  adj.positive)}. Default is the minimum of \code{x}.}
+  \item{adj.positive}{adjustment applied to data \code{x <- log(x +
+	adj.positive)} when \code{positive=TRUE}. Default is the minimum of \code{x}.}
   \item{w}{vector of weights (non-negative and sum is equal to sample size). Default is a vector of all ones.}
   \item{compute.cont}{flag for computing probability contour levels from 1\% to 99\%. Default is FALSE.}
   \item{approx.cont}{flag for computing approximate probability contour levels. Default is TRUE.}
@@ -64,28 +63,24 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
 }
 
 \details{
-  For d = 1, 2, 3, 4, 
-  and if \code{eval.points} is not specified, then the
+  For d = 1, 2, 3, 4, and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
   defined by \code{gridsize} (if \code{binned=FALSE}) or
   by \code{bgridsize} (if \code{binned=TRUE}).
-
-  For d = 1, 2, 3, 4, 
-  and if \code{eval.points} is specified, then the
+  If \code{eval.points} is specified, then the
   density estimate is computed exactly at \code{eval.points}.
   
   For d > 4, the kernel density estimate is computed exactly
   and \code{eval.points} must be specified.
 
   \code{supp} is the effective support for a normal kernel, i.e.  
-  all values outside \code{[-supp,supp]^d} are set to zero.  
-  
+  all values outside \code{[-supp,supp]^d} are set to zero. 
   The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
   is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.
 
-  If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  For \code{kda.kde}, if you have prior probabilities then set \code{prior.prob} to these.
+  Otherwise the default is \code{prior.prob=NULL} i.e. use the sample
   proportions as estimates of the prior probabilities.
 }
 

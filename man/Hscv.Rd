@@ -9,22 +9,20 @@
 
 \usage{
 Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, 
-     optim.fun="nlm")
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, 
-     optim.fun="nlm")
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
-  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
-    \code{"samse"} = single SAMSE pilot bandwidth,
-    \code{"unconstr"} = unconstrained pilot bandwidth matrix,
-    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order>0, 
-    \code{"dscalar"} = single pilot bandwidth for deriv.order>0,
-    \code{"dunconstr"} = unconstrained pilot bandwidth for deriv.order>0},
+  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
+    \code{"samse"} = single SAMSE pilot bandwidth \cr 
+    \code{"unconstr"} = single unconstrained pilot bandwidth \cr
+    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order > 0 \cr 
+    \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
+    \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}

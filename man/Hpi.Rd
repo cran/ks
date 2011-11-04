@@ -21,12 +21,12 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths,
-    \code{"samse"} = single SAMSE pilot bandwidth, 
-    \code{"unconstr"} = unconstrained pilot bandwidth,
-    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order>0, 
-    \code{"dscalar"} = single pilot bandwidth for deriv.order>0,
-    \code{"dunconstr"} = unconstrained pilot bandwidth for deriv.order>0},
+  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
+    \code{"samse"} = single SAMSE pilot bandwidth \cr 
+    \code{"unconstr"} = single unconstrained pilot bandwidth \cr
+    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order > 0 \cr 
+    \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
+    \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
   \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
@@ -60,9 +60,8 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   by \code{bgridsize}. Otherwise it's computed exactly. 
  
   If \code{Hstart} is not given then it defaults to
-  \code{k*var(x)} where
-  \eqn{k=\left[\frac{4}{n(d+2)}\right]^{2/(d+4)}}{k=4/(n*(d + 2))^(2/(d+
-    4))}, n = sample size, d = dimension of data.
+  \code{k*var(x)} where \code{k=(4/(n*(d+2*r+2)))^(2/(d+2*r+4))}, n = sample size, d = dimension of data,
+  r = derivative order. 
 }
 
 \references{

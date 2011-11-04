@@ -183,14 +183,14 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
   else if (nstage==2)
   {
     G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=var(x))
-    g2r6.nr <- sqrt(G2r6.NR[1,1])
+    g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d)##sqrt(G2r6.NR[1,1])
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
-    eta2r6 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=diag(diag(G2r6.NR)), verbose=verbose, symm=FALSE)
+    eta2r6 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=g2r6.nr^2*diag(d), verbose=verbose, symm=FALSE)
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
     A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
     A3 <- cf[3]*eta2r6^2
     
-    g2r4 <- (A1/((-A2+ sqrt(A2^2 +4*A1*A3))*n))^(1/(d+2*r+6))
+    g2r4 <- (2*A1/((-A2+ sqrt(A2^2 +4*A1*A3))*n))^(1/(d+2*r+6))
   }
   return(g2r4)
 }
@@ -217,7 +217,7 @@ gdsamse <- function(x, d, r, n, Sd2r4, Sd2r6, Sd2r8, binned, bin.par, verbose, n
     A1 <- cf[1]*sum(D2r4L0^2)
     A2 <- cf[2]*sum(t(D2r4L0) * t(psi2r6.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))
     A3 <- cf[3]*sum((t(psi2r6.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))^2)
-    g2r4 <- (((8*r+4*d+16)*A1)/(((-d-2*r-2)*A2 + sqrt((d+2*r+2)^2*A2^2 + (16*r+8*d+32)*A1*A3))*n))^(1/(d+2*r+6))
+    g2r4 <- (((4*r+2*d+8)*A1)/(((-d-2*r-2)*A2 + sqrt((d+2*r+2)^2*A2^2 + (16*r+8*d+32)*A1*A3))*n))^(1/(d+2*r+6)) ##(((8*r+4*d+16)*A1)/(((-d-2*r-2)*A2 + sqrt((d+2*r+2)^2*A2^2 + (16*r+8*d+32)*A1*A3))*n))^(1/(d+2*r+6))
   }
   else if (nstage==2)
   {
@@ -227,13 +227,13 @@ gdsamse <- function(x, d, r, n, Sd2r4, Sd2r6, Sd2r8, binned, bin.par, verbose, n
     A1 <- cf[1]*sum(D2r6L0^2)
     A2 <- cf[2]*sum(t(D2r6L0) * t(psi2r8.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+6))))
     A3 <- cf[3]*sum((t(psi2r8.ns) %*% (vec(diag(d)) %x% diag(d^(2*r+6))))^2)
-    g2r6 <- (((8*r+4*d+24)*A1)/(((-d-2*r-4)*A2 + sqrt((d+2*r+4)^2*A2^2 + (16*r+8*d+48)*A1*A3))*n))^(1/(d+2*r+8))
+    g2r6 <- (((4*r+2*d+12)*A1)/(((-d-2*r-4)*A2 + sqrt((d+2*r+4)^2*A2^2 + (16*r+8*d+48)*A1*A3))*n))^(1/(d+2*r+8))
     psi2r6 <- kfe(x=x, G=g2r6^2*diag(d), deriv.order=2*r+6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r6, add.index=FALSE, verbose=verbose)
 
     A1 <- cf[1]*sum(D2r4L0^2)
     A2 <- cf[2]*sum(t(D2r4L0) * t(psi2r6) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))
     A3 <- cf[3]*sum((t(psi2r6) %*% (vec(diag(d)) %x% diag(d^(2*r+4))))^2)
-    g2r4 <- (((8*r+4*d+16)*A1)/(((-d-2*r-2)*A2 + sqrt((d+2*r+2)^2*A2^2 + (16*r+8*d+32)*A1*A3))*n))^(1/(d+2*r+6))
+    g2r4 <- (((4*r+2*d+8)*A1)/(((-d-2*r-2)*A2 + sqrt((d+2*r+2)^2*A2^2 + (16*r+8*d+32)*A1*A3))*n))^(1/(d+2*r+6))
   }
     
  return(g2r4)
@@ -241,6 +241,7 @@ gdsamse <- function(x, d, r, n, Sd2r4, Sd2r6, Sd2r8, binned, bin.par, verbose, n
 
 ## Unconstrained pilot selector for derivatives r>0 from Chacon & Duong (2011)
 ## Generalisation of Gunconstr for r>0
+
 Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE)
 {
   if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
@@ -256,17 +257,20 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE)
     G2r4.NR <- GNR(r=2*r+4,n=n,Sigma=S)
     G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=S)
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
-    eta2r6.2 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=G2r6.NR, verbose=verbose, symm=FALSE)
+    ##eta2r6.2 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=G2r6.NR, verbose=verbose, symm=FALSE)
     
     AB2 <- function(vechG)
     {
       G <- invvech(vechG) %*% invvech(vechG)
       Ginv <- chol2inv(chol(G))
-      lambdaG <- prod(eigen(G)$values)^(1/d) 
+      ##lambdaG <- prod(eigen(G)$values)^(1/d) 
       ##eta2r6.1 <- eta.kfe(x=x, r=2*r+6, A=Ginv, B=G2r6.NR, verbose=verbose)
+      ##bias1 <- cf[1]*n^(-2)*det(G)^(-1)*L0^2*OF(2*r+4)*nu(r=r+2, A=Ginv%*%Ginv)
+      ##bias2 <- cf[2]*(-1)^(r+2)*n^(-1)*det(G)^(-1/2)*L0*OF(2*r+4)*lambdaG^(-r-1)*eta2r6.2
+      ##bias3 <- cf[3]*1/4*lambdaG^2*eta2r6.2^2
       bias1 <- cf[1]*n^(-2)*det(G)^(-1)*L0^2*OF(2*r+4)*nu(r=r+2, A=Ginv%*%Ginv)
-      bias2 <- cf[2]*(-1)^(r+2)*n^(-1)*det(G)^(-1/2)*L0*OF(2*r+4)*lambdaG^(-r-1)*eta2r6.2
-      bias3 <- cf[3]*1/4*lambdaG^2*eta2r6.2^2
+      bias2 <- cf[2]*(-1)^(r+2)*n^(-1)*det(G)^(-1/2)*L0*OF(2*r+4)*eta.rs.kfe(x=x, r=2, s=2*r+4, A=G, B=Ginv, C=G2r6.NR)
+      bias3 <- cf[3]*1/4*eta.rs.kfe(x=x, r=2, s=2*r+4, A=G, B=diag(d), C=G2r6.NR)^2
       AB2.val <- bias1 + bias2 + bias3
       return(AB2.val^2)
     }
@@ -575,9 +579,10 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   else if (substr(pilot,1,3)=="dsa") pilot <- "dsamse"
 
   if (pilot=="amse" & (d>2 | r>0)) stop("AMSE pilot selectors not defined for d>2 and/or r>0.")
-  if (pilot=="samse" & r>0) stop("SAMSE pilot selectors are not defined for r>0.")
+  if (pilot=="samse" & r>0) stop("DSCALAR pilot selectors are better for derivatives r>0.")
   if (pilot=="unconstr" & d>=6) stop("Unconstrained pilots are not implemented for d>6.")
-
+  if (pilot=="unconstr" & r>0) stop("DUNCONSTR pilot selectors are better for derivatives r>0.")
+  
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
   if (pre=="scale")
@@ -593,10 +598,11 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     Sinv12 <- chol2inv(chol(S12))
   }
   
-  Sd2r <- Sdr(d=d,r=2*r)
-  vId <- vec(diag(d))
+  ##Sd2r <- Sdr(d=d,r=2*r)
+  ##vId <- vec(diag(d))
   Idr <- diag(d^r)
-  RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
+  ##RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
+  RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2)
   if (!(pilot %in% c("dunconstr","dscalar")))
   {
     Sd2r4 <- Sdr(d=d, r=2*r+4)
@@ -621,16 +627,14 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   }
   else if (pilot=="dunconstr")
   {
-    ## eta2r4.hat is on data scale
-    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose) 
-    eta2r4.hat <- eta.kfe.y(x=x, deriv.order=2*r+4, G=G2r4, verbose=verbose)
+    ## G2r4 is on data scale
+    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose)
     if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
   }
   else if (pilot=="dscalar")
   {
-    ## eta2r4.hat is on pre-transformed data scale
+    ## g2r4 is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
-    eta2r4.hat <- eta.kfe.y(x=x.star, deriv.order=2*r+4, G=g2r4^2*diag(d), verbose=verbose)
     if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
   }
   else
@@ -659,14 +663,24 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     H <- invvech(vechH) %*% invvech(vechH)
     Hinv <- chol2inv(chol(H))
     IdrvH <- Idr%x%vec(H)
-    lambdaH <- prod(eigen(H)$value)^(1/d) ##head(eigen(H)$values, n=1)
-
-    if (pilot=="dunconstr" | pilot=="dscalar")
-      pi.val <- 1/(det(H)^(1/2)*n)*Kpow(t(vec(Hinv)),r)%*%RKr + (-1)^r*1/4*lambdaH^2*eta2r4.hat
+    int.var <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2)
+    
+    if (pilot=="dunconstr") 
+    {
+      eta2r4.hat <- eta.rs.kfe(x=x, r=4, s=2*r, A=H, B=diag(d), C=G2r4, verbose=verbose)
+      pi.val <- int.var + (-1)^r*1/4*eta2r4.hat
+    }
+    else if (pilot=="dscalar")
+    {
+      eta2r4.hat <- eta.rs.kfe(x=x.star, r=4, s=2*r, A=H, B=diag(d), C=g2r4^2*diag(d), verbose=verbose)
+      pi.val <- int.var + (-1)^r*1/4*eta2r4.hat
+    }
     else
-      pi.val <- 1/(det(H)^(1/2)*n)*Kpow(t(vec(Hinv)),r)%*%RKr + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
+      pi.val <- int.var + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
 
-    return(drop(pi.val))
+    pi.val <- drop(pi.val)
+    if (pi.val<0) pi.val <- 0
+    return(pi.val)
   }
 
   Hstart <- matrix.sqrt(Hstart)
@@ -722,7 +736,7 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   RK <- (4*pi)^(-d/2)
   
   if (pilot=="amse" & (d>2 | r>0)) stop("SAMSE pilot selectors are better for higher dimensions and/or derivative r>0.")
-  if (pilot=="samse" & r>0) stop("DSAMSE pilot selectors are better for derivatives r>0.")
+  if (pilot=="samse" & r>0) stop("DSCALAR or DUNCONSTR pilot selectors are better for derivatives r>0.")
   if (pilot=="unconstr" | pilot=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hpi.diag.")
   
   if (substr(pre,1,2)=="sc") pre <- "scale"
@@ -752,9 +766,9 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   }
  
   Sd2r <- Sdr(d=d,r=2*r)
-  vId <- vec(diag(d))
+  ##vId <- vec(diag(d))
   Idr <- diag(d^r)
-  RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
+  RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2) ##drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
   
   if (pilot=="amse" | pilot=="samse" | pilot=="dsamse")
   {
@@ -770,7 +784,6 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   else if (pilot=="dscalar")
   {
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
-    eta2r4.hat <- eta.kfe.y(x=x.star, deriv.order=2*r+4, G=g2r4^2*diag(d), verbose=verbose)
   }
   
   if (d==2 & r==0 & (pilot=="amse" | pilot=="samse" | pilot=="dsamse"))
@@ -795,12 +808,15 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
       H <- diag(diagH) %*% diag(diagH)
       Hinv <- chol2inv(chol(H))
       IdrvH <- Idr%x%vec(H)
-      lambdaH <- prod(eigen(H)$value)^(1/d) 
-      
+      int.var <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2)
+
       if (pilot=="dscalar")
-        pi.val <- 1/(det(H)^(1/2)*n)*Kpow(t(vec(Hinv)),r)%*%RKr + (-1)^r*1/4*lambdaH^2*eta2r4.hat
+      {
+        eta2r4.hat <- eta.rs.kfe(x=x.star, r=4, s=2*r, A=H, B=diag(d), C=g2r4^2*diag(d), verbose=verbose)
+        pi.val <- int.var + (-1)^r*1/4*eta2r4.hat
+      }
       else
-        pi.val <- 1/(det(H)^(1/2)*n)*Kpow(t(vec(Hinv)),r)%*%RKr + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
+        pi.val <- int.var + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
       
       return(drop(pi.val))
     }
@@ -997,7 +1013,7 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0, Sd2r
     lscv <- drop(lscv1 - 2*lscv2)
     lscv <- (-1)^r*sum(vec(diag(d^r))*lscv)
   }
-  
+
   return(lscv)  
 }
 
@@ -1051,7 +1067,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
 }
 
 
-Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc=4)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -1067,19 +1083,13 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   if (d>4) binned <- FALSE
   if (binned) bin.par <- binning(x=x, H=diag(diag(Hnorm)))
 
-  symm <- FALSE
-  truncate  <- FALSE
-  if (r>0) stop("Hlscv not yet implemented for r>0.")
-  
-  if (symm) Sd2r <- Sdr(d=d, r=2*r)
+  Sd2r <- Sdr(d=d, r=2*r)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=FALSE, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
   lscv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    ##truncate.flag <- FALSE
-    ##for (i in 1:d) truncate.flag <- truncate.flag | (sqrt(H[i,i]) > sqrt(Hnorm[i,i]) | sqrt(H[i,i]) < 0.2*sqrt(Hnorm[i,i]))
-    ##if (truncate.flag & truncate) lscv <- 1e10
-    ##else
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+    if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
     
@@ -1112,7 +1122,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc=4)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -1123,7 +1133,6 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   if (missing(Hstart)) Hstart <- matrix.sqrt(Hnorm)
   if (d>4) binned <- FALSE
 
-  
   ## linear binning
   if (binned)
   {
@@ -1133,27 +1142,20 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
     bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(H.max))))
   }
   
-  symm <- FALSE
-  truncate  <- FALSE
-  if (r>0) stop("Hlscv.diag not yet implemented for r>0.")
- 
-  if (symm) Sd2r <- Sdr(d=d, r=2*r)
+  Sd2r <- Sdr(d=d, r=2*r)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=FALSE, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    ##truncate.flag <- FALSE
-    ##for (i in 1:d) truncate.flag <- truncate.flag | (H[i,i] > Hnorm[i,i] | H[i,i] < 0.2*Hnorm[i,i]) 
-    ##if (truncate.flag & truncate) lscv <- 1e10
-    ##else
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=symm)
-
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+    if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
   optim.fun1 <- tolower(substr(optim.fun,1,1))
   if (optim.fun1=="n")
   {
-    ##fsc <- lscv.mat(x=x, H=Hnorm, binned=binned, bin.par=bin.par, deriv.order=r, symm=FALSE)
-    result <- nlm(p=diag(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))##, fscale=fsc)    
+    result <- nlm(p=diag(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))
     H <- diag(result$estimate^2)
     amise.opt <- result$minimum
   }
@@ -1442,7 +1444,6 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
   n <- nrow(x)
   r <- deriv.order
   vId <- vec(diag(d))
-  RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
   Hinv <- chol2inv(chol(H))
 
   if (!symm)
@@ -1462,7 +1463,7 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
     bias2 <- drop((-1)^r*Kpow(vId,r) %*% (scv1 - 2*scv2 + scv3))
     if (bias2 < 0) bias2 <- 0
   }
-  scvmat <- 1/(det(H)^(1/2)*n)*Kpow(t(vec(Hinv)),r)%*%RKr + bias2
+  scvmat <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2) + bias2
   return (scvmat)
 }
 
@@ -1549,8 +1550,9 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   else if (substr(pilot,1,3)=="dsa") pilot <- "dsamse"
 
   if (pilot=="amse" & (d>2 | r>0)) stop("AMSE pilot selectors not defined for d>2 and/or r>0.")
-  if (pilot=="samse" & r>0) stop("SAMSE pilot selectors are not defined for r>0.")
-  if (pilot=="unconstr" & (d>=6 | r>0)) stop("Unconstrained pilots are not implemented for d>6 or r>0.")
+  if (pilot=="samse" & r>0) stop("DSCALAR pilot selectors are better for derivatives r>0.")
+  if (pilot=="unconstr" & d>=6) stop("Unconstrained pilots are not implemented for d>6.")
+  if (pilot=="unconstr" & r>0) stop("DUNCONSTR pilot selectors are better for derivatives r>0.")
   
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
@@ -1569,8 +1571,8 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   }
     
   Sd2r <- Sdr(d=d,r=2*r)
-  vId <- vec(diag(d))
-  RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
+  ##vId <- vec(diag(d))
+  RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2) ##drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
   RK <- (4*pi)^(-d/2)
 
   if (d > 4) binned <- FALSE
@@ -1602,7 +1604,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   else if (pilot=="dunconstr")
   {
     ## Gu pilot matrix is on data scale
-    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE) 
+    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE)
     if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
   }
   else if (pilot=="dscalar")
@@ -1686,7 +1688,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   else if (substr(pilot,1,3)=="dsa") pilot <- "dsamse"
 
   if (pilot=="amse" & (d>2 | r>0)) stop("SAMSE pilot selectors are better for higher dimensions and/or derivative r>0.")
-  if (pilot=="samse" & r>0) stop("DSAMSE pilot selectors are better for derivatives r>0.")
+  if (pilot=="samse" & r>0) stop("DSCALAR pilot selectors are better for derivatives r>0.")
   if (pilot=="unconstr" | pilot=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hscv.diag.")
 
   if (substr(pre,1,2)=="sc") pre <- "scale"
@@ -1707,9 +1709,6 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   }
 
   Sd2r <- Sdr(d=d,r=2*r)
-  vId <- vec(diag(d))
-  RKr <- drop((4*pi)^(-d/2)*2^(-r)*OF(2*r)*Sd2r%*%Kpow(vId,r))
-
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>=4 & nstage==2) bgridsize <- rep(11,d)

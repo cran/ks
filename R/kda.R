@@ -446,8 +446,8 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
     Hmax.ind <- which.max(detH)
     Hmax <- Hs[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
 
-    if (missing(xmin)) xmin <- apply(x, 2, min) - supp*det(Hmax)
-    if (missing(xmax)) xmax <- apply(x, 2, max) + supp*det(Hmax)
+    if (missing(xmin)) xmin <- apply(x, 2, min) - supp*4*max(sqrt(diag(Hmax)))
+    if (missing(xmax)) xmax <- apply(x, 2, max) + supp*4*max(sqrt(diag(Hmax)))
     if (missing(w)) w <- rep(1, nrow(x))
     
     if (binned & d > 4)
@@ -489,11 +489,9 @@ kda.kde <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, s
     fhat.list$gridded <- fhat.temp$gridded
     fhat.list$x.group <- x.group
     pr <- rep(0, length(grlab))
-    for (j in 1:length(grlab))
-      pr[j] <- length(which(x.group==grlab[j]))
+    for (j in 1:length(grlab)) pr[j] <- length(which(x.group==grlab[j]))
     pr <- pr/nrow(x)
     fhat.list$prior.prob <- pr
-
     
     class(fhat.list) <- "kda.kde"
   }
