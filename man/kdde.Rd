@@ -7,8 +7,8 @@
 }
 \usage{
 kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, 
-    eval.points, binned=FALSE, bgridsize, positive=FALSE, 
-    adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
+    eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, 
+    w, deriv.vec=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -25,9 +25,8 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
-  \item{adj.positive}{adjustment added to data i.e. when
-	\code{positive=TRUE} KDE is carried out on \code{log(x +
-	  adj.positive)}. Default is the minimum of \code{x}.}
+  \item{adj.positive}{adjustment applied to data \code{x <- log(x +
+	adj.positive)} when \code{positive=TRUE}. Default is the minimum of \code{x}.}
   \item{w}{vector of weights (non-negative and sum is equal to sample size). Default is a vector of all ones.}
   \item{deriv.vec}{flag to compute all derivatives in vectorised derivative. Default is TRUE. 
        If FALSE then only the unique derivatives are computed.}

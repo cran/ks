@@ -23,8 +23,7 @@ rnorm.mixt(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
   \item{Sigmas}{(stacked) matrix of variance matrices (>1-d)}
   \item{sigmas}{vector of standard deviations (1-d)}
   \item{props}{vector of mixing proportions}
-  \item{mixt.label}{flag to output numeric label indicating the mixture
-	component. Default is FALSE.}
+  \item{mixt.label}{flag to output numeric label indicating mixture component. Default is FALSE.}
   }
   
 

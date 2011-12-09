@@ -8,9 +8,8 @@
   Kernel density based two-sample comparison test for 2- to 6-dimensional data.}
 
 \usage{
-kde.test(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1,
-    var.fhat2, double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE,
-    pre.scale=FALSE)
+kde.test(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fhat2, 
+    double.loop=FALSE, binned=FALSE, bgridsize, verbose=FALSE, pre.scale=FALSE)
 Hpi.kfe(x, nstage=2, Hstart, deriv.order=0, binned=FALSE, bgridsize, 
     double.loop=FALSE, amise=FALSE, verbose=FALSE)
 }
@@ -40,7 +39,7 @@ A list with fields
   \item{zstat}{z statistic - normalised version of Tstat}
   \item{pvalue}{p-value of the double sided test}
   \item{mean,var}{mean and variance of null distribution}
-  \item{var.fhat1,var.fhat2}{samples variances of KDE values evaluated at data points}
+  \item{var.fhat1,var.fhat2}{sample variances of KDE values evaluated at data points}
   \item{n1,n2}{sample sizes}
   \item{H1,H2}{bandwidth matrices}
   \item{psi1,psi12,psi21,psi2}{kernel functional estimates}

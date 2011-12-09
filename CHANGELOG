@@ -1,5 +1,10 @@
 Change log file for ks
 
+1.8.5 
+-Fully unconstrained pilot selectors pilot="dunconstr" for Hscv(), 
+ Hpi() for density derivative estimation. 
+-Unconstrained Hlscv() selector for density derivative estimation.
+
 1.8.4
 -Reinstated psi.ns code (more efficient than eta.kfe.y) and SAMSE
  pilot estimators Hpi(, pilot="samse").

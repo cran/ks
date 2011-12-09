@@ -22,10 +22,8 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
 {
   d <- ncol(x)
   tol.H <-  tol * diag(H)
-  if (missing(xmin))
-     xmin <- apply(x, 2, min) - tol.H
-  if (missing(xmax))
-     xmax <- apply(x, 2, max) + tol.H
+  if (missing(xmin)) xmin <- apply(x, 2, min) - tol.H
+  if (missing(xmax)) xmax <- apply(x, 2, max) + tol.H
   
   stepsize <- rep(0, d)
   gridx <- numeric(0)

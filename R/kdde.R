@@ -703,6 +703,38 @@ eta.kfe <- function(x, r, A, B, verbose=FALSE)
 }
 
 
+eta.rs.kfe <- function(x, r, s, A, B, C, verbose=FALSE)
+{
+  r <- r/2; s <- s/2
+  d <- ncol(x)
+  n <- nrow(x)
+
+  sumval <- 0
+  n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
+  n.seqlen <- length(n.seq)
+  Cinv <- chol2inv(chol(C))
+  ##Cinv12 <- matrix.sqrt(Cinv)
+  ##C12AC12 <- Cinv12 %*% A %*% Cinv12
+  ##C12BC12 <- Cinv12 %*% B %*% Cinv12 
+  CAC <- Cinv %*% A %*% Cinv
+  CBC <- Cinv %*% B %*% Cinv
+  eta.val <- 0
+  
+  if (verbose) pb <- txtProgressBar()
+  for (i in 1:(n.seqlen-1))
+  {
+    if (verbose) setTxtProgressBar(pb, i/(n.seqlen-1))
+    difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),]) 
+    ##Cdifs <- difs %*% Cinv12  
+    phiC <- dmvnorm.mixt(x=difs, mus=rep(0,d), Sigmas=C)
+    eta.val <- eta.val + sum(phiC*nu.noncent.rs(r=r, s=s, A=CAC, B=CBC, mu=difs, Sigma=-C))     
+  }
+  if (verbose) close(pb)
+  eta.val <- eta.val/n^2
+
+  return(eta.val)
+}
+
 
 
 #####################################################################
