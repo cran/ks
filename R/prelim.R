@@ -534,8 +534,18 @@ mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power
 
 ##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0)
 
-DrL0<-function(d,r,Sdr){
-  DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sdr%*%Kpow(A=vec(diag(d)),pow=r/2))
+DrL0<-function(d,r,Sdr.mat, Sdr.flag=TRUE, verbose=FALSE, thin=1)
+{
+  if (!Sdr.flag)
+  {
+    v <- Kpow(A=vec(diag(d)),pow=r/2)
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*matrix(Sdrv(d=d, r=r, v=v, thin=thin, verbose=verbose), ncol=1) 
+  }
+  else 
+  { 
+    if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=r)
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*(Sdr.mat%*%Kpow(A=vec(diag(d)),pow=r/2))
+  }
   return(DL0)
 }
 
@@ -582,11 +592,103 @@ Sdr<-function(d, r){
 }
 
 
-## default block indices for double sums
-block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6)
+
+
+#### Permutations with repetitions of the first d naturals (1:d) taking k elements at a time
+#### There are d^k of them, each having length k => We arrange them into a matrix of order d^k times k
+#### Each row represents one permutation
+#### Second version: filling in the matrix comlumn-wise (slightly faster)
+    
+perm.rep <-function(d,k)
 {
-  if (diff) npergroup <- max(c(block.limit %/% (nx*d^r), 1))
-  else npergroup <- max(c(block.limit %/% nx,1))
+    PM <- matrix(nrow=d^k,ncol=k)
+    for(pow in 0:(k-1)){
+        t2<-d^pow
+        p1<-1
+        while(p1<=d^k){
+            for(al in 1:d){for(p2 in 1:t2){
+                PM[p1,k-pow]<-al
+                p1<-p1+1}}}}
+    return(PM)
+}
+
+
+### Symmetriser applied to a vector
+
+Sdrv <- function(d,r,v, thin=1, verbose=FALSE)
+{   
+    if(length(v)!=d^r){stop("The length of v must equal d^r")}
+    per.rep<-perm.rep(d,r)
+    nper<-factorial(r)
+    ##nper.rep<-d^r
+    dpow<-d^((r-1):0)
+    dpow.mat<-matrix(rep(dpow,d^r),ncol=r,nrow=d^r,byrow=TRUE)    
+    if (verbose) pb <- txtProgressBar()
+    
+    ## modified from the permn function in the combinat library 02/2012   
+  
+    Sv <- rep(0,d^r)
+    x <- seq(r)
+    n <- length(x)
+    ##nofun <- is.null(fun)
+    ##out <- vector("list", gamma(n + 1))
+    p <- ip <- seqn <- 1:n
+    d <- rep(-1, n)
+    d[1] <- 0
+    m <- n + 1
+    p <- c(m, p, m)
+    i <- 1
+    nper.thin <- 0
+    use <- -c(1, n + 2)
+   
+    while (m != 1) {
+      ##out <- if (nofun) x[p[use]] else fun(x[p[use]], ...)
+      out <- x[p[use]]
+      if (i%%thin == 0 | i==1)
+      { 
+        ## next 2 lines added to compute Sdr%*%v product
+        if (verbose) setTxtProgressBar(pb, i/nper)
+        ##cat(paste(i,"/", nper, "\n", sep=""))
+        Sv <- Sv + v[1+rowSums((per.rep[,out]-1)*dpow.mat)]
+        nper.thin <- nper.thin+1
+      }
+
+      i <- i + 1
+      m <- n
+      chk <- (p[ip + d + 1] > seqn)
+      m <- max(seqn[!chk])
+      if (m < n) d[(m + 1):n] <- -d[(m + 1):n]
+      index1 <- ip[m] + 1
+      index2 <- p[index1] <- p[index1 + d[m]]
+      p[index1 + d[m]] <- m
+      tmp <- ip[index2]
+      ip[index2] <- ip[m]
+      ip[m] <- tmp
+   }
+   permnr <- Sv/nper.thin  
+   if (verbose) close(pb)
+   return(permnr)
+
+    ## attempt at speeding up the loop over permutations
+    ##per.indices <- block.indices(nrow(per.rep)*ncol(per), nrow(per), block.limit=1e7)
+    ##Sv <- 0
+    ##for (i in 1:(length(per.indices)-1))
+    ##{ 
+    ##  if (verbose) setTxtProgressBar(pb, i/(length(per.indices)-1))
+    ##  nper.temp <- diff(per.indices[i:(i+1)])
+    ##  Sv.mat <- (per.rep[,t(per.mat[per.indices[i]:(per.indices[(i+1)]-1),])]-1)*matrix(rep(dpow,d^r),ncol=r*nper.temp,nrow=d^r,byrow=TRUE) 
+    ##  Sv <- Sv + rowSums(matrix(v[1+apply(array(Sv.mat, dim=c(d^r,r,nper.temp)), 3, rowSums)], nrow=d^r))
+    ##}
+}
+
+## default block indices for double sums
+block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6, npergroup)
+{
+  if (missing(npergroup)) 
+  { 
+    if (diff) npergroup <- max(c(block.limit %/% (nx*d^r), 1))
+    else npergroup <- max(c(block.limit %/% nx,1))
+  }
   nseq <- seq(1, ny, by=npergroup)
   if (tail(nseq,n=1) <= ny) nseq <- c(nseq, ny+1)
   if (length(nseq)==1) nseq <- c(1, ny+1)

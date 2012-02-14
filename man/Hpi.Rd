@@ -12,7 +12,8 @@
 
 \usage{
 Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm",
+    Sdr.flag=TRUE)
 Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, 
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize)
@@ -24,7 +25,6 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
     \code{"samse"} = single SAMSE pilot bandwidth \cr 
     \code{"unconstr"} = single unconstrained pilot bandwidth \cr
-    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order > 0 \cr 
     \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
     \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
   \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
@@ -36,6 +36,8 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
+  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
+  bandwidths for deriv.order>0. Default is FALSE.}
 }
 
 \value{
@@ -62,6 +64,11 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   If \code{Hstart} is not given then it defaults to
   \code{k*var(x)} where \code{k=(4/(n*(d+2*r+2)))^(2/(d+2*r+4))}, n = sample size, d = dimension of data,
   r = derivative order. 
+
+  If \code{Sdr.flag=FALSE}, then symmetriser matrices are not computed
+  explicitly but indirectly in a loop of permutations. The loop can make 
+  execution times extremely long, but avoid the memory problems for e.g.,
+  d=4, deriv.order=2. 
 }
 
 \references{

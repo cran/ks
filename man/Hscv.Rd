@@ -9,7 +9,8 @@
 
 \usage{
 Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm",
+     Sdr.flag=TRUE)
 Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
@@ -20,7 +21,6 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
     \code{"samse"} = single SAMSE pilot bandwidth \cr 
     \code{"unconstr"} = single unconstrained pilot bandwidth \cr
-    \code{"dsamse"} = single SAMSE pilot bandwidth for deriv.order > 0 \cr 
     \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
     \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
   \item{Hstart}{initial bandwidth matrix, used in numerical
@@ -32,6 +32,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
+  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for \code{pilot="unconstr", "dunconstr"}. Default is FALSE.}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
 
@@ -58,7 +59,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
   
-  For details about the advanced options for \code{binned, Hstart}, 
+  For details about the advanced options for \code{binned, Hstart, Sdr.flag}, 
   see \code{\link{Hpi}}.
 }
 
@@ -76,6 +77,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
   selection. \emph{Computational Statistics}, \bold{9}, 97-116. 
+
   Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
   bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919-1932.
 } 

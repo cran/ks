@@ -24,8 +24,8 @@ dkde.weights <- function(x, H, Sigma, ridge=0, ...)
   Qmat <- Qmat/n^2
   b <- b/n^2
   
-  val <- ipop(c=-matrix(b, ncol=1), H=Qmat, A=matrix(1, ncol=n, nrow=1), b=n, r=0, l=matrix(0,ncol=1, nrow=n), u=matrix(n, ncol=1, nrow=n), ...)  
+  val <- kernlab::ipop(c=-matrix(b, ncol=1), H=Qmat, A=matrix(1, ncol=n, nrow=1), b=n, r=0, l=matrix(0,ncol=1, nrow=n), u=matrix(n, ncol=1, nrow=n), ...)  
 
-  return(primal(val))  
+  return(kernlab::primal(val))  
 }
 
