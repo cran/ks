@@ -1,8 +1,22 @@
 Change log file for ks
 
-1.8.5 
--Fully unconstrained pilot selectors pilot="dunconstr" for Hscv(), 
- Hpi() for density derivative estimation. 
+1.8.6
+-Implemented calcualtion of Lebesgue measure of level sets of contours,
+ contourSizes().
+-Implemented probability contour plot for 1-d KDE plot, i.e. analogue
+ to existing 2-d, 3-d contour plot(,disp="slice").
+-Added recursive computations kfe(,Sdr.flag=FALSE) which don't compute
+ symmetriser matices explicitly. These are then called in
+ Hpi(,Sdr.flag=TRUE) and Hscv(,Sdr.flag=FALSE).
+-Changed pilot="dunconstr" to direct computation rather than indirect
+ eta form. This means that Hpi(,pilot="dunconstr", deriv.order=0) and
+ Hpi(,pilot="unconstr") now give the same result.
+-Remove pilot="dsamse" option as this was more computation than
+ pilot="dscalar" but with little difference in the result.
+
+1.8.5
+-Fully unconstrained pilot selectors pilot="dunconstr" for Hscv(),
+ Hpi() for density derivative estimation.
 -Unconstrained Hlscv() selector for density derivative estimation.
 
 1.8.4

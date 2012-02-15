@@ -603,7 +603,7 @@ plot.kde <- function(x, ...)
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, ptcol="blue", jitter=FALSE, ...) 
+  drawpoints=FALSE, ptcol="blue", cont.col=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=FALSE, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
   
@@ -612,6 +612,34 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
   else
     plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
 
+  ## compute contours
+  if (!missing(cont) | !missing(abs.cont)) 
+  {
+    if (missing(abs.cont))
+    {
+      if (!is.null(fhat$cont))
+      {
+        cont.ind <- rep(FALSE, length(fhat$cont))
+        for (j in 1:length(cont))
+          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+        
+        if (all(!cont.ind))
+          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+        else
+          hts <- fhat$cont[cont.ind]
+      }
+      else
+        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+      }
+      else
+        hts <- abs.cont 
+    
+      hts <- sort(hts, decreasing=TRUE)
+      cont.ind <- 1-as.numeric(fhat$estimate>=hts[1])
+      cont.ind[cont.ind==1] <- NA	  
+      lines(fhat$eval.points, cont.ind, col=cont.col, lwd=cont.lwd)
+    }
+  
   if (drawpoints)
     if (jitter)
       rug(jitter(fhat$x), col=ptcol)
@@ -876,11 +904,36 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
     
     if (!missing(prob) & missing(cont))
       hts <- quantile(dobs, prob=prob)
-    
+      
     if (missing(prob) & !missing(cont))
       hts <- quantile(dobs, prob=(100-cont)/100)
+      ##names(hts) <- names(quantile(dobs, prob=cont/100))
   }
   
   return(hts)
 }
 
+
+######################################################################################
+## Riemann sums to compute approximate Lebesgue measure of contour set
+######################################################################################
+
+contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=FALSE)
+{
+  num.int <- vector()
+  if (missing(abs.cont))
+    abs.cont <- contourLevels(x, cont=cont, approx=approx)
+
+  num.int <- rep(0, length(abs.cont))
+  if (!is.null(names(abs.cont))) names(num.int) <- names(abs.cont) 
+  abs.cont <- sort(abs.cont)
+  if (!is.list(x$eval.points))
+    delta.int <- head(diff(x$eval.points), n=1)
+  else
+    delta.int <- prod(sapply(x$eval.points, diff)[1,]) 
+  
+  for (j in 1:length(abs.cont)) 
+    num.int[j] <- sum(x$estimate>abs.cont[j])
+  
+  return(num.int*delta.int)
+}

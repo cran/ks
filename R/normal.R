@@ -308,7 +308,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ###############################################################################
 
 
-dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
+dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, Sdr.flag=TRUE)
 {
   r <- deriv.order
   if(length(r)>1) stop("deriv.order should be a non-negative integer.")
@@ -347,8 +347,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
-
+ 
   ## Code by Jose Chacon 
   ## Normal density at x
   
@@ -373,7 +372,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
     ones <- rep(1,d^r)
     Sigmainvr <- Kpow(Sigmainv,r)        
     r.end <- floor(r/2)
-    SirSdr <- Sigmainvr %*% Sdr.mat    
     
     Hr <- 0
     for (j in 0:r.end)
@@ -384,7 +382,17 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
       xr2j <- mat.Kpow(A=x.centred, pow=r-2*j)
       Hr <- Hr + cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
     }
-    mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
+    if (!Sdr.flag)
+    {
+      mvhmat.temp <- (t(ones) %x% dens)*Hr %*% Sigmainvr
+      mvh <- t((-1)^r*apply(mvhmat.temp,1, Sdrv, d=d,r=r))
+    }
+    else
+    {
+      Sdr.mat <- Sdr(d=d, r=sumr)
+      SirSdr <- Sigmainvr %*% Sdr.mat    
+      mvh <- (-1)^r*(t(ones) %x% dens)*Hr %*% SirSdr
+    }
     mvh.minimal <- mvh[,ind.mat.minimal.logical]
   
     if (is.vector(mvh.minimal)) mvh.minimal <- matrix(mvh.minimal, nrow=1)
@@ -412,7 +420,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 
 
 
-dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
+dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, Sdr.flag=TRUE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one\n")
@@ -422,22 +430,22 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
   
   if (missing(mus)) mus <- rep(0,d)
   if (missing(Sigmas)) Sigmas <- diag(d)
-
   r <- deriv.order
   sumr <- sum(r)
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr)
-  
-  ind.mat <- dmvnorm.deriv(x=x, mu=mus[1,], Sigma=Sigmas[1:d,], deriv.order=r, Sdr.mat=Sdr.mat, only.index=TRUE)
-  if (only.index)
+ 
+  if (only.index | add.index) 
+    ind.mat <- dmvnorm.deriv(x=x, mu=mus[1,], Sigma=Sigmas[1:d,], deriv.order=r, only.index=TRUE)
+  if (only.index)  
     if (deriv.vec) return (ind.mat)
     else return(unique(ind.mat))
   
+  if (Sdr.flag) { if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d, r=sumr) }
   ## derivatives 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
   {
     if (is.matrix(mus)) mus <- mus[1,]
-    dens <- dmvnorm.deriv(x=x, mu=mus, Sigma=Sigmas[1:d,], deriv.order=sumr, Sdr.mat=Sdr.mat)
+    dens <- dmvnorm.deriv(x=x, mu=mus, Sigma=Sigmas[1:d,], deriv.order=sumr, Sdr.mat=Sdr.mat, Sdr.flag=Sdr.flag)
   }
   ## multiple component mixture
   else   
@@ -446,7 +454,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
     dens <- 0
     ## sum of each normal density value from each component at x  
     for (i in 1:k)
-      dens <- dens + props[i]*dmvnorm.deriv(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr, Sdr.mat=Sdr.mat)  
+      dens <- dens + props[i]*dmvnorm.deriv(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr, Sdr.mat=Sdr.mat, Sdr.flag=Sdr.flag)  
   }
 
   if (!deriv.vec)
@@ -476,22 +484,21 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
 
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, offset)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, offset, Sdr.flag=TRUE, thin=1)
 {
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
-  ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
 
-  if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (missing(offset)) offset <- rep(0,d)
-  
+
   if (binned)
   {
     d <- ncol(Sigma)
     n <- nrow(x)
-
+    if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
+ 
     if (is.diagonal(Sigma))
     {
       if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
@@ -523,11 +530,13 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       sumval <- det(Sigmainv12) * sumval  %*% Kpow(Sigmainv12, pow=r)
     }
   }
+  ## exact computation 
   else
   {
     if (verbose) pb <- txtProgressBar() 
     if (double.loop)
     {
+      if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
       ngroup <- n
       sumval <- 0
       for (i in 1:nrow(x))
@@ -538,25 +547,86 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     }
     else
     {
-      n.seq <- block.indices(n, n, d=d, r=r, diff=TRUE)
-      sumval <- 0
-      for (i in 1:(length(n.seq)-1))
-      {  
-        difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
-        sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2, sum)
-        if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
+      if (Sdr.flag)
+      {
+         if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
+         n.seq <- block.indices(n, n, d=d, r=r, diff=TRUE)
+         sumval <- 0
+         for (i in 1:(length(n.seq)-1))
+         {  
+           difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+           sumval <- sumval + apply(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat), 2, sum)
+           if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
+         }
       }
+      else
+      {
+         ## original recursive code from Jose E. Chacon 02/2012
+         if (2*floor(r/2)!=r){result<-rep(0,d^r)}
+         else
+  	 {
+    	    Sigmainv<-chol2inv(chol(Sigma))
+    	    vSigmainv<-vec(Sigmainv)
+    	    ##vId<-vec(diag(d))
+    	    result<-rep(0,d^r)
+            kpergroup <- 100
+	    for(k in 2:n)
+            {
+              if (verbose) setTxtProgressBar(pb, k/n)
+              ##cat(paste(k,"/", n, "\n", sep=""))  
+              if(k==2){ difs.orig <-matrix(x[1,]-x[2,],nrow=1,byrow=TRUE) }
+    	      else { difs.orig <- sweep(x[1:(k-1),],2,x[k,]) } 
+              k.seq <- block.indices(nrow(difs.orig), nrow(difs.orig), npergroup=kpergroup)
+              k.result <- 0
+              for (ell in 1:(length(k.seq)-1))
+              {  
+                 difs <- difs.orig[k.seq[ell]:(k.seq[ell+1]-1),]
+    	         arg<-difs%*%Sigmainv    ###Changed to avoid computing Kpow(Sigmainv12,r) at the end, which is not possible for d=4, r=8
+    	         hmold0 <- matrix(rep(1,nrow(arg)),ncol=1,nrow=nrow(arg))
+    	         hmold1 <- arg
+    	    	 hmnew <- hmold0
+    	    	 if (r==1){hmnew<-hmold1}
+    	    	 if (r >= 2)
+                 { 
+               	   for (i in 2:r)
+		   {
+                      vSigmainv.mat<-matrix(rep(vSigmainv,nrow(arg)),byrow=TRUE,nrow=nrow(arg))
+               	      hmnew <- (mat.Kprod(arg,hmold1) - (i - 1) * mat.Kprod(vSigmainv.mat,hmold0))
+            	      hmold0 <- hmold1
+            	      hmold1 <- hmnew
+              	   }	 
+    	         }
+                        
+    	         phi<-dmvnorm(difs,mean=rep(0,d),sigma=Sigma)
+    	         phi<-matrix(rep(phi,d^r),ncol=d^r,byrow=FALSE)
+                 if (k==2) k.result <- k.result + drop(phi*hmnew)
+                 else k.result <- k.result + drop(colSums(phi*hmnew))
+                 rm(phi)
+              }
+               result <- result + k.result    
+    	       ##if(k==2){result<-result+drop(phi*hmnew)}
+    	       ##if(k>2){result<-result+drop(colSums(phi*hmnew))}
+    	    }
+          }
+          if (verbose) close(pb)
+          phi0<-dmvnorm(rep(0,d),mean=rep(0,d),sigma=Sigma)    
+    	  if(r==0){hm0<-phi0}
+    	  else{hm0<-drop((-1)^(r/2)*OF(r)*Kpow(vSigmainv,r/2)*phi0)}
+          v <- as.vector(2*result+n*hm0)
+          sumval<-drop(Sdrv(d=d,r=r,v=v, verbose=verbose, thin=thin)) 
+       }
     }
     if (verbose) close(pb)
   }
   
   if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat)
+    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, Sdr.flag=Sdr.flag)
   
   if (kfe) { if (inc==1) sumval <- sumval/n^2 else sumval <- sumval/(n*(n-1)) }
   
   if (add.index)
   {
+    ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
     if (deriv.vec) return(list(sum=sumval, deriv.ind=ind.mat))
     else return(list(sum=sumval, deriv.ind=unique(ind.mat)))
   }

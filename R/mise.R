@@ -147,10 +147,14 @@ gamma.r.norec <- function(mu, Sigma, d, r, Sd2r)
 }
 
 ## gamma functional for normal mixture AMISE 
-gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H)
+gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H, Sdr.flag=TRUE)
 {
   Sigmainv <- chol2inv(chol(Sigma))
-  w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
+  if (!Sdr.flag)
+    w <- matrix(Sdrv(d=d,r=2*r+4, v=vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2))), nrow=1)
+  else
+    w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
+  
   v <- rep(0,length=d^(2*r+4))
   for(j in 0:(r+2))
     v <- v+((-1)^j*OF(2*j)*choose(2*r+4, 2*j))*(Kpow(mu,2*r-2*j+4)%x%Kpow(vec(Sigma),j))
@@ -747,4 +751,30 @@ ise.mixt.1d <- function(x, h, mus, sigmas, props, deriv.order=0, binned=FALSE)
   return ((-1)^r*(ise1/n^2 - 2*ise2/n + ise3))
 }
 
+
+Hise.mixt <- function(x, mus, Sigmas, props, Hstart, deriv.order=0)
+{
+  r <- deriv.order
+  if (is.vector(mus)) d <- length(mus)
+  else d <- ncol(mus) 
+  samp <- nrow(x)
+  
+  ## use normal reference estimate as initial condition
+  if (missing(Hstart))
+  {
+    xstart <- rmvnorm.mixt(10000, mus, Sigmas, props)
+    Hstart <- (4/(samp*(d+2*r+2)))^(2/(d+2*r+4)) * var(xstart)
+  }
+  
+  ise.mixt.temp <- function(vechH)
+  {  
+    H <- invvech(vechH) %*% invvech(vechH)
+    return(ise.mixt(x=x, H=H, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order))
+  }
+
+  Hstart <- vech(matrix.sqrt(Hstart))
+  result <- nlm(p=Hstart, f=ise.mixt.temp)
+  Hise <- invvech(result$estimate) %*% invvech(result$estimate)
+  return(Hise)
+}   
 

@@ -9,7 +9,6 @@
 
 \usage{
 \method{plot}{kde}(x, ...)
-
 \method{plot}{kda.kde}(x, y, y.group, ...)
 }
 
@@ -33,9 +32,10 @@
   For \code{kde} objects, the function headers for the different dimensional data are 
   \preformatted{
   ## univariate
-  plot(x, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, ptcol="blue", col="black", jitter=TRUE, ...)
-
+  plot(x, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, 
+  ptcol="blue", col="black", cont.col=1, cont.lwd, jitter=FALSE, cont, 
+  abs.cont, approx.cont=FALSE, ...)
+  
   ## bivariate
   plot(x, display="slice", cont=c(25,50,75), abs.cont, 
     approx.cont=FALSE, xlab, ylab, zlab="Density function", add=FALSE, 
@@ -91,7 +91,9 @@
   }
 
   The 1-d plot is a standard plot of a 1-d curve. If
-  \code{drawpoints=TRUE} then a rug plot is added.
+  \code{drawpoints=TRUE} then a rug plot is added. If \code{cont} is specified,
+  the horizontal line on the x-axis indicates the \code{cont}\% highest 
+  density level set.  
   
   There are different types of plotting displays for 2-d data available,
   controlled by the \code{display} parameter.  (a) If \code{display="slice"} then a slice/contour plot
@@ -136,6 +138,7 @@
 x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))  
 plot(fhat)
+plot(fhat, cont=50, cont.col="blue", cont.lwd=2)
 
 ## bivariate example
 data(unicef)

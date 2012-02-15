@@ -26,13 +26,13 @@ psins.eta <- function(r, A, Sigma)
   return(psins.val)
 }
 
-psins <- function(r, Sigma, deriv.vec=FALSE, Sdr.mat)
+psins <- function(r, Sigma, deriv.vec=FALSE, Sdr.mat, Sdr.flag=TRUE)
 {
   d <- ncol(Sigma)
   
   if (deriv.vec)
   {
-    return(drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat)))
+    return(drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, Sdr.mat=Sdr.mat, Sdr.flag=Sdr.flag, add.index=FALSE)))
   }
   else
   {  

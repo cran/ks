@@ -409,16 +409,14 @@ kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
   return(psir) 
 }
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, Sdr.mat, verbose=FALSE)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, verbose=FALSE, Sdr.mat, Sdr.flag=TRUE, thin=1)
 {
   r <- deriv.order
   d <- ncol(x)
-  n <- nrow(x)
-  
-  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE)
-  psir <- drop(psir)
-  
-  if (add.index)
+  ##n <- nrow(x)
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, Sdr.flag=Sdr.flag, add.index=FALSE, thin=thin)
+ 
+ if (add.index)
   {
     ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
   
@@ -677,12 +675,12 @@ eta.kfe <- function(x, r, A, B, verbose=FALSE)
   if (r==0) eta.val <- eta.kfe.y(x=x, y=x, G=B, verbose=verbose, symm=FALSE)
   else
   {
-    sumval <- 0
+    ##sumval <- 0
     n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
     n.seqlen <- length(n.seq)
     Binv <- chol2inv(chol(B))
-    Binv12 <- matrix.sqrt(Binv)
-    B12AB12 <- Binv12 %*% A %*% Binv12
+    ##Binv12 <- matrix.sqrt(Binv)
+    ##B12AB12 <- Binv12 %*% A %*% Binv12
     BAB <- Binv %*% A %*% Binv
     eta.val <- 0
 
@@ -709,7 +707,7 @@ eta.rs.kfe <- function(x, r, s, A, B, C, verbose=FALSE)
   d <- ncol(x)
   n <- nrow(x)
 
-  sumval <- 0
+  ##sumval <- 0
   n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
   n.seqlen <- length(n.seq)
   Cinv <- chol2inv(chol(C))

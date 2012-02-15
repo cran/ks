@@ -7,7 +7,7 @@
   Kernel density estimate for 1- to 6-dimensional data.
 }
 \usage{
-kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
+kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
     compute.cont=FALSE, approx.cont=TRUE)
 

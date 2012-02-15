@@ -125,6 +125,9 @@ plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
  ##box()
 }
 
+
+
+
 ## ISE of difference between two KDEs
 
 ise.diff <- function(fhat1, fhat2, xmin, xmax)
@@ -143,6 +146,7 @@ ise.diff <- function(fhat1, fhat2, xmin, xmax)
 
   if (!missing(xmin) & missing(xmax))
     int <- integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
+
 
   if (!missing(xmin) & !missing(xmax))
     int <- integral.kde(fhat=fhat.sq, q=xmax, density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
