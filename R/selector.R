@@ -173,7 +173,7 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
 ## Unconstrained pilot selector for derivatives r>0 from Chacon & Duong (2011)
 ## Generalisation of Gunconstr for r>0
 
-Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=TRUE, optim.fun="nlm", thin=1)
+Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE, optim.fun="nlm")
 {
   if (scv) cf <- c(2^(-d/2), 2)
   else cf <- c(1,1)
@@ -189,8 +189,9 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=TRUE, 
   {
     G2r4.NR <- GNR(r=2*r+4,n=n,Sigma=S)
     G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=S)
-    vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=FALSE, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag, thin=thin)   
-    D2r4phi0 <- DrL0(d=d, r=2*r+4, Sdr.flag=Sdr.flag, verbose=verbose, thin=thin)
+    vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=FALSE, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)   
+    ##D2r4phi0 <- try(DrL0(d=d, r=2*r+4, Sdr.flag=Sdr.flag, verbose=verbose))
+
     ##Id2r4 <- diag(d^(2*r+4))
     dls <- (0:(d^2-1))*d^(2*r+4) 
 
@@ -198,7 +199,7 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=TRUE, 
     {
       G <- invvech(vechG) %*% invvech(vechG)
       Ginv <- chol2inv(chol(G))
-      Ginv12 <- matrix.sqrt(Ginv)
+      ##Ginv12 <- matrix.sqrt(Ginv)
       
       ###eta functionals are more efficient but are currently less accurate than direct computation of psi functionals (kfe)
       ##bias1 <- cf[1]*n^(-2)*det(G)^(-1)*L0^2*OF(2*r+4)*nu(r=r+2, A=Ginv%*%Ginv)
@@ -208,11 +209,10 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=TRUE, 
       ##AB2.val <- bias1 + bias2 + bias3
       
       ## direct computation
-      v1 <- n^(-1)*det(Ginv12)*drop(Kpow(A=Ginv12,pow=2*r+4)%*%D2r4phi0) 
-      ##v2 <- (1/2)*drop((t(vec(G))%x%Id2r4) %*% vecPsi2r6)
+      ##v1 <- n^(-1)*det(Ginv12)*drop(Kpow(A=Ginv12,pow=2*r+4)%*%D2r4phi0) 
+      v1 <- n^(-1)*dmvnorm(rep(0,d),rep(0,d),sigma=G)*(-1)^(r+2)*OF(2*r+4)*Sdrv(d=d,r=2*r+4,v=Kpow(vec(Ginv),r+2))
       
-      ## direct, recursive computation by Jose Chacon 02/2012
-      ##v1 <- n^(-1)*dmvnorm(rep(0,d),rep(0,d),sigma=G)*(-1)^(r+2)*OF(2*r+4)*Sdrv(d=d,r=2*r+4,v=Kpow(vec(Ginv),r+2))
+      ##v2 <- (1/2)*drop((t(vec(G))%x%Id2r4) %*% vecPsi2r6)
       v2 <- numeric(d^(2*r+4))
         for(k in 1:d^(2*r+4)){v2[k]<-(1/2)*sum(vec(G)*vecPsi2r6[dls+k])}
       
@@ -399,7 +399,7 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
 ## estimated psi functionals
 #############################################################################
 
-psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=TRUE)
+psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=FALSE)
 {
   n <- nrow(x)
   r <- deriv.order
@@ -425,7 +425,7 @@ psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose
 ## estimated psi functionals
 ############################################################################
 
-psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=TRUE, optim.fun="nlm")
+psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=FALSE, optim.fun="nlm")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -502,7 +502,7 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize)
   return(dpik(x=x, level=nstage, gridsize=bgridsize))
 }
 
-Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=TRUE)
+Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -572,10 +572,10 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   else if (pilot=="dunconstr")
   {
     ## G2r4 is on data scale
-    kfe.thin <- 1
-    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun, thin=kfe.thin)
+    ##kfe.thin <- 1
+    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
    
-    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag, thin=kfe.thin)
+    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)
     if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
   }
   else if (pilot=="dscalar")
@@ -1170,6 +1170,7 @@ Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
+  if(!is.matrix(x)) x <- as.matrix(x)
 
   ## use normal reference b/w matrix for bounds
   k <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*n*gamma((d+8)/2)*(d+2)))^(2/(d+4))
@@ -1209,7 +1210,8 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
-  
+  if(!is.matrix(x)) x <- as.matrix(x)
+
   ## use maximally smoothed b/w matrix for bounds
   k <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*n*gamma((d+8)/2)*(d+2)))^(2/(d+4))
   Hmax <- k * abs(var(x))
@@ -1246,7 +1248,7 @@ gamse.scv <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bin.p
 {
   if (nstage==0)
   {
-    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE, Sdr.mat=Sd6) 
+    psihat6.star <- psins(r=6, Sigma=Sigma.star, deriv.vec=TRUE) 
   }
   else if (nstage==1)
   {  
@@ -1304,7 +1306,7 @@ gamse.scv <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bin.p
 # G_AMSE pilot bandwidth
 ###############################################################################
 
-Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, Sdr.flag=TRUE, optim.fun="nlm")
+Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, Sdr.flag=FALSE, optim.fun="nlm")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -1318,7 +1320,7 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
   }
   else if (nstage==0)
   {
-    psihat6 <- psins(r=6, Sigma=S, deriv.vec=TRUE, Sdr.mat=Sd6, Sdr.flag=Sdr.flag) 
+    psihat6 <- psins(r=6, Sigma=S, deriv.vec=TRUE) 
   }
   
   ## constants for normal reference
@@ -1478,7 +1480,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=TRUE)
+Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1556,8 +1558,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   }
   else
   {
-    ## Gs is on transformed data scale
-    
+    ## Gs is on transformed data scale    
     Hamise <- Hpi(x=x.star, nstage=1, deriv.order=r, pilot=pilot, pre="sphere", binned=TRUE, bgridsize=bgridsize, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun) 
     if (any(is.na(Hamise)))
     {
@@ -1703,5 +1704,15 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   else return(list(H = H, SCV.star=amise.star))
 }
 
-
+##############################################################################
+## Normal scale selector)
+##############################################################################
+Hns <- function(x, deriv.order=0)
+{
+  if (is.vector(x)){ n<-1; d <- length(x)} 
+  else { n <- nrow(x); d <- ncol(x)}
+  r <- deriv.order
+  H <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+  return(H)
+}
 

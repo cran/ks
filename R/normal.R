@@ -372,7 +372,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
     ones <- rep(1,d^r)
     Sigmainvr <- Kpow(Sigmainv,r)        
     r.end <- floor(r/2)
-    
+
     Hr <- 0
     for (j in 0:r.end)
     {
@@ -382,6 +382,7 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
       xr2j <- mat.Kpow(A=x.centred, pow=r-2*j)
       Hr <- Hr + cj*mat.Kprod(U=xr2j,V=matrix(rep(vSigmaj,n),nrow=n,byrow=TRUE))
     }
+    
     if (!Sdr.flag)
     {
       mvhmat.temp <- (t(ones) %x% dens)*Hr %*% Sigmainvr
@@ -418,6 +419,108 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
   else return(deriv=mvh)
 }
 
+
+dmvnorm.deriv.vectorx <- function(x, mu, Sigma, deriv.order)
+{
+  r <- deriv.order
+  if(length(r)>1) stop("deriv.order should be a non-negative integer.")
+  ##sumr <- sum(r)
+  
+  if (missing(x)) d <- ncol(Sigma)
+  else
+  {
+    if (is.vector(x)) x <- t(as.matrix(x))
+    else stop("dmvnorm.deriv.nd only defined for vector x.")
+
+    ##if (is.data.frame(x)) x <- as.matrix(x)
+    d <- ncol(x)
+    ##n <- nrow(x)
+  } 
+
+  ## compute derivatives
+  if (missing(mu)) mu <- rep(0,d)
+  if (missing(Sigma)) Sigma <- diag(d)
+ 
+  ## Code by Jose Chacon 03/2012
+  ## Normal density at x
+  
+  x.centred <- sweep(x, 2, mu)
+  Sigmainv<- chol2inv(chol(Sigma))
+  arg <- drop(x.centred %*% Sigmainv)
+  hmold0 <- 1
+  hmold1 <- arg
+  hmnew <- hmold0
+    
+  udind0<-matrix(rep(0,d),nrow=1,ncol=d)
+  udind1<-diag(d)
+  if(r==0) return(dmvnorm(x=x.centred, mean=rep(0,d), sigma=Sigma)) 
+      
+  if(r==1){hmnew<-hmold1}
+  if(r>=2){
+  for(i in 2:r){
+   
+  Ndi1<-length(hmold1)
+  ##Ndi0<-length(hmold0)
+  hmnew<-numeric()
+        
+  for(j in 1:d)
+  {        
+     nrecj<-choose(d-j+i-1,i-1)        
+     hmnew.aux<-arg[j]*hmold1[Ndi1-(nrecj:1)+1]
+              
+     for(k in j:d)
+     {        
+        udind0.aux <- matrix(udind1[Ndi1-(nrecj:1)+1,],ncol=d,byrow=FALSE)
+        udind0.aux[,k] <- udind0.aux[,k]-1
+        valid.udind0 <- as.logical(apply(udind0.aux>=0,1,min))
+        enlarged.hmold0 <- rep(0,nrow(udind0.aux))
+        for(ell in 1:nrow(udind0.aux))
+        {
+           if(valid.udind0[ell])
+           {
+              pos <- which(rowSums((udind0-matrix(rep(udind0.aux[ell,],nrow(udind0)),nrow=nrow(udind0),byrow=TRUE))^2)==0)
+              enlarged.hmold0[ell] <- hmold0[pos]
+           }
+        }
+        ##In enlarged.hmold0 we put the vector hmold0 in those positions not having a -1 in any of the derivative order after substracting e_k
+        ##The remaining positions are zeroes
+        ##Surely this could be done in a more efficient way
+        hmnew.aux<-hmnew.aux-Sigmainv[j,k]*udind1[Ndi1-(nrecj:1)+1,k]*enlarged.hmold0
+     }
+     hmnew<-c(hmnew,hmnew.aux)
+  }
+  hmold0 <- hmold1
+  hmold1 <- hmnew
+  
+  ##Compute the unique i-th derivative multi-indexes 
+  nudind1<-nrow(udind1)
+  udindnew<-numeric()
+  for(j in 1:d)
+  {
+     Ndj1i<-choose(d+i-1-j,i-1)
+     udind.aux<-matrix(udind1[nudind1-(Ndj1i:1)+1,],ncol=d,byrow=FALSE)
+     udind.aux[,j]<-udind.aux[,j]+1
+     udindnew<-rbind(udindnew,udind.aux)
+  }
+   udind0<-udind1
+   udind1<-udindnew
+  }
+  }
+    
+  dind <- t(apply(perm.rep(d=d,r=r),1,tabulate,nbins=d))    
+  dlabs <- numeric(nrow(dind))
+  for(i in 1:nrow(udind1))
+  {
+     dlabs <- dlabs+i*(rowSums((dind-matrix(rep(udind1[i,],nrow(dind)),nrow=nrow(dind),byrow=TRUE))^2)==0)
+  }    
+    
+  deriv.vector <- hmnew[dlabs] 
+  ### Surely this could be done without computing the full dind matrix,
+  ### by using a for i in 1:d^r and checking which hmnew coordinate should be put in deriv.vector[i]
+              
+  mvh <- dmvnorm(x,mean=rep(0,d),sigma=Sigma)*deriv.vector*(-1)^r 
+  return(mvh)
+}
 
 
 dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, Sdr.flag=TRUE)
@@ -484,7 +587,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deri
 
 
 
-dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, offset, Sdr.flag=TRUE, thin=1)
+dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, double.loop=FALSE, Sdr.mat, verbose=FALSE, offset, Sdr.flag=TRUE)
 {
   r <- deriv.order
   d <- ncol(x)
@@ -547,7 +650,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     }
     else
     {
-      if (Sdr.flag)
+      if (Sdr.flag | r==0)
       {
          if (missing(Sdr.mat)) Sdr.mat <- Sdr(d=d,r=r)
          n.seq <- block.indices(n, n, d=d, r=r, diff=TRUE)
@@ -560,68 +663,128 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
          }
       }
       else
-      {
-         ## original recursive code from Jose E. Chacon 02/2012
+      {  ## only with r>0 
+         ## original recursive code from Jose E. Chacon 03/2012
          if (2*floor(r/2)!=r){result<-rep(0,d^r)}
          else
   	 {
     	    Sigmainv<-chol2inv(chol(Sigma))
-    	    vSigmainv<-vec(Sigmainv)
-    	    ##vId<-vec(diag(d))
-    	    result<-rep(0,d^r)
-            kpergroup <- 100
-	    for(k in 2:n)
-            {
-              if (verbose) setTxtProgressBar(pb, k/n)
-              ##cat(paste(k,"/", n, "\n", sep=""))  
-              if(k==2){ difs.orig <-matrix(x[1,]-x[2,],nrow=1,byrow=TRUE) }
-    	      else { difs.orig <- sweep(x[1:(k-1),],2,x[k,]) } 
-              k.seq <- block.indices(nrow(difs.orig), nrow(difs.orig), npergroup=kpergroup)
-              k.result <- 0
-              for (ell in 1:(length(k.seq)-1))
-              {  
-                 difs <- difs.orig[k.seq[ell]:(k.seq[ell+1]-1),]
-    	         arg<-difs%*%Sigmainv    ###Changed to avoid computing Kpow(Sigmainv12,r) at the end, which is not possible for d=4, r=8
-    	         hmold0 <- matrix(rep(1,nrow(arg)),ncol=1,nrow=nrow(arg))
-    	         hmold1 <- arg
-    	    	 hmnew <- hmold0
-    	    	 if (r==1){hmnew<-hmold1}
-    	    	 if (r >= 2)
-                 { 
-               	   for (i in 2:r)
-		   {
-                      vSigmainv.mat<-matrix(rep(vSigmainv,nrow(arg)),byrow=TRUE,nrow=nrow(arg))
-               	      hmnew <- (mat.Kprod(arg,hmold1) - (i - 1) * mat.Kprod(vSigmainv.mat,hmold0))
-            	      hmold0 <- hmold1
-            	      hmold1 <- hmnew
-              	   }	 
-    	         }
-                        
-    	         phi<-dmvnorm(difs,mean=rep(0,d),sigma=Sigma)
-    	         phi<-matrix(rep(phi,d^r),ncol=d^r,byrow=FALSE)
-                 if (k==2) k.result <- k.result + drop(phi*hmnew)
-                 else k.result <- k.result + drop(colSums(phi*hmnew))
-                 rm(phi)
-              }
-               result <- result + k.result    
-    	       ##if(k==2){result<-result+drop(phi*hmnew)}
-    	       ##if(k>2){result<-result+drop(colSums(phi*hmnew))}
-    	    }
-          }
-          if (verbose) close(pb)
-          phi0<-dmvnorm(rep(0,d),mean=rep(0,d),sigma=Sigma)    
-    	  if(r==0){hm0<-phi0}
-    	  else{hm0<-drop((-1)^(r/2)*OF(r)*Kpow(vSigmainv,r/2)*phi0)}
-          v <- as.vector(2*result+n*hm0)
-          sumval<-drop(Sdrv(d=d,r=r,v=v, verbose=verbose, thin=thin)) 
-       }
+    	    ##vSigmainv<-vec(Sigmainv)
+
+            per <- perm.rep(d=d,r=r)
+    	    dind <- numeric()
+    	    for(i in 1:d) dind <- cbind(dind,rowSums(per==i)) ###Matrix of derivative indices
+           
+    	    udind <- unique(dind)
+    	    nudind <- nrow(udind)        
+    	    dlabs <- numeric(nrow(dind))
+    	    for (i in 1:nrow(udind))
+              dlabs <- dlabs+i*(rowSums((dind-matrix(rep(udind[i,],nrow(dind)),nrow=nrow(dind),byrow=TRUE))^2)==0)
+              
+	    result<-rep(0,nudind)
+
+            ndif <- n*(n-1)/2
+    	    dif.ind <- numeric()
+    	    for(k in 2:n) dif.ind <- rbind(dif.ind,cbind(1:(k-1),rep(k,k-1)))
+              
+            ##n.seq <- block.indices2(nx=ndif, ny=nudind)
+            ##for(kk in 1:(length(n.seq)-1))
+            ##{
+            ##   if (verbose) setTxtProgressBar(pb, kk/(length(n.seq)-1))
+    	    ##   difs.block <- x[dif.ind[n.seq[kk]:(n.seq[kk+1]-1),1],]- x[dif.ind[n.seq[kk]:(n.seq[kk+1]-1),2],]
+    
+            M <- 1e6
+            max.loop.size <- ceiling(M/nudind) ### Inside the loop we need to store a matrix of order max.loop.size x nudind <= M
+    	    nblocks <- ceiling(ndif/max.loop.size)
+    	    blength <- c(rep(max.loop.size,nblocks-1),ndif-max.loop.size*(nblocks-1)) #length of each of the blocks, the last one could be smaller
+    
+	    for(kk in 1:nblocks){
+    	       b <- blength[kk]
+               if (verbose) setTxtProgressBar(pb, kk/nblocks) 
+    	       difs.block <- x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),1],]-x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),2],]
+    
+		arg <- difs.block %*% Sigmainv    
+                narg <- nrow(arg) 
+ 
+		hmold0 <- matrix(rep(1,narg),ncol=1,nrow=narg)
+   		hmold1 <- arg
+    		hmnew <- hmold0
+
+                udind0 <- matrix(rep(0,d),nrow=1,ncol=d)
+   		udind1 <- diag(d)
+   
+    		if (r==1){hmnew<-hmold1}
+    		if (r >= 2)
+                { 
+        	   for (i in 2:r)
+                   {     	     
+		     Ndi1 <- ncol(hmold1)
+        	     ##Ndi0 <- ncol(hmold0)
+        	     hmnew <- numeric()
+        
+		     for(j in 1:d)
+                     {        
+        	        nrecj <- choose(d-j+i-1,i-1)        
+        	        hmnew.aux <- arg[,j]*hmold1[,Ndi1-(nrecj:1)+1]
+              
+			for(k in j:d)
+                     	{        
+            	           udind0.aux <- matrix(udind1[Ndi1-(nrecj:1)+1,],ncol=d,byrow=FALSE)
+			   udind0.aux[,k] <- udind0.aux[,k]-1
+            		   valid.udind0 <- as.logical(apply(udind0.aux>=0,1,min))
+            		   enlarged.hmold0 <- matrix(0,ncol=nrow(udind0.aux),nrow=narg)
+            		   for(ell in 1:nrow(udind0.aux))
+			   {
+			      if(valid.udind0[ell]){
+                    	      pos <- which(rowSums((udind0-matrix(rep(udind0.aux[ell,],nrow(udind0)),nrow=nrow(udind0),byrow=TRUE))^2)==0)
+                    	      enlarged.hmold0[,ell]<-hmold0[,pos]}
+                           }
+            		   ##In enlarged.hmold0 we put the vector hmold0 in those positions not having a -1 in any of the derivative order after substracting e_k
+            		   ##The remaining positions are zeroes
+            		   ##Surely this could be done in a more efficient way
+            		
+				hmnew.aux <- hmnew.aux-Sigmainv[j,k]*matrix(rep(udind1[Ndi1-(nrecj:1)+1,k],narg),nrow=narg,byrow=TRUE)*enlarged.hmold0
+            		}
+            		hmnew<-cbind(hmnew,hmnew.aux)
+            	     }
+            	     hmold0 <- hmold1
+            	     hmold1 <- hmnew
+
+                    #Compute the unique i-th derivative multi-indexes 
+        	    nudind1<-nrow(udind1)
+        	    udindnew<-numeric()
+        	    
+		    for(j in 1:d)
+                    {
+		       Ndj1i <- choose(d+i-1-j,i-1)
+            	       udind.aux <- matrix(udind1[nudind1-(Ndj1i:1)+1,],ncol=d,byrow=FALSE)
+            	       udind.aux[,j] <- udind.aux[,j]+1
+            	       udindnew <- rbind(udindnew,udind.aux)
+        	    }
+        	    udind0 <- udind1
+        	    udind1 <- udindnew
+        	   }
+	        }
+    		hmnew<-hmnew*matrix(rep((-1)^rowSums(udind),narg),nrow=narg,byrow=TRUE)
+    		phi <- dmvnorm(difs.block, mean=rep(0,d), sigma=Sigma)
+    		phi <- matrix(rep(phi,nudind),ncol=nudind,byrow=FALSE)
+    		result <- result+drop(colSums(phi*hmnew))
+            }
+
+	    result <- result[dlabs]    
+   	    hm0 <- dmvnorm.deriv.vectorx(x=rep(0,d),Sigma=Sigma,deriv.order=deriv.order)
+    	    sumval <- 2*result+n*hm0
+    	    if (verbose) close(pb)            
+         }   
+      }        
     }
     if (verbose) close(pb)
   }
   
   if (inc==0)
-    sumval <- sumval - n*dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec, Sdr.mat=Sdr.mat, Sdr.flag=Sdr.flag)
-  
+    sumval <- sumval - n*dmvnorm.deriv.vectorx(x=rep(0,d), mu=rep(0,d), Sigma=Sigma, deriv.order=r)
+
+  sumval <- drop(sumval)  
   if (kfe) { if (inc==1) sumval <- sumval/n^2 else sumval <- sumval/(n*(n-1)) }
   
   if (add.index)

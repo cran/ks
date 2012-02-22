@@ -1,7 +1,7 @@
 
 useDynLib(ks)
 
-export(Hamise.mixt, Hmise.mixt, Hmise.mixt.diag, Hamise.mixt.diag, hamise.mixt, hmise.mixt)
+export(Hamise.mixt, Hmise.mixt, Hmise.mixt.diag, Hamise.mixt.diag, hamise.mixt, hmise.mixt, Hns)
 export(Hbcv, Hbcv.diag)
 export(Hlscv, Hlscv.diag, hlscv)
 export(Hpi, Hpi.diag, hpi, Hpi.kfe)

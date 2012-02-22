@@ -129,7 +129,7 @@ kde.test <- function(x1, x2, H1, H2, psi1, psi2, fhat1, fhat2, var.fhat1, var.fh
   if (missing(H1)) H1 <- Hpi.kfe(x1, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
   if (missing(H2)) H2 <- Hpi.kfe(x2, nstage=2, double.loop=double.loop, deriv.order=0, binned=binned, bgridsize=bgridsize, verbose=verbose)
 
-  symm <- FALSE ## don't use symemtriser matrices in psi functional calculations
+  symm <- FALSE ## don't use symmetriser matrices in psi functional calculations
   if (missing(psi1)) psi1 <- eta.kfe.y(x=x1, y=x1, G=H1, verbose=verbose, symm=symm)      
   if (missing(psi2)) psi2 <- eta.kfe.y(x=x2, y=x2, G=H2, verbose=verbose, symm=symm)
 
