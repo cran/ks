@@ -3,6 +3,7 @@
 \alias{Hamise.mixt}
 \alias{Hmise.mixt.diag}
 \alias{Hamise.mixt.diag}
+\alias{Hns}
 \alias{hmise.mixt}
 \alias{hamise.mixt}
 \alias{ise.mixt}
@@ -23,7 +24,6 @@
 
 
 \usage{
-
 Hamise.mixt(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 Hmise.mixt(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 Hamise.mixt.diag(mus, Sigmas, props, samp, Hstart, deriv.order=0)
@@ -35,6 +35,8 @@ amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 ise.mixt(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, 
          bgridsize)  
 mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
+
+Hns(x, deriv.order=0)
 }
 
 \arguments{
@@ -60,6 +62,8 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   \code{x}. MISE and AMISE are non-random and don't
   depend on the data. For normal mixture densities, ISE, MISE and AMISE 
   have exact formulas for all dimensions. See Chacon, Duong & Wand (2011).
+
+  \code{Hns} is equal to \code{(4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)}, n = sample size, d = dimension of data, r = derivative order.  
 }
 
 
@@ -76,6 +80,10 @@ samp <- 100
 H <- Hamise.mixt(mus, Sigmas, props, samp, deriv.order=2)
 x <- rmvnorm.mixt(n=samp, mus=mus, Sigmas=Sigmas, props=props)
 ise.mixt(x=x, H=H, mus=mus, Sigmas=Sigmas, props=props, deriv.order=2)
+
+x <- rmvnorm.mixt(100)
+Hns(x, deriv.order=1)
+Hamise.mixt(samp=nrow(x), mus=rep(0,2), var(x), props=1, deriv.order=1)
 }
 
 \keyword{smooth}

@@ -366,10 +366,10 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
 }
 
 
-#################################################################################################
+#############################################################################
 ## Multivariate kernel density estimate using normal kernels,
 ## evaluated at each sample point
-#################################################################################################
+#############################################################################
 
 kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0) 
 {
@@ -409,15 +409,15 @@ kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
   return(psir) 
 }
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, verbose=FALSE, Sdr.mat, Sdr.flag=TRUE, thin=1)
+kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, double.loop=FALSE, deriv.vec=TRUE, add.index=TRUE, verbose=FALSE, Sdr.mat, Sdr.flag=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
   ##n <- nrow(x)
-  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, Sdr.flag=Sdr.flag, add.index=FALSE, thin=thin)
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, Sdr.flag=Sdr.flag, add.index=FALSE)
  
  if (add.index)
-  {
+ {
     ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=r, only.index=TRUE)
   
     if (deriv.vec) return(list(psir=psir, deriv.ind=ind.mat))

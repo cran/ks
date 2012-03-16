@@ -225,8 +225,6 @@ invdupl <- function(order, ret.q = FALSE)
 }
 
 
-
-
 ###############################################################################
 # Matrix square root - taken from Stephen Lake 
 # http://www5.biostat.wustl.edu/s-news/s-news-archive/200109/msg00067.html
@@ -423,6 +421,29 @@ is.diagonal <- function(x)
   return(identical(diag(diag(x)),x))
 }
 
+## default block indices for double sums
+block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6, npergroup)
+{
+  if (missing(npergroup)) 
+  { 
+    if (diff) npergroup <- max(c(block.limit %/% (nx*d^r), 1))
+    else npergroup <- max(c(block.limit %/% nx,1))
+  }
+  nseq <- seq(1, ny, by=npergroup)
+  if (tail(nseq,n=1) <= ny) nseq <- c(nseq, ny+1)
+  if (length(nseq)==1) nseq <- c(1, ny+1)
+  return(nseq)
+}
+
+block.indices2 <- function(nx, ny, block.limit=1e6, npergroup)
+{
+  if (missing(npergroup)) npergroup <- max(c(block.limit %/% nx,1))
+  nseq <- seq(1, ny, by=npergroup)
+  if (tail(nseq,n=1) <= ny) nseq <- c(nseq, ny+1)
+  if (length(nseq)==1) nseq <- c(1, ny+1)
+  return(nseq)
+}
+
 
 ####################################################################
 ## Functions for unconstrained pilot selectors, and (A)MISE-optimal
@@ -480,7 +501,7 @@ K.mat<-function(m,n){
   return(K)        
 }
 
-## Kronecker sum
+#### Kronecker sum
 
 Ksum <- function(A,B)
 {
@@ -493,10 +514,9 @@ Ksum <- function(A,B)
 }
 
 
+#### Kronecker power of a matrix A
 
-##### Kronecker power of a matrix A
-
-Kpow<-function(A,pow){    #### WARNING! Dot omitted from original K.pow name
+Kpow<-function(A,pow){   
   if(floor(pow)!=pow)stop("pow must be an integer")
   Apow<-A
   if(pow==0){Apow<-1}
@@ -520,9 +540,9 @@ mat.Kprod<-function(U,V){ #### Returns a matrix with rows U[i,]%x%V[i,]
  return(P)
 } 
 
+#### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
 
-#### WARNING! Dot omitted from original mat.K.pow name
-mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
+mat.Kpow<-function(A,pow){ 
   Apow<-A
   if(pow==0){Apow<-matrix(1,nrow=nrow(A), ncol=1)}  
   if(pow>1){
@@ -532,14 +552,14 @@ mat.Kpow<-function(A,pow){ #### Returns a matrix with the pow-th Kronecker power
 }
 
 
-##### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0)
+#### Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0)
 
-DrL0<-function(d,r,Sdr.mat, Sdr.flag=TRUE, verbose=FALSE, thin=1)
+DrL0 <- function(d,r,Sdr.mat, Sdr.flag=TRUE, verbose=FALSE)
 {
   if (!Sdr.flag)
   {
     v <- Kpow(A=vec(diag(d)),pow=r/2)
-    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*matrix(Sdrv(d=d, r=r, v=v, thin=thin, verbose=verbose), ncol=1) 
+    DL0<-(-1)^(r/2)*(2*pi)^(-d/2)*OF(r)*matrix(Sdrv(d=d, r=r, v=v, verbose=verbose), ncol=1) 
   }
   else 
   { 
@@ -551,7 +571,7 @@ DrL0<-function(d,r,Sdr.mat, Sdr.flag=TRUE, verbose=FALSE, thin=1)
 
 
 
-T<-function(d,r){    #### Second version, recursive
+T <- function(d,r){    #### Second version, recursive
   Id<-diag(d)
   Tmat<-Id
   Kdd<-K.mat(d,d)
@@ -562,6 +582,14 @@ T<-function(d,r){    #### Second version, recursive
   return(Tmat)
 }
 
+T2 <- function(d,r){    #### Second version, recursive
+  Tmat<-diag(d^r)
+  if(r>1){
+  for(j in 1:(r-1)){
+    Tmat<-Tmat+(diag(d^j)%x%K.mat(d^(r-j-1),d))%*%(diag(d^(j-1))%x%K.mat(d,d^(r-j)))
+    }}
+  return(Tmat)
+}
 
 Trow <- function(d,r,row=1){    #### Second version, recursive
   Id <- diag(d)
@@ -577,6 +605,8 @@ Trow <- function(d,r,row=1){    #### Second version, recursive
   } 
   return(Tmat)
 }
+
+
 
 ## symmetriser matrix
 
@@ -594,28 +624,33 @@ Sdr<-function(d, r){
 
 
 
-#### Permutations with repetitions of the first d naturals (1:d) taking k elements at a time
-#### There are d^k of them, each having length k => We arrange them into a matrix of order d^k times k
+#### Permutations with repetitions of the first d naturals (1:d) taking 
+#### k elements at a time. There are d^k of them, each having length k 
+#### => We arrange them into a matrix of order d^k times k
 #### Each row represents one permutation
+
 #### Second version: filling in the matrix comlumn-wise (slightly faster)
     
-perm.rep <-function(d,k)
+perm.rep<-function(d,r)
 {
-    PM <- matrix(nrow=d^k,ncol=k)
-    for(pow in 0:(k-1)){
+    if(r==0){PM<-1}
+    if(r>0){
+    PM<-matrix(nrow=d^r,ncol=r)
+    for(pow in 0:(r-1)){
         t2<-d^pow
         p1<-1
-        while(p1<=d^k){
+        while(p1<=d^r){
             for(al in 1:d){for(p2 in 1:t2){
-                PM[p1,k-pow]<-al
+                PM[p1,r-pow]<-al
                 p1<-p1+1}}}}
+    }
     return(PM)
 }
 
 
 ### Symmetriser applied to a vector
 
-Sdrv <- function(d,r,v, thin=1, verbose=FALSE)
+Sdrv.old <- function(d,r,v, verbose=FALSE)
 {   
     if(length(v)!=d^r){stop("The length of v must equal d^r")}
     per.rep<-perm.rep(d,r)
@@ -638,21 +673,20 @@ Sdrv <- function(d,r,v, thin=1, verbose=FALSE)
     m <- n + 1
     p <- c(m, p, m)
     i <- 1
+ 
     nper.thin <- 0
     use <- -c(1, n + 2)
    
     while (m != 1) {
       ##out <- if (nofun) x[p[use]] else fun(x[p[use]], ...)
       out <- x[p[use]]
-      if (i%%thin == 0 | i==1)
-      { 
-        ## next 2 lines added to compute Sdr%*%v product
-        if (verbose) setTxtProgressBar(pb, i/nper)
-        ##cat(paste(i,"/", nper, "\n", sep=""))
-        Sv <- Sv + v[1+rowSums((per.rep[,out]-1)*dpow.mat)]
-        nper.thin <- nper.thin+1
-      }
-
+       
+      ## next 2 lines added to compute Sdr%*%v product
+      if (verbose) setTxtProgressBar(pb, i/nper)
+      ##cat(paste(i,"/", nper, "\n", sep=""))
+      Sv <- Sv + v[1+rowSums((per.rep[,out]-1)*dpow.mat)]
+      nper.thin <- nper.thin+1
+      
       i <- i + 1
       m <- n
       chk <- (p[ip + d + 1] > seqn)
@@ -668,29 +702,39 @@ Sdrv <- function(d,r,v, thin=1, verbose=FALSE)
    permnr <- Sv/nper.thin  
    if (verbose) close(pb)
    return(permnr)
-
-    ## attempt at speeding up the loop over permutations
-    ##per.indices <- block.indices(nrow(per.rep)*ncol(per), nrow(per), block.limit=1e7)
-    ##Sv <- 0
-    ##for (i in 1:(length(per.indices)-1))
-    ##{ 
-    ##  if (verbose) setTxtProgressBar(pb, i/(length(per.indices)-1))
-    ##  nper.temp <- diff(per.indices[i:(i+1)])
-    ##  Sv.mat <- (per.rep[,t(per.mat[per.indices[i]:(per.indices[(i+1)]-1),])]-1)*matrix(rep(dpow,d^r),ncol=r*nper.temp,nrow=d^r,byrow=TRUE) 
-    ##  Sv <- Sv + rowSums(matrix(v[1+apply(array(Sv.mat, dim=c(d^r,r,nper.temp)), 3, rowSums)], nrow=d^r))
-    ##}
 }
 
-## default block indices for double sums
-block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6, npergroup)
+
+Sdrv <- function(d,r,v, verbose=FALSE)
 {
-  if (missing(npergroup)) 
-  { 
-    if (diff) npergroup <- max(c(block.limit %/% (nx*d^r), 1))
-    else npergroup <- max(c(block.limit %/% nx,1))
-  }
-  nseq <- seq(1, ny, by=npergroup)
-  if (tail(nseq,n=1) <= ny) nseq <- c(nseq, ny+1)
-  if (length(nseq)==1) nseq <- c(1, ny+1)
-  return(nseq)
+    if(length(v)!=d^r){stop("The length of v must equal d^r")}
+    if(r==0){w<-v}
+    else{
+    per.rep <- perm.rep(d,r)
+    ##nper.rep <- d^r
+    dpow <- d^((r-1):0)
+    dpow.mat <- matrix(rep(dpow,d^r),ncol=r,nrow=d^r,byrow=TRUE) 
+
+    i <- 0
+    if (verbose) pb <- txtProgressBar()
+    w <- v
+    for(p in 1:r){
+        Tv <- rep(0,d^r)
+        for (j in 1:p){
+        i <- i+1
+        if (verbose) setTxtProgressBar(pb, i/(r*(r+1)/2))
+        per.rep.tau <- per.rep
+        per.rep.tau[,j] <- per.rep[,p]
+        per.rep.tau[,p] <- per.rep[,j]
+        Tv[1+rowSums((per.rep.tau-1)*dpow.mat)] <- Tv[1+rowSums((per.rep.tau-1)*dpow.mat)]+w
+    }
+    w <- Tv/p}
+    }
+    if (verbose) close (pb)
+    return(w)
 }
+
+
+
+
+

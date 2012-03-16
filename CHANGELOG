@@ -1,5 +1,12 @@
 Change log file for ks
 
+1.8.7
+-Further improved speed of kfe(,Sdr.flag=FALSE) by computing unique
+ partial derivatives.
+-Removed unused function dkde.weights() to compute optimal deconvolution
+ weights, and hence dependence on the kernlab library.
+-Changed output from kfe(binned=TRUE) to be vector not 1-row matrix.
+
 1.8.6
 -Implemented calcualtion of Lebesgue measure of level sets of contours,
  contourSizes().

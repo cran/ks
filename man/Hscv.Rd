@@ -10,7 +10,7 @@
 \usage{
 Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm",
-     Sdr.flag=TRUE)
+     Sdr.flag=FALSE)
 Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
@@ -32,7 +32,8 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
-  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for \code{pilot="unconstr", "dunconstr"}. Default is FALSE.}
+  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
+  bandwidths for deriv.order>0. Default is FALSE.}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
 
@@ -41,17 +42,14 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 }
 
 
-\details{ \code{hsv} is the univariate SCV
+\details{ \code{hscv} is the univariate SCV
   selector of Jones, Marron & Park (1991). \code{Hscv} is a
   multivariate generalisation of this, see Duong & Hazelton (2005).
   Use \code{Hscv} for full bandwidth matrices and \code{Hscv.diag}
   for diagonal bandwidth matrices. 
  
-  For AMSE pilot bandwidths, see Wand & Jones (1994). For
-  SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
-  modification of the former, in order to remove any possible problems
-  with non-positive definiteness. Unconstrained pilot bandwidths are
-  from Chacon & Duong (2011). 
+  For SAMSE pilot bandwidths, see Duong & Hazelton (2005).
+  Unconstrained pilot bandwidths are from Chacon & Duong (2011). 
 
   For d = 1, the selector \code{hscv} is not always stable for large
   sample sizes with binning.
@@ -65,18 +63,11 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
 \references{
   Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for smoothed cross
-   validation. \emph{Australian & New Zealand Journal of Statistics}. Accepted.
-  
-  Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
-  bivariate kernel density estimation. \emph{Journal of Nonparametric
-	Statistics}. \bold{15}, 17-30.
-  
+   validation. \emph{Australian & New Zealand Journal of Statistics}. \bold{53}, 331-351.
+   
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
   of Statistics}. \bold{32}, 485-506.
-
-  Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
-  selection. \emph{Computational Statistics}, \bold{9}, 97-116. 
 
   Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
   bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919-1932.
