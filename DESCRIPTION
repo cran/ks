@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.8.7
-Date: 2012/02/22
+Version: 1.8.8
+Date: 2012/05/25
 Title: Kernel smoothing
 Author: Tarn Duong <tarn.duong@gmail.com>
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
@@ -10,6 +10,6 @@ Suggests: MASS
 Description: Kernel smoothers for univariate and multivariate data
 License: GPL (>= 2)
 URL: http://www.mvstat.net/tduong
-Packaged: 2012-03-16 10:06:08 UTC; Tarn
+Packaged: 2012-05-24 22:27:51 UTC; Tarn
 Repository: CRAN
-Date/Publication: 2012-03-16 10:24:12
+Date/Publication: 2012-05-25 09:36:27

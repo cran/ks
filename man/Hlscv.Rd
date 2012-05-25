@@ -10,9 +10,9 @@
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
 Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, 
-      verbose=FALSE, optim.fun="nlm", trunc=4)
+      verbose=FALSE, optim.fun="nlm", trunc)
 Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, 
-      verbose=FALSE, optim.fun="nlm", trunc=4)
+      verbose=FALSE, optim.fun="nlm", trunc)
 hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
 }
 
@@ -27,7 +27,7 @@ hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   \item{deriv.order}{derivative order} 
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
-  \item{trunc}{parameter to truncate numerical optimisation. Default is 4. For details see below.}  
+  \item{trunc}{parameter to truncate numerical optimisation. Default is 4 for \code{density.deriv>0}, otherwise no truncation. For details see below.}  
 }
 
 \value{
@@ -49,8 +49,9 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   multivariate generalisation of this. Use \code{Hlscv} for full bandwidth matrices and \code{Hlscv.diag}
   for diagonal bandwidth matrices. 
 
-  Truncation of the parameter space is usually required for the LSCV selector
-  to find a reasonable solution to the numerical optimisation. If a candidate matrix \code{H} is
+  Truncation of the parameter space is usually required for the LSCV selector,
+  for r > 0, to find a reasonable solution to the numerical optimisation. 
+  If a candidate matrix \code{H} is
   such that \code{det(H)} is not in \code{[1/trunc, trunc]*det(H0)} or  
   \code{abs(LSCV(H)) > trunc*abs(LSCV0)} then the \code{LSCV(H)} is reset to \code{LSCVO} where 
   \code{H0 = (4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)} and \code{LSCV0 = LSCV(H0)}.

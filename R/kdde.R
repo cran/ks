@@ -610,7 +610,7 @@ eta.kfe.y <- function(x, G, deriv.order=0, inc=1, y, verbose=FALSE, symm=FALSE)
 
         P0<-Ginv
         kappas <- matrix(nrow=as.numeric(nx*nytemp), ncol=r)
-        for (i in 1:r)
+        for (j in 1:r)
         {
           Gi1inv <- P0%*%Ginv
           trGi0inv <- sum(diag(P0))
@@ -619,7 +619,7 @@ eta.kfe.y <- function(x, G, deriv.order=0, inc=1, y, verbose=FALSE, symm=FALSE)
           xGi1invx <- rowSums(xGi1inv*x)
           aytemp <- rowSums((ytemp %*% Gi1inv) *ytemp)
           dvi1 <- xGi1invx%*%t(rep(1,nytemp))+rep(1,nx)%*%t(aytemp)-2*(xGi1inv%*%t(ytemp))
-          kappas[,i] <- (-2)^(i-1)*factorial(i-1)*(-trGi0inv+i*dvi1)
+          kappas[,j] <- (-2)^(j-1)*factorial(j-1)*(-trGi0inv+j*dvi1)
           P0 <- Gi1inv
         }
         
@@ -633,8 +633,8 @@ eta.kfe.y <- function(x, G, deriv.order=0, inc=1, y, verbose=FALSE, symm=FALSE)
         }
         eta <- eta + (2*pi)^(-d/2)*detG^(-1/2)*sum(edv2*nus[,r+1])
       }
-      if (verbose) close(pb)
     }
+    if (verbose) close(pb)
   }
   else
   {
