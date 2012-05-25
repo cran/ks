@@ -1,10 +1,10 @@
 
 useDynLib(ks)
 
-export(Hamise.mixt, Hmise.mixt, Hmise.mixt.diag, Hamise.mixt.diag, hamise.mixt, hmise.mixt, Hns)
+export(Hamise.mixt, Hmise.mixt, Hmise.mixt.diag, Hamise.mixt.diag, hamise.mixt, hmise.mixt, Hns, hns)
 export(Hbcv, Hbcv.diag)
 export(Hlscv, Hlscv.diag, hlscv)
-export(Hpi, Hpi.diag, hpi, Hpi.kfe)
+export(Hpi, Hpi.diag, hpi, Hpi.kfe, hpi.kfe)
 export(Hscv, Hscv.diag, hscv)
 export(amise.mixt, ise.mixt, mise.mixt)
 export(binning, dfltCounts)

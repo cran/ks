@@ -1,14 +1,3 @@
-#######################################################################
-## Optimal G_r^{NR}
-#######################################################################
-
-GNR<-function(r,n,Sigma){
-  d<-ncol(Sigma)
-  G<-(2/((n*(d+r))))^(2/(d+r+2))*2*Sigma
-  return(G)
-}
-
-
 ###############################################################################
 ## Estimate g_AMSE pilot bandwidths for even orders - 2-dim
 ##
@@ -143,15 +132,14 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
 {
   if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
   else cf <- c(1,1,1)
-  
   if (nstage==1)
   {
-    G2r4 <- GNR(r=2*r+4,n=n,Sigma=var(x))
+    G2r4 <- Gns(r=2*r+4,n=n,Sigma=var(x))
     g2r4 <- sqrt(G2r4[1,1])
   }
   else if (nstage==2)
   {
-    G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=var(x))
+    G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=var(x))
     g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d)##sqrt(G2r6.NR[1,1])
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
     eta2r6 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=g2r6.nr^2*diag(d), verbose=verbose, symm=FALSE)
@@ -163,6 +151,8 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
   }
   return(g2r4)
 }
+
+
 
 ##############################################################################
 ## Scalar pilot selector for derivatives r>0 from Chacon & Duong (2011)
@@ -183,12 +173,12 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE,
 
   if (nstage==1)
   {
-    G2r4 <- GNR(r=2*r+4,n=n,Sigma=S)
+    G2r4 <- Gns(r=2*r+4,n=n,Sigma=S)
   }
   else if (nstage==2)
   {
-    G2r4.NR <- GNR(r=2*r+4,n=n,Sigma=S)
-    G2r6.NR <- GNR(r=2*r+6,n=n,Sigma=S)
+    G2r4.NR <- Gns(r=2*r+4,n=n,Sigma=S)
+    G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=S)
     vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=FALSE, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)   
     ##D2r4phi0 <- try(DrL0(d=d, r=2*r+4, Sdr.flag=Sdr.flag, verbose=verbose))
 
@@ -406,7 +396,7 @@ psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose
   S <- var(x)
  
   ## stage 1 of plug-in
-  G2r4 <- GNR(r=2*r+4,n=n,Sigma=S) 
+  G2r4 <- Gns(r=2*r+4,n=n,Sigma=S) 
 
   vecPsi2r4 <- kfe(x=x, G=G2r4, deriv.order=2*r+4, binned=binned, bgridsize=bgridsize, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd2r4, verbose=verbose, Sdr.flag=Sdr.flag) 
   return (vecPsi2r4)
@@ -433,7 +423,7 @@ psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize,
   r <- deriv.order
 
   ## stage 1 of plug-in
-  G2r6 <- GNR(r=2*r+6,n=n,Sigma=S) 
+  G2r6 <- Gns(r=2*r+6,n=n,Sigma=S) 
   vecPsi2r6 <- kfe(x=x, G=G2r6, binned=binned, bgridsize=bgridsize, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd2r6, verbose=verbose, Sdr.flag=Sdr.flag)
 
   ## asymptotic squared bias for r = 4 for MSE-optimal G
@@ -449,7 +439,7 @@ psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize,
     return (sum(AB^2))
   }
       
-  Gstart <- GNR(r=2*r+4,n=n,Sigma=S) 
+  Gstart <- Gns(r=2*r+4,n=n,Sigma=S) 
   Gstart <- matrix.sqrt(Gstart)
   optim.fun1 <- tolower(substr(optim.fun,1,1))
   if (optim.fun1=="n")
@@ -506,7 +496,6 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 {
   n <- nrow(x)
   d <- ncol(x)
-  ##S <- var(x)
   r <- deriv.order
 
   if(!is.matrix(x)) x <- as.matrix(x)
@@ -567,7 +556,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     psi2r4.mat <- (-1)^r*invvec(psi.fun)   
     
     ## use normal reference bandwidth as initial condition 
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+    if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
   else if (pilot=="dunconstr")
   {
@@ -576,13 +565,13 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
    
     vecPsi2r4 <- kfe(x=x, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+    if (missing(Hstart)) Hstart <-  Hns(x=x, deriv.order=r)
   }
   else if (pilot=="dscalar")
   {
     ## g2r4 is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <-  Hns(x=x.star, deriv.order=r)
   }
   else
   {
@@ -600,7 +589,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     psi2r4.mat <- invvec(psi.fun)
 
     ## use normal reference bandwidth as initial condition 
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
     else Hstart <- Sinv12 %*% Hstart %*% Sinv12
   }
 
@@ -711,12 +700,9 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
     bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(H.max)) 
   }
  
-  Idr <- diag(d^r)
-  ##RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2)
-  
+  Idr <- diag(d^r)  
   if (pilot=="amse" | pilot=="samse")
   {
-    ##Sd2r <- Sdr(d=d, r=2*r)
     Sd2r4 <- Sdr(d=d, r=2*r+4)
     if (nstage==2) Sd2r6 <- Sdr(d=d, r=2*r+6)
     
@@ -767,7 +753,7 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
     }
     
     ## use normal reference bandwidth as initial condition
-    if (missing(Hstart)) Hstart <- (4/(n*(d + 2)))^(2/(d + 4)) * var(x.star)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
     else Hstart <- Sinv12 %*% Hstart %*% Sinv12
     Hstart <- matrix.sqrt(Hstart)
     
@@ -829,16 +815,16 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0, Sd2r
     ## fast version from J.E. Chacon 06/05/2011
     if (r==0)
     {
-      Hinv<-chol2inv(chol(H))
-      detH<-det(H)
-      xH<-x%*%Hinv
-      a<-rowSums(xH*x)
-      M<-a%*%t(rep(1,n))+rep(1,n)%*%t(a)-2*(xH%*%t(x))
-      m<-M[lower.tri(M)]
-      em2<-exp(-m/2)
-      lscv1<-(2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(em2))
-      lscv2<-(2*pi)^(-d/2)*detH^(-1/2)*sum(em2)        
-      lscv <- RK/(n*detH^(1/2))+2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1))
+      Hinv <- chol2inv(chol(H))
+      detH <- det(H)
+      xH <- x%*%Hinv
+      a <- rowSums(xH*x)
+      M <- a%*%t(rep(1,n))+rep(1,n)%*%t(a)-2*(xH%*%t(x))
+      m <- M[lower.tri(M)]
+      em2 <- exp(-m/2)
+      lscv1 <- (2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(em2))
+      lscv2 <- (2*pi)^(-d/2)*detH^(-1/2)*sum(em2)        
+      lscv  <- RK/(n*detH^(1/2))+2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1))
     }
     else if (r==1)
     {
@@ -1014,7 +1000,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
 }
 
 
-Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc=4)
+Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -1022,13 +1008,15 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   d <- ncol(x)
   r <- deriv.order 
   ##RK <- (4*pi)^(-d/2)
-
+  
   ## use normal reference selector as initial condn
-  Hnorm <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
-  if (missing(Hstart)) Hstart <- matrix.sqrt(Hnorm)
+  Hnorm <- Hns(x=x, deriv.order=r)
+  if (missing(Hstart)) Hstart <- Hnorm
+  Hstart <- matrix.sqrt(Hstart)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>4) binned <- FALSE
   if (binned) bin.par <- binning(x=x, H=diag(diag(Hnorm)))
+  if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
 
   Sd2r <- Sdr(d=d, r=2*r)
   lscv.init <- lscv.mat(x=x, H=Hnorm, binned=FALSE, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
@@ -1069,24 +1057,26 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
 # H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc=4)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
-  Hnorm <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
-  if (missing(Hstart)) Hstart <- matrix.sqrt(Hnorm)
+
+  Hnorm <- Hns(x=x, deriv.order=r)
+  if (missing(Hstart)) Hstart <- Hnorm
   if (d>4) binned <- FALSE
+
+  ## don't truncate optimisation for deriv.order==0
+  if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
 
   ## linear binning
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-    RK <- (4*pi)^(-d/2)
-    H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
-    bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(H.max))))
+    bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(Hnorm))))
   }
   
   Sd2r <- Sdr(d=d, r=2*r)
@@ -1099,6 +1089,8 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
+
+  Hstart <- matrix.sqrt(Hstart)
   optim.fun1 <- tolower(substr(optim.fun,1,1))
   if (optim.fun1=="n")
   {
@@ -1324,7 +1316,6 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
   }
   
   ## constants for normal reference
-  ##D4phi0 <- drop(dmvnorm.deriv(x=rep(0,d), deriv.order=4, Sdr.mat=Sd4))
   D4phi0 <- DrL0(d=d,r=4, Sdr.mat=Sd4, Sdr.flag=Sdr.flag)
   Id4 <- diag(d^4)
 
@@ -1337,7 +1328,7 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
     return (sum(AB^2))
   }
 
-  Hstart <- (4/(d+2))^(2/(d+4))*n^(-2/(d+4))*S
+  Hstart <- Hns(x=x, deriv.order=1)
   Hstart <- matrix.sqrt(Hstart)
   optim.fun1 <- tolower(substr(optim.fun,1,1))
   if (optim.fun1=="n")
@@ -1347,7 +1338,7 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
   }
   else    
   { 
-    result <- optim(vech(matrix.sqrt(Hstart)), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Hstart), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
     G4 <- result$par
   }   
   G4 <- invvech(G4)%*%invvech(G4)
@@ -1541,20 +1532,20 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
     Sd4 <- Sdr(d=d, r=4)
     Sd6 <- Sdr(d=d, r=6)
     Gu <- Gunconstr.scv(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+    if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
   else if (pilot=="dunconstr")
   {
     ## Gu pilot matrix is on data scale
     Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x)
+    if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
   else if (pilot=="dscalar")
   {
     ## Gs is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE)
     Gs <- g2r4^2*diag(d)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <-Hns(x=x.star, deriv.order=r)
   }
   else
   {
@@ -1571,7 +1562,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
     Gs <- gs^2*diag(d)
 
     ## use normal reference bandwidth as initial condition 
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r) 
     else Hstart <- Sinv12 %*% Hstart %*% Sinv12
   }
 
@@ -1654,7 +1645,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
     ## Gs is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, scv=TRUE)
     Gs <- g2r4^2*diag(d)
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
   }
   else
   {
@@ -1672,7 +1663,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
     Gs <- gs^2*diag(d)
 
     ## use normal reference bandwidth as initial condition 
-    if (missing(Hstart)) Hstart <- (4/(n*(d+2*r+2)))^(2/(d+2*r+4)) * var(x.star)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
     else Hstart <- Sinv12 %*% Hstart %*% Sinv12
   }
 
@@ -1684,7 +1675,6 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
 
   Hstart <- matrix.sqrt(Hstart)
 
-  ## back-transform
   optim.fun1 <- tolower(substr(optim.fun,1,1))
   if (optim.fun1=="n")
   {
@@ -1698,6 +1688,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
     H <- diag(result$par) %*% diag(result$par)
     amise.star <- result$value
   }
+  ## back-transform
   H <- S12 %*% H %*% S12
 
   if (!amise) return(H)
@@ -1705,8 +1696,9 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
 }
 
 ##############################################################################
-## Normal scale selector)
+## Normal scale selector H_ns for kernel density derivate estimators
 ##############################################################################
+
 Hns <- function(x, deriv.order=0)
 {
   if (is.vector(x)){ n<-1; d <- length(x)} 
@@ -1716,3 +1708,22 @@ Hns <- function(x, deriv.order=0)
   return(H)
 }
 
+hns <- function(x, deriv.order=0)
+{
+  n <- length(x)
+  d <- 1
+  r <- deriv.order
+  h <- (4/(n*(d+2*r+2)))^(1/(d+2*r+4))*sd(x)
+  return(h)
+}
+
+#######################################################################
+## Normal scale G_ns for kernel functional estimators
+#######################################################################
+
+Gns <- function(r,n,Sigma)
+{
+  d <- ncol(Sigma)
+  G <- (2/((n*(d+r))))^(2/(d+r+2))*2*Sigma
+  return(G)
+}

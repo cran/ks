@@ -3,7 +3,6 @@
 \alias{Hamise.mixt}
 \alias{Hmise.mixt.diag}
 \alias{Hamise.mixt.diag}
-\alias{Hns}
 \alias{hmise.mixt}
 \alias{hamise.mixt}
 \alias{ise.mixt}
@@ -35,8 +34,6 @@ amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 ise.mixt(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, 
          bgridsize)  
 mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
-
-Hns(x, deriv.order=0)
 }
 
 \arguments{
@@ -62,8 +59,6 @@ Hns(x, deriv.order=0)
   \code{x}. MISE and AMISE are non-random and don't
   depend on the data. For normal mixture densities, ISE, MISE and AMISE 
   have exact formulas for all dimensions. See Chacon, Duong & Wand (2011).
-
-  \code{Hns} is equal to \code{(4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)}, n = sample size, d = dimension of data, r = derivative order.  
 }
 
 

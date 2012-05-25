@@ -670,7 +670,6 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   	 {
     	    Sigmainv<-chol2inv(chol(Sigma))
     	    ##vSigmainv<-vec(Sigmainv)
-
             per <- perm.rep(d=d,r=r)
     	    dind <- numeric()
     	    for(i in 1:d) dind <- cbind(dind,rowSums(per==i)) ###Matrix of derivative indices
@@ -686,7 +685,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
             ndif <- n*(n-1)/2
     	    dif.ind <- numeric()
     	    for(k in 2:n) dif.ind <- rbind(dif.ind,cbind(1:(k-1),rep(k,k-1)))
-              
+          
             ##n.seq <- block.indices2(nx=ndif, ny=nudind)
             ##for(kk in 1:(length(n.seq)-1))
             ##{

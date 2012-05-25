@@ -32,15 +32,19 @@
   \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} (2- to 6-d) \cr
   \item smoothed cross validation (SCV) \code{\link{hscv}} (1-d);
   \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) \cr
-  \item normal scale \code{\link{hmise.mixt}},
-  \code{\link{hamise.mixt}} (1-d); and \code{\link{Hmise.mixt}},
-  \code{\link{Hamise.mixt}}, \code{\link{Hmise.mixt.diag}}, \code{\link{Hamise.mixt.diag}} (2- to 6-d).}
+  \item normal scale \code{\link{hns}} (1-d); \code{\link{Hns}} (2- to 6-d).
+  }
   For 1-d data, the bandwidth \eqn{h}{h} is the standard deviation of the normal kernel, whereas for multivariate data, the bandwidth matrix 
   \eqn{\bold{{\rm H}}}{H} is the variance matrix.
 
-  --For kernel functional estimation, \code{kfe} computes the \eqn{r}{r}-th order integrated density functional  
-  \deqn{\hat{{\bold \psi}}_r (\bold{{\rm H}}) = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)_r = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selector is \code{\link{Hpi.kfe}}.
+  --For kernel functional estimation, \code{\link{kfe}} computes the \eqn{r}{r}-th order integrated density functional  
+  \deqn{\hat{{\bold \psi}}^{(r)} (\bold{{\rm H}}) = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)^(r) = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
 
+  --For kernel-based 2-sample testing, \code{\link{kde.test}} computes the integrated 
+  \eqn{L_2}{L2} distance between the two density estimates as the test statistic 
+  \deqn{\hat{T} = \hat{\psi}_1 + \hat{\psi}_2 - (\hat{\psi}_{1,2} + \hat{\psi}_{1,2}),}{hat(T) = hat(psi)_1 + hat(psi)_2 - (hat(psi)_1,2 + hat(psi)_2,1),} and the corresponding p-value. The \eqn{\psi}{psi} are zero order kernel functional estimates with the subscripts indicating that 1 = sample 1 only, 2 = sample 2 only, and (1,2) and (2,1) = samples 1 and 2.  
+
+    
   --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators 
   feasible for large samples.
   

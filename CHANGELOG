@@ -1,5 +1,14 @@
 Change log file for ks
 
+1.8.8
+-Changed function header of Hpi.kfe() to be more consistent with Hpi().
+-Added option Hpi.kfe(, pilot="dscalar") to ensure scale invariance in
+ p-values. This becomes the default over the previous pilot="unconstr".
+-Added 1-d option in kde.test() and its required bandwidth hpi.kfe().
+-Modified binned=TRUE option in kde.test() so that it is applied only to
+ bandwidth selection, and not the test statistic and its p-value.
+-Removed default truncation in Hlscv(), Hlscv.diag() for deriv.order=0.
+
 1.8.7
 -Further improved speed of kfe(,Sdr.flag=FALSE) by computing unique
  partial derivatives.
@@ -31,166 +40,166 @@ Change log file for ks
  pilot estimators Hpi(, pilot="samse").
 -Edited help manual.
 
-1.8.3 
+1.8.3
 -Added computationally efficient density derivative b/w selectors
  Hpi(deriv.order=), Hscv(deriv.order=), and their diagonal counterparts
- Hpi.diag(), Hlscv.diag().  
+ Hpi.diag(), Hlscv.diag().
 -Added computationally efficient kernel functional estimators in
  eta.kfe.y() used in kde.test().
--New pilot selectors for density derivatives.   
+-New pilot selectors for density derivatives.
 -Added abs.cont capability to plot(, disp="filled.contour").
 -Removed explicit expressions in psins() for d>2, replaced by
  eta.kfe() evaluations.
--Removed psins() and Theta6() evaluations in gsamse and gamse.scv. 
--Removed kfold arguments.  
- 
-1.8.2 
+-Removed psins() and Theta6() evaluations in gsamse and gamse.scv.
+-Removed kfold arguments.
+
+1.8.2
 -Fixed bug in kde.points.sum() to avoid allocating large matrices for
- unbalanced sample sizes for x and eval.points.   
+ unbalanced sample sizes for x and eval.points.
 -Fixed bug in dmvnorm.deriv.sum() which had excluded last partition
  class for double.loop=FALSE.
 -Added binned options to kde.test().
--Fixed bug for exact estimation in kfe(). 
+-Fixed bug for exact estimation in kfe().
 -Added plotting colours as function of z-value in plot.kde(,
- disp="persp").   
+ disp="persp").
 -Added decoupled calculcation for Hlscv().
 -Added optim.fun option to select optimiser function in Hpi, Hpi.diag,
- Hlscv, Hlscv.diag, Hscv, Hscv.diag().  
- 
-1.8.1 
--Modified p-value calculation for large -ve Z-statistics. 
--Fixed bug for binned estimation for unconstrained bandwidths for kde() 
+ Hlscv, Hlscv.diag, Hscv, Hscv.diag().
 
-1.8.0 
+1.8.1
+-Modified p-value calculation for large -ve Z-statistics.
+-Fixed bug for binned estimation for unconstrained bandwidths for kde().
+
+1.8.0
 -Added density derivative selectors Hpi(,deriv.order=r),
- Hlscv(,deriv.order=r) for r>0 from J.E. Chacon. 
+ Hlscv(,deriv.order=r) for r>0 from J.E. Chacon.
 -Changed vech(H) terms to vec(H) in AMISE estimators.
 -Changed default binning gridsize for 3-d data from rep(51,3) to
- rep(31,3). 
+ rep(31,3).
 -Added verbose option to b/w selectors (in double sum) for tracking
- progress. 
--Changed LSCV, SCV selectors optimisation from Nelder-Mead to BFGS. 
+ progress.
+-Changed LSCV, SCV selectors optimisation from Nelder-Mead to BFGS.
 -Changed Fortran linear bining code to C (and fixed bugs in Fortran
- code).  
--Added modification to linear binning for boundary points. 
--Removed explicit derivatives in BCV selector optimisation. 
- 
-1.7.4 
+ code).
+-Added modification to linear binning for boundary points.
+-Removed explicit derivatives in BCV selector optimisation.
+
+1.7.4
 -Fixed small bug in partitioning method for kde.points.sum().
 
-1.7.3 
+1.7.3
 -Changed partitioning method for dmvnorm.deriv.sum() and
- kde.points.sum(). 
+ kde.points.sum().
 
-1.7.2 
+1.7.2
 -Changed p-value calculation for kde.test().
 
-1.7.1 
+1.7.1
 -Reinstated single partial derivative of mv normal for scalar variance
  matrix dmvnorm.deriv.scalar.sum() for use in AMSE pilot plug-in
- selectors. 
+ selectors.
 -More efficient form of kdde().
-  
-1.7.0 
+
+1.7.0
 -Added KDE-based 2-sample test kde.test().
 -Modified output of plotmixt().
 -Added "double.loop" option to kfe() for large samples - increases
- running time, reduces memory.  
+ running time, reduces memory.
 -Modified dmvnorm.deriv.sum() gto improve memory memory management for
- large samples. 
+ large samples.
 -Cleaned up code for plug-in bandwidth selectors and kernel functional
- estimators. 
--Cleaned up help files. 
--Disabled kfold b/w selectors. 
+ estimators.
+-Cleaned up help files.
+-Disabled kfold b/w selectors.
 
-1.6.13 
--Added flag to automatically compute probability contour levels in kde(). 
+1.6.13
+-Added flag to automatically compute probability contour levels in kde().
 
-1.6.11 
+1.6.11
 -Added own version of filled contours as option disp="filled.contour2"
- and different colours for disp="slice" contours. 
+ and different colours for disp="slice" contours.
 
-1.6.10 
+1.6.10
 -Added k-fold b/w selectors.
 
-1.6.9  
+1.6.9
 -Added approximate option in contourLevels().
 -Added kdde() kernel density derivative estimators.
 
-1.6.8 
+1.6.8
 -Added 1-d LSCV selector hlscv().
- 
-1.6.7 
+
+1.6.7
 -Corrected ISE for normal mixtures, from J.E. Chacon.
 
-1.6.6 
--Added MISE, AMISE, ISE functions for normal mixtures derivatives. 
+1.6.6
+-Added MISE, AMISE, ISE functions for normal mixtures derivatives.
 -Changed internal double sum calculations from J.E. Chacon.
 
-1.6.x 
+1.6.x
 -1-d binned KDE fix from M.P. Wand.
 -Streamlined code sharing with feature package (all binning code now
- contained only in ks). 
--Reorganised and renamed internal bandwidth selection functions
- (mostly double sums of normal densities). 
+ contained only in ks).
+-Reorganised and renamed internal bandwidth selection functions,
+ mstly double sums of normal densities .
 
-1.5.11 
+1.5.11
 -Fixed small bugs in drvkde, vech, Hpi(, pilot="unconstr")
-   
-1.5.10 
--Added drvkde (kernel density derivative estimator 1-d) from feature
- using M.P. Wand's code. 
 
-1.5.x  
+1.5.10
+-Added drvkde (kernel density derivative estimator 1-d) from feature
+ using M.P. Wand's code.
+
+1.5.x
 -Added normal mixture (A)MISE-optimal selectors: hamise.mixt,
- hmise.mixt, Hamise.mixt, Hmise.mxt. 
--Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde   
+ hmise.mixt, Hamise.mixt, Hmise.mxt.
+-Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde.
 -Added plug-in selectors for 1-d data (exactly the code for dpik from
  KernSmooth). For KDE, this is hpi, for KDA, this is hkda(,
- bw="plugin"). 
+ bw="plugin").
 -Made changes to specifying line colour (col rather than lcol) in
  plot.kde, plot.kda.kde and partition class colour (partcol) in
- plot.kda.kde.  
+ plot.kda.kde.
 -Added plot3d() capabilities from rgl to 3-d plot - removing own axes
  drawing functions.
 -New functions to compute pilot functinal estimators
  hat{psi}_r(g). These are exact, and are more efficient than binned
  estimators for small samples (~100), and are available in d > 4.
 
-1.4.x 
--Vignette illustrating 2-d KDE added      
+1.4.x
+-Vignette illustrating 2-d KDE added
 -Binned estimation implemented for KDE with diagonal selectors and
- pilot functional estimation with diagonal selectors. 
+ pilot functional estimation with diagonal selectors.
 -Filled contour plots added as disp=filled option in plot.kde().
 -compare.kda.cv() and compare.cv() modified to improve speed.
 -Hscv.diag() and Hbcv.diag() added for completeness.
 
-1.3.5 
+1.3.5
 -Fixed small bug in compare.kda.cv() and compare.kda.diag.cv().
 
-1.3.4 
+1.3.4
 -RGL-type plots added for 3-d data. Specification of 3-d contour
- levels now same order as 2-d contours. 
+ levels now same order as 2-d contours.
 
-1.3.x 
+1.3.x
 -Multivariate (for 3 to 6 dimensions inclusive) bandwidth selectors
  added for Hpi(), Hpi.diag(), Hlscv(), Hlscv.diag() and Hscv(). NB:
  because Hbcv() and Hbcv.diag()  performed poorly for 2-d, these
- weren't implemented in higher dimensions. 
+ weren't implemented in higher dimensions.
 
-1.2.x 
+1.2.x
 -Package checked by CRAN testers and accepted on the CRAN website. To
  pass all the necessary checks involved some internal programming
  changes but has not affected the user interface.
 -The child mortality data set unicef is used in the examples.
 
-1.1.x 
+1.1.x
 -S3 type objects have been introduced.  The output from kde() are
  `kde' objects. The output from kda.kde() and pda.pde() are `dade'
  objects. Corresponding plot functions are called automatically by
- invoking `plot'. 
+ invoking `plot'.
 -Kernel discriminant analysers are now available. Parametric (linear
-and quadratic) discriminant analysers are accessed using `pda'. 
+and quadratic) discriminant analysers are accessed using `pda'.
 -adapt library is no longer required. This was formerly used on the
  functions for integrated squared error computations ise.mixt() and
- iset.mixt(). 
+ iset.mixt().
