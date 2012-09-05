@@ -53,7 +53,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   for r > 0, to find a reasonable solution to the numerical optimisation. 
   If a candidate matrix \code{H} is
   such that \code{det(H)} is not in \code{[1/trunc, trunc]*det(H0)} or  
-  \code{abs(LSCV(H)) > trunc*abs(LSCV0)} then the \code{LSCV(H)} is reset to \code{LSCVO} where 
+  \code{abs(LSCV(H)) > trunc*abs(LSCV0)} then the \code{LSCV(H)} is reset to \code{LSCV0} where 
   \code{H0 = (4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)} and \code{LSCV0 = LSCV(H0)}.
 
   For details about the advanced options for \code{binned,Hstart}, 
@@ -66,7 +66,6 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 library(MASS)
 data(forbes)
 Hlscv(forbes)
-Hlscv.diag(forbes, binned=TRUE)
 hlscv(forbes$bp)
 }
 

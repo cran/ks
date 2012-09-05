@@ -1,22 +1,16 @@
-\name{plot}
+\name{plot.kde}
 \alias{plot.kde}
-\alias{plot.kda.kde}
-
-\title{Kernel density estimate plot for 1- to 3-dimensional data}
+\title{Plot for kernel density estimate}
 \description{
-  Kernel density estimate plot for 1- to 3-dimensional data.
+  Plot for kernel density estimate for 1- to 3-dimensional data.
 }
 
 \usage{
 \method{plot}{kde}(x, ...)
-\method{plot}{kda.kde}(x, y, y.group, ...)
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde} (output from \code{\link{kde}}) or 
-    an object of class \code{kda.kde} (output from \code{\link{kda.kde}})}
-  \item{y}{matrix of test data points}
-  \item{y.group}{vector of group labels for test data points}
+  \item{x}{an object of class \code{kde} (output from \code{\link{kde}})}
   \item{...}{other graphics parameters}
 }
   
@@ -29,12 +23,12 @@
 
 
 \details{
-  For \code{kde} objects, the function headers for the different dimensional data are 
+  For \code{kde} objects, the function headers for the different dimensional data are  
   \preformatted{
   ## univariate
   plot(x, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, 
-  ptcol="blue", col="black", cont.col=1, cont.lwd, jitter=FALSE, cont, 
-  abs.cont, approx.cont=FALSE, ...)
+    ptcol="blue", col="black", cont.col=1, cont.lwd, jitter=FALSE, cont, 
+    abs.cont, approx.cont=FALSE, ...)
   
   ## bivariate
   plot(x, display="slice", cont=c(25,50,75), abs.cont, 
@@ -47,24 +41,7 @@
     add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
     size=3, ptcol="blue", ...)   
   }
-  For \code{kda.kde} objects, the function headers for the different dimensional data are 
-  \preformatted{
-  ## univariate
-  plot(x, y, y.group, prior.prob=NULL, xlim, ylim,
-    xlab="x", ylab="Weighted density function", drawpoints=FALSE,
-    col, ptcol, jitter=TRUE, ...)
 
-  ## bivariate
-  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    abs.cont, approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE,
-    drawlabels=TRUE, col, partcol, ptcol, ...)
-
-  ## trivariate
-  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75),
-    abs.cont,  approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
-    drawpoints=FALSE, size=3, ptcol="blue", ...)
-  }
- 
   The arguments are
   \describe{
   \item{\code{display}}{type of display, "slice" for contour plot, "persp" for perspective plot, 
@@ -129,73 +106,34 @@
 }
  
 
-\seealso{\code{\link{kde}}, \code{\link{kda.kde}}}
+\seealso{\code{\link{kde}}}
 
 \examples{
-## kde examples
-
 ## univariate example
 x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
 fhat <- kde(x=x, h=hpi(x))  
-plot(fhat)
 plot(fhat, cont=50, cont.col="blue", cont.lwd=2)
+
+## univariate positive data example
+z <- 2^x
+fhatz <- kde(x=z, h=hpi(log(z)), positive=TRUE)
+  ## better to use hpi on log data
+plot(fhatz)
 
 ## bivariate example
 data(unicef)
 H.scv <- Hscv(x=unicef)
 fhat <- kde(x=unicef, H=H.scv, compute.cont=TRUE)
-plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.1)
+plot(fhat, drawpoints=TRUE, drawlabels=FALSE, col=3, lwd=3, cex=0.5)
 plot(fhat, display="persp", border=NA, shade=0.3)
 plot(fhat, display="image", col=rev(heat.colors(100)))
 plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 
-## pair of densities with same absolute contour levels
-x <- rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1)
-Hx <- Hpi(x)
-fhatx <- kde(x=x, H=Hx, xmin=c(-4,-4), xmax=c(4,4)) 
-y <- rmvnorm.mixt(n=100, mus=c(0.5,0.5), Sigmas=0.5*diag(2), props=1)
-Hy <- Hpi(y)
-fhaty <- kde(x=y, H=Hy, xmin=c(-4,-4), xmax=c(4,4))
-lev <- contourLevels(fhatx, prob=c(0.25, 0.5, 0.75))
-plot(fhatx, abs.cont=lev)
-plot(fhaty, abs.cont=lev, col=3, add=TRUE) 
-
-## large sample from bivariate normal 
+## large bivariate sample, using binned estimation 
 x <- rmvnorm.mixt(10000, c(0,0), invvech(c(1, 0.8, 1)))    
 H <- Hpi(x, binned=TRUE)
 fhat <- kde(x, H=H, binned=TRUE)      
 plot(fhat, display="persp", border=NA, shade=0.1)  
-
-## trivariate example
-library(MASS)
-x <- iris[,1:3]
-H.pi <- Hpi(x, pilot="samse")
-fhat <- kde(x, H=H.pi, compute.cont=TRUE)  
-plot(fhat, drawpoints=TRUE)
-
-## kda.kde examples
-
-## univariate example
-ir <- iris[,1]
-ir.gr <- iris[,5]
-hs <- hkda(x=ir, x.gr=ir.gr)
-kda.fhat <- kda.kde(ir, ir.gr, hs=hs, xmin=3, xmax=9)
-plot(kda.fhat, xlab="Sepal length")
-
-## bivariate example
-ir <- iris[,1:2]
-ir.gr <- iris[,5]
-H <- Hkda(ir, ir.gr, bw="plugin", pre="scale")
-kda.fhat <- kda.kde(ir, ir.gr, Hs=H)
-plot(kda.fhat, abs.cont=0)
-
-## trivariate example
-## colour indicates species, transparency indicates density heights
-ir <- iris[,1:3]
-ir.gr <- iris[,5] 
-H <- Hkda(ir, ir.gr, bw="plugin")
-kda.fhat <- kda.kde(ir, ir.gr, Hs=H, compute.cont=TRUE)
-plot(kda.fhat)   
 }
 
 

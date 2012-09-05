@@ -1,5 +1,4 @@
 \name{kde}
-\alias{kda.kde}
 \alias{kde}
 
 \title{Kernel density estimate for multivariate data}
@@ -10,18 +9,12 @@
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
     compute.cont=FALSE, approx.cont=TRUE)
-
-kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
-    supp=3.7, eval.points=NULL, binned=FALSE, bgridsize, w,
-    compute.cont=FALSE, approx.cont=TRUE)
 }
 
 \arguments{
   \item{x}{matrix of data values}
-  \item{x.group}{vector of group labels}
-  \item{H,Hs}{bandwidth matrix(ces)}
-  \item{h,hs}{scalar bandwidth(s)}
-  \item{prior.prob}{vector of prior probabilities}
+  \item{H}{bandwidth matrix(ces)}
+  \item{h}{scalar bandwidth(s)}
   \item{gridsize}{vector of number of grid points}
   \item{gridtype}{not yet implemented}
   \item{xmin}{vector of minimum values for grid}
@@ -40,7 +33,7 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   
 
 \value{
-  --The result from \code{kde} is a kernel density estimate which is an object of class \code{kde}: 
+  A kernel density estimate is an object of class \code{kde}: 
   \item{x}{data points - same as input}
   \item{eval.points}{points at which the density estimate is evaluated}
   \item{estimate}{density estimate at \code{eval.points}}
@@ -48,18 +41,6 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   \item{h}{scalar bandwidth (1-d only)}
   \item{w}{weights}
   \item{cont}{probability contour levels}
-
-  --The result from \code{kda.kde} is a density estimate
-  for discriminant analysis which is an object of class \code{kda.kde}:
-  \item{x}{data points - same as input}
-  \item{x.group}{group labels - same as input}
-  \item{eval.points}{points that density estimate is evaluated at}
-  \item{estimate}{density estimate at \code{eval.points}}  
-  \item{prior.prob}{prior probabilities}
-  \item{H}{bandwidth matrices (>1-d only) or} 
-  \item{h}{bandwidths (1-d only)}
-  \item{cont}{probability contour levels}
-  \item{w}{weights}
 }
 
 \details{
@@ -78,15 +59,18 @@ kda.kde(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax,
   The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
   is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}.The default weights \code{w} is a vector of all ones.
-
-  For \code{kda.kde}, if you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise the default is \code{prior.prob=NULL} i.e. use the sample
-  proportions as estimates of the prior probabilities.
 }
 
-\seealso{\code{\link{plot.kde}}, \code{\link{plot.kda.kde}}}
+\seealso{\code{\link{plot.kde}}}
 
 \examples{
-### See examples in ? plot.kde, ? plot.kda.kde  
+## trivariate example
+library(MASS)
+x <- iris[,1:3]
+H.pi <- Hpi(x, pilot="dscalar")
+fhat <- kde(x, H=H.pi, compute.cont=TRUE)  
+plot(fhat, drawpoints=TRUE)
+
+## See other examples in ? plot.kde
 }
 \keyword{smooth}

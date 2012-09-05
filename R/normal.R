@@ -914,12 +914,33 @@ moments.mixt <- function (mus, Sigmas, props)
 ###############################################################################
 
 
-plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", draw=TRUE, ...)
+plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", draw=TRUE, sigmas, ...)
 {
-  if (ncol(Sigmas)==2)
+  if (!missing(sigmas)) plotmixt.1d(mus=mus, sigmas=sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
+  else if (ncol(Sigmas)==2)
     plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
   else if (ncol(Sigmas)==3)
-    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...) 
+    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
+}
+
+
+
+plotmixt.1d <- function(mus, sigmas, props, dfs, dist="normal", xlim, ylim, gridsize, draw, xlab="x", ylab="Density function", ...)
+{
+  dist <- tolower(substr(dist,1,1))
+  maxsigmas <- 4*max(sigmas)
+
+  if (missing(xlim)) xlim <- c(min(mus) - maxsigmas, max(mus) + maxsigmas)  
+  if (missing(gridsize)) gridsize <- rep(401)
+              
+  x <- seq(xlim[1], xlim[2], length=gridsize)
+  if (dist=="n") dens <- dnorm.mixt(x=x, mus=mus, sigmas=sigmas, props=props)
+  else if (dist=="t") stop("1-d t mixture not yet implemented.")
+
+  if (draw) plot(x, dens, type="l", xlab=xlab, ylab=ylab, ...)
+
+  fhat <- list(eval.points=x, estimate=dens)  
+  invisible(fhat)
 }
 
 
@@ -931,16 +952,12 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
 
-  if (is.vector(mus))
-    mus <- as.matrix(t(mus))
+  if (is.vector(mus)) mus <- as.matrix(t(mus))
 
-  if (missing(xlim))
-    xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
-  if (missing(ylim))
-    ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
+  if (missing(xlim)) xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
+  if (missing(ylim)) ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
 
-  if (missing(gridsize))
-    gridsize <- rep(51,2)
+  if (missing(gridsize)) gridsize <- rep(51,2)
               
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
@@ -1122,6 +1139,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
 ## Returns
 ## Value of multivariate t mixture density at x
 ###############################################################################
+
 
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 {

@@ -49,7 +49,7 @@ A list with fields
 
 
 
-\details{--The null hypothesis is \eqn{H_0: f_1 \equiv f_2}{f_1 = f_2} where \eqn{f_1, f_2}{f_1, f_2} 
+\details{--The null hypothesis is \eqn{H_0: f_1 \equiv f_2}{H_0: f_1 = f_2} where \eqn{f_1, f_2}{f_1, f_2} 
   are the respective density functions. The measure of discrepancy is the integrated \eqn{L_2}{L2} error (ISE)
   \eqn{T = \int [f_1(\bold{x}) - f_2(\bold{x})]^2 \, d \bold{x}}{int [ f_1(x) - f_2(x)]^2 dx}. If 
   we rewrite this as \eqn{T = \psi_1 - \psi_{12} - \psi_{21} + \psi_2}{T = psi_1 - psi_12 - psi_21 + psi_2} 
@@ -73,21 +73,20 @@ A list with fields
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
     selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
 
-  Duong, T., Goud, B & Schauer, K. (2012) Closed-form density-based framework for automatic detection of cellular morphology changes. \emph{PNAS}. In press.
+  Duong, T., Goud, B & Schauer, K. (2012) Closed-form density-based framework for automatic detection of cellular morphology changes. \emph{PNAS}, \bold{109}, 8382-8387. 
 
   Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing}. Chapman & Hall/CRC, London.
 }
-  
+
+\seealso{\code{\link{kde.local.test}}}
+ 
 \examples{
 ## univariate example
 set.seed(8192)
 samp <- 1000
 x <- rnorm.mixt(n=samp, mus=0, sigmas=1, props=1)
-x2 <- rnorm.mixt(n=samp, mus=0, sigmas=1, props=1)
 y <- rnorm.mixt(n=samp, mus=0.25, sigmas=1, props=1)
-
 kde.test(x1=x, x2=y)$pvalue   ## reject H0: f1=f2
-kde.test(x1=x, x2=x2)$pvalue  ## accept H0: f1=f2
 
 
 ## bivariate example
@@ -101,14 +100,8 @@ props2 <- c(1,1)/2
 set.seed(8192)
 samp <- 1000
 x <- rmvnorm.mixt(n=samp, mus=mus1, Sigmas=Sigmas1, props=props1)
-x2 <- rmvnorm.mixt(n=samp, mus=mus1, Sigmas=Sigmas1, props=props1)
 y <- rmvnorm.mixt(n=samp, mus=mus2, Sigmas=Sigmas2, props=props2)
-kde.test(x1=x, x2=y)$pvalue    ## reject H0: f1=f2
-kde.test(x1=x, x2=x2)$pvalue   ## accept H0: f1=f2
-
-## From ks 1.8.8, binned estimation is applied only to bandwidth
-## matrices, not to the p-value calculation
-kde.test(x1=x, x2=y, binned=TRUE)$pvalue 
+kde.test(x1=x, x2=y, binned=TRUE)$pvalue    ## reject H0: f1=f2
 }
 
 \keyword{ test }

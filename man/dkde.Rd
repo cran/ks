@@ -2,44 +2,42 @@
 \alias{dkde}
 \alias{pkde}
 \alias{qkde}
- \alias{rkde}
+\alias{rkde}
 
- \title{Functions for univariate kernel density estimates}
+\title{Functions for univariate kernel density estimates}
 
- \description{
+\description{
    Functions for 1-dimensional kernel density estimates.
- }
+}
 
 
- \usage{
+\usage{
  pkde(q, fhat)
  qkde(p, fhat)
  dkde(x, fhat)
- rkde(n, fhat, positive=FALSE)
- }
+ rkde(n, fhat, positive=FALSE) 
+}
 
- \arguments{
+\arguments{
    \item{x,q}{vector of quantiles}
    \item{p}{vector of probabilities}
    \item{n}{number of observations}
    \item{positive}{flag to compute KDE on the positive real
 	 line. Default is FALSE.} 
    \item{fhat}{kernel density estimate, object of class \code{"kde"}}
- }
+}
 
 
- \value{
+\value{
    For the kernel density estimate \code{fhat},
    \code{pkde} computes the cumulative probability for the quantile
    \code{q}, \code{qkde} computes the quantile corresponding to the probability
    \code{p}, \code{dkde} computes the density value at
-   \code{x} and \code{rkde} computes a random sample of size \code{n}.
-  
-  
+   \code{x} and \code{rkde} computes a random sample of size \code{n}.  
 }
 
 \details{ 
-  \code{pkde} uses the Simpson's rule is used for the numerical
+  \code{pkde} uses Simpson's rule for the numerical
   integration. \code{rkde} uses
   Silverman (1986)'s method to generate a random sample from a KDE.
 }
@@ -53,6 +51,14 @@ fhat <- kde(x=x, h=hpi(x))
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
 qkde(fhat=fhat, p=p1)    
 y <- rkde(fhat=fhat, n=100)
+
+## positive data example
+z <- 2^x
+fhatz <- kde(x=z, h=hpi(log(z)), positive=TRUE)
+z2 <- rkde(fhat=fhatz, n=10000, positive=TRUE)
+fhatz2 <- kde(x=z2, h=hpi(log(z2)), positive=TRUE)
+plot(fhatz, xlim=c(0,10))
+plot(fhatz2, add=TRUE, col=2) 
 }
 
 \keyword{ smooth}

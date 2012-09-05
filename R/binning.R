@@ -71,8 +71,7 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
   if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
  
   bin.counts <- list(counts=counts, eval.points=gpoints, w=w)
-  if (d==1) bin.counts$eval.points <- gpoints[[1]]
-     
+  if (d==1) bin.counts <- lapply(bin.counts, unlist)
   return(bin.counts)
 }
 
@@ -130,11 +129,15 @@ linbin.ks <- function(X, gpoints, w)
    if (missing(w)) w <- rep(1, n)
    a <- gpoints[1]
    b <- gpoints[M]
-   xi <- .C("massdist", x=as.double(X), xmass=as.double(w), nx=as.integer(n),
-            xlo=as.double(a), xhi=as.double(b), y=double(M), ny=as.integer(M),
-            PACKAGE="stats")$y
+   ##xi <- .C("massdist", x=as.double(X), xmass=as.double(w), nx=as.integer(n),
+   ##         xlo=as.double(a), xhi=as.double(b), y=double(M), ny=as.integer(M),
+   ##         PACKAGE="stats")$y
+   xi <- .C("massdist1d", x1=as.double(X[,1]), n=as.integer(n), a1=as.double(a), b1=as.double(b), M1=as.integer(M), weight=as.double(w), est=double(M), PACKAGE="ks")$est
+
    return(xi)
 }
+
+
 
 
 linbin2D.ks <- function(X, gpoints1, gpoints2, w)
@@ -289,94 +292,6 @@ linbin4D.ks <- function(X, gpoints1, gpoints2, gpoints3, gpoints4, w)
    return(xi)
 }
 
-
-### lingbin*.ksf are based on Fortrtan code of M. Wand & T. Duong 
-
-linbin.ksf <- function(X, gpoints, truncate=FALSE, w)
-{
-   n <- length(X)
-   M <- length(gpoints)  
-   trun <- 0
-   if (truncate) trun <- 1
-   if (missing(w)) w <- rep(1, n)
-     
-   a <- gpoints[1]
-   b <- gpoints[M]
-   out <- .Fortran("linbin",as.double(X),as.integer(n),
-           as.double(a),as.double(b),as.integer(M),
-           as.integer(trun), as.double(w), double(M),PACKAGE="ks")
-   return(out[[8]])
-}
-
-linbin2D.ksf <- function(X, gpoints1, gpoints2, w)
-{
-   n <- nrow(X)
-   X <- c(X[,1],X[,2]) 
-   M1 <- length(gpoints1)
-   M2 <- length(gpoints2)
-   a1 <- gpoints1[1]
-   a2 <- gpoints2[1]
-   b1 <- gpoints1[M1]
-   b2 <- gpoints2[M2]
-   if (missing(w)) w <- rep(1, n)
-
-   out <- .Fortran("lbtwod",as.double(X),as.integer(n),
-           as.double(a1),as.double(a2),as.double(b1),as.double(b2),
-           as.integer(M1),as.integer(M2), as.double(w), double(M1*M2), PACKAGE="ks")
-
-   xi <- matrix(out[[10]], nrow=M1, ncol=M2)
-
-   return(xi)
-}
-
-linbin3D.ksf <- function(X,gpoints1,gpoints2,gpoints3, w)
-{
-   n <- nrow(X)
-   X <- c(X[,1],X[,2],X[,3]) 
-   M1 <- length(gpoints1)
-   M2 <- length(gpoints2)
-   M3 <- length(gpoints3) 
-   a1 <- gpoints1[1]
-   a2 <- gpoints2[1]
-   a3 <- gpoints3[1]
-   b1 <- gpoints1[M1]
-   b2 <- gpoints2[M2]
-   b3 <- gpoints3[M3]
-   if (missing(w)) w <- rep(1, n)
-
-   out <- .Fortran("lbthrd",as.double(X),as.integer(n),
-           as.double(a1),as.double(a2),as.double(a3),as.double(b1),
-           as.double(b2),as.double(b3),as.integer(M1),as.integer(M2),
-           as.integer(M3), as.double(w), double(M1*M2*M3),PACKAGE="ks")
-   return(array(out[[13]],c(M1,M2,M3)))
-}
-
-
-linbin4D.ksf  <- function(X,gpoints1,gpoints2,gpoints3,gpoints4, w)
-{
-   n <- nrow(X)
-   X <- c(X[,1],X[,2],X[,3],X[,4]) 
-   M1 <- length(gpoints1)
-   M2 <- length(gpoints2)
-   M3 <- length(gpoints3)
-   M4 <- length(gpoints4)
-   a1 <- gpoints1[1]
-   a2 <- gpoints2[1]
-   a3 <- gpoints3[1]
-   a4 <- gpoints4[1]
-   b1 <- gpoints1[M1]
-   b2 <- gpoints2[M2]
-   b3 <- gpoints3[M3]
-   b4 <- gpoints4[M4]
-   if (missing(w)) w <- rep(1, n)
-   
-   out <- .Fortran("lbfoud",as.double(X),as.integer(n),
-           as.double(a1),as.double(a2),as.double(a3),as.double(a4),
-           as.double(b1),as.double(b2),as.double(b3),as.double(b4),
-           as.integer(M1),as.integer(M2),as.integer(M3),as.integer(M4),
-           as.double(w),double(M1*M2*M3*M4),PACKAGE="ks")
-   return(array(out[[16]],c(M1,M2,M3,M4)))
-}
 
 
 ########################################################################

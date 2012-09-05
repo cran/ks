@@ -68,14 +68,6 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 }
 
 \examples{
-mus <- rbind(c(0,0), c(2,2))
-Sigmas <- rbind(invvech(c(1, 0.7, 1)), invvech(c(1, 0.7, 1)))
-props <- c(1/2, 1/2)
-samp <- 100
-H <- Hamise.mixt(mus, Sigmas, props, samp, deriv.order=2)
-x <- rmvnorm.mixt(n=samp, mus=mus, Sigmas=Sigmas, props=props)
-ise.mixt(x=x, H=H, mus=mus, Sigmas=Sigmas, props=props, deriv.order=2)
-
 x <- rmvnorm.mixt(100)
 Hns(x, deriv.order=1)
 Hamise.mixt(samp=nrow(x), mus=rep(0,2), var(x), props=1, deriv.order=1)
