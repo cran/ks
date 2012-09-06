@@ -88,9 +88,8 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   
 \examples{
 data(unicef)
-Hpi(unicef)
-Hpi(unicef, pilot="unconstr")
-Hpi.diag(unicef, binned=TRUE)
+Hpi(unicef, binned=TRUE)
+Hpi(unicef, pilot="dscalar")
 hpi(unicef[,1])
 }
 

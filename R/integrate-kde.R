@@ -96,10 +96,8 @@ qkde <- function(p, fhat)
 
 rkde <- function(n, fhat, positive=FALSE)
 {
-  if (positive)
-    x <- log(fhat$x)
-  else
-    x <- fhat$x
+  if (positive) x <- log(fhat$x)
+  else x <- fhat$x
   
   nsamp <- length(x)
   h <- fhat$h

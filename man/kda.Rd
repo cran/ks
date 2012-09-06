@@ -109,10 +109,10 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   cross-validated estimates may take a long time to execute.
 }
 
-\examples{ 
-### See examples in ? plot.kda.kde
+\seealso{\code{\link{kda.kde}}, \link{plot.kda.kde}}
 
-### univariate example -- independent test data
+\examples{ 
+## univariate example -- independent test data
 x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
@@ -120,11 +120,7 @@ kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
 compare(x.gr, kda.gr)
 compare(x.gr, kda.gr, by.group=TRUE) 
 
-### bivariate example - restricted iris dataset, dependent test data
-library(MASS)
-data(iris)
-ir <- iris[,c(1,2)]
-ir.gr <- iris[,5]
-compare.kda.cv(ir, ir.gr, bw="plug-in", pilot="samse") }
- 
+## See other examples in ? kda.kde
+}
+
 \keyword{ smooth }

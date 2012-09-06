@@ -78,7 +78,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 \examples{
 data(unicef)
 Hscv(unicef)
-Hscv.diag(unicef, binned=TRUE)
+Hscv(unicef, binned=TRUE)
 hscv(unicef[,1])
 }
 

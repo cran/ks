@@ -1,5 +1,12 @@
 Change log file for ks
 
+1.8.9
+-Added kde.local.test() for local 2-sample test.
+-Replaced foreign call to .C("massdist", package="stats") requested by
+ B. Ripley by call to .C("massdist1d", package="ks").
+-Changed rug plot in plot.kda.kde() to rug-like plot, similar that in
+ plot.kde.loctest().
+
 1.8.8
 -Changed function header of Hpi.kfe() to be more consistent with Hpi().
 -Added option Hpi.kfe(, pilot="dscalar") to ensure scale invariance in

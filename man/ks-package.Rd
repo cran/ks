@@ -44,9 +44,10 @@
   \eqn{L_2}{L2} distance between the two density estimates as the test statistic 
   \deqn{\hat{T} = \hat{\psi}_1 + \hat{\psi}_2 - (\hat{\psi}_{1,2} + \hat{\psi}_{1,2}),}{hat(T) = hat(psi)_1 + hat(psi)_2 - (hat(psi)_1,2 + hat(psi)_2,1),} and the corresponding p-value. The \eqn{\psi}{psi} are zero order kernel functional estimates with the subscripts indicating that 1 = sample 1 only, 2 = sample 2 only, and (1,2) and (2,1) = samples 1 and 2.  
 
-    
-  --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators 
-  feasible for large samples.
+  --For kernel-based local 2-sample testing, \code{\link{kde.local.test}} computes the squared distance between the two density estimates as the test 
+   statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}; \bold{{\rm H}}_1) - \hat{f}_2(\bold{x}; \bold{{\rm H}}_2)]^2}{hat(U)(x) = [hat(f)_1(x; H_1) - hat(f)_2(x; H_2)]^2} and the corresponding local p-values.     
+ 
+  --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators feasible for large samples.
   
   --For an overview of this package with 2-d density estimation, see 
   \code{vignette("kde")}. 
