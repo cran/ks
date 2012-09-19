@@ -132,8 +132,8 @@ plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 ## large bivariate sample, using binned estimation 
 x <- rmvnorm.mixt(10000, c(0,0), invvech(c(1, 0.8, 1)))    
 H <- Hpi(x, binned=TRUE)
-fhat <- kde(x, H=H, binned=TRUE)      
-plot(fhat, display="persp", border=NA, shade=0.1)  
+fhat <- kde(x, H=H, binned=TRUE, compute.cont=TRUE)      
+plot(fhat, display="filled.contour")  
 }
 
 
