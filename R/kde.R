@@ -336,7 +336,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
 
   ## compute prob contour levels
   if (compute.cont & missing(eval.points))
-    fhat$cont <- contourLevels(fhat, cont=1:99, approx.cont=approx.cont)
+    fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
 
   return(fhat)
  }

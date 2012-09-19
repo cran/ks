@@ -1,5 +1,8 @@
 Change log file for ks
 
+1.8.10
+-Fixed small bug in call to contourLevels(approx=) inside kde().
+
 1.8.9
 -Added kde.local.test() for local 2-sample test.
 -Replaced foreign call to .C("massdist", package="stats") requested by
