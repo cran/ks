@@ -410,7 +410,7 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, binned=FALSE, bgrids
   var.fhat.diff <- ((n1*h1)^(-1)*fhat1$estimate + (n2*h2)^(-1)*fhat2$estimate)*RK
   
   X2 <- fhat.diff^2/var.fhat.diff
-  pvalue <- 1 - pchisq(X2, d)
+  pvalue <- 1 - pchisq(X2, 1)
 
   gridsize <- length(fhat1$eval.points)
   fhat.diff.signif <- hochberg.mult.test(pvalue=pvalue, gridsize=gridsize, signif.level=signif.level)    
@@ -485,7 +485,7 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, binned=FALSE, b
   var.fhat.diff <- (n1^(-1)*det(H1)^(-1/2)*fhat1$estimate + n2^(-1)*det(H2)^(-1/2)*fhat2$estimate)*RK
   
   X2 <- fhat.diff^2/var.fhat.diff
-  pvalue <- 1 - pchisq(X2, d)
+  pvalue <- 1 - pchisq(X2, 1)
 
   ## Apply Hochberg multiple test adjustment
   

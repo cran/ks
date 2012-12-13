@@ -112,6 +112,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sph
 
 kda <- function(x, x.group, Hs, hs, y, prior.prob=NULL)
 {
+  if (missing(y)) y <- x
   if (is.vector(x))
   {
     disc.gr <- kda.1d(x=x, x.group=x.group, hs=hs, y=y, prior.prob=prior.prob)
@@ -214,7 +215,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
 {
   if (length(x.group)!=length(est.group))
     stop("Group label vectors not the same length")
-  
+ 
   grlab <- sort(unique(x.group))
   m <- length(grlab)
   comp <- matrix(0, nrow=m, ncol=m)
@@ -265,10 +266,10 @@ compare <- function(x.group, est.group, by.group=FALSE)
 # error - total mis-classification rate
 ###############################################################################
 
-compare.kda.cv <- function(x, x.group, bw="plugin",
-    prior.prob=NULL, Hstart, by.group=FALSE, trace=FALSE, binned=FALSE,
-    bgridsize, recompute=FALSE, ...)
+compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
 {
+  if (verbose) pb <- txtProgressBar()
+
   ## 1-d
   if (is.vector(x))
   {
@@ -292,12 +293,10 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
     
       ## recompute KDA estimate of groups with x[i] excluded
       
-      if (trace)
-        cat(paste("Processing data item:", i, "\n"))
-      
+      if (verbose) setTxtProgressBar(pb, i/n)  
       kda.cv.gr[i] <- kda(x[-i], x.group[-i], hs=h.mod, y=x, prior.prob=prior.prob)[i]
     }
-
+    if (verbose) close(pb)
     return(compare(x.group, kda.cv.gr, by.group=by.group)) 
   }
 
@@ -311,9 +310,9 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
   else
     H <- Hkda(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
 
-  ### classify data x using KDA rules based on x itself
-  ##kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
-  ##comp <- compare(x.group, kda.group)
+  ## classify data x using KDA rules based on x itself
+  ## kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
+  ## comp <- compare(x.group, kda.group)
  
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
@@ -354,12 +353,12 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
     }
     ## recompute KDA estimate of groups with x[i] excluded
       
-    if (trace)
-      cat(paste("Processing data item:", i, "\n"))
+    if (verbose) setTxtProgressBar(pb, i/n)  ##cat(paste("Processing data item:", i, "\n"))
 
     kda.cv.gr[i] <- kda(x[-i,], x.group[-i], Hs=H.mod, y=x, prior.prob=prior.prob)[i]
   }
-  
+  if (verbose) close(pb)
+
   return(compare(x.group, kda.cv.gr, by.group=by.group)) 
 }
 
@@ -368,15 +367,17 @@ compare.kda.cv <- function(x, x.group, bw="plugin",
 ###############################################################################
 
 compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
-   by.group=FALSE, trace=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+   by.group=FALSE, verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
 {
+  if (is.vector(x))  return(compare.kda.cv(x=x, x.group=x.group, by.group=by.group, verbose=verbose, binned=binned, bgridsize=bgridsize, recompute=recompute, ...))
   n <- nrow(x)
   d <- ncol(x)
 
   H <- Hkda.diag(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
   ##kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
   ##comp <- compare(x.group, kda.group)
- 
+  if (verbose) pb <- txtProgressBar()
+  
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
   
@@ -397,11 +398,10 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
       H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
     }
     
-    if (trace)
-      cat(paste("Processing data item:", i, "\n"))
-
+    if (verbose) setTxtProgressBar(pb, i/n) 
     kda.cv.gr[i] <- kda(x[-i,], x.group[-i], Hs=H.mod, y=x, prior.prob=prior.prob)[i]  
   }
+  if (verbose) close(pb)
   
   return(compare(x.group, kda.cv.gr, by.group=by.group)) 
 }

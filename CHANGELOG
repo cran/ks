@@ -1,5 +1,9 @@
 Change log file for ks
 
+1.8.11
+-Added progress bars to compare.kda.cv(), compare.kda.diag.cv().
+-Corrected critical df from d to 1 in kde.local.test(). 
+
 1.8.10
 -Fixed small bug in call to contourLevels(approx=) inside kde().
 

@@ -62,7 +62,7 @@ second order correction to the mean value of the test statistic should be comput
 }
 
 \references{
-  Duong, T. (2012) Local signficant differences from global non-parametric
+  Duong, T. (2012) Local signficant differences from non-parametric
   two-sample tests. Submitted.
     
   Godtliebsen, F., Marron, J.S. & Chaudhuri, P. (2002) 
