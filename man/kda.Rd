@@ -21,9 +21,9 @@ hkda(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
 kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 compare(x.group, est.group, by.group=FALSE)
 compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, 
-    trace=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+    verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, 
-    trace=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+    verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
 }
 
 \arguments{
@@ -44,8 +44,8 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{bgridsize}{vector of binning grid sizes}
   \item{est.group}{vector of estimated group labels}
   \item{by.group}{flag to give results also within each group}
-  \item{trace}{flag for printing messages in command line to
-    trace the execution}
+  \item{verbose,trace}{flag for printing messages in command line to
+    trace the execution. \code{trace} is deprecated.}
   \item{recompute}{flag for recomputing the bandwidth matrix after
     excluding the i-th data item}
   \item{...}{other optional parameters for bandwidth selection, see
