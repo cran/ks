@@ -12,40 +12,50 @@
   Kernel discriminant analysis for 1- to 6-dimensional data.
 }
 \usage{
+kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
+   eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE,
+   approx.cont=TRUE, kde.flag=TRUE)
 Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
-     binned=FALSE, bgridsize)
+   binned=FALSE, bgridsize)
 Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
-     binned=FALSE, bgridsize)
+   binned=FALSE, bgridsize)
 hkda(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
 
-kda(x, x.group, Hs, hs, y, prior.prob=NULL)
 compare(x.group, est.group, by.group=FALSE)
-compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, 
-    verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
+compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
+   by.group=FALSE, verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE,
+   ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, 
-    verbose=FALSE, trace=verbose, binned=FALSE, bgridsize, recompute=FALSE, ...)
+   verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
 }
 
 \arguments{
   \item{x}{matrix of training data values}
   \item{x.group}{vector of group labels for training data}
-  \item{y}{matrix of test data} 
-  \item{Hs}{(stacked) matrix of bandwidth matrices}
-  \item{hs}{vector of scalar bandwidths}
+  \item{Hs,hs}{(stacked) matrix of bandwidth matrices/vector of scalar
+  bandwidths. If these are missing, \code{Hkda} or \code{hkda} is called by default.}
   \item{prior.prob}{vector of prior probabilities}
-  \item{bw}{bandwidth: \code{"plugin"} = plug-in, \code{"lscv"} = LSCV, 
-    \code{"scv"} = SCV} 
+  \item{gridsize}{vector of grid sizes}
+  \item{xmin,xmax}{vector of minimum/maximum values for grid}
+  \item{supp}{effective support for standard normal}
+  \item{eval.points}{points at which estimate is evaluated}
+  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{bgridsize}{vector of binning grid sizes}
+  \item{w}{vector of weights. Not yet implemented.}
+  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
+  \item{approx.cont}{flag for computing approximate probability contour
+    levels. Default is TRUE.}
+  \item{kde.flag}{flag for computing KDE on grid. Default is TRUE.}
+  \item{bw}{bandwidth: "plugin" = plug-in, "lscv" = LSCV, 
+    "scv" = SCV} 
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
   \item{pilot}{pilot selector: see \code{\link{Hpi}}, \code{\link{Hscv}}}
-  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
+  \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
     numerical optimisation}
-  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
-  \item{bgridsize}{vector of binning grid sizes}
   \item{est.group}{vector of estimated group labels}
   \item{by.group}{flag to give results also within each group}
-  \item{verbose,trace}{flag for printing messages in command line to
-    trace the execution. \code{trace} is deprecated.}
+  \item{verbose}{flag for printing progress information. Default is FALSE.}
   \item{recompute}{flag for recomputing the bandwidth matrix after
     excluding the i-th data item}
   \item{...}{other optional parameters for bandwidth selection, see
@@ -53,15 +63,27 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 }
 
 \value{
+  --A kernel discriminant analysis is an object of class \code{kda}
+  which is a list with fields 
+  \item{x}{list of data points, one for each group label}
+  \item{estimate}{list of density estimates at \code{eval.points}, one for each group label}  
+  \item{eval.points}{points that the estimate is evaluated at, one
+    for each group label}
+  \item{h}{vector of bandwidths (1-d only)}
+  \item{H}{stacked matrix of bandwidth matrices or vector of bandwidths}
+  \item{gridded}{flag for estimation on a grid}
+  \item{binned}{flag for binned estimation}
+  \item{w}{weights}
+  \item{prior.prob}{prior probabilities}
+  \item{x.group}{group labels - same as input}
+  \item{x.group.estimate}{estimated group labels. If the test data
+    \code{eval.points} are given then these are classified. Otherwise
+    the training data \code{x} are classified.}
+ 
   --The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
   of bandwidth matrices, one for each training data group. The result
   from \code{hkda} is a vector of bandwidths, one for each training data
   group.  
-
-  --The result from \code{kda} is a vector of group labels
-  estimated via the kernel discriminant rule.  If the test data \code{y} are
-  given then these are classified. Otherwise the training data \code{x}
-  are classified.
 
   --The \code{compare} functions create a comparison between the true
   group labels \code{x.group} and the estimated ones. 
@@ -91,6 +113,10 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 }
 
 \details{
+  --If the bandwidths \code{Hs} are missing from \code{kda}, then the default bandwidths are the
+  binned 2-stage plug-in selectors \code{Hkda(, bw="plugin", nstage=2, binned=TRUE)}.
+  Likewise for missing \code{hs}.
+  
   --The values that valid for \code{bw} are \code{"plugin", "lscv"} and
   \code{"scv"} for
   \code{Hkda}.  These in turn call \code{\link{Hpi}},
@@ -98,29 +124,28 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   of \code{nstage}, \code{pilot} and \code{pre} need to be set. For SCV
   selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
   need to be set.  For LSCV selectors, none of them are required. 
-  \code{Hkda.diag} makes analogous calls to diagonal selectors.
+  \code{Hkda.diag} makes analogous calls to diagonal selectors. 
 
   --If you have prior probabilities then set \code{prior.prob} to these.
   Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
   proportions as estimates of the prior probabilities.
   
-  If \code{trace=TRUE}, a message is printed in the command line
-  indicating that it's processing the i-th data item:
-  cross-validated estimates may take a long time to execute.
+  As of \pkg{ks} 1.8.11, \code{kda.kde} has been subsumed
+  into \code{kda}, so all prior calls to \code{kda.kde} can be replaced
+  by \code{kda}. To reproduce the previous behaviour of \code{kda}, the
+  command is \code{kda(, kde.flag=FALSE)}.
 }
 
-\seealso{\code{\link{kda.kde}}, \link{plot.kda.kde}}
+\seealso{\code{\link{plot.kda}}}
 
 \examples{ 
-## univariate example -- independent test data
 x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
-kda.gr <- kda(x, x.gr, hs=sqrt(c(0.09, 0.09)), y=y)
-compare(x.gr, kda.gr)
-compare(x.gr, kda.gr, by.group=TRUE) 
+kda.gr <- kda(x, x.gr, eval.points=y)
+compare(kda.gr$x.group, kda.gr$x.group.est, by.group=TRUE)
 
-## See other examples in ? kda.kde
+## See other examples in ? plot.kda
 }
 
 \keyword{ smooth }

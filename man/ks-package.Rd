@@ -1,4 +1,4 @@
-\name{ks}
+\name{ks-package}
 \alias{ks}
 \docType{package}
 \title{ks}
@@ -7,22 +7,22 @@
 }
 \details{
   There are three main types of functions in this package:
-  (a) computing kernel estimators, (b) computing bandwidth selectors and (c) displaying kernel estimators. The kernel used throughout is the normal (Gaussian) kernel.
+  \itemize{
+    \item computing kernel estimators - these function names begin with `k'
+    \item computing bandwidth selectors - these begin with `h' (1-d) or
+    `H' (>1-d)
+    \item displaying kernel estimators - these begin with `plot'.
+  }
+  The kernel used throughout is the normal (Gaussian) kernel \eqn{K}{K}.
 
   --For kernel density estimation, \code{\link{kde}} computes  
-  \deqn{\hat{f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x;H) = n^(-1) sum_i K_H (x - X_i).} 
+  \deqn{\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x) = n^(-1) sum_i K_H (x - X_i).} 
 
-  For display, its \code{plot} method calls \code{\link{plot.kde}}.
+  The bandwidth matrix \eqn{\bold{{\rm H}}}{H} is a matrix of smoothing
+  parameters and its choice is crucial for the performance of kernel
+  estimators. For display, its \code{plot} method calls \code{\link{plot.kde}}.
 
-  --For kernel discriminant analysis, \code{\link{kda.kde}} computes density estimates for each the 
-  groups in the training data, and the discriminant surface. 
-  Its \code{plot} method is \code{\link{plot.kda.kde}}. The wrapper function \code{\link{Hkda}} computes 
-  bandwidth matrices for each group in the training data, by calling the above selectors.
-  
-  --For kernel density derivative estimation, the main function is \code{\link{kdde}}
-  \deqn{\widehat{{\sf D}^{\otimes r}f}(\bold{x}; \bold{{\rm H}}) = n^{-1} \sum_{i=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)^(r)(x;H) = n^(-1) sum_i D^r K_H (x - X_i).} 
-
-  --There are several varieties of bandwidth matrix selectors 
+  --For kernel density estimators, there are several varieties of bandwidth selectors 
   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
   \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) \cr
@@ -36,17 +36,71 @@
   }
   For 1-d data, the bandwidth \eqn{h}{h} is the standard deviation of the normal kernel, whereas for multivariate data, the bandwidth matrix 
   \eqn{\bold{{\rm H}}}{H} is the variance matrix.
+  
+  --For kernel density derivative estimation, the main function is \code{\link{kdde}}
+  \deqn{{\sf D}^{\otimes r}\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n {\sf
+  D}^{\otimes r}K_{\bold{{\rm H}}} (\bold{x} -
+\bold{X}_i).}{hat(f)^(r)(x) = n^(-1) sum_i D^r K_H (x - X_i).} 
+  The bandwidth selectors are a modified subset of those for
+  \code{\link{kde}}, i.e. \code{\link{Hlscv}}, \code{\link{Hns}}, \code{\link{Hpi}}, \code{\link{Hscv}} with \code{deriv.order>0}. 
+   Its \code{plot} method is \code{\link{plot.kdde}} for plotting each
+   partial derivative singly.
 
-  --For kernel functional estimation, \code{\link{kfe}} computes the \eqn{r}{r}-th order integrated density functional  
-  \deqn{\hat{{\bold \psi}}^{(r)} (\bold{{\rm H}}) = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)^(r) = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
+  --For kernel discriminant analysis, the main function is
+  \code{\link{kda}} which computes density estimates for each the 
+  groups in the training data, and the discriminant surface. 
+  Its \code{plot} method is \code{\link{plot.kda}}. The wrapper function
+  \code{\link{hkda}}, \code{\link{Hkda}} computes 
+  bandwidths for each group in the training data for \code{kde},
+  e.g. \code{hpi}, \code{Hpi}.
+  
+  --For kernel functional estimation, the main function is
+  \code{kfe} which computes the \eqn{r}{r}-th order integrated density functional  
+  \deqn{\hat{{\bold \psi}}^{(r)}  = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)^(r) = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
+  Kernel function estimates are usually not required to computed
+  directly by the user, but only within other functions in the package.
+  
+  
+  --For kernel-based 2-sample testing, the main function is
+  \code{\link{kde.test}} which computes the integrated 
+  \eqn{L_2}{L2} distance between the two density estimates as the test
+  statistic, comprising a linear combination of 0-th order kernel
+  functional estimates:
+  \deqn{\hat{T} = \hat{\psi}_1 + \hat{\psi}_2 - (\hat{\psi}_{1,2} +
+  \hat{\psi}_{1,2}),}{hat(T) = hat(psi)_1 + hat(psi)_2 - (hat(psi)_1,2 +
+  hat(psi)_2,1),} and the corresponding p-value. The \eqn{\psi}{psi} are
+  zero order kernel functional estimates with the subscripts indicating
+  that 1 = sample 1 only, 2 = sample 2 only, and (1,2) and (2,1) =
+  samples 1 and 2.  The bandwidth selectors are \code{\link{hpi.kfe}},
+  \code{\link{Hpi.kfe}} with \code{deriv.order=0}. 
 
-  --For kernel-based 2-sample testing, \code{\link{kde.test}} computes the integrated 
-  \eqn{L_2}{L2} distance between the two density estimates as the test statistic 
-  \deqn{\hat{T} = \hat{\psi}_1 + \hat{\psi}_2 - (\hat{\psi}_{1,2} + \hat{\psi}_{1,2}),}{hat(T) = hat(psi)_1 + hat(psi)_2 - (hat(psi)_1,2 + hat(psi)_2,1),} and the corresponding p-value. The \eqn{\psi}{psi} are zero order kernel functional estimates with the subscripts indicating that 1 = sample 1 only, 2 = sample 2 only, and (1,2) and (2,1) = samples 1 and 2.  
+  --For kernel-based local 2-sample testing, the main function is
+   \code{\link{kde.local.test}} which computes the squared distance
+   between the two density estimates as the test  
+   statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}) - \hat{f}_2(\bold{x})]^2}{hat(U)(x) =
+   [hat(f)_1(x) - hat(f)_2(x)]^2} and the corresponding local
+   p-values.  The bandwidth selectors are those used with \code{kde},
+   e.g. \code{\link{hpi}, \link{Hpi}}.  
 
-  --For kernel-based local 2-sample testing, \code{\link{kde.local.test}} computes the squared distance between the two density estimates as the test 
-   statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}; \bold{{\rm H}}_1) - \hat{f}_2(\bold{x}; \bold{{\rm H}}_2)]^2}{hat(U)(x) = [hat(f)_1(x; H_1) - hat(f)_2(x; H_2)]^2} and the corresponding local p-values.     
- 
+  --For kernel cumulative distribution function estimation, the main
+  function is \code{\link{kcde}}
+  \deqn{\hat{F}(\bold{x}) = n^{-1} \sum_{i=1}^n
+  \mathcal{K}_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i)}{hat(F)(x) =
+  n^(-1) sum_i intK_H (x - X_i)}
+  where \eqn{\mathcal{K}}{intK} is the integrated kernel.  
+  The bandwidth selectors are \code{\link{hpi.kcde}},
+  \code{\link{Hpi.kcde}}.  Its \code{plot} method is
+  \code{\link{plot.kcde}}.
+  Analogously for the survival function \eqn{\hat{\bar{F}}(\bold{x})}{hat(bar(F))(x)}.
+
+  --For kernel estimation of ROC (receiver operating characteristic)
+  curves to compare two samples, the main function is \code{\link{kroc}}
+  \deqn{\hat{R}(z) = \hat{F}_2 (\hat{\bar{F}}_1^{-1}(z))}{hat(R)(z) = hat(F)_2 (hat(bar(F))_1^(-1)(z))} where \eqn{\hat{\bar{F}}_1^{-1}(z)}{hat(bar(F))_1^(-1)(z)} is
+  the \eqn{z}{z}-th quantile of \eqn{\hat{\bar{F}}_1}{hat(bar(F))_1}. The bandwidth
+  selectors are those used with \code{\link{kcde}},
+  e.g. \code{\link{hpi.kcde}, \link{Hpi.kcde}}. Its \code{plot} method
+  is \code{\link{plot.kroc}}.   
+  
   --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators feasible for large samples.
   
   --For an overview of this package with 2-d density estimation, see 

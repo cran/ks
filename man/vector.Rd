@@ -1,4 +1,4 @@
-\name{vec}
+\name{vector}
 \alias{vec}
 \alias{vech}
 \alias{invvec}

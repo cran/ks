@@ -1,4 +1,4 @@
-\name{Hamise.mixt}
+\name{ise.mixt}
 \alias{Hmise.mixt}
 \alias{Hamise.mixt}
 \alias{Hmise.mixt.diag}
@@ -69,7 +69,6 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 
 \examples{
 x <- rmvnorm.mixt(100)
-Hns(x, deriv.order=1)
 Hamise.mixt(samp=nrow(x), mus=rep(0,2), var(x), props=1, deriv.order=1)
 }
 

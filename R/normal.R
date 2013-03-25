@@ -7,7 +7,7 @@
 rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
 
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -50,7 +50,7 @@ rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -113,7 +113,7 @@ dnorm.deriv <- function(x, mu=0, sigma=1, deriv.order=0)
     derivt <- (x^10 - 45*x^8*sigma^2 + 630*x^6*sigma^4 - 3150*x^4*sigma^6 + 4725*x^2*sigma^8 - 945*sigma^10)/sigma^20*phi
   
   if (r > 10)
-    stop ("Up to 10th order derivatives only")
+    stop ("up to 10th order derivatives only")
     
   return(derivt)
 }
@@ -164,7 +164,7 @@ dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par,
 dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -207,7 +207,7 @@ dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
   
   #if (is.vector(Sigmas))
   ##  return(rnorm.mixt(n=n, mus=mus, sigmas=Sigmas, props=props))
@@ -266,7 +266,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
 dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 {  
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
 
   if (is.vector(x)) d <- length(x)
   else d <- ncol(x)
@@ -311,7 +311,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, Sdr.flag=TRUE)
 {
   r <- deriv.order
-  if(length(r)>1) stop("deriv.order should be a non-negative integer.")
+  if(length(r)>1) stop("deriv.order should be a non-negative integer")
   sumr <- sum(r)
   
   if (missing(x)) d <- ncol(Sigma)
@@ -423,14 +423,14 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order, Sdr.mat, deriv.vec=TRUE, ad
 dmvnorm.deriv.vectorx <- function(x, mu, Sigma, deriv.order)
 {
   r <- deriv.order
-  if(length(r)>1) stop("deriv.order should be a non-negative integer.")
+  if(length(r)>1) stop("deriv.order should be a non-negative integer")
   ##sumr <- sum(r)
   
   if (missing(x)) d <- ncol(Sigma)
   else
   {
     if (is.vector(x)) x <- t(as.matrix(x))
-    else stop("dmvnorm.deriv.nd only defined for vector x.")
+    else stop("dmvnorm.deriv.nd only defined for vector x")
 
     ##if (is.data.frame(x)) x <- as.matrix(x)
     d <- ncol(x)
@@ -526,7 +526,7 @@ dmvnorm.deriv.vectorx <- function(x, mu, Sigma, deriv.order)
 dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, Sdr.mat, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, Sdr.flag=TRUE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
 
   if (is.vector(x)) d <- length(x)
   else d <- ncol(x)
@@ -885,7 +885,7 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
 moments.mixt <- function (mus, Sigmas, props)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
   d <- ncol(Sigmas)
   k <- length(props)
   mn <- rep(0, d)
@@ -914,214 +914,228 @@ moments.mixt <- function (mus, Sigmas, props)
 ###############################################################################
 
 
-plotmixt <- function(mus, Sigmas, props, dfs, dist="normal", draw=TRUE, sigmas, ...)
+plotmixt <- function(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE, deriv.order=0, which.deriv.ind=1, binned=TRUE, ...)
 {
-  if (!missing(sigmas)) plotmixt.1d(mus=mus, sigmas=sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
+  ## locally set random seed not to interfere with global random number generators
+  if (!exists(".Random.seed")) rnorm(1)
+  old.seed <- .Random.seed
+  on.exit( { .Random.seed <<- old.seed } )
+  set.seed(8192)
+  
+  if (!missing(sigmas)) plotmixt.1d(mus=mus, sigmas=sigmas, props=props, dfs=dfs, dist=dist, draw=draw, deriv.order=deriv.order, which.deriv.ind=which.deriv.ind, ...)
   else if (ncol(Sigmas)==2)
-    plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
+    plotmixt.2d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, deriv.order=deriv.order, which.deriv.ind=which.deriv.ind,binned=binned, ...)
   else if (ncol(Sigmas)==3)
-    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, ...)
+    plotmixt.3d(mus=mus, Sigmas=Sigmas, props=props, dfs=dfs, dist=dist, draw=draw, deriv.order=deriv.order, which.deriv.ind=which.deriv.ind, binned=binned, ...)
 }
 
-
-
-plotmixt.1d <- function(mus, sigmas, props, dfs, dist="normal", xlim, ylim, gridsize, draw, xlab="x", ylab="Density function", ...)
+plotmixt.1d <- function(mus, sigmas, props, dfs, dist="normal", xlim, ylim, gridsize, draw, deriv.order, which.deriv.ind, ...)
 {
   dist <- tolower(substr(dist,1,1))
   maxsigmas <- 4*max(sigmas)
 
   if (missing(xlim)) xlim <- c(min(mus) - maxsigmas, max(mus) + maxsigmas)  
-  if (missing(gridsize)) gridsize <- rep(401)
-              
-  x <- seq(xlim[1], xlim[2], length=gridsize)
-  if (dist=="n") dens <- dnorm.mixt(x=x, mus=mus, sigmas=sigmas, props=props)
-  else if (dist=="t") stop("1-d t mixture not yet implemented.")
+  if (missing(gridsize)) gridsize <- default.gridsize(1)
 
-  if (draw) plot(x, dens, type="l", xlab=xlab, ylab=ylab, ...)
+  ##x <- seq(xlim[1], xlim[2], length=gridsize)
+  x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize)
+  if (dist=="n")
+  {
+    if (deriv.order<=0) dens <- dnorm.mixt(x=x, mus=mus, sigmas=sigmas, props=props)
+    else  dens <- dnorm.deriv.mixt(x=x, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order)
+  }
+  else if (dist=="t") stop("1-d t mixture not yet implemented")
 
-  fhat <- list(eval.points=x, estimate=dens)  
+  fhat <- list()
+  fhat$x <- x
+  fhat$eval.points <- x
+  fhat$estimate <- dens
+  fhat$H <- diag(1)
+  fhat$h <- 1
+  fhat$gridtype <- "linear"
+  fhat$gridded <- TRUE
+  fhat$binned <- FALSE
+  fhat$names <- parse.name(x)
+  fhat$w <- rep(1, length(x))
+  if (deriv.order>0)
+  {
+    fhat$deriv.order <- deriv.order
+    fhat$deriv.ind <- which.deriv.ind
+  }
+  class(fhat) <- "kdde"
+  
+  plot(fhat, xlim=xlim, ...)
   invisible(fhat)
 }
 
 
+
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
-    xlim, ylim, gridsize, display="slice", cont=c(25,50,75), abs.cont,
-    lty, xlab="x", ylab="y", zlab="Density function",
-    theta=-30, phi=40, d=4, add=FALSE, drawlabels=TRUE, nrand=1e5, draw=TRUE, col, ...)
+    xlim, ylim, gridsize, nrand=1e4, draw=TRUE, binned, deriv.order, which.deriv.ind, ...)
 {
   dist <- tolower(substr(dist,1,1))
   maxSigmas <- 4*max(Sigmas)
 
   if (is.vector(mus)) mus <- as.matrix(t(mus))
-
   if (missing(xlim)) xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
   if (missing(ylim)) ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
-
-  if (missing(gridsize)) gridsize <- rep(51,2)
+  if (missing(gridsize)) gridsize <- default.gridsize(2)
               
-  x <- seq(xlim[1], xlim[2], length=gridsize[1])
-  y <- seq(ylim[1], ylim[2], length=gridsize[2])
+  x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
+  y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
   xy <- permute(list(x, y))
-
   d <- ncol(Sigmas)
-  
+ 
   if (dist=="n")
-    dens <- dmvnorm.mixt(xy, mus=mus, Sigmas=Sigmas, props=props)
+  {
+    if (deriv.order<=0) dens <- dmvnorm.mixt(xy, mus=mus, Sigmas=Sigmas, props=props)
+    else  dens <- dmvnorm.deriv.mixt(xy, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+  }
   else if (dist=="t")
+  {
+    if (deriv.order>0) stop("deriv.order>0 for t mixture not yet implemented")
     dens <- dmvt.mixt(xy, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
-
-  dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
-
+  }
+  
+  if (deriv.order<=0) dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
+  else
+  {
+    dens.mat <- list()
+    for (i in 1:ncol(dens))
+      dens.mat[[i]] <- matrix(dens[,i], ncol=length(x), byrow=FALSE)
+  }
+  
   if (dist=="n")
   {
     x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
-    dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
+    ##dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
   }
   else if (dist=="t")
   {
     x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
-    dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+    ##dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
   }
-  
-  if (missing(abs.cont))
-    hts <- quantile(dens.rand, prob=(100 - cont)/100)
-  else
-    hts <- abs.cont
 
-  if (draw)
-  {  
-    disp <- substr(display,1,1)
-    if (disp=="p")
-    {
-      hts <- seq(0, 1.1*max(dens.mat), length=100)
-      if (missing(col)) col <- c("white", rev(heat.colors(length(hts))))
-      z <- dens.mat
-      nrz <- nrow(z)
-      ncz <- ncol(z)
-      zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
-      facetcol <- cut(zfacet, length(hts)+1)
-      persp(x, y, dens.mat, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], ...)
-    }
-    else if (disp=="s")
-    {
-      if (missing(col)) col <- 1
-      if (!add) plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
-      if (missing(lty)) lty <- 1
   
-      for (i in 1:length(hts)) 
-      {
-        scale <- cont[i]/hts[i]
-        if (missing(abs.cont))
-          contour(x, y, dens.mat*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, lty=lty, col=col, ...)
-        else
-          contour(x, y, dens.mat, level=hts[i], add=TRUE, drawlabels=drawlabels, lty=lty, col=col,...)
-      }
-    }
-    else if (disp=="i")
-    {
-      if (missing(col)) col <- c("white", rev(heat.colors(100)))
-      image(x, y, dens.mat, xlab=xlab, ylab=ylab, col=col, ...)
-    }
-    else if (disp=="f")
-    {
-      if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
-      if (!add) plot(x, y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
-      clev <- c(-0.01*max(abs(dens.mat)), sort(hts), max(c(dens.mat, hts)) + 0.01*max(abs(dens.mat)))
-      image(x, y, dens.mat, xlab=xlab, ylab=ylab, add=TRUE, col=col[1:(length(hts)+1)], breaks=clev, ...)
+  H <- Hns(x=x.rand, deriv.order=deriv.order)
+  if (binned) H <- diag(diag(H))
+  fhat.rand <- kdde(x=x.rand, H=H, deriv.order=deriv.order, binned=binned)
+  fhat <- fhat.rand 
+  fhat$x <- x.rand
+  fhat$eval.points <- list(x,y)
+  fhat$estimate <- dens.mat
+  fhat$names <- c("x", "y")
 
-      ##filled.contour(x, y, dens.mat, xlab=xlab, ylab=ylab, ...)
-    }
+  if (deriv.order>0)
+  {
+    deriv.ind <- dmvnorm.deriv.mixt(xy, mus=mus, Sigmas=Sigmas, props=props, add.index=TRUE, only.index=TRUE, deriv.order=deriv.order, deriv.vec=TRUE, Sdr.flag=FALSE)
+    fhat$deriv.order <- deriv.order
+    fhat$deriv.ind <- deriv.ind
+    class(fhat) <- "kdde"
+    if (draw) plot(fhat, which.deriv.ind=which.deriv.ind, xlim=xlim, ylim=ylim, ...)
   }
-  
-  if (exists("hts"))
-    fhat <- list(eval.points=list(x, y), estimate=dens.mat, cont=hts)
   else
-    fhat <- list(eval.points=list(x, y), estimate=dens.mat)
-  
-  invisible(fhat)
+    plot(fhat, xlim=xlim, ylim=ylim, ...)
 }
 
-plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
-    dist="normal", xlim, ylim, zlim, gridsize, alphavec, colors, add=FALSE, nrand=1e5, draw=TRUE, ...)
+
+plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim, gridsize, nrand=1e4, draw=TRUE, binned, deriv.order, which.deriv.ind, ...)
 {
   d <- 3
   dist <- tolower(substr(dist,1,1))
   maxsd <- sqrt(apply(Sigmas, 2, max))
 
-  if (is.vector(mus))
-    mus <- as.matrix(t(mus))
-
-  if (missing(xlim))
-    xlim <- c(min(mus[,1]) - 4*maxsd[1], max(mus[,1]) + 4*maxsd[1])
-  if (missing(ylim))
-    ylim <- c(min(mus[,2]) - 4*maxsd[2], max(mus[,2]) + 4*maxsd[2])
-  if (missing(zlim))
-    zlim <- c(min(mus[,3]) - 4*maxsd[3], max(mus[,3]) + 4*maxsd[3])
-
-  if (missing(gridsize))
-    gridsize <- rep(51,d)
+  if (is.vector(mus)) mus <- as.matrix(t(mus))
+  if (missing(xlim)) xlim <- c(min(mus[,1]) - 4*maxsd[1], max(mus[,1]) + 4*maxsd[1])
+  if (missing(ylim)) ylim <- c(min(mus[,2]) - 4*maxsd[2], max(mus[,2]) + 4*maxsd[2])
+  if (missing(zlim)) zlim <- c(min(mus[,3]) - 4*maxsd[3], max(mus[,3]) + 4*maxsd[3])
+  if (missing(gridsize)) gridsize <- default.gridsize(3)
   
-  x <- seq(xlim[1], xlim[2], length=gridsize[1])
-  y <- seq(ylim[1], ylim[2], length=gridsize[2])
-  z <- seq(zlim[1], zlim[2], length=gridsize[3])
+  x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
+  y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
+  z <- seq(zlim[1]-0.1*abs(diff(zlim)), zlim[2]+0.1*abs(diff(zlim)), length=gridsize[3])
   xy <- permute(list(x,y))
 
-  dens.array <- array(0, dim=gridsize)
+  if (deriv.order>0)
+  {
+    if (dist=="t")
+      stop("deriv.order>0 for t mixture not yet implemented")
+    else if (dist=="n")
+      deriv.ind <- dmvnorm.deriv.mixt(cbind(xy,z[1]), mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order, add.index=TRUE, only.index=TRUE)
+  }
+     
+  if (deriv.order<=0) dens.array <- array(0, dim=gridsize)
+  else { dens.array <- list(); for (i in 1:nrow(deriv.ind)) dens.array <- c(dens.array, list(array(0, dim=gridsize))) }
+
   
   for (i in 1:length(z))
   {
     if (dist=="n")
-      dens <- dmvnorm.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, props=props)
+    {
+      if (deriv.order<=0)
+        dens <- dmvnorm.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, props=props)
+      else
+        dens <- dmvnorm.deriv.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+    }
     else if (dist=="t")
       dens <- dmvt.mixt(cbind(xy, z[i]), mus=mus, Sigmas=Sigmas, dfs=dfs, props=props)
-    
-    dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
-    dens.array[,,i] <- dens.mat
+
+    if (deriv.order<=0)
+    {
+      dens.mat <- matrix(dens, ncol=length(x), byrow=FALSE)
+      dens.array[,,i] <- dens.mat
+    }
+    else
+    {
+      for (j in 1:ncol(dens))
+      {
+        dens.mat <- matrix(dens[,j], ncol=length(x), byrow=FALSE)
+        dens.array[[j]][,,i] <- dens.mat
+      }
+    }
+  
   }
 
   if (dist=="n")
-  {  
+  {
     x.rand <- rmvnorm.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props)
-      dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
+    ##dens.rand <- dmvnorm.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props)
   }
   else if (dist=="t")
   {
     x.rand <- rmvt.mixt(n=nrand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
-    dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
+    ##dens.rand <- dmvt.mixt(x.rand, mus=mus, Sigmas=Sigmas, props=props, dfs=dfs)
   }
-  
-  if (missing(abs.cont))
-    hts <- quantile(dens.rand, prob = (100 - cont)/100)
-  else
-    hts <- abs.cont
-  
-  if (draw)
-  {
-    require(rgl)
-    require(misc3d)
- 
-    
-    nc <- length(hts)
-    if (missing(colors))
-      colors <- rev(heat.colors(nc))
-  
-    if (missing(alphavec))
-      alphavec <- seq(0.1,0.5,length=nc)
-    
-    if (!add) clear3d()
-    
-    for (i in 1:nc) 
-      contour3d(dens.array, level=hts[nc-i+1], x,y,z, add=TRUE, color=colors[i], alpha=alphavec[i],...)
-    decorate3d(...)
-    }
 
-  if (exists("hts"))
-    fhat <- list(eval.points=list(x, y, z), estimate=dens.array, cont=hts)
-  else
-    fhat <- list(eval.points=list(x, y, z), estimate=dens.array)
+  H <- Hns(x=x.rand, deriv.order=deriv.order)
+  if (binned) H <- diag(diag(H))
+  fhat.rand <- kdde(x=x.rand, H=H, deriv.order=deriv.order, binned=binned)
+    
+  fhat <- fhat.rand
+  fhat$x <- head(x.rand, n=100)
+  fhat$eval.points <- list(x,y,z)
+  fhat$estimate <- dens.array
+  fhat$names <- c("x", "y", "z")
+  fhat$H <- H
+  fhat$w <- rep(1,nrow(fhat$x))
   
+  if (deriv.order>0)
+  {
+    deriv.ind <- dmvnorm.deriv.mixt(xy, mus=mus, Sigmas=Sigmas, props=props, add.index=TRUE, only.index=TRUE, deriv.order=deriv.order, deriv.vec=TRUE, Sdr.flag=FALSE)
+    fhat$deriv.order <- deriv.order
+    fhat$deriv.ind <- deriv.ind
+    class(fhat) <- "kdde"
+    if (draw) plot(fhat, which.deriv.ind=which.deriv.ind, xlim=xlim, ylim=ylim, zlim=zlim, ...)
+  }
+  else
+    plot(fhat, xlim=xlim, ylim=ylim, zlim=zlim, ...)
+
+ 
   invisible(fhat)
 }
+
+
+
 
 
 
@@ -1144,9 +1158,9 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, cont=c(25,50,75), abs.cont,
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
   else if (length(dfs) != length(props))
-    stop("Length of df and mixing proportions vectors not equal")
+    stop("length of df and mixing proportions vectors not equal")
   
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -1184,9 +1198,9 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))  
-    stop("Proportions don't sum to one\n")
+    stop("proportions don't sum to one")
   else if (length(dfs) != length(props))
-    stop("Length of df and mixing proportions vectors not equal")  
+    stop("length of df and mixing proportions vectors not equal")  
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))

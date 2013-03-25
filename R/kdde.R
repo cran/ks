@@ -5,7 +5,7 @@
 kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
 {
   r <- deriv.order
-
+  
   if (is.vector(x))
   {
     if (missing(H)) {d <- 1; n <- length(x)}
@@ -23,16 +23,18 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
       warning("Weights don't sum to sample size - they have been scaled accordingly\n")
       w <- w*n/sum(w)
     }
-
   if (missing(w)) w <- rep(1,n)
 
-
+  if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize, deriv.order=r)
+  if (missing(H) & d>1)  H <- Hpi(x=x, nstage=2, binned=nrow(x)>1000, bgridsize=bgridsize, deriv.order=r, pilot="dscalar")
+   
+  
   ## compute binned estimator
   if (binned)
   {
-    if (!missing(eval.points)) stop("Both binned=TRUE and eval.points are non-empty.")
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-    ##if (!identical(diag(diag(H)), H) & d > 1) stop("Binned estimation defined for diagonal H only")
+    
+    if (d>1) { if (!identical(diag(diag(H)), H)) warning("binned estimation for non-diagonal bandwidth matrix H can be inaccurate") }
     
     if (positive & is.vector(x))
     {
@@ -54,7 +56,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
     if (d==1)
     {
       if (!missing(H) & !missing(h))
-        stop("Both H and h are both specified.")
+        stop("both H and h are both specified")
       
       if (missing(h))
         h <- sqrt(H)
@@ -73,10 +75,11 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
       {
         if (d==2) 
           fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec)
-        else if (d == 3) stop("Not yet implemented for 3 dimensions")
+        else if (d==3)
+          stop("not yet implemented for 3 dimensions")
           ##fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
         else 
-          stop("Need to specify eval.points for more than 3 dimensions")
+          stop("need to specify eval.points for more than 3 dimensions")
       }
       else
         fhat <- kdde.points(x=x, H=H, eval.points=eval.points, w=w, deriv.order=r, deriv.vec=deriv.vec)
@@ -84,26 +87,8 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 
   }
   fhat$binned <- binned
-
-  ## add variable names
-  if (is.vector(x))
-  {
-    d <- 1
-    x.names <- deparse(substitute(x))
-  }
-  else
-  {  
-    d <- ncol(x)
-    x.names <- colnames(x)
-    if (is.null(x.names))
-    {
-      x.names <- strsplit(deparse(substitute(x)), "\\[")[[1]][1]
-      x.names <- paste(x.names, "[,", 1:d,"]",sep="") 
-    }
-  }
-  fhat$names <- x.names
+  fhat$names <- parse.name(x)
   class(fhat) <- "kdde"
-
   return(fhat)
  }
 
@@ -116,7 +101,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, Sdr.mat, verbose=FALSE)
 {
   r <- deriv.order
-  if (length(r)>1) stop("deriv.order should be a non-negative integer.")
+  if (length(r)>1) stop("deriv.order should be a non-negative integer")
 
   ## linear binning
   if (missing(bin.par))
@@ -162,11 +147,15 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
   if (missing(x)) x <- NULL
   
   if (d==1)
-    fhat <- list(x=x, eval.points=unlist(eval.points), estimate=est, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=r)
+  {
+    if (r==0) fhat <- list(x=x, eval.points=unlist(eval.points), estimate=est, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w)
+    else
+      fhat <- list(x=x, eval.points=unlist(eval.points), estimate=est, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=r)
+  }
   else
   {
     if (r==0)
-      fhat <- list(x=x, eval.points=fhat.grid$eval.points, estimate=fhat.grid$estimate[[1]], H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat)
+      fhat <- list(x=x, eval.points=fhat.grid$eval.points, estimate=fhat.grid$estimate[[1]], H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w)
     else
       fhat <- list(x=x, eval.points=fhat.grid$eval.points, estimate=fhat.grid$estimate, H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat)
   }
@@ -245,15 +234,14 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, Sdr.mat, verbose=FALSE, deri
     }
   }
   if (verbose) close(pb)
-  
-
+ 
   return(list(eval.points=bin.par$eval.points, estimate=est, deriv.order=r))
 }
 
 
-##############################################################################################
+#############################################################################
 #### Univariate kernel density derivative estimate on a grid
-##############################################################################################
+#############################################################################
 
 kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w, deriv.order=0)
 {
@@ -292,10 +280,10 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
 
 
 
-##############################################################################################
+##############################################################################
 ## Bivariate kernel density derivative estimate on a grid
 ## Computes all mixed partial derivatives for a given deriv.order
-##############################################################################################
+##############################################################################
 
 kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE)
 {
@@ -393,6 +381,166 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
   return(list(x=x, eval.points=eval.points, estimate=fhat$deriv, H=H, gridded=FALSE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=fhat$deriv.ind))
 }
 
+#############################################################################
+## Plot method for KDDE 
+#############################################################################
+
+
+plot.kdde <- function(x, ...)
+{
+  fhat <- x
+
+  if (is.null(fhat$deriv.order))
+  {
+    class(fhat) <- "kde"
+    plot(fhat, ...)
+  }
+  else
+  {  
+    if (is.vector(fhat$x))
+    {
+      plotkdde.1d(fhat, ...)
+      invisible()
+    }
+    else
+    {
+      d <- ncol(fhat$x)
+      if (d==2) 
+      {
+        plotret <- plotkdde.2d(fhat, ...)
+        invisible(plotret)
+      }
+      else if (d==3)
+      {
+        stop("kdde plot not yet implemented for 3-d data")
+        ##plotkdde.3d(fhat, ...)
+        ##invisible()
+      }
+      else 
+        stop ("plot function only available for 1, 2 or 3-d data")
+    }
+  }
+}
+
+plotkdde.1d <- function(fhat, ylab="Density derivative function", ...)
+{
+  class(fhat) <- "kde"
+  plot(fhat, ylab=ylab, ...)
+}
+
+
+plotkdde.2d <- function(fhat, which.deriv.ind=1, col, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function",...)
+{
+  disp <- tolower(substr(display,1,1))
+  
+  if (disp=="p")
+  {
+    if (missing(col)) col <- grey(seq(0,0.9,length=101)) 
+    if (length(col)<100) col <- rep(col, length=100) 
+  }
+  else if (disp=="s")
+  {
+    if (missing(col)) col <- 1
+    if (missing(abs.cont))
+    {
+      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
+      abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
+    }
+  } 
+  else if (disp=="f")
+  {
+    if (missing(col))
+    {
+      if (is.null(fhat$deriv.order)) col <- c("transparent", rev(heat.colors(length(cont))))
+      else if (fhat$deriv.order==0) col <- c("transparent", rev(heat.colors(length(cont))))
+      else col <- topo.colors(2*length(cont)+1)
+    }
+    if (missing(abs.cont))
+    {
+      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
+      abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
+    }
+  }
+  
+  fhat.temp <- fhat 
+  fhat.temp$deriv.ind <- fhat.temp$deriv.ind[which.deriv.ind,]
+  fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
+  fhat <- fhat.temp
+  class(fhat) <- "kde"
+  
+  plot(fhat, col=col, display=display, abs.cont=abs.cont, zlab=zlab,  ...) 
+}
+
+
+
+
+
+  
+#############################################################################
+## ContourLevels method for KDDE 
+#############################################################################
+
+contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deriv.ind=1, ...)
+{ 
+  fhat <- x
+  if (is.vector(fhat$x))
+  {
+    d <- 1; n <- length(fhat$x)
+    if (!is.null(fhat$deriv.order))  
+    {
+      fhat.temp <- fhat 
+      ##fhat.temp$estimate <- fhat.temp$estimate
+      fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind]
+      fhat <- fhat.temp
+    }
+    
+  }
+  else
+  {
+    d <- ncol(fhat$x); n <-nrow(fhat$x)
+    if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x)
+
+    if (!is.null(fhat$deriv.order))  
+    {
+      fhat.temp <- fhat 
+      fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
+      fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind,]
+      fhat <- fhat.temp
+    }
+  } 
+
+  if (is.null(x$w)) w <- rep(1, n)
+  else w <- x$w
+
+  if (is.null(fhat$gridded))
+  {
+    if (d==1) fhat$gridded <- fhat$binned
+    else fhat$gridded <- is.list(fhat$eval.points)
+  }
+  
+  if (missing(prob) & missing(cont))
+    hts <- pretty(fhat$estimate, n=nlevels) 
+  else
+  {
+    if (approx & fhat$gridded)
+      dobs <- find.nearest.gridpts(x=fhat$x, gridx=fhat$eval.points, f=fhat$estimate)$fx
+    else
+      dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
+
+    if (is.null(fhat$deriv.order))
+    {
+       if (!missing(prob) & missing(cont)) hts <- quantile(dobs[dobs>=0], prob=prob)
+       if (missing(prob) & !missing(cont)) hts <- quantile(dobs[dobs>=0], prob=(100-cont)/100)
+    }
+    else
+    {   
+      if (!missing(prob) & missing(cont)) hts <- rbind(quantile(dobs[dobs<0], prob=prob), quantile(dobs[dobs>=0], prob=prob))
+      if (missing(prob) & !missing(cont)) hts <- rbind(quantile(dobs[dobs<0], prob=(100-cont)/100), quantile(dobs[dobs>=0], prob=(100-cont)/100))
+    }
+  }
+  
+  return(hts)
+}
 
 
 #############################################################################
@@ -413,7 +561,6 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, doub
 {
   r <- deriv.order
   d <- ncol(x)
-  ##n <- nrow(x)
   psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, double.loop=double.loop, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, Sdr.mat=Sdr.mat, kfe=TRUE, Sdr.flag=Sdr.flag, add.index=FALSE)
  
  if (add.index)
@@ -436,6 +583,247 @@ kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, double.l
   psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, double.loop=double.loop, bin.par=bin.par, verbose=verbose)
   return(psir)
 }
+
+
+###############################################################################
+## Plug-in unconstrained bandwidth for KFE
+##
+## Returns
+## Plug-in bandwidth
+###############################################################################
+
+
+hpi.kfe <- function(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
+{
+  n <- length(x)
+  d <- 1
+  r <- deriv.order
+  k <- 2 ## kernel order
+  Kr0 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=r)    
+  mu2K <- 1  
+  
+  if (nstage==2)
+  {
+    psi4.hat <- psins.1d(r=r+k+2, sigma=sd(x))
+    gamse2 <- (factorial(r+2)*Kr0/(mu2K*psi4.hat*n))^(1/(r+k+3))
+    psi2.hat <- kfe.1d(x=x, g=gamse2, deriv.order=r+k, inc=1, binned=binned)
+  }
+  else 
+  {
+    psi2.hat <- psins.1d(r=r+k, sigma=sd(x))
+  }
+
+  ## formula for bias annihliating bandwidths from Wand & Jones (1995, p.70)
+  gamse <- (factorial(r)*Kr0/(-mu2K*psi2.hat*n))^(1/(r+k+1)) 
+  
+  return(gamse)
+}
+
+
+Hpi.kfe <- function(x, nstage=2, pilot="dscalar", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+{
+  if (deriv.order!=0) stop("currently only deriv.order=0 is implemented")
+   
+  n <- nrow(x)
+  d <- ncol(x)
+  r <- deriv.order
+
+  if(!is.matrix(x)) x <- as.matrix(x)
+  if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
+  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
+ 
+  if (substr(pre,1,2)=="sc") pre <- "scale"
+  else if (substr(pre,1,2)=="sp") pre <- "sphere"
+  if (pre=="scale")
+  {
+    x.star <- pre.scale(x)
+    S12 <- diag(sqrt(diag(var(x))))
+    Sinv12 <- chol2inv(chol(S12))
+  }
+  else if (pre=="sphere")
+  {
+    x.star <- pre.sphere(x)
+    S12 <- matrix.sqrt(var(x))
+    Sinv12 <- chol2inv(chol(S12))
+  }
+
+  D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
+  K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
+
+  if (nstage==2)
+  {  
+    ## stage 1
+    if (pilot=="dscalar")
+    {
+      psi4.ns <- psins(r=r+4, Sigma=var(x.star), deriv.vec=TRUE)
+      ##h2 <- gdscalar(x=x.star, d=d, r=r-2, n=n, verbose=verbose, nstage=nstage, scv=FALSE)     
+      ## gdscalar not used because it's an implicit computation without
+      ## symmetriser matrices and is slower than direct computation with 
+      ## symmetriser matrices. 
+
+      A1 <- drop(t(D2K0) %*% D2K0)
+      A2 <- drop(t(D2K0) %*% t(vec(diag(d)) %x% diag(d^2)) %*% psi4.ns) 
+      A3 <- drop(t(psi4.ns) %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^2)) %*% psi4.ns)
+
+      ## Special case from Chacon & Duong (2009): bias minimisation
+      ##h2 <- ((4*d+8)*A1/(-d*A2 + sqrt(d^2*A2^2 + (8*d+16)*A1*A3)))^(1/(d+4))*n^(-1/(d+4))
+      ## Special from Chacon & Duong (2009): bias annihilation
+      h2 <- (-A1/(2*A2*n))^(1/(d+4))
+      H2 <- h2^2*diag(d)   
+      psi2.hat <- kfe(x=x.star, G=H2, deriv.order=r+2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    }
+    else if (pilot=="dunconstr")
+    {
+      psi4.ns <- psins(r=r+4, Sigma=var(x), deriv.vec=TRUE)
+ 
+      amse2.temp <- function(vechH)
+      { 
+        H <- invvech(vechH) %*% invvech(vechH)
+        Hinv <- chol2inv(chol(H))
+        Hinv12 <- matrix.sqrt(Hinv)
+        amse2.temp <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
+        return(sum((amse2.temp)^2)) 
+      }
+      
+      Hstart2 <- matrix.sqrt(Gns(r=r+2, n=n, Sigma=var(x)))
+      optim.fun1 <- tolower(substr(optim.fun,1,1))
+ 
+      if (optim.fun1=="n")
+      {
+         result <- nlm(p=vech(Hstart2), f=amse2.temp, print.level=2*as.numeric(verbose))    
+         H2 <- invvech(result$estimate) %*% invvech(result$estimate)
+      }
+      else
+      {
+         result <- optim(vech(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+         H2 <- invvech(result$par) %*% invvech(result$par)
+      }
+ 
+      psi2.hat <- kfe(x=x, G=H2, deriv.order=r+2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    }
+  }
+  else
+  {
+    if (pilot=="dscalar") psi2.hat <- psins(r=r+2, Sigma=var(x.star), deriv.vec=TRUE)
+    else if (pilot=="dunconstr") psi2.hat <- psins(r=r+2, Sigma=var(x), deriv.vec=TRUE)    
+  }
+
+  if (pilot=="dscalar") {if (missing(Hstart)) Hstart <- Gns(r=r, n=n, Sigma=var(x.star))}
+  else if (pilot=="dunconstr") {if (missing(Hstart)) Hstart <- Gns(r=r, n=n, Sigma=var(x))}
+  
+  ## stage 2
+  amse.temp <- function(vechH)
+  { 
+    H <- invvech(vechH) %*% invvech(vechH)
+    amse.val <- 1/(det(H)^(1/2)*n)*K0 + 1/2* t(vec(H)) %*% psi2.hat
+    return(sum((amse.val^2))) 
+  }
+  
+  Hstart <- matrix.sqrt(Hstart)
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=vech(Hstart), f=amse.temp, print.level=2*as.numeric(verbose)) 
+    H <- invvech(result$estimate) %*% invvech(result$estimate)
+    amise.star <- result$minimum
+  }
+  else
+  {
+    result <- optim(vech(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    H <- invvech(result$par) %*% invvech(result$par)
+    amise.star <- result$value
+  }
+  
+  ## back-transform
+  if (pilot=="dscalar") H <- S12 %*% H %*% S12 
+
+  if (!amise) return(H)
+  else return(list(H=H, PI=amise.star))
+}
+
+###############################################################################
+## Plug-in diagonal bandwidth for KFE
+##
+## Returns
+## Plug-in bandwidth
+###############################################################################
+
+
+
+Hpi.diag.kfe <- function(x, nstage=2, pilot="dscalar", pre="scale", Hstart, deriv.order=0, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+{
+  if (deriv.order!=0) stop("currently only dervi.order=0 is implemented")
+
+  n <- nrow(x)
+  d <- ncol(x)
+  r <- deriv.order
+  D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
+  K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
+
+  if (substr(pre,1,2)=="sp") stop("using pre-sphering won't give diagonal bandwidth matrix")
+  if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
+  
+  if (substr(pre,1,2)=="sc") pre <- "scale"
+  if (pre=="scale")
+  {
+    x.star <- pre.scale(x)
+    S12 <- diag(sqrt(diag(var(x))))
+    Sinv12 <- chol2inv(chol(S12))
+  }
+
+  if (nstage==2)
+  {  
+    ## stage 1
+    psi4.ns <- psins(r=r+4, Sigma=var(x.star), deriv.vec=TRUE)
+   
+    if (pilot=="dscalar")
+    {
+      ## h2 is on pre-transformed data scale
+      A1 <- drop(t(D2K0) %*% D2K0)
+      A2 <- drop(t(D2K0) %*% t(vec(diag(d)) %x% diag(d^2)) %*% psi4.ns) 
+      A3 <- drop(t(psi4.ns) %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^2)) %*% psi4.ns)
+      h2 <- ((4*d+8)*A1/(-d*A2 + sqrt(d^2*A2^2 + (8*d+16)*A1*A3)))^(1/(d+4))*n^(-1/(d+4))
+      H2 <- h2^2*diag(d)
+    }  
+    psi2.hat <- kfe(x=x.star, G=H2, deriv.order=r+2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose) 
+  }
+  else
+    psi2.hat <- psins(r=r+2, Sigma=var(x.star), deriv.vec=TRUE)
+ 
+  ## stage 2
+  amse.temp <- function(diagH)
+  { 
+    H <- diag(diagH) %*% diag(diagH)
+    amse.val <- 1/(det(H)^(1/2)*n)*K0 + 1/2* t(vec(H)) %*% psi2.hat
+    return(sum((amse.val^2))) 
+  }
+
+  if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
+  Hstart <- matrix.sqrt(Hstart)
+  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  if (optim.fun1=="n")
+  {
+    result <- nlm(p=diag(Hstart), f=amse.temp, print.level=2*as.numeric(verbose))    
+    H <- diag(result$estimate) %*% diag(result$estimate)
+    amise.star <- result$minimum
+  }
+  else
+  {
+    result <- optim(diag(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    H <- diag(result$par) %*% diag(result$par)
+    amise.star <- result$value
+  }
+  ## back-transform
+  if (pilot=="dscalar") H <- S12 %*% H %*% S12 
+  if (!amise) return(H)
+  else return(list(H=H, PI=amise.star))
+}
+
+
+
+
+
+
 
 #############################################################################
 ## Eta functional:
@@ -675,12 +1063,9 @@ eta.kfe <- function(x, r, A, B, verbose=FALSE)
   if (r==0) eta.val <- eta.kfe.y(x=x, y=x, G=B, verbose=verbose, symm=FALSE)
   else
   {
-    ##sumval <- 0
     n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
     n.seqlen <- length(n.seq)
     Binv <- chol2inv(chol(B))
-    ##Binv12 <- matrix.sqrt(Binv)
-    ##B12AB12 <- Binv12 %*% A %*% Binv12
     BAB <- Binv %*% A %*% Binv
     eta.val <- 0
 
@@ -689,9 +1074,8 @@ eta.kfe <- function(x, r, A, B, verbose=FALSE)
     {
       if (verbose) setTxtProgressBar(pb, i/(n.seqlen-1))
       difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
-      ##Bdifs <- difs %*% Binv12
       phiB <- dmvnorm.mixt(x=difs, mus=rep(0,d), Sigmas=B)
-      eta.val <- eta.val + sum(phiB*nu.noncent(r=r, A=BAB, mu=difs, Sigma=-B))   ##sum(phiB*nu.noncent(r=r, A=B12AB12, mu=Bdifs, Sigma=-diag(d)))     
+      eta.val <- eta.val + sum(phiB*nu.noncent(r=r, A=BAB, mu=difs, Sigma=-B)) 
     }
     if (verbose) close(pb)
     eta.val <- eta.val/n^2
@@ -707,13 +1091,9 @@ eta.rs.kfe <- function(x, r, s, A, B, C, verbose=FALSE)
   d <- ncol(x)
   n <- nrow(x)
 
-  ##sumval <- 0
   n.seq <- block.indices(n, n, d=d, r=0, diff=TRUE)
   n.seqlen <- length(n.seq)
   Cinv <- chol2inv(chol(C))
-  ##Cinv12 <- matrix.sqrt(Cinv)
-  ##C12AC12 <- Cinv12 %*% A %*% Cinv12
-  ##C12BC12 <- Cinv12 %*% B %*% Cinv12 
   CAC <- Cinv %*% A %*% Cinv
   CBC <- Cinv %*% B %*% Cinv
   eta.val <- 0
@@ -723,7 +1103,6 @@ eta.rs.kfe <- function(x, r, s, A, B, C, verbose=FALSE)
   {
     if (verbose) setTxtProgressBar(pb, i/(n.seqlen-1))
     difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),]) 
-    ##Cdifs <- difs %*% Cinv12  
     phiC <- dmvnorm.mixt(x=difs, mus=rep(0,d), Sigmas=C)
     eta.val <- eta.val + sum(phiC*nu.noncent.rs(r=r, s=s, A=CAC, B=CBC, mu=difs, Sigma=-C))     
   }
@@ -831,7 +1210,6 @@ drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE, w)
 
    if (d==1) 
    {
-     ##kappam <- as.vector(kappam)
      est <- symconv.ks(kappam,gcounts,skewflag=(-1)^drv)
      if (se) est.var <- ((symconv.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
    }

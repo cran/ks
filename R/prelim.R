@@ -1,4 +1,3 @@
-
 #############################################################################
 ## Basic vectors and matrices and their operations
 #############################################################################
@@ -56,7 +55,7 @@ invvec <- function(x, ncol, nrow, byrow=FALSE)
   {
     ncol <- d; nrow <- d
     if (round(d) != d)
-      stop("Need to specify nrow and ncol for non-square matrices")
+      stop("need to specify nrow and ncol for non-square matrices")
   }
   
   invvecx <- matrix(0, nrow = nrow, ncol = ncol)
@@ -79,7 +78,7 @@ invvech <- function(x)
   
   d <- (-1 + sqrt(8*length(x) + 1))/2
   if (round(d) != d)
-    stop("Number of elements in x will not form a square matrix.")
+    stop("number of elements in x will not form a square matrix")
   invvechx <- matrix(0, nrow=d, ncol=d)
 
   for (j in 1:d)
@@ -97,7 +96,7 @@ tr <- function(A)
   count <- 0
   if (is.vector(A)) return (A[1])
   if (nrow(A)!=ncol(A))
-    stop('Not square matrix')
+    stop("not square matrix")
 
   else 
      for (i in 1:nrow(A))
@@ -238,13 +237,13 @@ matrix.sqrt <- function(A)
   if (min(sva$d)>=0)
     Asqrt <- sva$u %*% diag(sqrt(sva$d)) %*% t(sva$v)
   else
-    stop("Matrix square root is not defined")
+    stop("matrix square root is not defined")
   return(Asqrt)
 }
 
 matrix.pow <- function(A, n)
 {
-  if (nrow(A)!=ncol(A)) stop("A must a a square matrix")
+  if (nrow(A)!=ncol(A)) stop("A must be a square matrix")
   if (floor(n)!=n) stop("n must be an integer")
   if (n==0) return(diag(ncol(A)))
   if (n < 0) return(matrix.pow(A=chol2inv(chol(A)), n=-n))
@@ -621,14 +620,10 @@ Sdr<-function(d, r){
   return(S)
 }
 
-
-
-
 #### Permutations with repetitions of the first d naturals (1:d) taking 
 #### k elements at a time. There are d^k of them, each having length k 
 #### => We arrange them into a matrix of order d^k times k
 #### Each row represents one permutation
-
 #### Second version: filling in the matrix comlumn-wise (slightly faster)
     
 perm.rep<-function(d,r)
@@ -652,7 +647,7 @@ perm.rep<-function(d,r)
 
 Sdrv.old <- function(d,r,v, verbose=FALSE)
 {   
-    if(length(v)!=d^r){stop("The length of v must equal d^r")}
+    if(length(v)!=d^r){stop("length of v must equal d^r")}
     per.rep<-perm.rep(d,r)
     nper<-factorial(r)
     ##nper.rep<-d^r
@@ -707,7 +702,7 @@ Sdrv.old <- function(d,r,v, verbose=FALSE)
 
 Sdrv <- function(d,r,v, verbose=FALSE)
 {
-    if(length(v)!=d^r){stop("The length of v must equal d^r")}
+    if(length(v)!=d^r){stop("length of v must equal d^r")}
     if(r==0){w<-v}
     else{
     per.rep <- perm.rep(d,r)
@@ -736,5 +731,28 @@ Sdrv <- function(d,r,v, verbose=FALSE)
 
 
 
+#############################################################################
+## Basic operations
+#############################################################################
 
+## Parse variable name
+parse.name <-function(x)
+{
+  if (is.vector(x))
+  {
+    d <- 1
+    x.names <- deparse(substitute(x))
+  }
+  else
+  {  
+    d <- ncol(x)
+    x.names <- colnames(x)
+    if (is.null(x.names))
+    {
+      x.names <- strsplit(deparse(substitute(x)), "\\[")[[1]][1]
+      x.names <- paste(x.names, "[, ", 1:d,"]",sep="") 
+    }
+  }
+  return(x.names)
+}
 
