@@ -12,14 +12,30 @@
 
 \arguments{
   \item{x}{an object of class \code{kde.loctest} (output from \code{\link{kde.local.test}})}
-  \item{...}{other graphics parameters}
+  \item{...}{other graphics parameters:
+    \describe{
+      \item{\code{lcol}}{colour for KDE curve (1-d)}
+      \item{\code{col}}{vector of 2 colours. Default is c("purple",
+	"darkgreen"). First colour: sample 1>sample 2, second colour:
+	sample 1<sample2.}
+      \item{\code{add}}{flag to add to current plot. Default is FALSE.}
+      \item{\code{rugsize}}{height of rug-like plot (1-d)}
+      \item{\code{add.legend}}{flag to add legend. Default is FALSE (1-d, 2-d).}
+      \item{\code{pos.legend}}{position label for legend (1-d, 2-d)}
+      \item{\code{add.contour}}{flag to add contour lines. Default is FALSE (2-d).}     
+    }
+    
+    and those used in \code{\link{plot.kde}}
+  }
 }
+  
   
 
 \value{
-  Plot of 1-d and 2-d kernel density estimates are sent to graphics window. Plot
-  for 3-d is sent to RGL window.
+  Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is
+  sent to RGL window. 
 }
+
 
 
 \details{
@@ -27,38 +43,28 @@
   \preformatted{
    ## univariate
    plot(x, col, add=FALSE, xlab="x", ylab, rugsize, add.legend=TRUE, 
-     pos.legend="topright, ...)
+      pos.legend="topright", ...)
    
    ## bivariate
    plot(x, lcol, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, 
      add.legend=TRUE, pos.legend="topright", ...)
 
    ## trivariate 
-   plot(x, col, add=FALSE, xlab="x", ylab="y", zlab="z", box=TRUE, 
-     axes=TRUE, alphavec=c(0.5, 0.5), ...)
- }
-  The arguments are
-  \describe{
-  \item{\code{x}}{object of class \code{kde.loctest}, output from \code{kde.local.test}}
-  \item{\code{lcol}}{colour for KDE curve (1-d)}
-  \item{\code{col}}{vector of 2 colours. First colour: sample 1 > sample 2, second colour: sample 1 < sample 2. Default is c("purple", "darkgreen").}
-  \item{\code{add}}{flag to add to existing plot. Default is FALSE.}
-  \item{\code{rugsize}}{height of rug-like plot (1-d)} 
-  \item{\code{add.legend}}{flag to add legend. Default is FALSE (1-d, 2-d).}
-  \item{\code{pos.legend}}{position label for legend (1-d, 2-d).}
-  \item{\code{add.contour}}{flag to add contour lines. Default is FALSE (2-d).}
-  \item{\code{box,axes}}{flags to add box and axes to plot (3-d).}
-  \item{\code{alphavec}}{vector of 1 or 2 transparency values of difference regions (3-d).} 
-  } 
- 
-  See \code{\link{plot.kde}} for more details. 
+   plot(x, col, add=FALSE, xlab="x", ylab="y", zlab="z", box=TRUE, axes=TRUE,
+     alphavec=c(0.5, 0.5), ...)
+   }
 }
  
 
-\seealso{\code{\link{kde}}, \code{\link{kde.local.test}}}
+\seealso{\code{\link{kde.local.test}}}
 
 \examples{
-## See examples in ? kde.local.test
+library(MASS)
+data(crabs)
+x1 <- crabs[crabs$sp=="B", c(4,6)]
+x2 <- crabs[crabs$sp=="O", c(4,6)]
+loct <- kde.local.test(x1=x1, x2=x2)
+plot(loct)
 }
 
 

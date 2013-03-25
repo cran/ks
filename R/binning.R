@@ -40,7 +40,7 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
   if (missing(w)) w <- rep(1,n)
   if (d>1 & !missing(H))
      if (!identical(diag(diag(H)), H))
-       stop("Binning requires diagonal bandwidth matrix")
+       stop("binning requires diagonal bandwidth matrix")
   
   if (missing(h)) h <- rep(0,d)
   if (!missing(H)) h <- sqrt(diag(H))
@@ -191,9 +191,7 @@ linbin3D.ks <- function(X, gpoints1, gpoints2, gpoints3, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   out <- .C("massdist3d", x1=as.double(X[,1]), x2=as.double(X[,2]), x3=as.double(X[,3]), n=as.integer(n),
-             a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3),
-             M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3), PACKAGE="ks")
+   out <- .C("massdist3d", x1=as.double(X[,1]), x2=as.double(X[,2]), x3=as.double(X[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3), PACKAGE="ks")
    xi <- array(out$est, dim=c(M1,M2,M3))
    
    ## adjust binning weights for boundary points

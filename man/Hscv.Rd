@@ -2,6 +2,7 @@
 \alias{Hscv}
 \alias{Hscv.diag}
 \alias{hscv}
+
 \title{Smoothed cross-validation (SCV) bandwidth selector}
 
 \description{
@@ -17,12 +18,12 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
   \item{x}{vector or matrix of data values}
-  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
-  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
-    \code{"samse"} = single SAMSE pilot bandwidth \cr 
-    \code{"unconstr"} = single unconstrained pilot bandwidth \cr
-    \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
-    \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
+  \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
+  \item{pilot}{"amse" = AMSE pilot bandwidths \cr
+    "samse" = single SAMSE pilot bandwidth \cr 
+    "unconstr" = single unconstrained pilot bandwidth \cr
+    "dscalar" = single pilot bandwidth for deriv.order>0 \cr
+    "dunconstr" = single unconstrained pilot bandwidth for deriv.order>0}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
@@ -30,7 +31,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{amise}{flag to return the minimal scaled SCV value. Default is FALSE.}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
   \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
   bandwidths for deriv.order>0. Default is FALSE.}

@@ -26,8 +26,9 @@ hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   \item{amise}{flag to return the minimal LSCV value. Default is FALSE.}	
   \item{deriv.order}{derivative order} 
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
-  \item{trunc}{parameter to truncate numerical optimisation. Default is 4 for \code{density.deriv>0}, otherwise no truncation. For details see below.}  
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
+  \item{trunc}{parameter to control truncation for numerical
+  optimisation. Default is 4 for density.deriv>0, otherwise no truncation. For details see below.}  
 }
 
 \value{

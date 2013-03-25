@@ -16,18 +16,18 @@ Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE,
     Sdr.flag=FALSE)
 Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, 
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
-hpi(x, nstage=2, binned=TRUE, bgridsize)
+hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 }
 
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{\code{"amse"} = AMSE pilot bandwidths \cr
-    \code{"samse"} = single SAMSE pilot bandwidth \cr 
-    \code{"unconstr"} = single unconstrained pilot bandwidth \cr
-    \code{"dscalar"} = single pilot bandwidth for deriv.order > 0 \cr
-    \code{"dunconstr"} = single unconstrained pilot bandwidth for deriv.order > 0}
-  \item{pre}{\code{"scale"} = \code{\link{pre.scale}}, \code{"sphere"} = \code{\link{pre.sphere}}}
+  \item{pilot}{"amse" = AMSE pilot bandwidths \cr
+    "samse" = single SAMSE pilot bandwidth \cr 
+    "unconstr" = single unconstrained pilot bandwidth \cr
+    "dscalar" = single pilot bandwidth for deriv.order >= 0 \cr
+    "dunconstr" = single unconstrained pilot bandwidth for deriv.order >= 0}
+  \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{binned}{flag for binned kernel estimation. Default is FALSE.}
@@ -35,7 +35,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize)
   \item{amise}{flag to return the minimal scaled PI value}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}.}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
   \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
   bandwidths for deriv.order>0. Default is FALSE.}
 }
@@ -46,10 +46,12 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 
 
 
-\details{\code{hpi} is the univariate plug-in 
-  selector of Wand & Jones (1994), i.e. it is exactly the same as \pkg{KernSmooth}'s \code{dpik}.
-  \code{Hpi} is a multivariate generalisation of this. Use \code{Hpi} for full bandwidth matrices and \code{Hpi.diag}
-  for diagonal bandwidth matrices.
+\details{\code{hpi(,deriv.order=0)} is the univariate plug-in 
+  selector of Wand & Jones (1994), i.e. it is exactly the same as
+  \pkg{KernSmooth}'s \code{dpik}. For deriv.order>0, the formula is
+  taken from Wand & Jones (1995). \code{Hpi} is a multivariate
+  generalisation of this. Use \code{Hpi} for full bandwidth matrices and
+  \code{Hpi.diag} for diagonal bandwidth matrices.
 
   For AMSE pilot bandwidths, see Wand & Jones (1994). For
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
@@ -61,7 +63,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   estimates are computed over a binning grid defined 
   by \code{bgridsize}. Otherwise it's computed exactly. 
  
-  If \code{Hstart} is not given then it defaults to \code{Hns(x, deriv.order=r)}.
+  If \code{Hstart} is not given then it defaults to \code{Hns(x, deriv.order)}.
   If \code{Sdr.flag=FALSE}, then symmetriser matrices are not computed
   explicitly but indirectly in a loop of permutations. The loop can make 
   execution times long, but avoid the memory problems for e.g.,
@@ -82,6 +84,9 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
   selection. \emph{Computational Statistics}, \bold{9}, 97-116.
+
+  Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing.} Chapman &
+  Hall. 
 }
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hscv}}}

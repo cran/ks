@@ -1,4 +1,4 @@
-\name{pre.scale}
+\name{pre.transform}
 \alias{pre.sphere}
 \alias{pre.scale}
 

@@ -1,8 +1,20 @@
 Change log file for ks
 
+1.18.12
+-Added kernel estimators for CDF kcde() and ROC curves kroc(). 
+-Added default plug-in bandwidths to kda(), kcde(), kde(), kdde(), 
+ kde.local.test(), kroc(), kde.test().
+-Added warning when using non-diagonal bandwidths for binned
+ estimation.
+-Added plot and contourLevel methods for kdde objects.
+-Modified plotmixt() to include derivatives.
+-Added 1-d plug-in selectors hpi(,deriv.order>0).
+-Merged kda() and kda.kde() into single kda() function. 
+-Changed "kda.kde" object class name to "kda".
+   
 1.8.11
 -Added progress bars to compare.kda.cv(), compare.kda.diag.cv().
--Corrected critical df from d to 1 in kde.local.test(). 
+-Corrected critical df from d to 1 in kde.local.test().
 
 1.8.10
 -Fixed small bug in call to contourLevels(approx=) inside kde().

@@ -152,7 +152,7 @@ x <- rmvnorm.mixt(n=samp, mu=mus, Sigma=Sigmas, props=props)
 \begin{figure}[!ht]
 \begin{center}
 <<fig=TRUE,print=FALSE,echo=FALSE>>=
-plotmixt(mus, Sigmas, props, xlim=c(-4,4), ylim=c(-4,4))
+plotmixt(mus=mus, Sigmas=Sigmas, props=props, xlim=c(-4,4), ylim=c(-4,4))
 @ 
 <<fig=TRUE,print=FALSE,echo=FALSE>>=
 plot(x, xlim=c(-4,4), ylim=c(-4,4), xlab="x", ylab="y")

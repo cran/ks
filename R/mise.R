@@ -721,7 +721,7 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=
     }
     ise <- (-1)^r*(ise1 - 2*ise2 + ise3)
   }
-
+ 
   return(ise)
 }
 

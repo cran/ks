@@ -484,12 +484,42 @@ psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize,
 ## Plug-in full bandwidth matrix
 ###############################################################################
 
-hpi <- function(x, nstage=2, binned=TRUE, bgridsize)
+hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 {
   ## 1-d selector is taken from KernSmooth's dpik
-  
+
   if (missing(bgridsize)) bgridsize <- default.bgridsize(1)
-  return(dpik(x=x, level=nstage, gridsize=bgridsize))
+  if (deriv.order==0) h <- dpik(x=x, level=nstage, gridsize=bgridsize)
+  else
+  {
+    n <- length(x)
+    d <- 1
+    r <- deriv.order  
+    K2r4 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=2*r+4)
+    K2r6 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=2*r+6) 
+    m2 <- 1  
+    mr <- psins.1d(r=2*r, sigma=1)
+
+    ## formula for bias annihilating bandwidths from Wand & Jones (1995, p.70)
+    if (nstage==2)
+    {
+      psi2r8.hat <- psins.1d(r=2*r+8, sigma=sd(x))
+      gamse2r6 <- (2*K2r6/(-m2*psi2r8.hat*n))^(1/(2*r+9)) 
+      psi2r6.hat <- kfe.1d(x=x, g=gamse2r6, deriv.order=2*r+6, inc=1, binned=binned)
+      gamse2r4 <- (2*K2r4/(-m2*psi2r6.hat*n))^(1/(2*r+7))
+      psi2r4.hat <- kfe.1d(x=x, g=gamse2r4, deriv.order=2*r+4, inc=1, binned=binned)
+    }
+    else 
+    {
+      psi2r6.hat <- psins.1d(r=2*r+6, sigma=sd(x))
+      gamse2r4 <- (2*K2r4/(-m2*psi2r6.hat*n))^(1/(2*r+7))
+      psi2r4.hat <- kfe.1d(x=x, g=gamse2r4, deriv.order=2*r+4, inc=1, binned=binned)
+    }
+    
+    ## formula form Wand & Jones (1995, p.49)
+    h <- ((2*r+1)*mr/(m2^2*psi2r4.hat*n))^(1/(2*r+5))
+    }
+  return(h)
 }
 
 Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=FALSE)
@@ -505,9 +535,9 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
   else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
  
-  if (pilot=="amse" & (d>2 | r>0)) stop("AMSE pilot selectors not defined for d>2 and/or r>0.")
-  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("DSCALAR or DUNCONSTR pilot selectors are better for derivatives r>0.")
-  if (pilot=="unconstr" & d>=6) stop("Unconstrained pilots are not implemented for d>6.")
+  if (pilot=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
+  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
+  if (pilot=="unconstr" & d>=6) stop("unconstrained pilots are not implemented for d>6")
   
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
@@ -659,7 +689,7 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pre,1,2)=="sp") stop("Using pre-sphering won't give diagonal bandwidth matrix\n")
+  if (substr(pre,1,2)=="sp") stop("using pre-sphering won't give diagonal bandwidth matrix")
   if (substr(pilot,1,1)=="a") pilot <- "amse"
   else if (substr(pilot,1,1)=="s") pilot <- "samse"
   else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"
@@ -670,9 +700,9 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   r <- deriv.order
   RK <- (4*pi)^(-d/2)
   
-  if (pilot=="amse" & (d>2 | r>0)) stop("SAMSE pilot selectors are better for higher dimensions and/or derivative r>0.")
-  if (pilot=="samse" & r>0) stop("DSCALAR or DUNCONSTR pilot selectors are better for derivatives r>0.")
-  if (pilot=="unconstr" | pilot=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hpi.diag.")
+  if (pilot=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deri.v.order>0")
+  if (pilot=="samse" & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
+  if (pilot=="unconstr" | pilot=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag")
   
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
@@ -980,7 +1010,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   }
   else
   {
-    if (r>0) stop("Unbinned hlscv not yet implemented for r>0.") 
+    if (r>0) stop("unbinned hlscv not yet implemented for deriv.order>0") 
     difs<-x%*%t(rep(1,n))-rep(1,n)%*%t(x)
     difs<-difs[lower.tri(difs)]  
     edifs<-exp(-difs^2/2)
@@ -1485,8 +1515,8 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
   else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
 
-  if (pilot=="amse" & (d>2 | r>0)) stop("AMSE pilot selectors not defined for d>2 and/or r>0.")
-  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("DSCALAR or DUNCONSTR pilot selectors are better for derivatives r>0.")
+  if (pilot=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
+  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for deriv.order>0")
     
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
@@ -1609,13 +1639,13 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"
   else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
 
-  if (pilot=="amse" & (d>2 | r>0)) stop("SAMSE pilot selectors are better for higher dimensions and/or derivative r>0.")
-  if (pilot=="samse" & r>0) stop("DSCALAR pilot selectors are better for derivatives r>0.")
-  if (pilot=="unconstr" | pilot=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hscv.diag.")
+  if (pilot=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deriv.order>0")
+  if (pilot=="samse" & r>0) stop("dscalar pilot selectors are better for deriv.order>0")
+  if (pilot=="unconstr" | pilot=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hscv.diag")
 
   if (substr(pre,1,2)=="sc") pre <- "scale"
   else if (substr(pre,1,2)=="sp") pre <- "sphere"
-  if (pre=="sphere") stop("Using pre-sphering doesn't give a diagonal bandwidth matrix\n")
+  if (pre=="sphere") stop("using pre-sphering doesn't give a diagonal bandwidth matrix")
 
   if (pre=="scale")
   {

@@ -1,4 +1,4 @@
-\name{dkde}
+\name{kde.1d}
 \alias{dkde}
 \alias{pkde}
 \alias{qkde}
@@ -12,9 +12,9 @@
 
 
 \usage{
+ dkde(x, fhat)
  pkde(q, fhat)
  qkde(p, fhat)
- dkde(x, fhat)
  rkde(n, fhat, positive=FALSE) 
 }
 
@@ -23,8 +23,8 @@
    \item{p}{vector of probabilities}
    \item{n}{number of observations}
    \item{positive}{flag to compute KDE on the positive real
-	 line. Default is FALSE.} 
-   \item{fhat}{kernel density estimate, object of class \code{"kde"}}
+   line. Default is FALSE.}  
+   \item{fhat}{kernel density estimate, object of class \code{kde}}
 }
 
 
@@ -47,19 +47,11 @@
 
 \examples{
 x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
-fhat <- kde(x=x, h=hpi(x))
+fhat <- kde(x=x, binned=TRUE)
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
 qkde(fhat=fhat, p=p1)    
 y <- rkde(fhat=fhat, n=100)
-
-## positive data example
-z <- 2^x
-fhatz <- kde(x=z, h=hpi(log(z)), positive=TRUE)
-z2 <- rkde(fhat=fhatz, n=10000, positive=TRUE)
-fhatz2 <- kde(x=z2, h=hpi(log(z2)), positive=TRUE)
-plot(fhatz, xlim=c(0,10))
-plot(fhatz2, add=TRUE, col=2) 
 }
 
-\keyword{ smooth}
+\keyword{ smooth }
 
