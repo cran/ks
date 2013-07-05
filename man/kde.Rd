@@ -73,10 +73,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
 \examples{
 ## positive data example
-x <- rnorm(100)
-z <- 2^x
-fhatz <- kde(x=z, positive=TRUE)
-plot(fhatz)
+x <- 2^rnorm(100)
+fhat <- kde(x=x, positive=TRUE)
+plot(fhat)
 
 ## See other examples in ? plot.kde
 }

@@ -66,7 +66,8 @@ second order correction to the mean value of the test statistic should be comput
 
 \references{
   Duong, T. (2013) Local signficant differences from non-parametric
-  two-sample tests. Submitted.
+  two-sample tests. \emph{Journal of Nonparametric Statistics}.
+  doi:10.1080/10485252.2013.810217.
     
   Godtliebsen, F., Marron, J.S. & Chaudhuri, P. (2002) 
   Significance in scale space for bivariate density estimation.

@@ -5,6 +5,7 @@
 \description{
   Kernel smoothing for data from 1- to 6-dimensions.
 }
+
 \details{
   There are three main types of functions in this package:
   \itemize{
@@ -59,8 +60,7 @@
   \deqn{\hat{{\bold \psi}}^{(r)}  = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)^(r) = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
   Kernel function estimates are usually not required to computed
   directly by the user, but only within other functions in the package.
-  
-  
+    
   --For kernel-based 2-sample testing, the main function is
   \code{\link{kde.test}} which computes the integrated 
   \eqn{L_2}{L2} distance between the two density estimates as the test
@@ -79,7 +79,7 @@
    between the two density estimates as the test  
    statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}) - \hat{f}_2(\bold{x})]^2}{hat(U)(x) =
    [hat(f)_1(x) - hat(f)_2(x)]^2} and the corresponding local
-   p-values.  The bandwidth selectors are those used with \code{kde},
+   p-values.  The bandwidth selectors are those used with \code{\link{kde}},
    e.g. \code{\link{hpi}, \link{Hpi}}.  
 
   --For kernel cumulative distribution function estimation, the main
@@ -91,15 +91,40 @@
   The bandwidth selectors are \code{\link{hpi.kcde}},
   \code{\link{Hpi.kcde}}.  Its \code{plot} method is
   \code{\link{plot.kcde}}.
-  Analogously for the survival function \eqn{\hat{\bar{F}}(\bold{x})}{hat(bar(F))(x)}.
+  There exists analogous functions for the survival function \eqn{\hat{\bar{F}}}{hat(bar(F))}.
 
-  --For kernel estimation of ROC (receiver operating characteristic)
-  curves to compare two samples, the main function is \code{\link{kroc}}
+  --For kernel estimation of a ROC (receiver operating characteristic)
+  curve to compare two samples from \eqn{\hat{F}_1,
+  \hat{F}_2}{hat(F)_1, \hat(F)_2}, the main function is \code{\link{kroc}}
   \deqn{\hat{R}(z) = \hat{F}_2 (\hat{\bar{F}}_1^{-1}(z))}{hat(R)(z) = hat(F)_2 (hat(bar(F))_1^(-1)(z))} where \eqn{\hat{\bar{F}}_1^{-1}(z)}{hat(bar(F))_1^(-1)(z)} is
-  the \eqn{z}{z}-th quantile of \eqn{\hat{\bar{F}}_1}{hat(bar(F))_1}. The bandwidth
-  selectors are those used with \code{\link{kcde}},
-  e.g. \code{\link{hpi.kcde}, \link{Hpi.kcde}}. Its \code{plot} method
+  the \eqn{z}{z}-th quantile of \eqn{\hat{\bar{F}}_1}{hat(bar(F))_1}.
+  The bandwidth selectors are those used with \code{\link{kcde}},
+  e.g. \code{\link{hpi.kcde}, \link{Hpi.kcde}}  for
+  \eqn{\hat{\bar{F}}_1,\hat{F}_2}{hat(bar(F))_1, hat(F)_2}. Its \code{plot} method
   is \code{\link{plot.kroc}}.   
+
+  --For kernel estimation of a copula, the
+  main function is \code{\link{kcopula}}
+  \deqn{\hat{C}(\bold{z}) = \hat{F}(\hat{F}_1^{-1}(z_1), \dots,
+  \hat{F}_d^{-1}(z_d))}{hat(C)(z) = hat(F)(hat(F)_1^(-1)(z_1),
+  ..., hat(F)_d^(-1)(z_d))}
+  where \eqn{\hat{F}_j^{-1}(z_j)}{hat(F)_j^(-1)(z_j)} is
+  the \eqn{z_j}{z_j}-th quantile of of the \eqn{j}{j}-th marginal
+  distribution \eqn{\hat{F}_j}{hat(F)_j}.
+  The bandwidth selectors are those used with \code{\link{kcde}} for
+  \eqn{\hat{F}, \hat{F}_j}{hat(F), hat(F)_j}.
+  Its \code{plot} method is \code{\link{plot.kcde}}.
+
+  --For kernel estimation of a copula density, the
+  main function is \code{\link{kcopula.de}}
+  \deqn{\hat{c}(\bold{z}) = n^{-1} \sum_{i=1}^n
+  K_{\bold{{\rm H}}} (\bold{z} - \hat{\bold{Z}}_i)}{hat(c)(z) =
+  hat(f)(z) = n^(-1) sum_i K_H (z - hat(Z)_i)}
+  where \eqn{\hat{\bold{Z}}_i = (\hat{F}_1(X_{i1}), \dots,
+    \hat{F}_d(X_{id}))}{hat(Z)_i = (hat(F)_1(X_i1), \dots, hat(F)_d(X_id))}.
+  The bandwidth selectors are those used with \code{\link{kde}} for
+  \eqn{\hat{c}}{hat(c)} and \code{\link{kcde}} for \eqn{\hat{F}_j}{hat(F)_j}.
+  Its \code{plot} method is \code{\link{plot.kde}}.
   
   --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators feasible for large samples.
   

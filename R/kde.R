@@ -27,13 +27,8 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
   
   stepsize <- rep(0, d)
   gridx <- numeric(0)
-  if (length(gridsize)==1)
-    gridsize <- rep(gridsize, d)
-
-  
-  if (missing(gridtype))
-   gridtype <- rep("linear", d)
-
+  if (length(gridsize)==1)  gridsize <- rep(gridsize, d)
+  if (missing(gridtype)) gridtype <- rep("linear", d)
   gridtype.vec<- rep("", d)
   
   for (i in 1:d)
@@ -52,6 +47,14 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
       stepsize[i] <- NA
       gridtype.vec[i] <- "sqrt"
     }
+    else if (gridtype1=="q")
+    {
+       gridx.temp <- qnorm(seq(1e-2, 1-1e-2, length=gridsize[i])) ##seq(pnorm(xmin[i]), pnorm(xmax[i]), length=gridsize[i])
+       gridx <- c(gridx, list(xmin[i] + (xmax[i]-xmin[i])*(gridx.temp-min(gridx.temp))/(max(gridx.temp)-min(gridx.temp))))
+       browser()
+       stepsize[i] <- NA
+       gridtype.vec[i] <- "quantile"
+     }
   }
   
   gridx <- c(gridx, list(stepsize = stepsize, gridtype=gridtype.vec))
@@ -60,7 +63,7 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
 }  
 
 
-######################################################################################
+###############################################################################
 ## Generate kernel (rectangular) support at data point
 ## 
 ## Parameters
@@ -71,7 +74,7 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
 ## Returns
 ## list of min and max points of support (here we parameterise rectangles
 ## by their min = lower left co-ord and max = upper right coord)
-#####################################################################################
+###############################################################################
 
 make.supp <- function(x, H, tol)
 {
@@ -91,7 +94,7 @@ make.supp <- function(x, H, tol)
 }
 
 
-######################################################################################
+###############################################################################
 ## Find the grid points contained in kernel support rectangles 
 ##
 ## Parameters
@@ -100,7 +103,7 @@ make.supp <- function(x, H, tol)
 ##
 ## Returns
 ## list of min and max points of the grid for each rectangle 
-######################################################################################
+###############################################################################
 
 find.gridpts <- function(gridx, suppx)
 {
@@ -128,9 +131,9 @@ find.gridpts <- function(gridx, suppx)
   return(list(xmin=gridpts.min, xmax=gridpts.max))
 } 
 
-######################################################################################
+##############################################################################
 ## Find the nearest grid points surrounding point x
-######################################################################################
+##############################################################################
 
 find.nearest.gridpts <- function(x, gridx, f)
 {
@@ -212,8 +215,17 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
   return(list(index=gind, fx=fx))
 }
 
+###############################################################################
+## Linear intepolation based on kernel estimation grid
+###############################################################################
 
-######################################################################################
+kde.approx <- function(x, fhat)
+{
+  return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
+}
+
+
+###############################################################################
 ## Multivariate kernel density estimate using normal kernels
 ##
 ## Parameters
@@ -228,7 +240,7 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
 ## Returns
 ## list with first d components with the points that the density
 ## estimate is evaluated at, and values of the density estimate 
-######################################################################################
+##############################################################################
 
 
 kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE)
@@ -281,7 +293,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
 
     if (!missing(eval.points))
     {
-      fhat$estimate <- find.nearest.gridpts(x=eval.points, gridx=fhat$eval.points, f=fhat$estimate)$fx
+      fhat$estimate <- kde.approx(x=eval.points, fhat=fhat)
       fhat$eval.points <- eval.points
     }
   }
@@ -289,7 +301,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   {
     ## compute exact (non-binned) estimator
     if (missing(gridsize)) gridsize <- default.gridsize(d)
-    
+
     ## 1-dimensional    
     if (d==1)
     {
@@ -315,7 +327,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
            stop("need to specify eval.points for more than 3 dimensions")
        }
        else
-         fhat <- kde.points(x, H, eval.points, w=w)     
+         fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w)     
      }
   }
 
@@ -331,9 +343,9 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   return(fhat)
  }
 
-######################################################################################
+###############################################################################
 ## Univariate kernel density estimate on a grid
-######################################################################################
+###############################################################################
 
 kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w)
 {
@@ -385,7 +397,7 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, 
 }
 
 
-#####################################################################################
+###############################################################################
 ## Bivariate kernel density estimate using normal kernels, evaluated over grid
 ##
 ## Parameters
@@ -400,7 +412,7 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, 
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-######################################################################################
+###############################################################################
 
 kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w)
 {
@@ -411,8 +423,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 
   suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
 
-  if (is.null(grid.pts))
-    grid.pts <- find.gridpts(gridx, suppx)    
+  if (is.null(grid.pts)) grid.pts <- find.gridpts(gridx, suppx)    
   fhat.grid <- matrix(0, nrow=length(gridx[[1]]), ncol=length(gridx[[2]]))
   
   for (i in 1:n)
@@ -442,7 +453,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 }
 
 
-#######################################################################################
+###############################################################################
 ## Trivariate kernel density estimate using normal kernels, evaluated over grid
 ##
 ## Parameters
@@ -457,7 +468,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-#######################################################################################
+###############################################################################
 
 kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w)
 {
@@ -506,7 +517,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 }
 
 
-######################################################################################
+###############################################################################
 ## Multivariate kernel density estimate using normal kernels,
 ## evaluated at each sample point
 ##
@@ -521,7 +532,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-#######################################################################################
+###############################################################################
 
 kde.points <- function(x, H, eval.points, w) 
 {
@@ -559,12 +570,12 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 }
 
 
-#######################################################################################
+###############################################################################
 ## Display kernel density estimate
 ##
 ## Parameters
 ## fhat - output from call to `kde'
-#######################################################################################
+###############################################################################
 
 plot.kde <- function(x, ...)
 { 
@@ -636,7 +647,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 }
 
 
-#####################################################################################
+###############################################################################
 ## Display bivariate kernel density estimate
 ##
 ## Parameters 
@@ -645,11 +656,11 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ##         - "slice" - contour plot
 ##         - "image" image plot
 ## cont - vector of contours to be plotted
-######################################################################################
+###############################################################################
 
 plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex,  
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col, lwd=1, border=NA, ...) 
+    ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
 {
   disp1 <- substr(display,1,1)
   if (!is.list(fhat$eval.points))
@@ -666,12 +677,17 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     hts <- seq(0, 1.1*max(fhat$estimate), length=100)
     if (missing(col)) col <- grey(seq(0.9,0,length=length(hts)+1)) 
     if (length(col)<100) col <- rep(col, length=100)
-    z <- fhat$estimate
+    
+    ## thinning indices
+    plot.ind <- list(seq(1, length(fhat$eval.points[[1]]), by=thin), seq(1, length(fhat$eval.points[[2]]), by=thin))
+
+    z <- fhat$estimate[plot.ind[[1]], plot.ind[[2]]]
     nrz <- nrow(z)
     ncz <- ncol(z)
     zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
     facetcol <- cut(zfacet, length(col)+1)
-    plotret <- persp(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
+    
+    plotret <- persp(fhat$eval.points[[1]][plot.ind[[1]]], fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
   }
   else if (disp1=="s") 
   {
@@ -781,9 +797,9 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   
 
 
-#######################################################################################
+###############################################################################
 ## Display trivariate kernel density estimate
-#######################################################################################
+###############################################################################
 
 
 plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, size=3, ptcol="blue", add=FALSE, 
@@ -841,9 +857,9 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
 
 
 
-######################################################################################
+###############################################################################
 ## Contour levels 
-######################################################################################
+###############################################################################
 
 ## create S3 generic 
 contourLevels <- function(x, ...){  
@@ -877,7 +893,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
   else
   {
     if (approx & fhat$gridded)
-      dobs <- find.nearest.gridpts(x=fhat$x, gridx=fhat$eval.points, f=fhat$estimate)$fx
+      dobs <- kde.approx(x=fhat$x, fhat=fhat)
     else
       dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w)$estimate 
     
@@ -892,9 +908,9 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
 }
 
 
-######################################################################################
+###############################################################################
 ## Riemann sums to compute approximate Lebesgue measure of contour set
-######################################################################################
+###############################################################################
 
 contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=FALSE)
 {
@@ -915,3 +931,5 @@ contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=FALSE)
   
   return(num.int*delta.int)
 }
+
+

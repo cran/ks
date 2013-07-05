@@ -523,7 +523,7 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
   else
   {
     if (approx & fhat$gridded)
-      dobs <- find.nearest.gridpts(x=fhat$x, gridx=fhat$eval.points, f=fhat$estimate)$fx
+      dobs <- kde.approx(x=fhat$x, fhat=fhat)
     else
       dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
 
