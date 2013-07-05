@@ -4,6 +4,7 @@
 \alias{dfltCounts}
 \alias{drvkde}
 \alias{kfe}
+\alias{kde.boundary}
 
 \title{Internal functions in the ks library}
 \description{

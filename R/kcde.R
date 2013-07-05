@@ -105,7 +105,7 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   {
     if (d<=3)
     {
-      Fhat$estimate <- find.nearest.gridpts(x=eval.points, gridx=Fhat$eval.points, f=Fhat$estimate)$fx
+      Fhat$estimate <- kde.approx(x=eval.points, fhat=Fhat)
       Fhat$eval.points <- eval.points
     }
     else
@@ -188,7 +188,7 @@ plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, dra
 plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     xlab, ylab, zlab="Distribution function", cex=1, pch=1, labcex,  
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col, lwd=1, border=NA, ...) 
+    ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
 {
   disp1 <- substr(display,1,1)
   if (!is.list(Fhat$eval.points)) stop("need a grid of density estimates")
@@ -204,19 +204,25 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     hts <- seq(0, 1.1*max(Fhat$estimate), length=100)
     if (missing(col)) col <- grey(seq(0,0.9, length=length(hts)+1)) ## rev(heat.colors(length(hts)+1)) #
     if (length(col)<100) col <- rep(col, length=100)
-    z <- Fhat$estimate
+
+    ## thinning indices
+    plot.ind <- list(seq(1, length(Fhat$eval.points[[1]]), by=thin), seq(1, length(Fhat$eval.points[[2]]), by=thin))
+
+    z <- Fhat$estimate[plot.ind[[1]], plot.ind[[2]]]
     nrz <- nrow(z)
     ncz <- ncol(z)
     zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
     facetcol <- cut(zfacet, length(hts)+1)
-    plotret <- persp(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
+    
+    plotret <- persp(Fhat$eval.points[[1]][plot.ind[[1]]], Fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
   }
   else if (disp1=="s") 
   {
     if (!add)
       plot(Fhat$x[,1], Fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
  
-    hts <- cont/100
+    if (missing(abs.cont)) hts <- cont/100
+    else hts <- abs.cont
     
     if (missing(col)) col <- 1 
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
@@ -224,8 +230,8 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     ## draw contours         
     for (i in 1:length(hts)) 
     {
-      scale <- cont[i]/hts[i]
-      
+      if (missing(abs.cont)) scale <- cont[i]/hts[i]
+      else scale <- 1
       if (hts[i]>0)
         contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, labcex=labcex, col=col[i], lwd=lwd, ...)
     }
@@ -326,11 +332,11 @@ Hns.kcde <- function(x)
   if (is.vector(x)) {return(hns.kcde(x)^2)}
   d <- ncol(x)
   n <- nrow(x)
-  m1 <- 0.2820948
+  m1 <- (4*pi)^(-1/2)
 
   Jd <- matrix(1, ncol=d, nrow=d)
   Sigma <- var(x)
-  Hns <- (4*(4*pi)^(d/2)*m1*det(Sigma)^(1/2)*tr(matrix.sqrt(Sigma))/tr(Sigma))^(2/3)*Sigma*n^(-2/3)
+  Hns <- (4*det(Sigma)^(1/2)*tr(matrix.sqrt(Sigma))/tr(Sigma))^(2/3)*Sigma*n^(-2/3)
 
   return(Hns)
 }
@@ -347,7 +353,7 @@ hpi.kcde <- function(x, nstage=2, binned=TRUE)
   K2 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=2)  
   K4 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=4) 
   m2 <- 1  
-  m1 <- 0.2820948
+  m1 <- (4*pi)^(-1/2)
   
   ## formula for bias annihliating bandwidths from Wand & Jones (1995, p.70)
   if (nstage==2)
@@ -376,7 +382,7 @@ Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgrid
 {
   n <- nrow(x)
   d <- ncol(x)
-  m1 <- 0.2820948
+  m1 <- (4*pi)^(-1/2)
   Jd <- matrix(1, ncol=d, nrow=d)
   
   if(!is.matrix(x)) x <- as.matrix(x)
@@ -459,7 +465,7 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
 {
   if (is.vector(x1)) d <- 1 else d <- ncol(x1)
   if (!missing(eval.points)) stop("eval.points in kroc not yet implemented")
-
+  
   if (d==1)
   {
     if (missing(h1)) h1 <- hpi.kcde(x=x1, binned=TRUE, nstage=2)
@@ -478,22 +484,32 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   Fhaty <- kcde(x=y, h=hy, binned=TRUE) 
   Fhaty$eval.points <- pnorm(Fhaty$eval.points)
   Fhaty$x <- list(x1, x2)
+
+ 
   if (d==1) {Fhaty$h1 <- h1; Fhaty$H1 <- h1^2; Fhaty$hy <- hy}
   else {Fhaty$H1 <- H1; Fhaty$hy <- hy}
-
+  
   transform <- TRUE
   if (transform & d>1) Fhaty <- kroc.transform(Fhaty, nref=1e4, approx.ref=approx.ref)
   else
   {
+    ## Use spline to smooth out transformed ROC curve
+    Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate)
+    Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points)))
+    Fhaty$eval.points <- Fhaty.smoothed$x
+    Fhaty$estimate <- Fhaty.smoothed$y
+
     ## add (0,0) and (1,1) as endpoints
     if (head(Fhaty$eval.points, n=1)!=0) Fhaty$eval.points[1] <- 0
     if (head(Fhaty$estimate, n=1)!=0) Fhaty$estimate[1] <- 0
     if (tail(Fhaty$eval.points, n=1)!=1) Fhaty$eval.points[length(Fhaty$eval.points)] <- 1
     if (tail(Fhaty$estimate, n=1)!=1) Fhaty$estimate[length(Fhaty$estimate)] <- 1
+    Fhaty$estimate[Fhaty$estimate>1] <- 1
+    Fhaty$estimate[Fhaty$estimate<0] <- 0
     Fhaty$indices <- indices.kroc(Fhaty)
   }
-
-  Fhaty <- Fhaty[-c(4,5)]
+  
+  Fhaty <- Fhaty[-c(4,5)] 
   class(Fhaty) <- "kroc"
   return(Fhaty)
 }
@@ -526,17 +542,21 @@ roc.ns <- function(Sigma, nref=1e4, approx.ref="pmvnorm")
   hy <- hpi.kcde(y, binned=TRUE, nstage=2)
   Fhaty <- kcde(x=y, h=hy, binned=TRUE)
   Fhaty$eval.points <- pnorm(Fhaty$eval.points)
-
+  
   ## Use spline to smooth out transformed ROC curve
-  Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate, spar=1.5)
+  Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate)
+  Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points)))
   Fhaty$eval.points <- Fhaty.smoothed$x
   Fhaty$estimate <- Fhaty.smoothed$y
-  
+
   ## add (0,0) and (1,1) as endpoints
   if (head(Fhaty$eval.points, n=1)!=0) Fhaty$eval.points[1] <- 0
   if (head(Fhaty$estimate, n=1)!=0) Fhaty$estimate[1] <- 0
   if (tail(Fhaty$eval.points, n=1)!=1) Fhaty$eval.points[length(Fhaty$eval.points)] <- 1
   if (tail(Fhaty$estimate, n=1)!=1) Fhaty$estimate[length(Fhaty$estimate)] <- 1
+
+  Fhaty$estimate[Fhaty$estimate>1] <- 1
+  Fhaty$estimate[Fhaty$estimate<0] <- 0
   
   Fhaty$hy <- hy
   Fhaty$indices <- indices.kroc(Fhaty)
@@ -557,24 +577,23 @@ kroc.transform <- function(Rhat, Rhat.ref, nref, approx.ref="pmvnorm")
     Rhat.ref <- roc.ns(Sigma=var(xref), nref=nref, approx.ref=approx.ref)
   }
 
-  Rhat.ref$estimate <- find.nearest.gridpts(x=Rhat$eval.points, gridx=Rhat.ref$eval.points, f=Rhat.ref$estimate)$fx
+  Rhat.ref$estimate <- kde.approx(x=Rhat$eval.points, fhat=Rhat.ref)
   Rhat.trans$eval.points <- Rhat.ref$estimate
-      
+
   ## Use spline to smooth out transformed ROC curve
-  Rhat.trans.smoothed <- smooth.spline(Rhat.trans$eval.points, Rhat.trans$estimate, spar=1.5)
+  Rhat.trans.smoothed <- smooth.spline(Rhat.trans$eval.points, Rhat.trans$estimate)
+  Rhat.trans.smoothed <- predict(Rhat.trans.smoothed, x=seq(0,1,length=length(Rhat$eval.points)))
   Rhat.trans$eval.points <- Rhat.trans.smoothed$x
   Rhat.trans$estimate <- Rhat.trans.smoothed$y
-
-  Rhat.trans$estimate[Rhat.trans$estimate<0] <- 0
-  Rhat.trans$estimate[Rhat.trans$estimate>1] <- 1
 
   ## add (0,0) and (1,1) as endpoints
   if (head(Rhat.trans$eval.points, n=1)!=0) Rhat.trans$eval.points[1] <- 0
   if (head(Rhat.trans$estimate, n=1)!=0) Rhat.trans$estimate[1] <- 0
   if (tail(Rhat.trans$eval.points, n=1)!=1) Rhat.trans$eval.points[length(Rhat.trans$eval.points)] <- 1
   if (tail(Rhat.trans$estimate, n=1)!=1) Rhat.trans$estimate[length(Rhat.trans$estimate)] <- 1 
-
- 
+  Rhat.trans$estimate[Rhat.trans$estimate>1] <- 1
+  Rhat.trans$estimate[Rhat.trans$estimate<0] <- 0
+  
   Rhat.trans$indices <- indices.kroc(Rhat.trans)
   
   return(Rhat.trans)
@@ -624,14 +643,6 @@ plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, ylab="True positive rate 
     {  
       xref <- rbind(Rhat$x[[1]], Rhat$x[[2]])
       Rhat.ref <- roc.ns(Sigma=var(xref))
-      if(0){
-        z <- seq(0,1, length=401)
-        kind <- 0:(d-1)
-        roc.indep <- 0
-        for (k in kind) roc.indep <- roc.indep + z*(-log(z))^k/factorial(k)
-        Rhat.ref$eval.points <- z
-        Rhat.ref$estimate <- roc.indep        
-      }
       lines(Rhat.ref$eval.points, Rhat.ref$estimate, lty=2, col="grey")
     }
   }

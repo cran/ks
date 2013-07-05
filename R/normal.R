@@ -1036,6 +1036,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal",
   }
   else
     plot(fhat, xlim=xlim, ylim=ylim, ...)
+  invisible(fhat)
 }
 
 
