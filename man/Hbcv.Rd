@@ -7,14 +7,15 @@
 \description{
 BCV bandwidth matrix for bivariate data.}
 \usage{
-Hbcv(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
-Hbcv.diag(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
+Hbcv(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
+Hbcv.diag(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 }
 
 \arguments{
   \item{x}{matrix of data values}
   \item{whichbcv}{1 = BCV1, 2 = BCV2.  See details below.}
   \item{Hstart}{initial bandwidth matrix, used in numerical optimisation}
+  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
   \item{amise}{flag to return the minimal BCV value. Default is FALSE.}
   \item{verbose}{flag to print out progress information. Default is FALSE.}  
 }

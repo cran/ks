@@ -106,17 +106,21 @@
 }
  
 \examples{
-## univariate example
-x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
-fhat <- kde(x=x)  
-plot(fhat, cont=50, cont.col="blue", cont.lwd=2)
+library(MASS)
+data(iris)
 
-## bivariate example, using binned estimation 
-x <- rmvnorm.mixt(1000, c(0,0), invvech(c(1, 0.8, 1)))
-H <- Hpi.diag(x, binned=TRUE)
-fhat <- kde(x=x, H=H, binned=TRUE, compute.cont=TRUE)      
+## univariate example
+fhat <- kde(x=iris[,1])
+plot(fhat, cont=50, cont.col="blue", cont.lwd=2, xlab="Sepal length")
+
+## bivariate example
+fhat <- kde(x=iris[,1:2])
 plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 plot(fhat, display="persp", thin=3, border=1, col="white")
+
+## trivariate example
+fhat <- kde(x=iris[,1:3])
+plot(fhat)
 }
 
 

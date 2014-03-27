@@ -11,10 +11,9 @@
   Plug-in bandwidth for for 1- to 6-dimensional data.}
 
 \usage{
-Hpi(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm",
-    Sdr.flag=FALSE)
-Hpi.diag(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, 
+Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, 
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 }
@@ -25,7 +24,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   \item{pilot}{"amse" = AMSE pilot bandwidths \cr
     "samse" = single SAMSE pilot bandwidth \cr 
     "unconstr" = single unconstrained pilot bandwidth \cr
-    "dscalar" = single pilot bandwidth for deriv.order >= 0 \cr
+    "dscalar" = single pilot bandwidth for deriv.order >= 0 (default)\cr
     "dunconstr" = single unconstrained pilot bandwidth for deriv.order >= 0}
   \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
@@ -36,8 +35,6 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
-  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
-  bandwidths for deriv.order>0. Default is FALSE.}
 }
 
 \value{
@@ -64,15 +61,15 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   by \code{bgridsize}. Otherwise it's computed exactly. 
  
   If \code{Hstart} is not given then it defaults to \code{Hns(x, deriv.order)}.
-  If \code{Sdr.flag=FALSE}, then symmetriser matrices are not computed
-  explicitly but indirectly in a loop of permutations. The loop can make 
-  execution times long, but avoid the memory problems for e.g.,
-  d=4, deriv.order=2. 
 }
 
 \references{
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
   selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
+
+  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
+  functionals based on higher order derivatives of the multivariate
+  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric
@@ -84,16 +81,12 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
   selection. \emph{Computational Statistics}, \bold{9}, 97-116.
-
-  Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing.} Chapman &
-  Hall. 
 }
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hscv}}}
   
 \examples{
 data(unicef)
-Hpi(unicef, binned=TRUE)
 Hpi(unicef, pilot="dscalar")
 hpi(unicef[,1])
 }

@@ -9,7 +9,7 @@
 \usage{
 kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
    binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
-   approx.ref="pmvnorm")
+   nref=1e4)
 
 \method{summary}{kroc}(object, ...)
 }
@@ -30,7 +30,8 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
-  \item{approx.ref}{use "kcde" or "pmvnorm" (default) to compute reference ROC curve.}
+  \item{nref}{sample size used to compute reference ROC curve. Default
+  is 1e3.}
   \item{object}{object of class \code{kroc}, output from \code{kroc}}
   \item{...}{other summary parameters} 
 }

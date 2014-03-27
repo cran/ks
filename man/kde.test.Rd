@@ -1,6 +1,7 @@
 \name{kde.test}
 \alias{kde.test}
 \alias{Hpi.kfe}
+\alias{Hpi.diag.kfe}
 \alias{hpi.kfe}
 
 \title{Kernel density based global two-sample comparison test}
@@ -11,7 +12,9 @@
 \usage{
 kde.test(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, 
     binned=FALSE, bgridsize, verbose=FALSE, pilot="dscalar")
-Hpi.kfe(x, nstage=2, pilot="dscalar", pre="sphere", Hstart, binned=FALSE, 
+Hpi.kfe(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, 
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag.kfe(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE,
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
 }
@@ -26,7 +29,7 @@ hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
   \item{bgridsize}{vector of binning grid sizes}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{"dscalar" = single pilot bandwidth \cr
+  \item{pilot}{"dscalar" = single pilot bandwidth (default) \cr
     "dunconstr" = single unconstrained pilot bandwidth}
   \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical optimisation}

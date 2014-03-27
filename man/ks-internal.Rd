@@ -5,6 +5,11 @@
 \alias{drvkde}
 \alias{kfe}
 \alias{kde.boundary}
+\alias{Sdrv}
+\alias{mur}
+\alias{nur}
+\alias{nurs}
+\alias{Qr}
 
 \title{Internal functions in the ks library}
 \description{

@@ -19,51 +19,47 @@
 # Matrix of bandwidths for each group in training set
 ###############################################################################
 
-hkda <- function(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
+hkda <- function(x, x.group, bw="plugin", ...)
 {
   gr <- sort(unique(x.group))
   m <- length(gr)
-  bw <- substr(tolower(bw),1,1)
-  hs <- numeric(0)
-
-  if (missing(bgridsize)) bgridsize <- 401
-  
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
+  hs <- numeric(0) 
   for (i in 1:m)
   {
     y <- x[x.group==gr[i]]
-    if (bw=="p")
-      h <- hpi(y, nstage=nstage, binned=TRUE, bgridsize=bgridsize) 
+    if (bw1=="plugin") h <- hpi(y, ...)
+    else if (bw1=="lscv") h <- hlscv(y, ...)
+    else if (bw1=="scv") h <- hscv(y, ...)
     hs <- c(hs, h)
   }
 
   return(hs)
 }
    
-Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="sphere", binned=FALSE, bgridsize)
+Hkda <- function(x, x.group, Hstart, bw="plugin", ...)
 {
   d <- ncol(x)
   gr <- sort(unique(x.group))
   m <- length(gr)
-  bw <- substr(tolower(bw),1,1)
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv")) 
   Hs <- numeric(0)
-
-  if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
-  
+ 
   for (i in 1:m)
   {
     y <- x[x.group==gr[i],]
     if (!missing(Hstart)) 
     {
       Hstarty <- Hstart[((i-1)*d+1) : (i*d),]
-      if (bw=="l") H <- Hlscv(y, Hstart=Hstarty)
-      else if (bw=="s") H <- Hscv(y, pre=pre, Hstart=Hstarty, binned=binned, bgridsize=bgridsize)
-      else if (bw=="p") H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, Hstart=Hstarty, binned=binned, bgridsize=bgridsize) 
+      if (bw1=="lscv") H <- Hlscv(y, Hstart=Hstarty, ...)
+      else if (bw1=="scv") H <- Hscv(y, Hstart=Hstarty, ...)
+      else if (bw1=="plugin") H <- Hpi(y, Hstart=Hstarty, ...)
     }
     else
     {
-      if (bw=="l") H <- Hlscv(y)
-      else if (bw=="s") H <- Hscv(y, pre=pre, binned=binned, bgridsize=bgridsize)
-      else if (bw=="p") H <- Hpi(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
+      if (bw1=="lscv") H <- Hlscv(y, ...)
+      else if (bw=="scv") H <- Hscv(y, ...)
+      else if (bw=="plugin") H <- Hpi(y, ...)
     }
     Hs <- rbind(Hs, H)
   }
@@ -71,22 +67,20 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="
   return(Hs)   
 }
 
-Hkda.diag <- function(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere", binned=FALSE, bgridsize)
+Hkda.diag <- function(x, x.group, bw="plugin", ...)
 {
   d <- ncol(x)
   gr <- sort(unique(x.group))
   m <- length(gr)
-  bw <- substr(tolower(bw),1,1)
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
   Hs <- numeric(0)
-
-  if (missing(bgridsize) & binned) bgridsize <- default.gridsize(d)
 
   for (i in 1:m)
   {
     y <- x[x.group==gr[i],]
-    if (bw=="l") H <- Hlscv.diag(y, binned=binned, bgridsize=bgridsize)
-    else if (bw=="p") H <- Hpi.diag(y, nstage=nstage, pilot=pilot, pre=pre, binned=binned, bgridsize=bgridsize)
-    else if (bw=="s") H <- Hscv.diag(y, pre=pre, binned=binned, bgridsize=bgridsize)
+    if (bw1=="lscv") H <- Hlscv.diag(y, ...)
+    else if (bw1=="plugin") H <- Hpi.diag(y, ...)
+    else if (bw1=="scv") H <- Hscv.diag(y, ...)
     Hs <- rbind(Hs, H)
   }
 
@@ -143,7 +137,11 @@ compare <- function(x.group, est.group, by.group=FALSE)
   colnames(comp) <- c(as.character(paste(grlab, "(est.)")), "Total")
   rownames(comp) <- c(as.character(paste(grlab, "(true)")), "Total")
 
-  return(list(cross=comp, error=er))
+  TN <- comp[1,1]; FP <- comp[1,2]; FN <- comp[2,1]; TP <- comp[2,2]
+  spec <- 1-(FP/(FP+TN))
+  sens <- 1-(FN/(TP+FN))
+ 
+  return(list(cross=comp, error=er, TP=TP, FP=FP, FN=FN, TN=TN, spec=spec, sens=sens))
  
 }
 
@@ -165,15 +163,16 @@ compare <- function(x.group, est.group, by.group=FALSE)
 # error - total mis-classification rate
 ###############################################################################
 
-compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 {
   if (verbose) pb <- txtProgressBar()
-
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
+  
   ## 1-d
   if (is.vector(x))
   {
     n <- length(x)
-    h <- hkda(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
+    h <- hkda(x, x.group, bw=bw, ...)
     gr <- sort(unique(x.group)) 
     kda.cv.gr <- x.group
 
@@ -185,9 +184,9 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
       indx <- x.group==gr[ind]
       indx[i] <- FALSE
 
-      if (substr(bw,1,1)=="p")
-        h.temp <- hpi(x[indx], binned=binned, bgridsize=bgridsize, ...)
-
+      if (bw1=="lscv") h.temp <- hlscv(x[indx], , ...)
+      else if (bw1=="plugin") h.temp <- hpi(x[indx], , ...)
+      else if (bw1=="scv") h.temp <- hscv(x[indx], , ...)
       h.mod[ind] <- h.temp
     
       ## recompute KDA estimate of groups with x[i] excluded
@@ -205,9 +204,9 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
   d <- ncol(x)
   
   if (!missing(Hstart))
-    H <- Hkda(x, x.group, bw=bw, Hstart=Hstart, binned=binned, bgridsize=bgridsize, ...)
+    H <- Hkda(x, x.group, bw=bw, Hstart=Hstart, ...)
   else
-    H <- Hkda(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
+    H <- Hkda(x, x.group, bw=bw, ...)
 
   ## classify data x using KDA rules based on x itself
   ## kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
@@ -231,28 +230,22 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
       {  
         Hstart.temp <- Hstart[((ind-1)*d+1):(ind*d),]
         
-        if (substr(bw,1,1)=="p")
-          H.temp <- Hpi(x[indx,], Hstart=Hstart.temp, binned=binned, bgridsize=bgridsize,...)
-        else if (substr(bw,1,1)=="s")
-          H.temp <- Hscv(x[indx,],  Hstart=Hstart.temp, binned=binned, bgridsize=bgridsize,...)
-        else if (substr(bw,1,1)=="l") 
-          H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, ...)
+        if (bw1=="plugin") H.temp <- Hpi(x[indx,], Hstart=Hstart.temp,  ...)
+        else if (bw1=="scv") H.temp <- Hscv(x[indx,],  Hstart=Hstart.temp, ...)
+        else if (bw1=="lscv") H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, ...)
       }
       else
       {
-        if (substr(bw,1,1)=="p")
-          H.temp <- Hpi(x[indx,], binned=binned, bgridsize=bgridsize, ...)
-        else if (substr(bw,1,1)=="s")
-          H.temp <- Hscv(x[indx,], binned=binned, bgridsize=bgridsize, ...)
-        else if (substr(bw,1,1)=="l")
-          H.temp <- Hlscv(x[indx,], ...) 
+        if (bw1=="plugin") H.temp <- Hpi(x[indx,], ...)
+        else if (bw1=="scv") H.temp <- Hscv(x[indx,], ...)
+        else if (bw1=="lscv") H.temp <- Hlscv(x[indx,], ...) 
       }
       
       H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
     }
     ## recompute KDA estimate of groups with x[i] excluded
       
-    if (verbose) setTxtProgressBar(pb, i/n)  ##cat(paste("Processing data item:", i, "\n"))
+    if (verbose) setTxtProgressBar(pb, i/n)  
 
     kda.cv.gr[i] <- kda(x[-i,], x.group[-i], Hs=H.mod, eval.points=x, prior.prob=prior.prob, kde.flag=FALSE)[i]
   }
@@ -266,17 +259,16 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
 ###############################################################################
 
 compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
-   by.group=FALSE, verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+   by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 {
-  if (is.vector(x))  return(compare.kda.cv(x=x, x.group=x.group, by.group=by.group, verbose=verbose, binned=binned, bgridsize=bgridsize, recompute=recompute, ...))
+  if (is.vector(x))  return(compare.kda.cv(x=x, x.group=x.group, by.group=by.group, verbose=verbose, prior.prob=prior.prob, recompute=recompute, ...))
   n <- nrow(x)
   d <- ncol(x)
 
-  H <- Hkda.diag(x, x.group, bw=bw, binned=binned, bgridsize=bgridsize, ...)
-  ##kda.group <- kda(x, x.group, Hs=H, y=x, prior.prob=prior.prob)
-  ##comp <- compare(x.group, kda.group)
+  H <- Hkda.diag(x, x.group, bw=bw, ...)
+ 
   if (verbose) pb <- txtProgressBar()
-  
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
   
@@ -289,11 +281,12 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
       ind <- which(x.group[i]==gr)
       indx <- x.group==gr[ind]
       indx[i] <- FALSE
-      if (substr(bw,1,1)=="p")
-        H.temp <- Hpi.diag(x[indx,],  binned=binned, bgridsize=bgridsize, ...)
-      else if (substr(bw,1,1)=="l")
-        H.temp <- Hlscv.diag(x[indx,], binned=binned, bgridsize=bgridsize, ...)
-      
+      if (bw1=="plugin")
+        H.temp <- Hpi.diag(x[indx,], ...)
+      else if (bw1=="lscv")
+        H.temp <- Hlscv.diag(x[indx,], ...)
+      else if (bw1=="scv")
+        H.temp <- Hscv.diag(x[indx,], ...)
       H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
     }
     
@@ -332,6 +325,8 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
 
   if (is.vector(x))
   {
+    bgridsize <- default.gridsize(1)
+ 
     if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize=bgridsize)
     ## Compute KDA on grid
     if (kde.flag)
@@ -343,10 +338,12 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
   }
   else
   {
+    bgridsize <- default.gridsize(ncol(x))
     if (ncol(x)==2) pilot <- "samse"
-    if (ncol(x)==3) pilot <- "dscalar"
+    if (ncol(x)>=3) pilot <- "dscalar"
     if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", nstage=2, pilot=pilot, pre="sphere", binned=nrow(x)>1000, bgridsize=bgridsize)
-  
+
+    if (ncol(x)>3) kde.flag <- FALSE
     if (kde.flag)
       fhat.list <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
     
@@ -500,7 +497,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
 
   
 ##############################################################################
-## Contour method for kda.kde cobjects
+## Contour method for kda objects
 ##############################################################################
 
 contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=FALSE,...) 
@@ -511,8 +508,7 @@ contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=FALSE,...)
 
   for (j in 1:m)
   {
-    fhatj <- list(x=fhat$x[[j]], eval.points=fhat$eval.points,
-                  estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned, gridded=fhat$gridded)
+    fhatj <- list(x=fhat$x[[j]], eval.points=fhat$eval.points, estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned, gridded=fhat$gridded)
     class(fhatj) <- "kde"
     hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, nlevels=nlevels, approx=approx, ...)
   }
@@ -587,10 +583,8 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
     for (j in 2:m)
       lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
 
-  ##eval.points.gr <- apply(weighted.fhat, 1, which.max)
-
   ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
-  ydata.gr <- kda(unlist(fhat$x), binned=FALSE, x.group=fhat$x.group, hs=fhat$h, eval.points=ydata, prior.prob=fhat$prior.prob)$x.group.estimate
+  ydata.gr <- unique(fhat$x.group)[apply(weighted.fhat,1, which.max)] ##kda(unlist(fhat$x), binned=FALSE, x.group=fhat$x.group, hs=fhat$h, eval.points=ydata, prior.prob=fhat$prior.prob, kde.flag=FALSE)$x.group.estimate
 
   ## draw partition class as rug-like plot
  
@@ -609,16 +603,16 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
     {
       if (missing(y))
         if (jitter)
-          rug(jitter(fhat$x[[j]]), col=ptcol[1], ticksize=-0.03)
+          rug(jitter(fhat$x[[j]]), col=ptcol[j], ticksize=-0.03)
         else
-          rug(fhat$x[[j]], col=ptcol[1], ticksize=-0.03)
+          rug(fhat$x[[j]], col=ptcol[j], ticksize=-0.03)
       else 
       {
         if (missing(y.group))
           if (jitter)
-            rug(jitter(y), col=ptcol[1], ticksize=-0.03)
+            rug(jitter(y), col=ptcol[j], ticksize=-0.03)
           else
-            rug(y, col=ptcol[1], ticksize=-0.03)
+            rug(y, col=ptcol[j], ticksize=-0.03)
         else
           if (jitter)
             rug(jitter(y[y.group==levels(y.group)[j]]), col=ptcol[j], ticksize=-0.03)
@@ -631,7 +625,7 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
 
 
 plotkda.2d <- function(x, y, y.group, prior.prob=NULL, 
-    cont=c(25,50,75), abs.cont, approx.cont=FALSE, xlim, ylim, xlab, ylab,
+    cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
     drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, partcol, ptcol, ...)
 { 
   fhat <- x
@@ -697,10 +691,9 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
     class.grid[,j] <- max.col(temp)
     
   }
-  
+
   ## draw partition
-  image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=partcol, xlim=xlim,
-        ylim=ylim, add=TRUE, ...)
+  image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=partcol, xlim=xlim, ylim=ylim, add=TRUE, ...)
   box()
 
   ## common contour levels removed from >= v1.5.3 
@@ -759,7 +752,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
 
 
 
-plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, ptcol="blue", ...)
+plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, ptcol="blue", ...)
 {
   fhat <- x
    
@@ -802,18 +795,16 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.con
   else ptcol <- 1:m
   if (length(ptcol)==1) ptcol <- rep(ptcol, m)
   
-  ##clear3d()
- plot3d(x=fhat$x[[1]][,1], y=fhat$x[[1]][,2], z=fhat$x[[1]][,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
-  
+
+  plot3d(x=fhat$x[[1]][,1], y=fhat$x[[1]][,2], z=fhat$x[[1]][,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
+
   for (j in 1:m)
   {
     for (i in 1:nhts)
     { 
       cti <- hts[[j]][nhts-i+1]
       if (cti <= max(fhat$estimate[[j]]))
-        contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]],
-                z=fhat$eval.points[[3]], f=fhat$estimate[[j]],
-                level=cti, add=TRUE, alpha=alphavec[i], color=colors[j],...)
+        contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], f=fhat$estimate[[j]], level=cti, add=TRUE, alpha=alphavec[i], color=colors[j], ...)
     }
     if (drawpoints)   ## plot points
     {

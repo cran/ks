@@ -7,7 +7,7 @@
 ## taken from pobs() function in copula package
 pobs.ks <- function (x, na.last="keep", ties.method=c("average", "first", "random", "max", "min"))
 {   
-  return(apply(x, 2, rank, na.last = na.last, ties.method = ties.method)/(nrow(x) + 1))
+  return(apply(x, 2, rank, na.last=na.last, ties.method=ties.method)/(nrow(x) + 1))
 }
 
 ## Modified boundary beta kernel - first form (Chen, 1999)
@@ -39,7 +39,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
   d <- ncol(x)
   n <- nrow(x)
   
-  if (missing(H)) H <- Hpi.kcde(x=x, binned=TRUE, pilot="dunconstr")
+  if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d,n=n))
   Fhat <- kcde(x=x, H=H, gridsize=gridsize, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, w=w, verbose=verbose, tail.flag="lower.tail")
 
   xlims <- sapply(Fhat$eval.points, range)
@@ -48,15 +48,14 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 
 
   ## generate pseudo-uniform values
-  marginal1 <- substr(marginal,1,1)
-  if (marginal1=="k")
+  marginal1 <- match.arg(marginal, c("kernel", "empirical")) 
+  if (missing(hs))
+  {
+    hs <- rep(0, d)
+    for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
+  }
+  if (marginal1=="kernel")
   {  
-    if (missing(hs))
-    {
-      hs <- rep(0, d)
-      for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
-    }
-    
     ## kernel pseudo-uniform
     u <- list()
     u.eval.points <- list()
@@ -68,7 +67,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     y <- sapply(u, getElement, "estimate")
     ep <- lapply(u.eval.points, getElement, "estimate")
   }
-  else if (marginal1=="e")
+  else if (marginal1=="empirical")
   {
     ## empirical pseudo-uniform
     y <- pobs.ks(x=x)
@@ -80,11 +79,11 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     }
   }
  
-  
   Chat <- Fhat
   Chat$x <- y ## sapply(u, getElement, "estimate")
   Chat$eval.points <- ep ##lapply(u.eval.points, getElement, "estimate")
-
+  Chat$hs <- hs
+  
   ## loess smoothing on a uniform grid
   if (d==2)
   {
@@ -149,7 +148,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 ## Kernel copula density estimator
 #############################################################################
 
-kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=FALSE, approx.cont=TRUE, boundary.supp, marginal="kernel")
+kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=FALSE, approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -161,23 +160,22 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
       w <- w*n/sum(w)
     }
   if (missing(w)) w <- rep(1,n)
+  if (missing(hs))
+  {
+    hs <- rep(0, d)
+    for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
+  }
 
   ## generate pseudo-uniform values
-  marginal1 <- substr(marginal,1,1)
-  if (marginal1=="k")
+  marginal1 <- match.arg(marginal, c("kernel", "empirical")) 
+  if (marginal1=="kernel")
   {  
-    if (missing(hs))
-    {
-      hs <- rep(0, d)
-      for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
-    }
-    
     ## kernel pseudo-uniform
     u <- list()
     for (i in 1:d) u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=x[,i], binned=binned)
     y <- sapply(u, getElement, "estimate")
   }
-  else if (marginal1=="e")
+  else if (marginal1=="empirical")
   {
     ## empirical pseudo-uniform
     y <- pobs.ks(x=x)  
@@ -190,9 +188,9 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (missing(H))
   {  
     if (d==2)
-      H <- do.call(Hfun, list(x=y, binned=TRUE, bgridsize=bgridsize, pilot="dscalar", verbose=verbose))
+      H <- do.call(Hfun, list(x=y, binned=default.bflag(d=d, n=nrow(y)), bgridsize=bgridsize, pilot=Hfun.pilot, verbose=verbose))
     else if (d==3)
-      H <- do.call(Hfun, list(x=y, binned=TRUE, bgridsize=rep(31,d), pilot="dscalar", verbose=verbose)) 
+      H <- do.call(Hfun, list(x=y, binned=default.bflag(d=d, n=nrow(y)), bgridsize=rep(31,d), pilot=Hfun.pilot, verbose=verbose)) 
   }
   
   #######################################################################
@@ -209,7 +207,8 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   ## normalise KDE to integrate to 1 
   chat$estimate <- chat$estimate/sum(chat$estimate*apply(sapply(chat$eval.points, diff), 1, prod)[1])
   chat$names <- parse.name(x) 
-  
+  chat$hs <- hs
+
   ## compute prob contour levels
   if (compute.cont & missing(eval.points))
     chat$cont <- contourLevels(chat, cont=1:99, approx=approx.cont)
@@ -262,8 +261,8 @@ kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, 
     }
 
   if (missing(w)) w <- rep(1,n)
-  if (d==1) { if (missing(h)) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize) }
-  if (missing(H) & d>1)  H <- Hpi(x=x, nstage=2, binned=nrow(x)>1000, bgridsize=bgridsize, pilot="dscalar")
+  if (d==1) { if (missing(h)) h <- hpi(x=x, binned=default.bflag(d=d,n=n), bgridsize=bgridsize) }
+  if (missing(H) & d>1)  H <- Hpi(x=x, binned=default.bflag(d=d,n=n), bgridsize=bgridsize)
       
   
   ## compute exact (non-binned) estimator
@@ -323,19 +322,16 @@ kde.boundary.grid.1d <- function(x, h, hb, gridsize, supp=3.7, xmin, xmax, gridt
   h.star <- h/(xmax-xmin)
   n <- length(x)
 
-  gridtype1 <- tolower(substr(gridtype,1,1))
-  if (gridtype1=="l")
-  {
+  gridtype1 <- match.arg(gridtype, c("linear", "sqrt")) 
+  if (gridtype1=="linear")
     eval.x <- seq(0, 1, length=gridsize)
-    gridtype.vec <- "linear"
-  }
-  else if (gridtype1=="s")
+  else if (gridtype1=="sqrt")
   {
     eval.x.temp <- seq(0, 1, length=gridsize)
     eval.x <- sign(eval.x.temp) * eval.x.temp^2
-    gridtype.vec <- "sqrt"
   }
-  
+  gridtype.vec <- gridtype1
+
   ## indicator for closeness to boundary of [0,1]
   bound.ind <- boundary.ind(x=x.star, h=h.star, boundary.supp=boundary.supp) 
 
@@ -606,4 +602,38 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
   fhat.list <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, gridded=TRUE, boundary=bound.ind)
   return(fhat.list)
 }
+
+
+##############################################################################
+## compute true copula (mdvc object) on a grid
+##############################################################################
+
+copula.grid <- function(copula, xmin, xmax, gridsize, copula.fun=dCopula)
+{
+  x <- rCopula(n=1000, copula=copula)
+  H <- Hpi(x=x, binned=TRUE)
+  d <- dim(copula)
+  
+  if (missing(gridsize)) gridsize <- default.gridsize(d)
+  if (missing(xmin)) xmin <- rep(0,d)
+  if (missing(xmax)) xmax <- rep(1,d)
+
+  gridx <- list()
+  for (j in 1:d) gridx[[j]] <- seq(xmin[j], xmax[j], length=gridsize[j])
+
+  eval.points <- as.matrix(expand.grid(gridx))
+  xnames <- parse.name(x)
+  estimate <- array(copula.fun(u=eval.points, copula=copula), dim=gridsize)
+
+  copde <- list(x=x, eval.points=gridx, estimate=estimate, H=H, gridtype=rep("linear", d), gridded=TRUE, binned=FALSE, names=xnames, w=rep(1, nrow(x)), copula=copula)
+  
+  if (identical(copula.fun, dCopula)) class(copde) <- "kde"
+  else if (identical(copula.fun, pCopula))
+  {
+    copde$tail <- "lower.tail"
+    class(copde) <- "kcde"
+  }
+  return(copde)
+}
+
 

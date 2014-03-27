@@ -26,27 +26,25 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   else w <- rep(1,n)
 
-  
-  if (substr(tail.flag,1,1)=="l") tail.flag <- "lower.tail"
-  else if (substr(tail.flag,1,1)=="u") tail.flag <- "upper.tail"
+  tail.flag1 <- match.arg(tail.flag, c("lower.tail", "upper.tail")) 
 
   ## KCDE is computed as cumulative Riemann sum of KDE on a grid
   if (d==1)
   {
-    if (missing(h)) h <- hpi.kcde(x=x, nstage=2, binned=TRUE)
+    if (missing(h)) h <- hpi.kcde(x=x, binned=default.bflag(d=d, n=n))
     Fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
     diffe <- abs(diff(Fhat$eval.points))
-    if (tail.flag=="lower.tail") Fhat$estimate <- c(0, diffe) * cumsum(Fhat$estimate)
+    if (tail.flag1=="lower.tail") Fhat$estimate <- c(0, diffe) * cumsum(Fhat$estimate)
     else Fhat$estimate <- c(diffe[1], diffe) * (sum(Fhat$estimate) - cumsum(Fhat$estimate))
   }
   else if (d==2)
   {
-    if (missing(H)) Hpi.kcde(x=x, nstage=2, pilot="dunconstr", binned=nrow(x)>1000, bgridsize=bgridsize, verbose=FALSE)
+    if (missing(H)) Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
     Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w)
     diffe1 <- abs(diff(Fhat$eval.points[[1]]))
     diffe2 <- abs(diff(Fhat$eval.points[[2]]))
 
-    if (tail.flag=="lower.tail")
+    if (tail.flag1=="lower.tail")
     {
       Fhat$estimate <- apply(Fhat$estimate, 1, cumsum)*c(0,diffe1)
       Fhat$estimate <- apply(t(Fhat$estimate), 2, cumsum)*c(0,diffe2)
@@ -61,13 +59,13 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   else if (d==3)
   {
-     if (missing(H)) Hpi.kcde(x=x, nstage=2, pilot="dunconstr", binned=nrow(x)>1000, bgridsize=bgridsize, verbose=FALSE)
+     if (missing(H)) Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
      Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w)
     Fhat.temp <- Fhat$estimate
     diffe1 <- abs(diff(Fhat$eval.points[[1]]))
     diffe2 <- abs(diff(Fhat$eval.points[[2]]))
     diffe3 <- abs(diff(Fhat$eval.points[[3]]))
-    if (tail.flag=="lower.tail")
+    if (tail.flag1=="lower.tail")
     {
       for (i in 1:dim(Fhat$estimate)[3])
       {
@@ -100,20 +98,20 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   ## normalise max CDF estimate equal to 1
   Fhat$estimate <- Fhat$estimate/max(Fhat$estimate)
-  
+
   if (!missing(eval.points))
   {
     if (d<=3)
     {
-      Fhat$estimate <- kde.approx(x=eval.points, fhat=Fhat)
+      Fhat$estimate <- predict(Fhat, x=eval.points)
       Fhat$eval.points <- eval.points
     }
     else
     {
-      Fhat <- kcde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose, tail.flag=tail.flag)
+      Fhat <- kcde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose, tail.flag=tail.flag1)
     }
   }
-  Fhat$tail <- tail.flag
+  Fhat$tail <- tail.flag1
   class(Fhat) <- "kcde"
   return(Fhat) 
 }
@@ -190,7 +188,8 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
     ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
 {
-  disp1 <- substr(display,1,1)
+  disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
+  
   if (!is.list(Fhat$eval.points)) stop("need a grid of density estimates")
 
   if (missing(xlab)) xlab <- Fhat$names[1]
@@ -199,7 +198,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
   if (Fhat$tail=="upper.tail") zlab <- "Survival function"
   
   ## perspective/wireframe plot
-  if (disp1=="p")
+  if (disp1=="persp")
   {
     hts <- seq(0, 1.1*max(Fhat$estimate), length=100)
     if (missing(col)) col <- grey(seq(0,0.9, length=length(hts)+1)) ## rev(heat.colors(length(hts)+1)) #
@@ -216,7 +215,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     
     plotret <- persp(Fhat$eval.points[[1]][plot.ind[[1]]], Fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
   }
-  else if (disp1=="s") 
+  else if (disp1=="slice") 
   {
     if (!add)
       plot(Fhat$x[,1], Fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
@@ -239,19 +238,19 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=ptcol, cex=cex, pch=pch)
   }
   ## image plot
-  else if (disp1=="i")
+  else if (disp1=="image")
   {
     image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, ...)
     box()
   }
-  else if (disp1=="f")
+  else if (disp1=="filled.contour" | disp1=="filled.contour2") 
   {
     hts <- cont/100
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
     
     clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
     
-    if (display=="filled.contour2")
+    if (disp1=="filled.contour2")
     {
       image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
 
@@ -277,7 +276,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
       filled.contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, levels=hts, ...)
     }
   }
-  if (disp1=="p")  invisible(plotret)
+  if (disp1=="persp")  invisible(plotret)
   else invisible()
 }
   
@@ -320,9 +319,9 @@ hns.kcde <- function(x)
 {
   d <- 1
   n <- length(x)
-  m1 <- 0.2820948
+  #m1 <- 0.2820948
   sigma <- sd(x)
-  hns <- (4*(4*pi)^(d/2)*m1)^(1/3)*sigma*n^(-1/3)
+  hns <- 4^(1/3)*sigma*n^(-1/3)
 
   return(hns)
 }
@@ -378,7 +377,7 @@ hpi.kcde <- function(x, nstage=2, binned=TRUE)
 }
 
 
-Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -386,10 +385,10 @@ Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgrid
   Jd <- matrix(1, ncol=d, nrow=d)
   
   if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
-  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
-
-  if (pilot=="dscalar") stop("use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
+  if (missing(pilot)) pilot <- "dunconstr"
+  pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
+ 
+  if (pilot1=="dscalar") stop("use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
   
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   if (nstage==2)
@@ -402,14 +401,14 @@ Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgrid
       H <- invvech(vechH) %*% invvech(vechH)
       Hinv <- chol2inv(chol(H))
       Hinv12 <- matrix.sqrt(Hinv)
-      amse2.temp <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
-      return(sum((amse2.temp)^2)) 
+      amse2.val <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
+      return(sum(amse2.val^2)) 
     }
       
     Hstart2 <- matrix.sqrt(Gns(r=2, n=n, Sigma=var(x)))
-    optim.fun1 <- tolower(substr(optim.fun,1,1))
+    optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
  
-    if (optim.fun1=="n")
+    if (optim.fun1=="nlm")
     {
       result <- nlm(p=vech(Hstart2), f=amse2.temp, print.level=2*as.numeric(verbose))    
       H2 <- invvech(result$estimate) %*% invvech(result$estimate)
@@ -433,13 +432,14 @@ Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgrid
     H <- invvech(vechH) %*% invvech(vechH)
     H12 <- matrix.sqrt(H)
     amise.val <- -2*n^(-1)*m1*tr(H12) - 1/4*t(vec(H %*% H)) %*% psi2.hat
+    ##amise.val <- -2*n^(-1)*m1*sum(H12) - 1/4*t(vec(H %*% H)) %*% psi2.hat
     return(drop(amise.val)) 
   }
   
   Hstart <- matrix.sqrt(Hstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
+  optim.fun1 <- match.arg(optim.fun, c("optim", "nlm"))
   
-  if (optim.fun1=="n")
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=vech(Hstart), f=amise.temp, print.level=2*as.numeric(verbose)) 
     H <- invvech(result$estimate) %*% invvech(result$estimate)
@@ -456,31 +456,107 @@ Hpi.kcde <- function(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgrid
   else return(list(H=H, PI=amise.star))
 }
 
+Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+{
+  n <- nrow(x)
+  d <- ncol(x)
+  m1 <- (4*pi)^(-1/2)
+  Jd <- matrix(1, ncol=d, nrow=d)
+  
+  if(!is.matrix(x)) x <- as.matrix(x)
+  if (missing(pilot)) pilot <- "dscalar"
+  pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
+  if (pilot1=="dunconstr") stop("use dscalar pilot for Hpi.diag.kcde since pre-sphering approaches are not valid")
+
+  D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
+  if (nstage==2)
+  {  
+    ## stage 1
+    psi4.ns <- psins(r=4, Sigma=var(x), deriv.vec=TRUE)
+    
+    amse2.temp <- function(diagH)
+    { 
+      H <- diag(diagH) %*% diag(diagH)
+      Hinv <- chol2inv(chol(H))
+      Hinv12 <- matrix.sqrt(Hinv)
+      amse2.val <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
+      return(sum((amse2.val)^2)) 
+    }
+      
+    Hstart2 <- matrix.sqrt(Gns(r=2, n=n, Sigma=var(x)))
+    optim.fun1 <- match.arg(optim.fun, c("optim", "nlm")) 
+ 
+    if (optim.fun1=="nlm")
+    {
+      result <- nlm(p=diag(Hstart2), f=amse2.temp, print.level=2*as.numeric(verbose))    
+      H2 <- diag(result$estimate) %*% diag(result$estimate)
+    }
+    else
+    {
+      result <- optim(diag(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+      H2 <- diag(result$par) %*% diag(result$par)
+    }
+ 
+    psi2.hat <- kfe(x=x, G=H2, deriv.order=2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+  }
+  else
+    psi2.hat <- psins(r=2, Sigma=var(x), deriv.vec=TRUE)    
+  
+  if (missing(Hstart)) Hstart <- Hns.kcde(x=x)
+  
+  ## stage 2
+  amise.temp <- function(diagH)
+  { 
+    H <- diag(diagH) %*% diag(diagH)
+    H12 <- matrix.sqrt(H)
+    amise.val <- -2*n^(-1)*m1*tr(H12) - 1/4*t(vec(H %*% H)) %*% psi2.hat
+    return(drop(amise.val)) 
+  }
+  
+  Hstart <- matrix.sqrt(Hstart)
+  optim.fun1 <- match.arg(optim.fun, c("optim", "nlm")) 
+  
+  if (optim.fun1=="nlm")
+  {
+    result <- nlm(p=diag(Hstart), f=amise.temp, print.level=2*as.numeric(verbose)) 
+    H <- diag(result$estimate) %*% diag(result$estimate)
+    amise.star <- result$minimum
+  }
+  else
+  {
+    result <- optim(diag(Hstart), amise.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    H <- diag(result$par) %*% diag(result$par)
+    amise.star <- result$value
+  }
+
+  if (!amise) return(H)
+  else return(list(H=H, PI=amise.star))
+}
 
 #####################################################################
 ## Multivariate kernel ROC estimators
 #####################################################################
 
-kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, approx.ref="pmvnorm")
+kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, nref=1e4)
 {
-  if (is.vector(x1)) d <- 1 else d <- ncol(x1)
+  if (is.vector(x1)) {d <- 1; n1 <- length(x1)} else {d <- ncol(x1); n1 <- nrow(x1)}
   if (!missing(eval.points)) stop("eval.points in kroc not yet implemented")
   
   if (d==1)
   {
-    if (missing(h1)) h1 <- hpi.kcde(x=x1, binned=TRUE, nstage=2)
+    if (missing(h1)) h1 <- hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1))
     
     y <- kcde(x=x1, h=h1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, eval.points=x2, w=w, tail.flag="upper.tail")$estimate
   }
   else
   {
-    if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=nrow(x1)>1000, nstage=2)
+    if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1))
     y <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, eval.points=x2, w=w, tail.flag="upper.tail")$estimate
   }
-  
+
   ## transform from [0,1] to reals
   y <- qnorm(y[y>0])
-  hy <- hpi.kcde(y, binned=TRUE, nstage=2)
+  hy <- hpi.kcde(y, binned=default.bflag(d=d, n=n1))
   Fhaty <- kcde(x=y, h=hy, binned=TRUE) 
   Fhaty$eval.points <- pnorm(Fhaty$eval.points)
   Fhaty$x <- list(x1, x2)
@@ -490,12 +566,12 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   else {Fhaty$H1 <- H1; Fhaty$hy <- hy}
   
   transform <- TRUE
-  if (transform & d>1) Fhaty <- kroc.transform(Fhaty, nref=1e4, approx.ref=approx.ref)
+  if (transform & d>1) Fhaty <- kroc.transform(Fhaty, nref=nref)
   else
   {
     ## Use spline to smooth out transformed ROC curve
     Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate)
-    Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points)))
+    Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points))) 
     Fhaty$eval.points <- Fhaty.smoothed$x
     Fhaty$estimate <- Fhaty.smoothed$y
 
@@ -516,7 +592,7 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
 
 
 ## ROC curve to compare normal r.v. with variance Sigma against itself
-roc.ns <- function(Sigma, nref=1e4, approx.ref="pmvnorm")
+roc.ns <- function(Sigma, nref=1e4)
 {
   if (is.vector(Sigma)) d <- 1 else d <- ncol(Sigma)
   ## locally set random seed not to interfere with global random number generators
@@ -526,20 +602,21 @@ roc.ns <- function(Sigma, nref=1e4, approx.ref="pmvnorm")
   set.seed(8192)
   xref <- rmvnorm.mixt(n=nref, mus=rep(0,d), Sigmas=Sigma)
 
-  approx.ref1 <- tolower(substr(approx.ref,1,1))
-  if (approx.ref1=="p")
-  {
-    y <- rep(0, nref)
-    for (i in 1:length(y)) y[i] <- pmvnorm(lower=xref[i,], sigma=Sigma)
-  }
-  else if (approx.ref1=="k")
-  {
-    y <- kcde(x=xref, binned=TRUE, H=diag(diag(Hns(xref))), tail.flag="upper", eval.points=xref)$estimate
-  }
+  ##approx.ref1 <- match.arg(approx.ref, c("kcde")) 
+  ##if (approx.ref1=="pmvnorm")
+  ##{
+  ##  y <- rep(0, nref)
+  ##  for (i in 1:length(y)) y[i] <- pmvnorm(lower=xref[i,], sigma=Sigma)
+  ##}
+  ##else if (approx.ref1=="kcde")
+  ##{
+    ##y <- kcde(x=xref, binned=TRUE, H=diag(diag(Hns(xref))), tail.flag="upper.tail", eval.points=xref)$estimate
+  y <- kcde(x=xref, binned=FALSE, H=Hns.kcde(xref), tail.flag="upper.tail", eval.points=xref)$estimate
+  ##}
  
   ## transform from [0,1] to reals
   y <- qnorm(y[y>0])
-  hy <- hpi.kcde(y, binned=TRUE, nstage=2)
+  hy <- hpi.kcde(y, binned=default.bflag(d=d, n=length(y)))
   Fhaty <- kcde(x=y, h=hy, binned=TRUE)
   Fhaty$eval.points <- pnorm(Fhaty$eval.points)
   
@@ -566,7 +643,7 @@ roc.ns <- function(Sigma, nref=1e4, approx.ref="pmvnorm")
 }
 
 
-kroc.transform <- function(Rhat, Rhat.ref, nref, approx.ref="pmvnorm")
+kroc.transform <- function(Rhat, Rhat.ref, nref)
 {
   ## transform given ROC curve to reference ROC curve
   Rhat.trans <- Rhat
@@ -574,10 +651,10 @@ kroc.transform <- function(Rhat, Rhat.ref, nref, approx.ref="pmvnorm")
   if (missing(Rhat.ref))
   {
     xref <- rbind(Rhat$x[[1]], Rhat$x[[2]]) 
-    Rhat.ref <- roc.ns(Sigma=var(xref), nref=nref, approx.ref=approx.ref)
+    Rhat.ref <- roc.ns(Sigma=var(xref), nref=nref)
   }
 
-  Rhat.ref$estimate <- kde.approx(x=Rhat$eval.points, fhat=Rhat.ref)
+  Rhat.ref$estimate <- predict(Rhat.ref, x=Rhat$eval.points)
   Rhat.trans$eval.points <- Rhat.ref$estimate
 
   ## Use spline to smooth out transformed ROC curve

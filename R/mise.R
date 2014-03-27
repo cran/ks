@@ -42,84 +42,6 @@ nu.rs <- function(r, s, A, B)
 }
 
 
-## non-central nu functionals
-nu.noncent <- function(r, A, mu, Sigma) 
-{
-  if (is.vector(mu)) n <- 1
-  else n <- nrow(mu)
-  
-  if (r==0)
-    nu.val <- rep(1,n)
-  else if (r>=1)
-  {
-    nu.val <- 0
-    for (j in 0:(r-1))
-    {
-      ASigmarj1 <- matrix.pow(A%*% Sigma, r-j-1)
-      nu.val <- nu.val + choose(r-1, j)*2^(r-j-1)*factorial(r-j-1)*(tr(ASigmarj1 %*% A %*% Sigma) + (r-j)*apply((mu %*% ASigmarj1 %*% A) * mu, 1, sum))*nu.noncent(r=j, A=A, mu=mu, Sigma=Sigma)
-    }
-  }
-  return (nu.val)
-}
-
-nu.noncent.scalar <- function(r, a, b, mu2.sum, d)
-{
-  n <- length(mu2.sum)
-  if (r==0)
-    nu.val <- rep(1,n)
-  else if (r>=1)
-  {
-    nu.val <- 0
-    for (j in 0:(r-1))
-      nu.val <- nu.val + (a^(2*r-2*j))*choose(r-1, j)*((-2)^(r-j-1)*factorial(r-j-1)*(-d + (r-j)*b^2*mu2.sum))*nu.noncent.scalar(r=j, a=a, b=b, mu2.sum=mu2.sum, d=d)
-  }
-  return (nu.val)
-}
-
-
-nu.noncent.rs <- function(r, s, A, B, mu, Sigma)
-{
-  nu.val <- 0
-
-  if (r==0 & s==0) nu.val <- cumulant.rs(r=0, s=0, A=A, B=B, mu=mu, Sigma=Sigma)
-  else if (r>0 & s==0)
-  { 
-    for (i in 0:(r-1))
-      nu.val <- nu.val + choose(r-1,i) * cumulant.rs(r=r-i, s=0, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=i, s=0, A=A, B=B, mu=mu, Sigma=Sigma)
-  }
-  else if (r==0 & s>0)
-  {
-    for (j in 0:(s-1))
-      nu.val <- nu.val + choose(s-1,j) * cumulant.rs(r=0, s=s-j, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=0, s=j, A=A, B=B, mu=mu, Sigma=Sigma)
-  }
-  else if (r>=1 & s>=1)
-  {
-    for (i in 0:r)
-      for (j in 0:(s-1))
-        nu.val <- nu.val + choose(r,i)*choose(s-1,j) * cumulant.rs(r=r-i, s=s-j, A=A, B=B, mu=mu, Sigma=Sigma)*nu.noncent.rs(r=i, s=j, A=A, B=B, mu=mu, Sigma=Sigma)
-  }
-  return(nu.val)
-}
-
-cumulant.rs <- function(r, s, A, B, mu, Sigma) 
-{
-  if (is.vector(mu)) n <- 1
-  else n <- nrow(mu)
-  
-  if (r==0 & s==0) kappa.val <- rep(1,n)
-  else if (r==1 & s==0) kappa.val <- tr(A%*%Sigma) + rowSums((mu %*% A) * mu)
-  else if (r==0 & s==1) kappa.val <- tr(B%*%Sigma) + rowSums((mu %*% B) * mu)
-  else if (r==1 & s==1) kappa.val <- 2*tr(A %*% Sigma %*% B %*% Sigma) + 4*rowSums((mu %*% A %*% Sigma %*% B) * mu)
-  else if (r>1 | s>1)
-  {
-    kappa.val <- 2^(r+s-1)*factorial(r+s-2)*
-      ((r+s-1)*tr(matrix.pow(A%*%Sigma,r) %*% matrix.pow(B%*%Sigma,s))
-       +(r*(r-1) + s*(s-1) + 2*r*s)*rowSums((mu %*% matrix.pow(A, r) %*% matrix.pow(B, s) %*% matrix.pow(Sigma,r+s-1)) * mu))
-     }
-
-  return(kappa.val)
-}
-
 ## gamma functional for normal mixture MISE
 gamma.r <- function(mu, Sigma, r)
 {
@@ -133,27 +55,16 @@ gamma.r <- function(mu, Sigma, r)
   return(v)
 }
 
-## gamma functional (non-recursive) for normal mixture MISE 
-gamma.r.norec <- function(mu, Sigma, d, r, Sd2r)
-{
-  Sigmainv <- chol2inv(chol(Sigma))
-  w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %*% Sd2r
-  v <- rep(0,length=d^(2*r))
-  for(j in 0:r)
-    v <- v + ((-1)^j*OF(2*j)*choose(2*r, 2*j))*(Kpow(mu,2*r-2*j)%x%Kpow(vec(Sigma),j))
-  gamr <- (-1)^r*dmvnorm(mu,mean=rep(0,d),sigma=Sigma)*sum(w %*% v)
-  
-  return(gamr)
-}
 
 ## gamma functional for normal mixture AMISE 
-gamma.r2 <- function(mu, Sigma, d, r, Sd2r4, H, Sdr.flag=TRUE)
+gamma.r2 <- function(mu, Sigma, d, r, H)
 {
   Sigmainv <- chol2inv(chol(Sigma))
-  if (!Sdr.flag)
-    w <- matrix(Sdrv(d=d,r=2*r+4, v=vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2))), nrow=1)
+
+  if (d==1)
+    w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2))
   else
-    w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2)) %*% Sd2r4
+    w <- matrix(Sdrv(d=d,r=2*r+4, v=vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2))), nrow=1)
   
   v <- rep(0,length=d^(2*r+4))
   for(j in 0:(r+2))
@@ -332,7 +243,6 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   }
   else
   {
-    Sd2r4 <- Sdr(d,2*r+4)  
     omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
@@ -342,7 +252,7 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
       {
         Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
         muj <- mus[j,]    
-        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, Sd2r4=Sd2r4, H=H)
+        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, H=H)
       }
     }
   }
@@ -360,12 +270,11 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   r <- deriv.order
   k <- length(props)
   H <- as.matrix(h^2)
-  Sd2r4 <- Sdr(d,2*r+4)
-
+  
   if (k == 1)
-    omega.mat <- gamma.r2(mu=rep(0,d),Sigma=as.matrix(2*sigmas^2), d=d, r=r, Sd2r4=Sd2r4, H=H)
+    omega.mat <- gamma.r2(mu=rep(0,d),Sigma=as.matrix(2*sigmas^2), d=d, r=r, H=H)
   else
-  {   
+  {  
     omega.mat <- matrix(0, nrow=k, ncol=k)
     for (i in 1:k)
     {
@@ -375,7 +284,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
       {
         Sigmaj <- as.matrix(sigmas[j]^2)
         muj <- mus[j]    
-        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, Sd2r4=Sd2r4, H=H)
+        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, H=H)
       }
     }
   }
@@ -708,15 +617,15 @@ ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=
   }
   else
   {
-    ise1 <- eta.kfe.y(x=x, G=2*H, inc=1, deriv.order=2*r)
+    ise1 <- Qr(x=x, Sigma=2*H, inc=1, deriv.order=2*r)
     for (j in 1:M)
     {
       Sigmaj <- Sigmas[((j-1)*d + 1):(j*d), ]
-      ise2 <- ise2 + props[j] * eta.kfe.y(x=x, y=mus[j,], G=H + Sigmaj, deriv.order=2*r, inc=1)
+      ise2 <- ise2 + props[j] * Qr(x=x, y=mus[j,], Sigma=H + Sigmaj, deriv.order=2*r, inc=1)
       for (i in 1:M)
       {
         Sigmai <- Sigmas[((i-1)*d + 1):(i*d), ]
-        ise3 <- ise3 + props[i] * props[j] * eta.kfe.y(x=mus[i,], y=mus[j,], G=Sigmai + Sigmaj, deriv.order=2*r, inc=1)
+        ise3 <- ise3 + props[i] * props[j] * Qr(x=mus[i,], y=mus[j,], Sigma=Sigmai + Sigmaj, deriv.order=2*r, inc=1)
       }
     }
     ise <- (-1)^r*(ise1 - 2*ise2 + ise3)

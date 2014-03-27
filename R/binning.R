@@ -23,7 +23,15 @@ default.bgridsize <- function(d)
   return(gridsize)
 }
 
-
+default.bflag <- function(d, n)
+{
+  if (d==1) thr <- 1
+  else if (d==2) thr <- 500
+  else if (d>2) thr <- 1000
+  
+  return(n>thr)
+}
+  
 ########################################################################
 ## Linear binning
 ## Courtesy of M Wand 2005
@@ -32,7 +40,7 @@ default.bgridsize <- function(d)
 
 
 
-binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
+binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 {
   x <- as.matrix(x)
   d <- ncol(x)
@@ -61,10 +69,19 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
   a <- unlist(lapply(range.x,min))
   b <- unlist(lapply(range.x,max))
 
+  if (missing(gridtype)) gridtype <- rep("linear", d)
+  gridtype.vec <- rep("", d)
+  
   gpoints <- list()
   for (id in 1:d)
-    gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
- 
+  {
+    gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "log"))
+    if (gridtype1=="linear")
+      gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
+    else if (gridtype1=="log")
+      gpoints[[id]] <- seq(exp(a[id]),exp(b[id]),length=bgridsize[id])
+  }
+  
   if (d==1) counts <- linbin.ks(x,gpoints[[1]], w=w) 
   if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
   if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)

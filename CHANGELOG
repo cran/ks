@@ -1,6 +1,31 @@
 Change log file for ks
 
 1.9.0
+-Added efficient recursive versions for dmvnorm.deriv(), Sdr(), Sdrv(), 
+ nur(), nurs(), mur(), Qr() from Chacon & Duong (2014) Statist Comput.
+-Fixed bug in Hscv(,binned=TRUE), Hscv.diag(,binned=TRUE) which was still
+ computing unbinned estimators.   
+-Fixed bug in 1-d KDA plot. 
+-Added sensitivity, specifity as output to compare().
+-Made small changes to default selectors to be more consistent across
+ selectors.
+-Fixed bug in point colour in rug plot for plotkda.1d(). 
+-Added Hpi.diag.kcde().
+-Added Lpdiff() (Lp distance for two functions) and copula.grid (true copula 
+ evaluated on a grid).
+-Fixed small bug in plotmixt(,draw=FALSE) to actually not draw plots. 
+-Added predict method for kde objects to replace kde.approx().
+-Added option to compute 1-d KDE supported on [0,1] kde(,unit.interval=TRUE) 
+ which calls kde.unit.interval().  
+-Changed default axes limits when plotkde.3d(, drawpoints=FALSE) from data
+ range to mean of KDE evaluation range.  
+-Fixed bug in default pilot selector for d>3 data in kda(). 
+-Changed ad hoc argument matching to match.arg().
+-Fixed bug in last line of lscv.mat().
+-Added binned estimation to Hbcv(), Hbcv.diag().
+-Added default binning flag function default.flag().
+  
+1.8.13
 -Added boundary density estimator kde.boundary() for compactly supported
  data.
 -Added kernel density of copula nd copula density, i.e. kcopula() and

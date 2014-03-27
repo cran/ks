@@ -1,7 +1,7 @@
 ### R code from vignette source 'kde.Rnw'
 
 ###################################################
-### code chunk number 1: kde.Rnw:140-148
+### code chunk number 1: kde.Rnw:103-111
 ###################################################
 library(ks)
 set.seed(8192)
@@ -10,76 +10,76 @@ mus <- rbind(c(-2,2), c(0,0), c(2,-2))
 Sigmas <- rbind(diag(2), matrix(c(0.8, -0.72, -0.72, 0.8), nrow=2), diag(2))
 cwt <- 3/11
 props <- c((1-cwt)/2, cwt, (1-cwt)/2)
-x <- rmvnorm.mixt(n=samp, mu=mus, Sigma=Sigmas, props=props)
+x <- rmvnorm.mixt(n=samp, mus=mus, Sigmas=Sigmas, props=props)
 
 
 ###################################################
-### code chunk number 2: kde.Rnw:154-155
+### code chunk number 2: kde.Rnw:117-118
 ###################################################
 plotmixt(mus=mus, Sigmas=Sigmas, props=props, xlim=c(-4,4), ylim=c(-4,4))
 
 
 ###################################################
-### code chunk number 3: kde.Rnw:157-158
+### code chunk number 3: kde.Rnw:120-121
 ###################################################
 plot(x, xlim=c(-4,4), ylim=c(-4,4), xlab="x", ylab="y")
 
 
 ###################################################
-### code chunk number 4: kde.Rnw:169-171
+### code chunk number 4: kde.Rnw:132-134
 ###################################################
 Hpi1 <- Hpi(x=x)
 Hpi2 <- Hpi.diag(x=x)
 
 
 ###################################################
-### code chunk number 5: kde.Rnw:175-177
+### code chunk number 5: kde.Rnw:138-140
 ###################################################
 fhat.pi1 <- kde(x=x, H=Hpi1)
 fhat.pi2 <- kde(x=x, H=Hpi2)
 
 
 ###################################################
-### code chunk number 6: kde.Rnw:185-187 (eval = FALSE)
+### code chunk number 6: kde.Rnw:148-150 (eval = FALSE)
 ###################################################
 ## plot(fhat.pi1)
 ## plot(fhat.pi2)
 
 
 ###################################################
-### code chunk number 7: kde.Rnw:200-201
+### code chunk number 7: kde.Rnw:163-164
 ###################################################
 plot(fhat.pi1, main="Plug-in", cex.main=1.4)
 
 
 ###################################################
-### code chunk number 8: kde.Rnw:203-204
+### code chunk number 8: kde.Rnw:166-167
 ###################################################
 plot(fhat.pi2, main="Plug-in diagonal", cex.main=1.4) 
 
 
 ###################################################
-### code chunk number 9: kde.Rnw:219-221
+### code chunk number 9: kde.Rnw:182-184
 ###################################################
 Hscv1 <- Hscv(x=x)
 Hscv2 <- Hscv.diag(x=x)
 
 
 ###################################################
-### code chunk number 10: kde.Rnw:226-228
+### code chunk number 10: kde.Rnw:189-191
 ###################################################
 fhat.cv1 <- kde(x=x, H=Hscv1)
 fhat.cv2 <- kde(x=x, H=Hscv2)
 
 
 ###################################################
-### code chunk number 11: kde.Rnw:230-231
+### code chunk number 11: kde.Rnw:193-194
 ###################################################
 plot(fhat.cv1, main="SCV", cex.main=1.4)
 
 
 ###################################################
-### code chunk number 12: kde.Rnw:233-234
+### code chunk number 12: kde.Rnw:196-197
 ###################################################
 plot(fhat.cv2, main="SCV diagonal", cex.main=1.4)
 

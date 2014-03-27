@@ -8,7 +8,7 @@
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
-    compute.cont=FALSE, approx.cont=TRUE)
+    compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE)
 }
 
 \arguments{
@@ -22,6 +22,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
+  \item{unit.interval}{flag if 1-d data are bounded on unit interval
+  [0,1]. Default is FALSE.} 
   \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}

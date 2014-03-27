@@ -40,6 +40,10 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   smoothing of kernel density estimates. \emph{Biometrika}. \bold{71},
   353-360.
 
+  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
+  functionals based on higher order derivatives of the multivariate
+  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
+  
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
   estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},
   65-78.

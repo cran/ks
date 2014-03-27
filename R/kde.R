@@ -29,32 +29,36 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
   gridx <- numeric(0)
   if (length(gridsize)==1)  gridsize <- rep(gridsize, d)
   if (missing(gridtype)) gridtype <- rep("linear", d)
-  gridtype.vec<- rep("", d)
+  gridtype.vec <- rep("", d)
   
   for (i in 1:d)
   {
-    gridtype1 <- tolower(substr(gridtype[i],1,1))
-    if (gridtype1=="l")
+    gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "log")) 
+    if (gridtype1=="linear")
     {  
       gridx <- c(gridx, list(seq(xmin[i], xmax[i], length=gridsize[i])))
       stepsize[i] <- abs(gridx[[i]][1] - gridx[[i]][2])
-      gridtype.vec[i] <- "linear"
+     
     }
-    else if (gridtype1=="s")
+    else if (gridtype1=="sqrt")
     {
       gridx.temp <- seq(sign(xmin[i])*sqrt(abs(xmin[i])), sign(xmax[i])*sqrt(abs(xmax[i])), length=gridsize[i])
       gridx <- c(gridx, list(sign(gridx.temp) * gridx.temp^2))
       stepsize[i] <- NA
-      gridtype.vec[i] <- "sqrt"
     }
-    else if (gridtype1=="q")
+    else if (gridtype1=="quantile")
     {
-       gridx.temp <- qnorm(seq(1e-2, 1-1e-2, length=gridsize[i])) ##seq(pnorm(xmin[i]), pnorm(xmax[i]), length=gridsize[i])
+       gridx.temp <- qnorm(seq(1e-2, 1-1e-2, length=gridsize[i]))
        gridx <- c(gridx, list(xmin[i] + (xmax[i]-xmin[i])*(gridx.temp-min(gridx.temp))/(max(gridx.temp)-min(gridx.temp))))
-       browser()
        stepsize[i] <- NA
-       gridtype.vec[i] <- "quantile"
      }
+    else if (gridtype1=="log")
+    {
+       gridx.temp <- seq(log(xmin[i]), log(xmax[i]), length=gridsize[i])
+       gridx <- c(gridx, list(exp(gridx.temp)))
+       stepsize[i] <- NA
+    }
+    gridtype.vec[i] <- gridtype1
   }
   
   gridx <- c(gridx, list(stepsize = stepsize, gridtype=gridtype.vec))
@@ -219,11 +223,54 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
 ## Linear intepolation based on kernel estimation grid
 ###############################################################################
 
-kde.approx <- function(x, fhat)
+kde.approx <- function(fhat, x)
 {
   return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
 }
 
+predict.kde <- function(object, ..., x)
+{
+  fhat <- object
+  return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
+}
+
+predict.kdde <- function(object, ..., x)
+{
+  fhat <- object
+  if (is.vector(x)) n <- length(x) else n <- nrow(x)
+  
+  if (!is.null(fhat$deriv.ind))
+  {
+    if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
+    else
+    {
+      nd <- nrow(fhat$deriv.ind)
+      pk.mat <- matrix(0, ncol=nd, nrow=n)
+      for (i in 1:nd)
+        {
+          fhat.temp <- fhat
+          fhat.temp$estimate <- fhat$estimate[[i]]
+          pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
+        }
+    }
+  }
+  else
+  {
+    pk.mat <- predict.kde(fhat, x=x, ...)
+  }
+  return(drop(pk.mat))
+}
+
+
+predict.kcde <- function(object, ..., x)
+{
+  return(predict.kde(object, ...,x=x))
+}
+
+predict.kroc <- function(object, ..., x)
+{
+  return(predict.kde(object, ..., x=x))
+}
 
 ###############################################################################
 ## Multivariate kernel density estimate using normal kernels
@@ -243,7 +290,7 @@ kde.approx <- function(x, fhat)
 ##############################################################################
 
 
-kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE)
+kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE)
 {
   if (is.vector(x))
   {
@@ -269,9 +316,9 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     if (missing(adj.positive)) adj.positive <- abs(min(x))
     if (positive) y <- log(x + adj.positive)  ## transform positive data x to real line
     else y <- x
-    if (missing(h)) h <- hpi(x=y, nstage=2, binned=TRUE, bgridsize=bgridsize)
+    if (missing(h)) h <- hpi(x=y, binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
   }
-  if (missing(H) & d>1)  H <- Hpi(x=x, nstage=2, binned=nrow(x)>1000, bgridsize=bgridsize, pilot="samse")
+  if (missing(H) & d>1)  H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
 
   ## compute binned estimator
   if (binned)
@@ -285,15 +332,19 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
       fhat$eval.points <- exp(fhat$eval.points) - adj.positive
       fhat$x <- x
     }
-    else
+    else if (unit.interval)
     {
-      if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize)
+      fhat <- kde.unit.interval.1d(x=x, binned=binned)
+    }
+    else 
+    {
+      if (missing(h) & d==1) h <- hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
       fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
     }
 
     if (!missing(eval.points))
     {
-      fhat$estimate <- kde.approx(x=eval.points, fhat=fhat)
+      fhat$estimate <- predict(fhat, x=eval.points)
       fhat$eval.points <- eval.points
     }
   }
@@ -307,7 +358,12 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     {
       if (missing(eval.points))
       {
-        fhat <- kde.grid.1d(x=x, h=h, gridsize=gridsize, supp=supp, positive=positive, xmin=xmin, xmax=xmax, adj.positive=adj.positive, gridtype=gridtype, w=w)
+        if (unit.interval)
+        {
+          fhat <- kde.unit.interval.1d(x=x, binned=FALSE)
+        }
+        else
+          fhat <- kde.grid.1d(x=x, h=h, gridsize=gridsize, supp=supp, positive=positive, xmin=xmin, xmax=xmax, adj.positive=adj.positive, gridtype=gridtype, w=w)
       }
       else
         fhat <- kde.points.1d(x=x, h=h, eval.points=eval.points, positive=positive, adj.positive=adj.positive, w=w)
@@ -365,18 +421,17 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, 
   else
   {
     y <- x
-    gridtype1 <- tolower(substr(gridtype,1,1))
-    if (gridtype1=="l")
+    gridtype1 <- match.arg(gridtype, c("linear", "sqrt", "quantile")) 
+    if (gridtype1=="linear")
     {
       gridy <- seq(xmin, xmax, length=gridsize)
-      gridtype.vec <- "linear"
     }
-    else if (gridtype1=="s")
+    else if (gridtype1=="sqrt")
     {
       gridy.temp <- seq(sign(xmin)*sqrt(abs(xmin)), sign(xmax)*sqrt(abs(xmax)), length=gridsize)
       gridy <- sign(gridy.temp) * gridy.temp^2
-      gridtype.vec <- "sqrt"
     }
+    gridtype.vec <- gridtype1
   }
   n <- length(y)
   
@@ -388,13 +443,38 @@ kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, 
     ## compute transformation KDE
     fhat$estimate <- fhat$estimate/(exp(gridy))
     fhat$x <- x
-    fhat$eval.points <- gridx 
+    fhat$eval.points <- exp(gridy) - adj.positive ##gridx 
   }
   
   class(fhat) <- "kde"
   
   return(fhat)
 }
+
+
+kde.unit.interval.1d <- function(x, h, binned=FALSE)
+{
+  d <-1
+  y <- qnorm(x)
+  if (missing(h)) h <- hpi(y)
+  xseq <- tail(head(seq(0,1, length=default.gridsize(d)+2),n=-1), n=-1)
+  fhaty <- kde(x=y, h=h, eval.points=qnorm(xseq), binned=binned)
+  fhatx <- fhaty
+  fhatx$eval.points <- xseq
+  fhatx$estimate <- fhaty$estimate/dnorm(fhaty$eval.points)
+
+  ## apply loess smoothing for unsmmooth binned estimates
+  if (binned)
+  {
+    fhatx.loess <- loess(fhatx$estimate ~ fhatx$eval.points, span=0.1)
+    fhatx.smoothed <- fhatx
+    fhatx.smoothed$eval.points <- xseq
+    fhatx.smoothed$estimate <- predict(fhatx.loess, x=xseq)
+    fhatx <- fhatx.smoothed
+  }
+  return(fhatx)
+}
+
 
 
 ###############################################################################
@@ -562,11 +642,12 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
     eval.pointsy <- eval.points
   }
   
-  fhat <- dnorm.mixt(x=eval.pointsy, mus=y, sigmas=rep(h,n), props=w/n)
+  est <- dnorm.mixt(x=eval.pointsy, mus=y, sigmas=rep(h,n), props=w/n)
   if (positive)
-    fhat <- fhat/(eval.points + adj.positive) ##fhat/exp(eval.pointsy)
-  
-  return(list(x=x, eval.points=eval.points, estimate=fhat, h=h, H=h^2, gridded=FALSE))
+    est <- est/(eval.points + adj.positive) ##fhat/exp(eval.pointsy)
+
+  fhat <- list(x=x, eval.points=eval.points, estimate=est, h=h, H=h^2, gridded=FALSE)
+  return(fhat)
 }
 
 
@@ -662,9 +743,8 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
     ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
 {
-  disp1 <- substr(display,1,1)
-  if (!is.list(fhat$eval.points))
-    stop("need a grid of density estimates")
+  disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
+  if (!is.list(fhat$eval.points)) stop("need a grid of density estimates")
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
@@ -672,7 +752,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
 
   ## perspective/wireframe plot
-  if (disp1=="p")
+  if (disp1=="persp")
   {
     hts <- seq(0, 1.1*max(fhat$estimate), length=100)
     if (missing(col)) col <- grey(seq(0.9,0,length=length(hts)+1)) 
@@ -689,7 +769,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     
     plotret <- persp(fhat$eval.points[[1]][plot.ind[[1]]], fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
   }
-  else if (disp1=="s") 
+  else if (disp1=="slice") 
   {
     if (!add)
       plot(fhat$x[,1], fhat$x[,2], type="n",xlab=xlab, ylab=ylab, ...)
@@ -734,13 +814,13 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       points(fhat$x[,1], fhat$x[,2], col=ptcol, cex=cex, pch=pch)
   }
   ## image plot
-  else if (disp1=="i")
+  else if (disp1=="image")
   {
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
             xlab=xlab, ylab=ylab, add=add, ...)
     box()
   }
-  else if (disp1=="f")
+  else if (disp1=="filled.contour" | disp1=="filled.contour2")
   {
     ## compute contours
     if (missing(abs.cont))
@@ -766,7 +846,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
     clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
     
-    if (display=="filled.contour2")
+    if (disp1=="filled.contour2")
     {
       image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
 
@@ -791,7 +871,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, levels=hts, ...)
     }
   }
-  if (disp1=="p")  invisible(plotret)
+  if (disp1=="persp")  invisible(plotret)
   else invisible()
 }
   
@@ -840,10 +920,11 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
     else alphavec <- c(rev(seq(0.1,0.5,length=round(nc/2))), rev(seq(0.1,0.5,length=round(nc/2))))
   }
 
+  fhat.eval.mean <- sapply(fhat$eval.points, mean)
   if (drawpoints)
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
-    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   bg3d(col="white")
   
   for (i in 1:nc)
@@ -858,7 +939,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
 
 
 ###############################################################################
-## Contour levels 
+## Contour levels S3 method
 ###############################################################################
 
 ## create S3 generic 
@@ -893,7 +974,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
   else
   {
     if (approx & fhat$gridded)
-      dobs <- kde.approx(x=fhat$x, fhat=fhat)
+      dobs <- predict(fhat, x=fhat$x)
     else
       dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w)$estimate 
     

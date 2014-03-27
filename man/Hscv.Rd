@@ -9,10 +9,9 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm",
-     Sdr.flag=FALSE)
-Hscv.diag(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, 
+Hscv(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, 
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv.diag(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
@@ -33,8 +32,6 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
-  \item{Sdr.flag}{flag to compute the symmetrizer matrix explicitly for pilot
-  bandwidths for deriv.order>0. Default is FALSE.}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
 
@@ -58,14 +55,18 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
   
-  For details about the advanced options for \code{binned, Hstart, Sdr.flag}, 
+  For details about the advanced options for \code{binned, Hstart}, 
   see \code{\link{Hpi}}.
 }
 
 \references{
   Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for smoothed cross
    validation. \emph{Australian & New Zealand Journal of Statistics}. \bold{53}, 331-351.
-   
+
+  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
+  functionals based on higher order derivatives of the multivariate
+  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
+  
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
   of Statistics}. \bold{32}, 485-506.
@@ -79,7 +80,6 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 \examples{
 data(unicef)
 Hscv(unicef)
-Hscv(unicef, binned=TRUE)
 hscv(unicef[,1])
 }
 

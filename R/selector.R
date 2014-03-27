@@ -59,14 +59,14 @@ gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
 ## g_SAMSE pilot bandwidth
 ###############################################################################
 
-gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL, Sdr.mat)
+gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
   d <- ncol(Sigma.star)
   K <- numeric(); psi <- numeric()
 
   ## 4th order g_SAMSE
 
-  K <- dmvnorm.deriv(x=rep(0,d), deriv.order=modr, Sigma=diag(d), add.index=TRUE, deriv.vec=FALSE, Sdr.mat=Sdr.mat)
+  K <- dmvnorm.deriv(x=rep(0,d), deriv.order=modr, Sigma=diag(d), add.index=TRUE, deriv.vec=FALSE)
   K <- K$deriv[apply(K$deriv.ind, 1, is.even)]
  
   if (modr==4)
@@ -140,9 +140,9 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
   else if (nstage==2)
   {
     G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=var(x))
-    g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d)##sqrt(G2r6.NR[1,1])
+    g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d) 
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
-    eta2r6 <- eta.kfe.y(x=x, deriv.order=2*r+6, G=g2r6.nr^2*diag(d), verbose=verbose, symm=FALSE)
+    eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.nr^2*diag(d), inc=1) 
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
     A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
     A3 <- cf[3]*eta2r6^2
@@ -163,14 +163,13 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
 ## Unconstrained pilot selector for derivatives r>0 from Chacon & Duong (2011)
 ## Generalisation of Gunconstr for r>0
 
-Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE, optim.fun="nlm")
+Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, optim.fun="nlm")
 {
   if (scv) cf <- c(2^(-d/2), 2)
   else cf <- c(1,1)
-  ##if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
-  ##else cf <- c(1,1,1)
   S <- var(x)
-
+  
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim")) 
   if (nstage==1)
   {
     G2r4 <- Gns(r=2*r+4,n=n,Sigma=S)
@@ -179,25 +178,15 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE,
   {
     G2r4.NR <- Gns(r=2*r+4,n=n,Sigma=S)
     G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=S)
-    vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=FALSE, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)   
-    ##D2r4phi0 <- try(DrL0(d=d, r=2*r+4, Sdr.flag=Sdr.flag, verbose=verbose))
-
-    ##Id2r4 <- diag(d^(2*r+4))
+    vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=FALSE, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)   
+    
     dls <- (0:(d^2-1))*d^(2*r+4) 
 
     AB2 <- function(vechG)
     {
       G <- invvech(vechG) %*% invvech(vechG)
       Ginv <- chol2inv(chol(G))
-      ##Ginv12 <- matrix.sqrt(Ginv)
-      
-      ###eta functionals are more efficient but are currently less accurate than direct computation of psi functionals (kfe)
-      ##bias1 <- cf[1]*n^(-2)*det(G)^(-1)*L0^2*OF(2*r+4)*nu(r=r+2, A=Ginv%*%Ginv)
-      ##bias2 <- cf[2]*(-1)^(r+2)*n^(-1)*det(G)^(-1/2)*L0*OF(2*r+4)*eta.rs.kfe(x=x, r=2, s=2*r+4, A=G, B=Ginv, C=G2r6.NR)    
-      ##bias3 <- cf[3]*1/4*eta.rs.kfe(x=x, r=2, s=2*r+4, A=G, B=diag(d), C=G2r6.NR)^2
-      ##bias3 <- cf[3]*1/4*eta2r6*eta.rs.kfe(x=x, r=4, s=2*r+2, A=G, B=diag(d), C=G2r6.NR)
-      ##AB2.val <- bias1 + bias2 + bias3
-      
+    
       ## direct computation
       ##v1 <- n^(-1)*det(Ginv12)*drop(Kpow(A=Ginv12,pow=2*r+4)%*%D2r4phi0) 
       v1 <- n^(-1)*dmvnorm(rep(0,d),rep(0,d),sigma=G)*(-1)^(r+2)*OF(2*r+4)*Sdrv(d=d,r=2*r+4,v=Kpow(vec(Ginv),r+2))
@@ -210,14 +199,15 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE,
       AB2.val <- sum(AB^2)
       return(AB2.val)
     }
+    
     Gstart <- matrix.sqrt(G2r4.NR)
-    optim.fun1 <- tolower(substr(optim.fun, 1,1))
-    if (optim.fun1=="n")
+   
+    if (optim.fun1=="nlm")
     {
       result <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))
       G2r4 <- result$estimate
     } 
-    else
+    else if (optim.fun=="optim")
     { 
       result <- optim(vech(matrix.sqrt(Gstart)), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
       G2r4 <- result$par
@@ -239,7 +229,7 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, scv=FALSE, Sdr.flag=FALSE,
 ## estimated psi functionals
 ###############################################################################
 
-psifun1 <- function(x.star, Sd2r4, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
+psifun1 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
 {
   d <- ncol(x.star)
   r <- deriv.order
@@ -250,8 +240,8 @@ psifun1 <- function(x.star, Sd2r4, pilot="samse", binned, bin.par, deriv.order=0
   ## compute 1 pilot for SAMSE
   if (pilot=="samse")
   {
-    g.star <- gsamse(S.star, n, 4, Sdr.mat=Sd2r4)
-    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, Sdr.mat=Sd2r4, add.index=TRUE, verbose=verbose)
+    g.star <- gsamse(S.star, n, 4)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, add.index=TRUE, verbose=verbose)
   }
   ## compute 5 different pilots for AMSE
   else if ((pilot=="amse") & (d==2))
@@ -300,7 +290,7 @@ psifun1 <- function(x.star, Sd2r4, pilot="samse", binned, bin.par, deriv.order=0
 # estimated psi functionals
 ###############################################################################
 
-psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
+psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
 { 
   d <- ncol(x.star)
   r <- deriv.order
@@ -311,10 +301,10 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
   ## compute 1 pilot for SAMSE    
   if (pilot=="samse")
   {
-    g6.star <- gsamse(S.star, n=n, modr=6, Sdr.mat=Sd2r6)
-    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r6, add.index=FALSE, verbose=verbose)
+    g6.star <- gsamse(S.star, n=n, modr=6)
+    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, add.index=FALSE, verbose=verbose)
     g.star <- gsamse(S.star, n=n, modr=4, nstage=2, psihat=psihat6.star)
-    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, bin.par=bin.par, Sdr.mat=Sd2r4, add.index=TRUE, verbose=verbose)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, bin.par=bin.par, add.index=TRUE, verbose=verbose)
   }
   ## compute different pilots for AMSE
   else if ((pilot=="amse") & (d==2))
@@ -389,7 +379,7 @@ psifun2 <- function(x.star, Sd2r4, Sd2r6, pilot="samse", binned, bin.par, deriv.
 ## estimated psi functionals
 #############################################################################
 
-psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=FALSE)
+psifun1.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE)
 {
   n <- nrow(x)
   r <- deriv.order
@@ -398,7 +388,7 @@ psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose
   ## stage 1 of plug-in
   G2r4 <- Gns(r=2*r+4,n=n,Sigma=S) 
 
-  vecPsi2r4 <- kfe(x=x, G=G2r4, deriv.order=2*r+4, binned=binned, bgridsize=bgridsize, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd2r4, verbose=verbose, Sdr.flag=Sdr.flag) 
+  vecPsi2r4 <- kfe(x=x, G=G2r4, deriv.order=2*r+4, binned=binned, bgridsize=bgridsize, deriv.vec=TRUE, add.index=FALSE, verbose=verbose) 
   return (vecPsi2r4)
 }
 
@@ -415,19 +405,20 @@ psifun1.unconstr <- function(x, Sd2r4, binned, bgridsize, deriv.order=0, verbose
 ## estimated psi functionals
 ############################################################################
 
-psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, Sdr.flag=FALSE, optim.fun="nlm")
+psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   d <- ncol(x)
   n <- nrow(x)
   S <- var(x)
   r <- deriv.order
-
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+  
   ## stage 1 of plug-in
   G2r6 <- Gns(r=2*r+6,n=n,Sigma=S) 
-  vecPsi2r6 <- kfe(x=x, G=G2r6, binned=binned, bgridsize=bgridsize, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd2r6, verbose=verbose, Sdr.flag=Sdr.flag)
+  vecPsi2r6 <- kfe(x=x, G=G2r6, binned=binned, bgridsize=bgridsize, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
 
   ## asymptotic squared bias for r = 4 for MSE-optimal G
-  D2r4phi0 <- DrL0(d=d, r=2*r+4, Sdr.flag=Sdr.flag)
+  D2r4phi0 <- DrL0(d=d, r=2*r+4)
   Id2r4 <- diag(d^(2*r+4))
   
   AB2<-function(vechG){
@@ -441,13 +432,13 @@ psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize,
       
   Gstart <- Gns(r=2*r+4,n=n,Sigma=S) 
   Gstart <- matrix.sqrt(Gstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  
+  if (optim.fun1=="nlm")
   {
     res <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))    
     G2r4 <- res$estimate
   }
-  else 
+  else if (optim.fun1=="optim")
   {
     res <- optim(vech(Gstart), AB2, control=list(reltol=rel.tol, trace=as.numeric(verbose)))
     G2r4 <- res$par
@@ -455,7 +446,7 @@ psifun2.unconstr <- function(x, Sd2r4, Sd2r6, rel.tol=10^-10, binned, bgridsize,
   G2r4 <- invvech(G2r4)%*%invvech(G2r4)
 
   ## stage 2 of plug-in
-  vecPsi2r4 <- kfe(x=x, G=G2r4, binned=binned, bgridsize=bgridsize, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, Sdr.mat=Sd2r4, verbose=verbose, Sdr.flag=Sdr.flag)
+  vecPsi2r4 <- kfe(x=x, G=G2r4, binned=binned, bgridsize=bgridsize, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
   
   return (vecPsi2r4)
 }
@@ -522,32 +513,29 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   return(h)
 }
 
-Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=FALSE)
+Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
-
-  if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pilot,1,1)=="a") pilot <- "amse"
-  else if (substr(pilot,1,1)=="s") pilot <- "samse"
-  else if (substr(pilot,1,1)=="u") pilot <- "unconstr"
-  else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
-  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
  
-  if (pilot=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
-  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
-  if (pilot=="unconstr" & d>=6) stop("unconstrained pilots are not implemented for d>6")
+  if (!is.matrix(x)) x <- as.matrix(x)
+  if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
+  pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
+  pre1 <- match.arg(pre, c("scale", "sphere"))
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+ 
+  if (pilot1=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
+  if ((pilot1=="samse" | pilot1=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
+  if (pilot1=="unconstr" & d>=6) stop("unconstrained pilots are not implemented for d>6")
   
-  if (substr(pre,1,2)=="sc") pre <- "scale"
-  else if (substr(pre,1,2)=="sp") pre <- "sphere"
-  if (pre=="scale")
+  if (pre1=="scale")
   {
     x.star <- pre.scale(x)
     S12 <- diag(sqrt(diag(var(x))))
     Sinv12 <- chol2inv(chol(S12))
   }
-  else if (pre=="sphere")
+  else if (pre1=="sphere")
   {
     x.star <- pre.sphere(x)
     S12 <- matrix.sqrt(var(x))
@@ -556,51 +544,37 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
   
   Idr <- diag(d^r)
   RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2)
-  if (!(pilot %in% c("dunconstr","dscalar")) | Sdr.flag)
-  {
-    Sd2r4 <- Sdr(d=d, r=2*r+4)
-    if (nstage==2) Sd2r6 <- Sdr(d=d, r=2*r+6)
-  }
-  
+
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   
-  if (pilot=="unconstr")
+  if (pilot1=="unconstr")
   {
     ## psi4.mat is on data scale
-    if (!Sdr.flag)
-    {
-       if (nstage==1)
-        psi.fun <- (-1)^r*psifun1.unconstr(x=x, deriv.order=r, verbose=verbose, Sdr.flag=Sdr.flag, binned=FALSE)
-       else if (nstage==2)
-        psi.fun <- psifun2.unconstr(x=x, deriv.order=r, verbose=verbose, Sdr.flag=Sdr.flag, binned=FALSE, optim.fun=optim.fun)
-    }
-    else
-    { 
-      if (nstage==1)
-        psi.fun <- (-1)^r*psifun1.unconstr(x=x, Sd2r4=Sd2r4, binned=binned, bgridsize=bgridsize, deriv.order=r, verbose=verbose)
-       else if (nstage==2)
-        psi.fun <- psifun2.unconstr(x=x, Sd2r4=Sd2r4, Sd2r6=Sd2r6, binned=binned, bgridsize=bgridsize, deriv.order=r, verbose=verbose)
-    }
+    if (nstage==1)
+      psi.fun <- (-1)^r*psifun1.unconstr(x=x, binned=binned, bgridsize=bgridsize, deriv.order=r, verbose=verbose)
+    else if (nstage==2)
+      psi.fun <- psifun2.unconstr(x=x, binned=binned, bgridsize=bgridsize, deriv.order=r, verbose=verbose)
     psi2r4.mat <- (-1)^r*invvec(psi.fun)   
     
     ## use normal reference bandwidth as initial condition 
     if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
-  else if (pilot=="dunconstr")
+  else if (pilot1=="dunconstr")
   {
     ## G2r4 is on data scale
-    ##kfe.thin <- 1
-    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
+    G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, optim.fun=optim.fun)
    
-    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, Sdr.flag=Sdr.flag)
+    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
     if (missing(Hstart)) Hstart <-  Hns(x=x, deriv.order=r)
   }
-  else if (pilot=="dscalar")
+  else if (pilot1=="dscalar")
   {
     ## g2r4 is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
+    G2r4 <- g2r4^2 * diag(d)
+    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
     if (missing(Hstart)) Hstart <-  Hns(x=x.star, deriv.order=r)
   }
   else
@@ -610,12 +584,12 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
       H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
       bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
     }
-    
+      
     ## psi4.mat is on pre-transformed data scale
     if (nstage==1)
-      psi.fun <- psifun1(x.star, Sd2r4=Sd2r4, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
+      psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
     else if (nstage==2)
-      psi.fun <- psifun2(x.star, Sd2r4=Sd2r4, Sd2r6=Sd2r6, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
+      psi.fun <- psifun2(x.star, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir
     psi2r4.mat <- invvec(psi.fun)
 
     ## use normal reference bandwidth as initial condition 
@@ -629,42 +603,32 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
     H <- invvech(vechH) %*% invvech(vechH)
     Hinv <- chol2inv(chol(H))
     IdrvH <- Idr%x%vec(H)
-    int.var <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2)
+    int.var <- 1/(det(H)^(1/2)*n)*nur(r=r, A=Hinv, mu=rep(0,d), Sigma=diag(d))*2^(-d-r)*pi^(-d/2)
     
-    if (pilot=="dunconstr") 
+    if (pilot1=="dunconstr" | pilot1=="dscalar") 
     {
-      ## eta functional form is not as accurate as kfe form
-      ## eta2r4.hat <- eta.rs.kfe(x=x, r=4, s=2*r, A=H, B=diag(d), C=G2r4, verbose=verbose)
-      ## pi.val <- int.var + (-1)^r*1/4*eta2r4.hat      
-      pi.val <- drop(int.var + (-1)^r*1/4*vecPsi2r4 %*% (vec(diag(d^r) %x% vec(H) %x% vec(H))))  
-    }
-    else if (pilot=="dscalar")
-    {
-      eta2r4.hat <- eta.rs.kfe(x=x.star, r=4, s=2*r, A=H, B=diag(d), C=g2r4^2*diag(d), verbose=verbose)
-      pi.val <- int.var + (-1)^r*1/4*eta2r4.hat
+      pi.val <- int.var + (-1)^r*1/4*vecPsi2r4 %*% (vec(diag(d^r) %x% vec(H) %x% vec(H)))
     }
     else
       pi.val <- int.var + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
-
     pi.val <- drop(pi.val)
     return(pi.val)
   }
 
   Hstart <- matrix.sqrt(Hstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=vech(Hstart), f=pi.temp, print.level=2*as.numeric(verbose))    
     H <- invvech(result$estimate) %*% invvech(result$estimate)
     amise.star <- result$minimum
   }
-  else
+  else if (optim.fun1=="optim")
   {
     result <- optim(vech(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
-  if (!(pilot %in% c("dunconstr","unconstr")))  H <- S12 %*% H %*% S12   ## back-transform
+  if (!(pilot1 %in% c("dunconstr","unconstr")))  H <- S12 %*% H %*% S12   ## back-transform
   
   if (!amise) return(H)
   else return(list(H = H, PI.star=amise.star))
@@ -673,46 +637,44 @@ Hpi <- function(x, nstage=2, pilot="samse", pre="sphere", Hstart, binned=FALSE, 
 
 
 ###############################################################################
-# Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
-#
-# Parameters
-# x - data points
-# nstage - number of plug-in stages (1 or 2)
-# pre - "scale" - pre-scaled data
-#     - "sphere"- pre-sphered data 
-#
-# Returns
-# Plug-in diagonal bandwidth matrix
+## Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
+##
+## Parameters
+## x - data points
+## nstage - number of plug-in stages (1 or 2)
+## pre - "scale" - pre-scaled data
+##     - "sphere"- pre-sphered data 
+##
+## Returns
+## Plug-in diagonal bandwidth matrix
 ###############################################################################
 
 
-Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pre,1,2)=="sp") stop("using pre-sphering won't give diagonal bandwidth matrix")
-  if (substr(pilot,1,1)=="a") pilot <- "amse"
-  else if (substr(pilot,1,1)=="s") pilot <- "samse"
-  else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"
-  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
- 
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
   RK <- (4*pi)^(-d/2)
+ 
+  if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
+  pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
+  pre1 <- match.arg(pre, c("scale", "sphere"))
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+ 
+  if (pre1=="sphere") stop("using pre-sphering won't give diagonal bandwidth matrix")
+  if (pilot1=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deri.v.order>0")
+  if (pilot1=="samse" & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
+  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag")
   
-  if (pilot=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deri.v.order>0")
-  if (pilot=="samse" & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
-  if (pilot=="unconstr" | pilot=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag")
-  
-  if (substr(pre,1,2)=="sc") pre <- "scale"
-  else if (substr(pre,1,2)=="sp") pre <- "sphere"
-  if (pre=="scale")
+  if (pre1=="scale")
   {
     x.star <- pre.scale(x)
     S12 <- diag(sqrt(diag(var(x))))
     Sinv12 <- chol2inv(chol(S12))
   }
-  else if (pre=="sphere")
+  else if (pre1=="sphere")
   {
     x.star <- pre.sphere(x)
     S12 <- matrix.sqrt(var(x))
@@ -733,21 +695,20 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
   Idr <- diag(d^r)  
   if (pilot=="amse" | pilot=="samse")
   {
-    Sd2r4 <- Sdr(d=d, r=2*r+4)
-    if (nstage==2) Sd2r6 <- Sdr(d=d, r=2*r+6)
-    
     if (nstage==1)
-      psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par, deriv.order=r, verbose=verbose, Sd2r4=Sd2r4)$psir
+      psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par, deriv.order=r, verbose=verbose)$psir
     else if (nstage==2)
-      psi.fun <- psifun2(x.star, pilot=pilot, binned=binned, bin.par=bin.par, deriv.order=r, verbose=verbose, Sd2r4=Sd2r4, Sd2r6=Sd2r6)$psir
+      psi.fun <- psifun2(x.star, pilot=pilot, binned=binned, bin.par=bin.par, deriv.order=r, verbose=verbose)$psir
     psi2r4.mat <- invvec(psi.fun)
   }
-  else if (pilot=="dscalar")
+  else if (pilot1=="dscalar")
   {
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
+    G2r4 <- g2r4^2 * diag(d)
+    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
   }
   
-  if (d==2 & r==0 & (pilot=="amse" | pilot=="samse"))
+  if (d==2 & r==0 & (pilot1=="amse" | pilot1=="samse"))
   {
     ## diagonal bandwidth matrix for 2-dim has exact formula 
     psi40 <- psi.fun[1]
@@ -771,11 +732,8 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
       IdrvH <- Idr%x%vec(H)
       int.var <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2)
 
-      if (pilot=="dscalar")
-      {
-        eta2r4.hat <- eta.rs.kfe(x=x.star, r=4, s=2*r, A=H, B=diag(d), C=g2r4^2*diag(d), verbose=verbose)
-        pi.val <- int.var + (-1)^r*1/4*eta2r4.hat
-      }
+      if (pilot1=="dscalar")
+        pi.val <- int.var + (-1)^r*1/4*vecPsi2r4 %*% (vec(diag(d^r) %x% vec(H) %x% vec(H)))
       else
         pi.val <- int.var + (-1)^r*1/4* sum(diag(t(IdrvH) %*% psi2r4.mat %*% IdrvH))
       
@@ -787,14 +745,13 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
     else Hstart <- Sinv12 %*% Hstart %*% Sinv12
     Hstart <- matrix.sqrt(Hstart)
     
-    optim.fun1 <- tolower(substr(optim.fun,1,1))
-    if (optim.fun1=="n")
+    if (optim.fun1=="nlm")
     {
       result <- nlm(p=diag(Hstart), f=pi.temp, print.level=2*as.numeric(verbose))    
       H <- diag(result$estimate^2)
       amise.star <- result$minimum
     }
-    else if (optim.fun1=="o")
+    else if (optim.fun1=="optim")
     {  
       result <- optim(diag(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
       H <- diag(result$par) %*% diag(result$par)
@@ -811,18 +768,18 @@ Hpi.diag <- function(x, nstage=2, pilot="samse", pre="scale", Hstart, binned=FAL
 
 
 ###############################################################################
-# Cross-validation bandwidth selectors
+## Cross-validation bandwidth selectors
 ###############################################################################
 
 ###############################################################################
-# Computes the least squares cross validation LSCV function for 2 to 6 dim
-# 
-# Parameters
-# x - data values
-# H - bandwidth matrix
-#
-# Returns
-# LSCV(H)
+## Computes the least squares cross validation LSCV function for 2 to 6 dim
+## 
+## Parameters
+## x - data values
+## H - bandwidth matrix
+##
+## Returns
+## LSCV(H)
 ###############################################################################
 
 lscv.1d <- function(x, h, binned, bin.par, deriv.order=0)
@@ -833,164 +790,40 @@ lscv.1d <- function(x, h, binned, bin.par, deriv.order=0)
   return((-1)^r*(lscv1 - 2*lscv2))     
 }
 
-lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0, Sd2r, double.loop=FALSE, symm=FALSE)
+lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
 {
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
-  
-  if (!symm & !binned)
+
+  if (!binned)
   {
-    RK<-(4*pi)^(-d/2)
-    ## fast version from J.E. Chacon 06/05/2011
-    if (r==0)
-    {
-      Hinv <- chol2inv(chol(H))
-      detH <- det(H)
-      xH <- x%*%Hinv
-      a <- rowSums(xH*x)
-      M <- a%*%t(rep(1,n))+rep(1,n)%*%t(a)-2*(xH%*%t(x))
-      m <- M[lower.tri(M)]
-      em2 <- exp(-m/2)
-      lscv1 <- (2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(em2))
-      lscv2 <- (2*pi)^(-d/2)*detH^(-1/2)*sum(em2)        
-      lscv  <- RK/(n*detH^(1/2))+2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1))
-    }
-    else if (r==1)
-    {
-      Hinv<-chol2inv(chol(H))
-      H2inv<-Hinv%*%Hinv
-      trHinv<-sum(diag(Hinv))
-      detH<-det(H)
-      
-      xH<-x%*%Hinv
-      a<-rowSums(xH*x)
-      M<-a%*%t(rep(1,n))+rep(1,n)%*%t(a)-2*(xH%*%t(x))
-      dv<-M[lower.tri(M)]
-        
-      xH2<-x%*%H2inv
-      a2<-rowSums(xH2*x)
-      M2<-a2%*%t(rep(1,n))+rep(1,n)%*%t(a2)-2*(xH2%*%t(x))
-      dv2<-M2[lower.tri(M2)] 
-      
-      edv2<-exp(-dv/2)
-      lscv1<-(2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(edv2)*(dv2/4-trHinv/2))
-      lscv2<-(2*pi)^(-d/2)*detH^(-1/2)*sum(edv2*(dv2-trHinv))
-      lscv <- RK/(n*detH^(1/2))*trHinv*2^(-1)+(-1)*2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1))
-    }
-    else if (r==2)
-    {
-      Hinv<-chol2inv(chol(H))
-      H2inv<-Hinv%*%Hinv
-      H3inv<-H2inv%*%Hinv
-      trHinv<-sum(diag(Hinv))
-      trH2inv<-sum(diag(H2inv))        
-      detH<-det(H)
-      
-      xH<-x%*%Hinv
-      a<-rowSums(xH*x)
-      M<-a%*%t(rep(1,n))+rep(1,n)%*%t(a)-2*(xH%*%t(x))
-      dv<-M[lower.tri(M)]
-      
-      xH2<-x%*%H2inv
-      a2<-rowSums(xH2*x)
-      M<-a2%*%t(rep(1,n))+rep(1,n)%*%t(a2)-2*(xH2%*%t(x))
-      dv2<-M[lower.tri(M)]  
-      
-      xH3<-x%*%H3inv
-      a3<-rowSums(xH3*x)
-      M<-a3%*%t(rep(1,n))+rep(1,n)%*%t(a3)-2*(xH3%*%t(x))
-      dv3<-M[lower.tri(M)]               
-      
-      edv2<-exp(-dv/2)
-      lscv1<-(2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(edv2)*(trH2inv/2-dv3/2+(-trHinv/2+dv2/4)^2))
-      lscv2<-(2*pi)^(-d/2)*detH^(-1/2)*sum(edv2*(2*trH2inv-4*dv3+(-trHinv+dv2)^2))
-      lscv <- RK/(n*detH^(1/2))*(trH2inv/2+trHinv^2/4)+2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1))
-    }
-    else
-    {
-      ndifs <- n*(n-1)/2
-      RK<-(4*pi)^(-d/2)        
-      detH<-det(H)
-      Hinv<-chol2inv(chol(H))
-      
-      xHinv<-x%*%Hinv
-      xHinvx<-rowSums(xHinv*x)
-      M<-xHinvx%*%t(rep(1,n))+rep(1,n)%*%t(xHinvx)-2*(xHinv%*%t(x)) #M=nxn matrix with m_ij=(X_i-X_j)^TH^{-1}(X_i-X_j)
-      dv<-M[lower.tri(M)] # We only need the i<j values, I wonder if there is a way to obtain this not needing to calculate the full M
-      
-      edv2<-exp(-dv/2)
-      P0<-Hinv
-      
-      kappas1<-matrix(nrow=ndifs,ncol=r)
-      kappas2<-matrix(nrow=ndifs,ncol=r)
-      kappas0<-numeric(r)        
-      for (i in 1:r)
-      {
-        Hi1inv<-P0%*%Hinv
-        trHi0inv<-sum(diag(P0))
-        
-        xHi1inv<-x%*%Hi1inv
-        xHi1invx<-rowSums(xHi1inv*x)
-        M<-xHi1invx%*%t(rep(1,n))+rep(1,n)%*%t(xHi1invx)-2*(xHi1inv%*%t(x))
-        dvi1<-M[lower.tri(M)]
-        
-        kappas1[,i]<-(-2)^(i-1)*factorial(i-1)*(-trHi0inv/2^i+i*dvi1/2^(i+1))
-        kappas2[,i]<-(-2)^(i-1)*factorial(i-1)*(-trHi0inv+i*dvi1)
-        kappas0[i]<-(-2)^(i-1)*factorial(i-1)*(-trHi0inv/2^i)
-        P0<-Hi1inv
-      }
-        
-      nus1<-matrix(nrow=ndifs,ncol=r+1)
-      nus2<-matrix(nrow=ndifs,ncol=r+1)        
-      nus0<-numeric(r+1)         
-      nus1[,1]<-1
-      nus2[,1]<-1        
-      nus0[1]<-1                
-      for(j in 1:r)
-      {
-        js<-0:(j-1)
-        if (j==1)
-        {
-          nus1[,2]<-kappas1[,1];nus2[,2]<-kappas2[,1];nus0[2]<-kappas0[1]
-        }
-        else
-        {
-          nus1[,j+1]<-rowSums(kappas1[,j:1]*nus1[,1:j]/matrix(rep(factorial(js)*factorial(rev(js)),ndifs),nrow=ndifs,byrow=TRUE))*factorial(j-1)
-          nus2[,j+1]<-rowSums(kappas2[,j:1]*nus2[,1:j]/matrix(rep(factorial(js)*factorial(rev(js)),ndifs),nrow=ndifs,byrow=TRUE))*factorial(j-1)
-          nus0[j+1]<-sum(kappas0[j:1]*nus0[1:j]/(factorial(js)*factorial(rev(js))))*factorial(j-1)
-        }
-      }
-        
-      lscv1<-(2*pi)^(-d/2)*2^(-d/2)*detH^(-1/2)*sum(sqrt(edv2)*nus1[,r+1])
-      lscv2<-(2*pi)^(-d/2)*detH^(-1/2)*sum(edv2*nus2[,r+1])
-      lscv<-(-1)^r*(RK/(n*detH^(1/2))*nus0[r+1]+2*((1-1/n)*lscv1-2*lscv2)/(n*(n-1)))
-    }
+    lscv1 <- Qr(x=x, deriv.order=2*r, Sigma=2*H, inc=1)
+    lscv2 <- Qr(x=x, deriv.order=2*r, Sigma=H, inc=0)
+    lscv <- drop(lscv1 - 2*lscv2)
   }
   else
   { 
-    ## could implement these as recursive kfe 
-    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, double.loop=double.loop, add.index=FALSE)
-    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, Sdr.mat=Sd2r, double.loop=double.loop, add.index=FALSE)
+    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
+    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
     lscv <- drop(lscv1 - 2*lscv2)
-    lscv <- (-1)^r*sum(vec(diag(d^r))*lscv)
+    lscv <- (-1)^r*drop(lscv %*% vec(diag(d^r)))
   }
 
   return(lscv)  
-
 }
 
 
    
 ###############################################################################
-# Finds the bandwidth matrix that minimises LSCV for 2 to 6 dim
-# 
-# Parameters
-# x - data values
-# Hstart - initial bandwidth matrix
-#
-# Returns
-# H_LSCV
+## Finds the bandwidth matrix that minimises LSCV for 2 to 6 dim
+## 
+## Parameters
+## x - data values
+## Hstart - initial bandwidth matrix
+##
+## Returns
+## H_LSCV
 ###############################################################################
 
 hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
@@ -1037,7 +870,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order 
-  ##RK <- (4*pi)^(-d/2)
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
   ## use normal reference selector as initial condn
   Hnorm <- Hns(x=x, deriv.order=r)
@@ -1048,24 +881,22 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   if (binned) bin.par <- binning(x=x, H=diag(diag(Hnorm)))
   if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
 
-  Sd2r <- Sdr(d=d, r=2*r)
-  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=FALSE, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, deriv.order=r)
   lscv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
-    
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+   
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=vech(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))   
     H <- invvech(result$estimate) %*% invvech(result$estimate)
     amise.opt <- result$minimum
   }
-  else if (optim.fun1=="o")
+  else if (optim.fun1=="optim")
   {
     result <- optim(vech(Hstart), lscv.mat.temp, control=list(trace=as.numeric(verbose)), method="Nelder-Mead")     
     H <- invvech(result$par) %*% invvech(result$par)
@@ -1077,14 +908,14 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
 }
 
 ###############################################################################
-# Finds the diagonal bandwidth matrix that minimises LSCV for 2 to 6 dim
-# 
-# Parameters
-# x - data values
-# Hstart - initial bandwidth matrix
-#
-# Returns
-# H_LSCV,diag
+## Finds the diagonal bandwidth matrix that minimises LSCV for 2 to 6 dim
+## 
+## Parameters
+## x - data values
+## Hstart - initial bandwidth matrix
+##
+## Returns
+## H_LSCV,diag
 ###############################################################################
 
 Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc)
@@ -1094,14 +925,15 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
-
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+  
   Hnorm <- Hns(x=x, deriv.order=r)
   if (missing(Hstart)) Hstart <- Hnorm
   if (d>4) binned <- FALSE
 
   ## don't truncate optimisation for deriv.order==0
   if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
-
+  
   ## linear binning
   if (binned)
   {
@@ -1109,26 +941,24 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
     bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(Hnorm))))
   }
   
-  Sd2r <- Sdr(d=d, r=2*r)
-  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=FALSE, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, deriv.order=r)
 
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r, Sd2r=Sd2r, symm=FALSE)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
 
   Hstart <- matrix.sqrt(Hstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=diag(Hstart), f=lscv.mat.temp, print.level=2*as.numeric(verbose))
     H <- diag(result$estimate^2)
     amise.opt <- result$minimum
   }
-  else if (optim.fun1=="o")
+  else if (optim.fun1=="optim")
   {
     result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
     H <- diag(result$par^2)
@@ -1140,22 +970,22 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
 }
 
 ###############################################################################
-# Computes the biased cross validation BCV function for 2-dim
-# 
-# Parameters
-# x - data values
-# H1, H2 - bandwidth matrices
-#
-# Returns
-# BCV(H)
+## Computes the biased cross validation BCV function for 2-dim
+## 
+## Parameters
+## x - data values
+## H1, H2 - bandwidth matrices
+##
+## Returns
+## BCV(H)
 ###############################################################################
 
-bcv.mat <- function(x, H1, H2)
+bcv.mat <- function(x, H1, H2, binned=FALSE)
 {
   n <- nrow(x)
   d <- 2
 
-  psi <- kfe(x, G=H2, deriv.order=4, add.index=TRUE, deriv.vec=TRUE, inc=0)
+  psi <- kfe(x, G=H2, deriv.order=4, add.index=TRUE, deriv.vec=TRUE, inc=0, binned=binned)
   psi40 <- psi$psir[1]
   psi31 <- psi$psir[2]
   psi22 <- psi$psir[4]
@@ -1175,25 +1005,25 @@ bcv.mat <- function(x, H1, H2)
 
 
 ###############################################################################
-# Find the bandwidth matrix that minimises the BCV for 2-dim
-# 
-# Parameters
-# x - data values
-# whichbcv - 1 = BCV1
-#          - 2 = BCV2 
-# Hstart - initial bandwidth matrix
-#
-# Returns
-# H_BCV
+## Find the bandwidth matrix that minimises the BCV for 2-dim
+## 
+## Parameters
+## x - data values
+## whichbcv - 1 = BCV1
+##          - 2 = BCV2 
+## Hstart - initial bandwidth matrix
+##
+## Returns
+## H_BCV
 ###############################################################################
 
-Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
+Hbcv <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
   RK <- (4*pi)^(-d/2)
   if(!is.matrix(x)) x <- as.matrix(x)
-
+  
   ## use normal reference b/w matrix for bounds
   k <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*n*gamma((d+8)/2)*(d+2)))^(2/(d+4))
   Hmax <- k * abs(var(x))
@@ -1203,31 +1033,32 @@ Hbcv <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
   bcv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    return(bcv.mat(x, H, whichbcv*H)$bcv)
-  } 
- 
+    bcv <- bcv.mat(x=x, H1=H, H2=whichbcv*H, binned=binned)$bcv
+    return(bcv)  
+  }
+
   result <- optim(vech(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)), lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose)))
+
   H <- invvech(result$par) %*% invvech(result$par)
   amise.opt <- result$value
-  
   if (!amise) return(H)
   else return(list(H = H, BCV=amise.opt))
 }
 
 ###############################################################################
-# Find the diagonal bandwidth matrix that minimises the BCV for 2-dim
-# 
-# Parameters
-# x - data values
-# whichbcv - 1 = BCV1
-#          - 2 = BCV2
-# Hstart - initial bandwidth matrix
-#
-# Returns
-# H_BCV, diag
+## Find the diagonal bandwidth matrix that minimises the BCV for 2-dim
+## 
+## Parameters
+## x - data values
+## whichbcv - 1 = BCV1
+##          - 2 = BCV2
+## Hstart - initial bandwidth matrix
+##
+## Returns
+## H_BCV, diag
 ###############################################################################
 
-Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
+Hbcv.diag <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1244,7 +1075,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
   bcv.mat.temp <- function(diagH)
   {
     H <- diag(diagH) %*% diag(diagH) 
-    return(bcv.mat(x, H, whichbcv*H)$bcv)
+    return(bcv.mat(x, H, whichbcv*H, binned=binned)$bcv)
   } 
  
   result <- optim(diag(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose)))
@@ -1255,18 +1086,39 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, amise=FALSE, verbose=FALSE)
 }
 
 ###############################################################################
-# Estimate scalar g_AMSE pilot bandwidth for SCV for 2 to 6 dim
-#
-# Parameters
-# Sigma.star - scaled/ sphered variance matrix
-# Hamise - (estimate) of H_AMISE 
-# n - sample size
-#
-# Returns
-# g_AMSE pilot bandwidth
+## Estimate scalar g_AMSE pilot bandwidth for SCV for 2 to 6 dim
+##
+## Parameters
+## Sigma.star - scaled/ sphered variance matrix
+## Hamise - (estimate) of H_AMISE 
+## n - sample size
+##
+## Returns
+## g_AMSE pilot bandwidth
 ###############################################################################
 
-gamse.scv <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bin.par, bgridsize, verbose=FALSE, nstage=1, Theta6=FALSE)
+Theta6.elem <- function(d)
+{
+  Theta6.mat <- list()
+  Theta6.mat[[d]] <- list()
+  for (i in 1:d)
+    Theta6.mat[[i]] <- list()
+  
+  for (i in 1:d)
+    for (j in 1:d)
+    {  
+      temp <- numeric()
+      for (k in 1:d)     
+        for (ell in 1:d)    
+          temp <- rbind(temp, elem(i,d)+2*elem(k,d)+2*elem(ell,d)+elem(j,d))
+      
+      Theta6.mat[[i]][[j]] <- temp
+    }
+  
+  return(Theta6.mat)
+}
+
+gamse.scv <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par, bgridsize, verbose=FALSE, nstage=1, Theta6=FALSE)
 {
   if (nstage==0)
   {
@@ -1276,8 +1128,8 @@ gamse.scv <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bin.p
   {  
     g6.star <- gsamse(Sigma.star, n, 6) 
     G6.star <- g6.star^2 * diag(d)
-    if (Theta6) psihat6.star <- kfe(x=x.star, bin.par=bin.par, Sdr.mat=Sd6, deriv.order=6, G=G6.star, deriv.vec=FALSE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
-    else psihat6.star <- kfe(x=x.star, bin.par=bin.par, Sdr.mat=Sd6, deriv.order=6, G=G6.star, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    if (Theta6) psihat6.star <- kfe(x=x.star, bin.par=bin.par, deriv.order=6, G=G6.star, deriv.vec=FALSE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    else psihat6.star <- kfe(x=x.star, bin.par=bin.par, deriv.order=6, G=G6.star, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
   }
 
   if (Theta6)
@@ -1321,24 +1173,25 @@ gamse.scv <- function(x.star, Sd6, d, Sigma.star, Hamise, n, binned=FALSE, bin.p
 
 
 ###############################################################################
-# Estimate unconstrained G_AMSE pilot bandwidth for SCV for 2 to 6 dim
-# (J.E. Chacon)
-#
-# Returns
-# G_AMSE pilot bandwidth
+## Estimate unconstrained G_AMSE pilot bandwidth for SCV for 2 to 6 dim
+## (J.E. Chacon)
+##
+## Returns
+## G_AMSE pilot bandwidth
 ###############################################################################
 
-Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, Sdr.flag=FALSE, optim.fun="nlm")
+Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, optim.fun="nlm")
 {
   d <- ncol(x)
   n <- nrow(x)
   S <- var(x)
-
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+  
   ## stage 1 of plug-in
   if (nstage==1)
   {  
     G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
-    psihat6 <- kfe(x=x, deriv.order=6, Sdr.mat=Sd6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose, Sdr.flag=Sdr.flag)
+    psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose)
   }
   else if (nstage==0)
   {
@@ -1346,7 +1199,7 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
   }
   
   ## constants for normal reference
-  D4phi0 <- DrL0(d=d,r=4, Sdr.mat=Sd4, Sdr.flag=Sdr.flag)
+  D4phi0 <- DrL0(d=d,r=4)
   Id4 <- diag(d^4)
 
   ## asymptotic squared bias for r = 4
@@ -1358,15 +1211,13 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
     return (sum(AB^2))
   }
 
-  Hstart <- Hns(x=x, deriv.order=1)
-  Hstart <- matrix.sqrt(Hstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  Hstart <- matrix.sqrt(Hns(x=x, deriv.order=1))
+  if (optim.fun1=="nlm")
   {
      result <- nlm(p=vech(Hstart), f=AB2, print.level=2*as.logical(verbose))    
      G4 <- result$estimate
   }
-  else    
+  else if (optim.fun1=="optim")    
   { 
     result <- optim(vech(Hstart), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
     G4 <- result$par
@@ -1377,15 +1228,15 @@ Gunconstr.scv <- function(x, Sd6, Sd4, binned=FALSE, bin.par, bgridsize, rel.tol
 
 
 ###############################################################################
-# Computes the smoothed cross validation function for 2 to 6 dim
-# 
-# Parameters
-# x - data values
-# H - bandwidth matrix
-# G - pilot bandwidth matrix
-#
-# Returns
-# SCV(H)
+## Computes the smoothed cross validation function for 2 to 6 dim
+## 
+## Parameters
+## x - data values
+## H - bandwidth matrix
+## G - pilot bandwidth matrix
+##
+## Returns
+## SCV(H)
 ###############################################################################
 
 
@@ -1405,7 +1256,7 @@ scv.1d <- function(x, h, g, binned=TRUE, bin.par, inc=1, deriv.order=0)
   return(scv)
 }
 
-scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, deriv.order=0, Sd2r, symm=FALSE, Sdr.flag=FALSE)
+scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, deriv.order=0)
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -1413,24 +1264,24 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
   vId <- vec(diag(d))
   Hinv <- chol2inv(chol(H))
 
-  if (!symm)
+  if (!binned)
   {
-    scv1 <- eta.kfe.y(x=x, G=2*H+2*G, deriv.order=2*r)
-    scv2 <- eta.kfe.y(x=x, G=H+2*G, deriv.order=2*r)
-    scv3 <- eta.kfe.y(x=x, G=2*G, deriv.order=2*r)
+    scv1 <- Qr(x=x, deriv.order=2*r, Sigma=2*H+2*G, inc=1)
+    scv2 <- Qr(x=x, deriv.order=2*r, Sigma=H+2*G, inc=1)
+    scv3 <- Qr(x=x, deriv.order=2*r, Sigma=2*G, inc=1)
     bias2 <- (-1)^r*(scv1 - 2*scv2 + scv3)
     if (bias2 < 0) bias2 <- 0
   }
   else
   {
-    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, Sdr.mat=Sd2r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)$psir
-    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, Sdr.mat=Sd2r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)$psir
-    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, Sdr.mat=Sd2r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)$psir
+    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
     
     bias2 <- drop((-1)^r*Kpow(vId,r) %*% (scv1 - 2*scv2 + scv3))
     if (bias2 < 0) bias2 <- 0
   }
-  scvmat <- 1/(det(H)^(1/2)*n)*nu(r=r, Hinv)*2^(-d-r)*pi^(-d/2) + bias2
+  scvmat <- 1/(det(H)^(1/2)*n)*nur(r=r, A=Hinv, mu=rep(0,d), Sigma=diag(d), type="direct")*2^(-d-r)*pi^(-d/2) + bias2
   return (scvmat)
 }
 
@@ -1501,7 +1352,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", Sdr.flag=FALSE)
+Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1509,34 +1360,27 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   r <- deriv.order
 
   if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pilot,1,1)=="a") pilot <- "amse"
-  else if (substr(pilot,1,1)=="s") pilot <- "samse"
-  else if (substr(pilot,1,1)=="u") pilot <- "unconstr"
-  else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"                     
-  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
-
-  if (pilot=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
-  if ((pilot=="samse" | pilot=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for deriv.order>0")
-    
-  if (substr(pre,1,2)=="sc") pre <- "scale"
-  else if (substr(pre,1,2)=="sp") pre <- "sphere"
+  if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
+  pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
+  pre1 <- match.arg(pre, c("scale", "sphere"))
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
-  if (pre=="scale")
+  if (pilot1=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
+  if ((pilot1=="samse" | pilot1=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for deriv.order>0")
+    
+  if (pre1=="scale")
   {
     x.star <- pre.scale(x)
     S12 <- diag(sqrt(diag(var(x))))
     Sinv12 <- chol2inv(chol(S12))
   }
-  else if (pre=="sphere")
+  else if (pre1=="sphere")
   {
     x.star <- pre.sphere(x)
     S12 <- matrix.sqrt(var(x))
     Sinv12 <- chol2inv(chol(S12))
   }
     
-  Sd2r <- Sdr(d=d,r=2*r)
-  ##vId <- vec(diag(d))
-  ##RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2)
   RK <- (4*pi)^(-d/2)
 
   if (d > 4) binned <- FALSE
@@ -1545,7 +1389,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   
   if (binned)
   {
-    if (pilot=="unconstr" | pilot=="dunconstr")
+    if (pilot1=="unconstr" | pilot1=="dunconstr")
     {
       H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
       bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
@@ -1556,21 +1400,19 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
       bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
     }
   }
-  if (pilot=="unconstr")
+  if (pilot1=="unconstr")
   {
     ## Gu pilot matrix is on data scale
-    Sd4 <- Sdr(d=d, r=4)
-    Sd6 <- Sdr(d=d, r=6)
-    Gu <- Gunconstr.scv(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, Sd4=Sd4, nstage=nstage-1, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
+    Gu <- Gunconstr.scv(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose, nstage=nstage-1, optim.fun=optim.fun)
     if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
-  else if (pilot=="dunconstr")
+  else if (pilot1=="dunconstr")
   {
     ## Gu pilot matrix is on data scale
-    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE, Sdr.flag=Sdr.flag, optim.fun=optim.fun)
+    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE,  optim.fun=optim.fun)
     if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
-  else if (pilot=="dscalar")
+  else if (pilot1=="dscalar")
   {
     ## Gs is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE)
@@ -1580,15 +1422,13 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   else
   {
     ## Gs is on transformed data scale    
-    Hamise <- Hpi(x=x.star, nstage=1, deriv.order=r, pilot=pilot, pre="sphere", binned=TRUE, bgridsize=bgridsize, verbose=verbose, Sdr.flag=Sdr.flag, optim.fun=optim.fun) 
+    Hamise <- Hpi(x=x.star, nstage=1, deriv.order=r, pilot=pilot, pre="sphere", binned=TRUE, bgridsize=bgridsize, verbose=verbose, optim.fun=optim.fun) 
     if (any(is.na(Hamise)))
     {
       warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
       Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
     }
-    Sd4 <- Sdr(d=d, r=4)
-    Sd6 <- Sdr(d=d, r=6)
-    gs <- gamse.scv(x.star=x.star, d=d, Sigma.star=var(x.star), Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
+    gs <- gamse.scv(x.star=x.star, d=d, Sigma.star=var(x.star), Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, nstage=nstage-1)
     Gs <- gs^2*diag(d)
 
     ## use normal reference bandwidth as initial condition 
@@ -1600,33 +1440,32 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot="samse", Hstart, binned=FALSE,
   scv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    if (pilot=="samse" | pilot=="amse" | pilot=="dscalar"){ Gpilot <- Gs; xx <- x.star }
-    else if (pilot=="unconstr" | pilot=="dunconstr") { Gpilot <- Gu; xx <- x }
-    return(scv.mat(x=xx, H=H, G=Gpilot, binned=binned, bin.par=bin.par, verbose=FALSE, Sd2r=Sd2r, deriv.order=r, symm=FALSE))
+    if (pilot1=="samse" | pilot1=="amse" | pilot1=="dscalar"){ Gpilot <- Gs; xx <- x.star }
+    else if (pilot1=="unconstr" | pilot1=="dunconstr") { Gpilot <- Gu; xx <- x }
+    return(scv.mat(x=xx, H=H, G=Gpilot, binned=binned, bin.par=bin.par, verbose=FALSE, deriv.order=r))
   }
 
   Hstart <- matrix.sqrt(Hstart)
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=vech(Hstart), f=scv.mat.temp, print.level=2*as.numeric(verbose))    
     H <- invvech(result$estimate) %*% invvech(result$estimate)
     amise.star <- result$minimum
   }
-  else
+  else if (optim.fun=="optim")
   {
     result <- optim(vech(Hstart), scv.mat.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
-  if (!(pilot %in% c("dunconstr","unconstr")))  H <- S12 %*% H %*% S12   ## back-transform
+  if (!(pilot1 %in% c("dunconstr","unconstr")))  H <- S12 %*% H %*% S12   ## back-transform
 
   if (!amise) return(H)
   else return(list(H = H, SCV.star=amise.star))
 }
 
 
-Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1634,33 +1473,30 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   RK <- (4*pi)^(-d/2)
   
   if(!is.matrix(x)) x <- as.matrix(x)
-  if (substr(pilot,1,1)=="a") pilot <- "amse"
-  else if (substr(pilot,1,1)=="s") pilot <- "samse"
-  else if (substr(pilot,1,2)=="du") pilot <- "dunconstr"
-  else if (substr(pilot,1,2)=="ds") pilot <- "dscalar"
+  if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
+  pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
+  pre1 <- match.arg(pre, c("scale", "sphere"))
+  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
+  
+  if (pilot1=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deriv.order>0")
+  if (pilot1=="samse" & r>0) stop("dscalar pilot selectors are better for deriv.order>0")
+  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hscv.diag")
 
-  if (pilot=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deriv.order>0")
-  if (pilot=="samse" & r>0) stop("dscalar pilot selectors are better for deriv.order>0")
-  if (pilot=="unconstr" | pilot=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hscv.diag")
+  if (pre1=="sphere") stop("using pre-sphering doesn't give a diagonal bandwidth matrix")
 
-  if (substr(pre,1,2)=="sc") pre <- "scale"
-  else if (substr(pre,1,2)=="sp") pre <- "sphere"
-  if (pre=="sphere") stop("using pre-sphering doesn't give a diagonal bandwidth matrix")
-
-  if (pre=="scale")
+  if (pre1=="scale")
   {
     x.star <- pre.scale(x)
     S12 <- diag(sqrt(diag(var(x))))
     Sinv12 <- chol2inv(chol(S12))
   }
-  else if (pre=="sphere")
+  else if (pre1=="sphere")
   {
     x.star <- pre.sphere(x)
     S12 <- matrix.sqrt(var(x))
     Sinv12 <- chol2inv(chol(S12))
   }
 
-  Sd2r <- Sdr(d=d,r=2*r)
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>=4 & nstage==2) bgridsize <- rep(11,d)
@@ -1670,7 +1506,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
     bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
   }
   
-  if (pilot=="dscalar")
+  if (pilot1=="dscalar")
   {
     ## Gs is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, scv=TRUE)
@@ -1686,9 +1522,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
         warning("Pilot bandwidth matrix is NA - replaced with maximally smoothed")
         Hamise <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
       }
-      ##Sd4 <- Sdr(d=d, r=4)
-      Sd6 <- Sdr(d=d, r=6)
-      gs <- gamse.scv(x.star=x.star, d=d, Sigma.star=var(x.star), Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, Sd6=Sd6, nstage=nstage-1)
+      gs <- gamse.scv(x.star=x.star, d=d, Sigma.star=var(x.star), Hamise=Hamise, n=n, binned=binned, bgridsize=bgridsize, verbose=verbose, nstage=nstage-1)
     
     Gs <- gs^2*diag(d)
 
@@ -1700,19 +1534,17 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot="samse", Hstart, binned=FA
   scv.mat.temp <- function(diagH)
   {
     H <- diag(diagH) %*% diag(diagH)
-    return(scv.mat(x.star, H, Gs, binned=binned, bin.par=bin.par.star, verbose=FALSE, Sd2r=Sd2r, deriv.order=r, symm=FALSE))
+    return(scv.mat(x.star, H, Gs, binned=binned, bin.par=bin.par.star, verbose=FALSE, deriv.order=r))
   }
 
   Hstart <- matrix.sqrt(Hstart)
-
-  optim.fun1 <- tolower(substr(optim.fun,1,1))
-  if (optim.fun1=="n")
+  if (optim.fun1=="nlm")
   {
     result <- nlm(p=diag(Hstart), f=scv.mat.temp, print.level=2*as.numeric(verbose))    
     H <- diag(result$estimate) %*% diag(result$estimate)
     amise.star <- result$minimum
   }
-  else if (optim.fun1=="o")
+  else if (optim.fun1=="optim")
   {  
     result <- optim(diag(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
     H <- diag(result$par) %*% diag(result$par)

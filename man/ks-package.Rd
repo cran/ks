@@ -136,7 +136,7 @@
   M.P. Wand for the binned estimation, univariate plug-in selector
   and univariate density derivative estimator code.
   Jose E. Chacon for the unconstrained pilot
-  functional estimation and fast implementation of density derivative estimation code.   
+  functional estimation and fast implementation of derivative-based estimation code.   
 }
 
 \references{

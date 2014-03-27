@@ -1,6 +1,7 @@
 \name{kcde}
 \alias{kcde}
 \alias{Hpi.kcde}
+\alias{Hpi.diag.kcde}
 \alias{hpi.kcde}
 
 \title{Kernel cumulative distribution/survival function estimate for multivariate data}
@@ -11,8 +12,10 @@
 kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
   tail.flag="lower.tail")
-Hpi.kcde(x, nstage=2, pilot="dunconstr", Hstart, binned=FALSE, bgridsize,
+Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize,
   amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE,
+  bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
 hpi.kcde(x, nstage=2, binned=TRUE)
 }
 
@@ -35,8 +38,10 @@ hpi.kcde(x, nstage=2, binned=TRUE)
   \item{tail.flag}{"lower.tail" = cumulative distribution, "upper.tail" =
   survival function}
   \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{"dscalar" = single pilot bandwidth \cr
-    "dunconstr" = single unconstrained pilot bandwidth}
+  \item{pilot}{"dscalar" = single pilot bandwidth (default for
+  \code{Hpi.diag.kcde} \cr
+    "dunconstr" = single unconstrained pilot bandwidth (default for
+  \code{Hpi.kcde}} 
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{amise}{flag to return the minimal scaled PI value}

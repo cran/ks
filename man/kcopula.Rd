@@ -11,14 +11,15 @@ kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned=FALSE, bgridsize, w, verbose=FALSE, marginal="kernel")
 kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=FALSE,
-  approx.cont=TRUE, boundary.supp, marginal="kernel")
+  approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
 }
 
 \arguments{
   \item{x}{matrix of data values}
   \item{H,hs}{bandwidth matrix. If these are missing, \code{Hpi} or \code{hpi} is called by default.}
   \item{Hfun}{bandwidth matrix function. If missing, \code{Hpi} is the
-  default. This is called only when \code{H} is missing. }
+    default. This is called only when \code{H} is missing.}
+  \item{Hfun.pilot}{pilot bandwidth matrix - see \code{\link{Hpi}}}
   \item{gridsize}{vector of number of grid points}
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}

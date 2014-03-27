@@ -6,7 +6,7 @@
   Linear binning for 1- to 4-dimensional data.
 }
 \usage{
-binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
+binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 }
 
 \arguments{
@@ -16,6 +16,7 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w)
   \item{supp}{effective support for standard normal is [-supp,supp]}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Default is a vector of all ones.}
+  \item{gridtype}{not yet implemented}
 }
   
 

@@ -1,6 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 
-\usepackage{amsmath,amssymb,amsthm,amsopn,natbib,titling}
+%\usepackage{amsmath,amssymb,amsthm,amsopn,natbib}
+\usepackage{amsmath,amssymb,amsopn,natbib,titling}
 \usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2.5cm]{geometry}
 
 \renewcommand{\today}{\begingroup
@@ -10,50 +11,14 @@ November\or December\fi
 \space  \number \year \endgroup}
 
 \renewcommand{\vec}[1]{\boldsymbol{#1}}
-\newcommand{\gvec}[1]{\boldsymbol{#1}}
 \newcommand{\mat}[1]{\mathbf{#1}}
-\newcommand{\gmat}[1]{\boldsymbol{#1}}
-\newcommand{\bmat}[4]{\begin{bmatrix} #1 & #2 \\ #3 & #4\end{bmatrix}}
-\newcommand{\argmin}[1]{\underset{#1}{\mathrm{argmin}} \ }
-\newcommand{\argmax}[1]{\underset{#1}{\mathrm{argmax}} \ }
-\newcommand{\indi}[1]{\boldsymbol{1} \lbrace #1 \rbrace}
-
-\def\jneqi{\substack{j=1 \\ j\neq i}}
-\def\kneqj{\substack{k=1 \\ k\neq j}}
-\def\Hmat{\mat{H}}
-\def\G{\mat{G}}
-\def\ks{\texttt{ks}}
-\def\sm{\texttt{sm}}
-\def\KernSmooth{\texttt{KernSmooth}}
-\def\MSE{\mathrm{MSE}}
-\def\MISE{\mathrm{MISE}}
-\def\AMSE{\mathrm{AMSE}}
-\def\AMISE{\mathrm{AMISE}}
-\def\SAMSE{\mathrm{SAMSE}}
-\def\SCV{\mathrm{SCV}}
-\def\PI{\mathrm{PI}}
-\def\NR{\mathrm{NR}}
-\def\BCV{\mathrm{BCV}}
-\def\LSCV{\mathrm{LSCV}}
-\def\MR{\mathrm{MR}}
-\def\vecr{\vec{r}}
+\def\bH{\mat{H}}
 \def\vecx{\vec{x}}
-\def\vecy{\vec{y}}
 \def\vecX{\vec{X}}
-\def\intr2{\int_{\boldsymbol{\mathbb{R}}^2}}
-\def\intrd{\int_{\boldsymbol{\mathbb{R}}^d}}
+
 
 \DeclareMathOperator{\E}{\boldsymbol{\mathbb{E}}}
-\DeclareMathOperator{\Var}{Var}
-\DeclareMathOperator{\Cov}{Cov}
-\DeclareMathOperator{\Prob}{\boldsymbol{\mathbb{P}}}
-\DeclareMathOperator{\given}{\vert}
-\DeclareMathOperator{\Bias}{Bias}
-\DeclareMathOperator{\VEC}{vec}
-\DeclareMathOperator{\VECH}{vech}
-\DeclareMathOperator{\tr}{tr}
-\DeclareMathOperator{\dg}{dg}
-\DeclareMathOperator{\diag}{diag}
+%\DeclareMathOperator{\Var}{Var}
 \let\code=\texttt
 \let\proglang=\texttt
 \let\pkg=\texttt
@@ -66,8 +31,6 @@ November\or December\fi
 
 
 \begin{document}
-
-\setlength{\droptitle}{-2em}
 
 \maketitle
 
@@ -95,29 +58,29 @@ For a bivariate random sample $\vecX_1, \vecX_2, \ldots, \vecX_n$
 drawn from a density $f$, 
 the kernel density estimate is defined by
 $$
-\hat{f} (\vecx; \Hmat) = n^{-1}\sum_{i=1}^n K_{\Hmat} ( \vecx - \vec{X}_i)
+\hat{f} (\vecx; \bH) = n^{-1}\sum_{i=1}^n K_{\bH} ( \vecx - \vec{X}_i)
 $$
 where $\vecx = (x_1, x_2)^T$ and $\vec{X}_i = (X_{i1}, X_{i2})^T, i = 1, 2,  
 \ldots, n$.  Here 
 $K(\vecx)$ is the kernel which is a symmetric probability density function, 
-$\Hmat$ 
+$\bH$ 
 is the bandwidth matrix which is symmetric and positive-definite,  
-and $K_{\Hmat}(\vecx) = |\Hmat|^{-1/2} 
-K( \Hmat^{-1/2} \vecx)$. 
+and $K_{\bH}(\vecx) = |\bH|^{-1/2} 
+K( \bH^{-1/2} \vecx)$. 
 The choice of $K$ is not crucial: we take 
 $K(\vecx) = (2\pi)^{-1} \exp(-\tfrac{1}{2} \vecx^T \vecx)$ the standard normal
 throughout.  
-In contrast, the choice of $\Hmat$ is crucial in determining 
+In contrast, the choice of $\bH$ is crucial in determining 
 the performance of $\hat f$. 
 The most common parameterisations of the bandwidth matrix
 are the diagonal and the 
-general or unconstrained which has no restrictions on $\Hmat$
-provided that $\Hmat$
+general or unconstrained which has no restrictions on $\bH$
+provided that $\bH$
 remains positive definite and symmetric, that is 
 $$
-\Hmat = \begin{bmatrix}h_1^2 & 0 \\0 & h_2^2 \end{bmatrix}
+\bH = \begin{bmatrix}h_1^2 & 0 \\0 & h_2^2 \end{bmatrix}
 \ \mathrm{or} \ 
-\Hmat = \begin{bmatrix}h_1^2 & h_{12} \\ h_{12}  & h_2^2 \end{bmatrix}.
+\bH = \begin{bmatrix}h_1^2 & h_{12} \\ h_{12}  & h_2^2 \end{bmatrix}.
 $$
 This latter
 parameterisation allows kernels to have an arbitrary orientation
@@ -145,7 +108,7 @@ mus <- rbind(c(-2,2), c(0,0), c(2,-2))
 Sigmas <- rbind(diag(2), matrix(c(0.8, -0.72, -0.72, 0.8), nrow=2), diag(2))
 cwt <- 3/11
 props <- c((1-cwt)/2, cwt, (1-cwt)/2)
-x <- rmvnorm.mixt(n=samp, mu=mus, Sigma=Sigmas, props=props)
+x <- rmvnorm.mixt(n=samp, mus=mus, Sigmas=Sigmas, props=props)
 @ 
 
 \setkeys{Gin}{width=0.45\textwidth}

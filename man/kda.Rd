@@ -15,18 +15,15 @@
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
    eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE,
    approx.cont=TRUE, kde.flag=TRUE)
-Hkda(x, x.group, Hstart, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
-   binned=FALSE, bgridsize)
-Hkda.diag(x, x.group, bw="plugin", nstage=2, pilot="samse", pre="sphere", 
-   binned=FALSE, bgridsize)
-hkda(x, x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize)
+Hkda(x, x.group, Hstart, bw="plugin", ...)
+Hkda.diag(x, x.group, bw="plugin", ...)
+hkda(x, x.group, bw="plugin", ...)
 
 compare(x.group, est.group, by.group=FALSE)
 compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
-   by.group=FALSE, verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE,
-   ...)
+   by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, 
-   verbose=FALSE, binned=FALSE, bgridsize, recompute=FALSE, ...)
+   verbose=FALSE, recompute=FALSE, ...)
 }
 
 \arguments{
@@ -47,10 +44,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
     levels. Default is TRUE.}
   \item{kde.flag}{flag for computing KDE on grid. Default is TRUE.}
   \item{bw}{bandwidth: "plugin" = plug-in, "lscv" = LSCV, 
-    "scv" = SCV} 
-  \item{nstage}{number of stages in the plug-in bandwidth selector (1 or 2)}
-  \item{pilot}{pilot selector: see \code{\link{Hpi}}, \code{\link{Hscv}}}
-  \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
+    "scv" = SCV}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
     numerical optimisation}
   \item{est.group}{vector of estimated group labels}
@@ -138,7 +132,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 
 \seealso{\code{\link{plot.kda}}}
 
-\examples{ 
+\examples{
 x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))

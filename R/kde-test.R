@@ -17,12 +17,11 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
   K0 <- drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0))
   
   ## kernel estimation for components of test statistic
-  if (missing(H1)) H1 <- Hpi.kfe(x1, nstage=2, deriv.order=0, binned=nrow(x1)>1000, bgridsize=bgridsize, verbose=verbose, pilot=pilot)
-  if (missing(H2)) H2 <- Hpi.kfe(x2, nstage=2, deriv.order=0, binned=nrow(x2)>1000, bgridsize=bgridsize, verbose=verbose, pilot=pilot)
+  if (missing(H1)) H1 <- Hpi.kfe(x1, deriv.order=0, binned=default.bflag(d=d,n=n1), bgridsize=bgridsize, verbose=FALSE, pilot=pilot)
+  if (missing(H2)) H2 <- Hpi.kfe(x2, deriv.order=0, binned=default.bflag(d=d,n=n2), bgridsize=bgridsize, verbose=FALSE, pilot=pilot)
 
-  symm <- FALSE ## don't use symmetriser matrices in psi functional calculations
-  if (missing(psi1)) psi1 <- eta.kfe.y(x=x1, y=x1, G=H1, verbose=verbose, symm=symm)      
-  if (missing(psi2)) psi2 <- eta.kfe.y(x=x2, y=x2, G=H2, verbose=verbose, symm=symm)
+  if (missing(psi1)) psi1 <- Qr(x=x1, y=x1, Sigma=H1, verbose=verbose) 
+  if (missing(psi2)) psi2 <- Qr(x=x2, y=x2, Sigma=H2, verbose=verbose)
  
   S1 <- var(x1)
   S2 <- var(x2)
@@ -33,7 +32,7 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
     fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
     var.fhat1 <- drop(fhat1.r1 %*% S1 %*% t(fhat1.r1))
   }
-  psi12 <- eta.kfe.y(x=x1, G=H1, y=x2, verbose=verbose, symm=symm) 
+  psi12 <- Qr(x=x1, y=x2, Sigma=H1, verbose=verbose) 
   
   if (missing(var.fhat2))
   {
@@ -41,7 +40,7 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
     fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
     var.fhat2 <- drop(fhat2.r1 %*% S2 %*% t(fhat2.r1))
   }
-  psi21 <- eta.kfe.y(x=x2, G=H2, y=x1, verbose=verbose, symm=symm)
+  psi21 <- Qr(x=x2, y=x1, Sigma=H2, verbose=verbose) 
   
   ## test statistic + its parameters
   
@@ -72,8 +71,8 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
   if (missing(h1)) h1 <- hpi.kfe(x1, nstage=2, deriv.order=0, binned=binned, bgridsize=bgridsize)
   if (missing(h2)) h2 <- hpi.kfe(x2, nstage=2, deriv.order=0, binned=binned, bgridsize=bgridsize)
 
-  if (missing(psi1)) psi1 <- eta.kfe.y.1d(x=x1, y=x1, g=h1, verbose=verbose)
-  if (missing(psi2)) psi2 <- eta.kfe.y.1d(x=x2, y=x2, g=h2, verbose=verbose)
+  if (missing(psi1)) psi1 <- Qr.1d(x=x1, y=x1, sigma=h1, verbose=verbose)
+  if (missing(psi2)) psi2 <- Qr.1d(x=x2, y=x2, sigma=h2, verbose=verbose)
    
   if (missing(var.fhat1))
   {
@@ -81,7 +80,7 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
     fhat1.r1 <- kdde(x=x1, h=h1.r1, deriv.order=1, eval.points=mean(x1))$estimate
     var.fhat1 <- fhat1.r1^2*s1^2
   }
-  psi12 <- eta.kfe.y.1d(x=x1, g=h1, y=x2, verbose=verbose)
+  psi12 <- Qr.1d(x=x1, sigma=h1, y=x2, verbose=verbose)
   
   if (missing(var.fhat2))
   {
@@ -89,7 +88,7 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
     fhat2.r1 <- kdde(x=x2, h=h2.r1, deriv.order=1, eval.points=mean(x2))$estimate
     var.fhat2 <- fhat2.r1^2*s2^2
   }
-  psi21 <- eta.kfe.y.1d(x=x2, g=h2, y=x1, verbose=verbose)
+  psi21 <- Qr.1d(x=x2, sigma=h2, y=x1, verbose=verbose)
  
 
   ## test statistic + its parameters
@@ -213,9 +212,9 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
 kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS)
 {
   if (is.vector(x1) & is.vector(x2)) {return(kde.local.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, fhat1=fhat1, fhat2=fhat2, gridsize=gridsize, binned=binned, bgridsize=bgridsize, verbose=verbose, supp=supp, mean.adj=mean.adj))}
-   
-  if (missing(H1) & !missing(x1)) H1 <- Hpi(x1, nstage=2, deriv.order=0, binned=nrow(x1)>1000, bgridsize=bgridsize, verbose=verbose)
-  if (missing(H2) & !missing(x2)) H2 <- Hpi(x2, nstage=2, deriv.order=0, binned=nrow(x2)>1000, bgridsize=bgridsize, verbose=verbose)
+
+  if (missing(H1) & !missing(x1)) H1 <- Hpi(x=x1, deriv.order=0, binned=default.bflag(d=ncol(x1), n=nrow(x1)), bgridsize=bgridsize, verbose=verbose)
+  if (missing(H2) & !missing(x2)) H2 <- Hpi(x=x2, deriv.order=0, binned=default.bflag(d=ncol(x2), n=nrow(x2)), bgridsize=bgridsize, verbose=verbose)
  
   if (!missing(x1) & !missing(x2))
   {
