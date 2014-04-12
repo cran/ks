@@ -40,7 +40,7 @@ BCV bandwidth matrix. If \code{amise=TRUE} then the minimal BCV value is returne
   locate the most appropriate minimum. Some times, there can be no local minimum at all so there
   may be no finite BCV selector.
 
-  For details about the advanced options for \code{Hstart}, see \code{\link{Hpi}}.
+  For details about the advanced options for \code{binned}, \code{Hstart}, see \code{\link{Hpi}}.
 }
 
 \seealso{\code{\link{Hlscv}}, \code{\link{Hpi}}, \code{\link{Hscv}}}

@@ -42,7 +42,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. Accepted.
   
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
   estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},
@@ -59,7 +59,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   If a candidate matrix \code{H} is
   such that \code{det(H)} is not in \code{[1/trunc, trunc]*det(H0)} or  
   \code{abs(LSCV(H)) > trunc*abs(LSCV0)} then the \code{LSCV(H)} is reset to \code{LSCV0} where 
-  \code{H0 = (4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)} and \code{LSCV0 = LSCV(H0)}.
+  \code{H0=Hns(x)} and \code{LSCV0=LSCV(H0)}.
 
   For details about the advanced options for \code{binned,Hstart}, 
   see \code{\link{Hpi}}. 

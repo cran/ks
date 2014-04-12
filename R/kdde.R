@@ -541,4 +541,38 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
   return(hts)
 }
 
-
+#############################################################################
+## predict method for KDDE 
+#############################################################################
+predict.kdde <- function(object, ..., x)
+{
+  fhat <- object
+  d <- ncol(fhat$H)
+  if (d==1) n <- length(x)
+  else
+  {
+    x <- matrix(x, ncol=d) 
+    n <- nrow(x)
+  }
+  
+  if (!is.null(fhat$deriv.ind))
+  {
+    if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
+    else
+    {
+      nd <- nrow(fhat$deriv.ind)
+      pk.mat <- matrix(0, ncol=nd, nrow=n)
+      for (i in 1:nd)
+        {
+          fhat.temp <- fhat
+          fhat.temp$estimate <- fhat$estimate[[i]]
+          pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
+        }
+    }
+  }
+  else
+  {
+    pk.mat <- predict.kde(fhat, x=x, ...)
+  }
+  return(drop(pk.mat))
+}

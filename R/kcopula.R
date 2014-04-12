@@ -5,9 +5,36 @@
 
 ## empirical pseudo-uniform transformation
 ## taken from pobs() function in copula package
-pobs.ks <- function (x, na.last="keep", ties.method=c("average", "first", "random", "max", "min"))
-{   
-  return(apply(x, 2, rank, na.last=na.last, ties.method=ties.method)/(nrow(x) + 1))
+pseudo.unif.empirical <- function (x, y) ##, na.last="keep", ties.method="average")
+{
+  if (missing(y)) y <- x
+  if (is.vector(y)) y <- matrix(y, nrow=1)
+  d <- ncol(x)
+  u <- matrix(0, ncol=d, nrow=nrow(x))
+  for (i in 1:d)
+  {
+    ecdf.fun <- ecdf(x=x[,i])
+    u[,i] <- ecdf.fun(y[,i])
+  }
+  return(u)
+  ##return(apply(x, 2, rank, na.last=na.last, ties.method=ties.method)/(nrow(x) + 1))
+}
+
+## kernel pseudo-uniform transformation
+pseudo.unif.kernel <- function(x, y, hs, binned=TRUE)
+{
+  if (missing(y)) y <- x
+  if (is.vector(y)) y <- matrix(y, nrow=1)
+  d <- ncol(x)
+  u <- list()
+  ##u.eval.points <- list()
+  for (i in 1:d)
+  {
+    u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=y[,i], binned=binned)
+  }
+  u2 <- sapply(u, getElement, "estimate")
+
+  return(u2)
 }
 
 ## Modified boundary beta kernel - first form (Chen, 1999)
@@ -46,7 +73,6 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
   xlims[1,] <- xlims[1,] - 0.1*abs(apply(xlims, 2, diff))
   xlims[2,] <- xlims[2,] + 0.1*abs(apply(xlims, 2, diff))
 
-
   ## generate pseudo-uniform values
   marginal1 <- match.arg(marginal, c("kernel", "empirical")) 
   if (missing(hs))
@@ -61,16 +87,15 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     u.eval.points <- list()
     for (i in 1:d)
     {
-      u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=x[,i], binned=binned)
-      u.eval.points[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=Fhat$eval.points[[i]], xmin=xlims[1,i], xmax=xlims[2,i], binned=binned)
+      u.eval.points[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=Fhat$eval.points[[i]], xmin=xlims[1,i], xmax=xlims[2,i], binned=TRUE)
     }
-    y <- sapply(u, getElement, "estimate")
+    y <- pseudo.unif.kernel(x=x, y=x, hs=hs, binned=TRUE)
     ep <- lapply(u.eval.points, getElement, "estimate")
   }
   else if (marginal1=="empirical")
   {
     ## empirical pseudo-uniform
-    y <- pobs.ks(x=x)
+    y <- pseudo.unif.empirical(x=x, y=x)
     ep <- numeric()
     for (i in 1:d)
     {
@@ -81,6 +106,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
  
   Chat <- Fhat
   Chat$x <- y ## sapply(u, getElement, "estimate")
+  Chat$x.orig <- x
   Chat$eval.points <- ep ##lapply(u.eval.points, getElement, "estimate")
   Chat$hs <- hs
   
@@ -139,7 +165,9 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     Chat.smoothed$estimate[Chat.smoothed$estimate>1] <- 1
   }
   Chat <- Chat.smoothed
-
+  Chat$marginal <- marginal1
+  class(Chat) <- "kcopula"
+  
   return(Chat)
 }
 
@@ -171,14 +199,15 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (marginal1=="kernel")
   {  
     ## kernel pseudo-uniform
-    u <- list()
-    for (i in 1:d) u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=x[,i], binned=binned)
-    y <- sapply(u, getElement, "estimate")
+    ##u <- list()
+    ##for (i in 1:d) u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=x[,i], binned=binned)
+    ##y <- sapply(u, getElement, "estimate")
+    y <- pseudo.unif.kernel(x=x, y=x, hs=hs, binned=TRUE)
   }
   else if (marginal1=="empirical")
   {
     ## empirical pseudo-uniform
-    y <- pobs.ks(x=x)  
+    y <- pseudo.unif.empirical(x=x, y=x)  
   }
 
   if (missing(gridsize)) gridsize <- default.gridsize(d)
@@ -207,12 +236,15 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   ## normalise KDE to integrate to 1 
   chat$estimate <- chat$estimate/sum(chat$estimate*apply(sapply(chat$eval.points, diff), 1, prod)[1])
   chat$names <- parse.name(x) 
+  chat$x.orig <- x
   chat$hs <- hs
 
   ## compute prob contour levels
   if (compute.cont & missing(eval.points))
     chat$cont <- contourLevels(chat, cont=1:99, approx=approx.cont)
-  
+
+  chat$marginal <- marginal1
+  class(chat) <- "kcopula.de"
   return(chat)
 }
 
@@ -604,6 +636,17 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
 }
 
 
+
+plot.kcopula <- function(x, ...)
+{
+  plot.kcde(x, ...)
+}
+
+plot.kcopula.de <- function(x, ...)
+{
+  plot.kde(x, ...)
+}
+
 ##############################################################################
 ## compute true copula (mdvc object) on a grid
 ##############################################################################
@@ -627,13 +670,36 @@ copula.grid <- function(copula, xmin, xmax, gridsize, copula.fun=dCopula)
 
   copde <- list(x=x, eval.points=gridx, estimate=estimate, H=H, gridtype=rep("linear", d), gridded=TRUE, binned=FALSE, names=xnames, w=rep(1, nrow(x)), copula=copula)
   
-  if (identical(copula.fun, dCopula)) class(copde) <- "kde"
+  if (identical(copula.fun, dCopula)) class(copde) <- "kcopula.de"
   else if (identical(copula.fun, pCopula))
   {
     copde$tail <- "lower.tail"
-    class(copde) <- "kcde"
+    class(copde) <- "kcopula"
   }
   return(copde)
 }
 
 
+
+#############################################################################
+## predict methods
+#############################################################################
+
+predict.kcopula <- function(object, ..., x)
+{
+  if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)
+  return(predict.kde(object, ..., x=u))
+}
+
+predict.kcopula.de <- function(object, ..., x)
+{
+  if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)
+ 
+  return(predict.kde(object, ..., x=u))
+}
+
+
+contourLevels.kcopula.de <- function(x, ...)
+{
+  return(contourLevels.kde(x=x, ...))
+}

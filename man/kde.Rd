@@ -1,7 +1,9 @@
 \name{kde}
 \alias{kde}
+\alias{predict.kde}
 
-\title{Kernel density estimate for multivariate data}
+\title{Kernel density estimate}
+
 \description{
   Kernel density estimate for 1- to 6-dimensional data.
 }
@@ -9,6 +11,8 @@
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
     compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE)
+
+\method{predict}{kde}(object, ..., x)
 }
 
 \arguments{
@@ -27,7 +31,10 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
-  \item{approx.cont}{flag for computing approximate probability contour levels. Default is TRUE.}
+  \item{approx.cont}{flag for computing approximate probability contour
+    levels. Default is TRUE.}  
+  \item{object}{object of class \code{kde}}
+  \item{...}{other parameters}
 }
   
 
@@ -48,16 +55,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 }
 
 \details{
-   For d=1, if \code{h} is missing, the default bandwidth is \code{hpi(x=x, nstage=2, binned=TRUE)},
-  and for d>1, if \code{H} is missing, the default is \code{Hpi(x=x, nstage=2, binned=n>1000, pilot="samse")}.
-
-  \code{supp} is the effective support for a normal kernel, i.e.  
-  all values outside \code{[-supp,supp]^d} are set to zero. 
-  The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
-  is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
-  diagonal elements of \code{H}.The default weights \code{w} is a vector
-  of all ones.
-
+  For d=1, if \code{h} is missing, the default bandwidth is \code{hpi}.
+  For d>1, if \code{H} is missing, the default is \code{Hpi}.
+  
   For d=1, 2, 3, 4, and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
   defined by \code{gridsize} (if \code{binned=FALSE}) or
@@ -69,15 +69,28 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
   For d=1, if \code{positive=TRUE} then \code{x<-log(x+adj.positive)}
   where the default \code{adj.positive} is the minimum of \code{x}.
+
+  The effective support for a normal kernel is \code{supp}, i.e.  
+  all values outside \code{[-supp,supp]^d} are set to zero. 
+
+  The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
+  is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
+  diagonal elements of \code{H}. The grid produced is the outer
+  product of \code{[xmin[1], xmax[1]]}, ..., \code{[xmin[d], xmax[d]]}.
+  
+  The default \code{bgridsize, gridsize} are  d=1: 401; d=2: rep(151, 2);
+  d=3: rep(31, 3); d=4: rep(21,4).
 }
 
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
 ## positive data example
+set.seed(8192)
 x <- 2^rnorm(100)
 fhat <- kde(x=x, positive=TRUE)
 plot(fhat)
+points(c(0.5, 1), predict(fhat, x=c(0.5, 1)))
 
 ## See other examples in ? plot.kde
 }

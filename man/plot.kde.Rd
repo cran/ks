@@ -95,14 +95,14 @@
 
   To specify contours, either one of \code{cont} or \code{abs.cont}
   is required. \code{cont} specifies upper percentages which
-  correspond to probability contour regions. If \code{abs.cont} is set to particular
-  values, then contours at these levels are drawn.
+  correspond to probability contour regions. If \code{abs.cont} is set
+  to particular values, then contours at these levels are drawn.
   This second option is useful for plotting
   multiple density estimates with common contour levels. See
   \code{\link{contourLevels}} for details on computing contour levels.   
-  If \code{approx=FALSE}, then the exact KDE is computed. Otherwise the exact 
-  KDE is replaced by the KDE at the nearest 
-  grid point. This can dramatically reduce computation time for large data sets.
+  If \code{approx=FALSE}, then the exact KDE is computed. Otherwise
+  it is interpolated from an existing KDE grid. This can dramatically
+  reduce computation time for large data sets. 
 }
  
 \examples{

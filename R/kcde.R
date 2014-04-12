@@ -725,11 +725,27 @@ plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, ylab="True positive rate 
   }
 }
 
+#############################################################################
 ## summary method
+#############################################################################
 summary.kroc <- function(object, ...)
 {
   cat("Summary measures for ROC curve\nAUC =", signif(object$indices$auc, ...), "\n")
   cat("Youden index =", signif(object$indices$youden, ...), "\n")
   cat(paste("(LR-, LR+) = (",  signif(object$indices$LR$minus, ...), ", ", signif(object$indices$LR$plus, ...),")\n\n",sep=""))
+}
+
+
+#############################################################################
+## predict methods
+#############################################################################
+predict.kcde <- function(object, ..., x)
+{
+  return(predict.kde(object, ...,x=x))
+}
+
+predict.kroc <- function(object, ..., x)
+{
+  return(predict.kde(object, ..., x=x))
 }
 

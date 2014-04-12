@@ -1,7 +1,8 @@
 \name{kdde}
 \alias{kdde}
+\alias{predict.kdde}
 
-\title{Kernel density derivative estimate for multivariate data}
+\title{Kernel density derivative estimate}
 \description{
   Kernel density derivative estimate for 1- to 6-dimensional data.
 }
@@ -9,6 +10,8 @@
 kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, 
     eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
     deriv.vec=TRUE, verbose=FALSE)
+
+\method{predict}{kdde}(object, ..., x)
 }
 
 \arguments{
@@ -27,7 +30,10 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{deriv.vec}{flag to compute all derivatives in vectorised
   derivative. Default is TRUE. If FALSE then only the unique derivatives are computed.}
-  \item{verbose}{flag to print out progress information. Default is FALSE.}
+  \item{verbose}{flag to print out progress information. Default is
+    FALSE.} 
+  \item{object}{object of class \code{kdde}}
+  \item{...}{other parameters} 
 }
   
 
@@ -49,18 +55,18 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
 }
 
 \details{ 
-  For each partial derivative, for grid estimation, the estimate is a list whose elements 
+  For each partial derivative, for grid estimation, the estimate is a
+  list whose elements  
   correspond to the partial derivative indices in the rows of \code{deriv.ind}. 
   For points estimation, the estimate is a matrix whose columns correspond to 
   rows of \code{deriv.ind}.
 
   If the bandwidth \code{H} is missing from \code{kdde}, then
-  the default bandwidth is the binned 2-stage plug-in selector
-  \code{Hpi(, deriv.order, nstage=2, binned=TRUE)}. Likewise for
-  missing \code{h}.
+  the default bandwidth is the  plug-in selector
+  \code{Hpi}. Likewise for missing \code{h}.
   
-  Binning/exact estimation and positive 1-d data behaviour is the same
-  as for \code{\link{kde}}. 
+  The effective support, binning, grid size, grid range, positive data
+  parameters are the same  as for \code{\link{kde}}. 
 }
 
 \seealso{\code{\link{kde}}}

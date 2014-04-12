@@ -58,7 +58,7 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   ISE is a random variable that depends on the data
   \code{x}. MISE and AMISE are non-random and don't
   depend on the data. For normal mixture densities, ISE, MISE and AMISE 
-  have exact formulas for all dimensions. See Chacon, Duong & Wand (2011).
+  have exact formulas for all dimensions.
 }
 
 

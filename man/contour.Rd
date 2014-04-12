@@ -51,9 +51,9 @@ contourSizes(x, abs.cont, cont=c(25,50,75), approx=FALSE)
   --For \code{contourSizes}, the approximate Lebesgue measures are approximated by Riemann sums. Thsese are  rough approximations and depend highly on the estimation grid, and so should
   be interpreted carefully.
 
-  If \code{approx=FALSE}, then the exact KDE at is computed. Otherwise the exact 
-  KDE is replaced by the weighted sum of the KDE at the nearest 
-  grid points. This can dramatically reduce computation time for large data sets.
+  If \code{approx=FALSE}, then the exact KDE is computed. Otherwise
+  it is interpolated from an existing KDE grid. This can dramatically
+  reduce computation time for large data sets. 
 }
  
 

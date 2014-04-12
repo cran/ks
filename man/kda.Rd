@@ -7,7 +7,7 @@
 \alias{compare.kda.diag.cv}
 \alias{compare.kda.cv}
 
-\title{Kernel discriminant analysis for multivariate data}
+\title{Kernel discriminant analysis}
 \description{
   Kernel discriminant analysis for 1- to 6-dimensional data.
 }
@@ -107,21 +107,17 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 }
 
 \details{
-  --If the bandwidths \code{Hs} are missing from \code{kda}, then the default bandwidths are the
-  binned 2-stage plug-in selectors \code{Hkda(, bw="plugin", nstage=2, binned=TRUE)}.
-  Likewise for missing \code{hs}.
-  
-  --The values that valid for \code{bw} are \code{"plugin", "lscv"} and
-  \code{"scv"} for
-  \code{Hkda}.  These in turn call \code{\link{Hpi}},
-  \code{\link{Hlscv}} and \code{\link{Hscv}}. For plugin selectors, all
-  of \code{nstage}, \code{pilot} and \code{pre} need to be set. For SCV
-  selectors, currently \code{nstage=1} always but \code{pilot} and \code{pre}
-  need to be set.  For LSCV selectors, none of them are required. 
-  \code{Hkda.diag} makes analogous calls to diagonal selectors. 
+  If the bandwidths \code{Hs} are missing from \code{kda}, then the
+  default bandwidths are the plug-in selectors \code{Hkda(, bw="plugin")}.
+  Likewise for missing \code{hs}. Valid options for \code{bw}
+  are \code{"plugin"}, \code{"lscv"} and \code{"scv"} which in turn call
+  \code{\link{Hpi}}, \code{\link{Hlscv}} and \code{\link{Hscv}}.
 
-  --If you have prior probabilities then set \code{prior.prob} to these.
-  Otherwise \code{prior.prob=NULL} is the default i.e. use the sample
+  The effective support, binning, grid size, grid range, positive data
+  parameters are the same  as for \code{\link{kde}}.
+  
+  If prior probabilities are known then set \code{prior.prob} to these.
+  Otherwise \code{prior.prob=NULL} uses the sample
   proportions as estimates of the prior probabilities.
   
   As of \pkg{ks} 1.8.11, \code{kda.kde} has been subsumed

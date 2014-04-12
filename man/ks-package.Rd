@@ -15,7 +15,10 @@
     \item displaying kernel estimators - these begin with `plot'.
   }
   The kernel used throughout is the normal (Gaussian) kernel \eqn{K}{K}.
-
+  For 1-d data, the bandwidth \eqn{h}{h} is the standard deviation of
+  the normal kernel, whereas for multivariate data, the bandwidth matrix 
+  \eqn{\bold{{\rm H}}}{H} is the variance matrix.
+ 
   --For kernel density estimation, \code{\link{kde}} computes  
   \deqn{\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i).}{hat(f)(x) = n^(-1) sum_i K_H (x - X_i).} 
 
@@ -35,8 +38,6 @@
   \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) \cr
   \item normal scale \code{\link{hns}} (1-d); \code{\link{Hns}} (2- to 6-d).
   }
-  For 1-d data, the bandwidth \eqn{h}{h} is the standard deviation of the normal kernel, whereas for multivariate data, the bandwidth matrix 
-  \eqn{\bold{{\rm H}}}{H} is the variance matrix.
   
   --For kernel density derivative estimation, the main function is \code{\link{kdde}}
   \deqn{{\sf D}^{\otimes r}\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n {\sf
@@ -57,7 +58,7 @@
   
   --For kernel functional estimation, the main function is
   \code{kfe} which computes the \eqn{r}{r}-th order integrated density functional  
-  \deqn{\hat{{\bold \psi}}^{(r)}  = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)^(r) = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
+  \deqn{\hat{{\bold \psi}}_r  = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)_r = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
   Kernel function estimates are usually not required to computed
   directly by the user, but only within other functions in the package.
     
@@ -66,11 +67,11 @@
   \eqn{L_2}{L2} distance between the two density estimates as the test
   statistic, comprising a linear combination of 0-th order kernel
   functional estimates:
-  \deqn{\hat{T} = \hat{\psi}_1 + \hat{\psi}_2 - (\hat{\psi}_{1,2} +
-  \hat{\psi}_{1,2}),}{hat(T) = hat(psi)_1 + hat(psi)_2 - (hat(psi)_1,2 +
-  hat(psi)_2,1),} and the corresponding p-value. The \eqn{\psi}{psi} are
+  \deqn{\hat{T} = \hat{\psi}_{0,1} + \hat{\psi}_{0,2} - (\hat{\psi}_{0,12} +
+  \hat{\psi}_{0,21}),}{hat(T) = hat(psi)_0,1 + hat(psi)_0,2 - (hat(psi)_0,12 +
+  hat(psi)_0,21),} and the corresponding p-value. The \eqn{\psi}{psi} are
   zero order kernel functional estimates with the subscripts indicating
-  that 1 = sample 1 only, 2 = sample 2 only, and (1,2) and (2,1) =
+  that 1 = sample 1 only, 2 = sample 2 only, and 12, 21 =
   samples 1 and 2.  The bandwidth selectors are \code{\link{hpi.kfe}},
   \code{\link{Hpi.kfe}} with \code{deriv.order=0}. 
 
@@ -91,7 +92,7 @@
   The bandwidth selectors are \code{\link{hpi.kcde}},
   \code{\link{Hpi.kcde}}.  Its \code{plot} method is
   \code{\link{plot.kcde}}.
-  There exists analogous functions for the survival function \eqn{\hat{\bar{F}}}{hat(bar(F))}.
+  There exist analogous functions for the survival function \eqn{\hat{\bar{F}}}{hat(bar(F))}.
 
   --For kernel estimation of a ROC (receiver operating characteristic)
   curve to compare two samples from \eqn{\hat{F}_1,

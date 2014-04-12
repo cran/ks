@@ -24,7 +24,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   \item{pilot}{"amse" = AMSE pilot bandwidths \cr
     "samse" = single SAMSE pilot bandwidth \cr 
     "unconstr" = single unconstrained pilot bandwidth \cr
-    "dscalar" = single pilot bandwidth for deriv.order >= 0 (default)\cr
+    "dscalar" = single pilot bandwidth for deriv.order >= 0 \cr
     "dunconstr" = single unconstrained pilot bandwidth for deriv.order >= 0}
   \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
@@ -50,17 +50,18 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   generalisation of this. Use \code{Hpi} for full bandwidth matrices and
   \code{Hpi.diag} for diagonal bandwidth matrices.
 
+  The default pilot is \code{"samse"} for d=2,r=0, and
+  \code{"dscalar"} otherwise.
   For AMSE pilot bandwidths, see Wand & Jones (1994). For
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a
   modification of the former, in order to remove any possible problems
-  with non-positive definiteness. Unconstrained pilot bandwidths are
-  from Chacon & Duong (2010). 
+  with non-positive definiteness. Unconstrained and higher order
+  derivative pilot bandwidths are from Chacon & Duong (2010). 
 
   For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 
-  by \code{bgridsize}. Otherwise it's computed exactly. 
- 
-  If \code{Hstart} is not given then it defaults to \code{Hns(x, deriv.order)}.
+  by \code{bgridsize}. Otherwise it's computed exactly.  
+  If \code{Hstart} is not given then it defaults to \code{Hns(x)}.
 }
 
 \references{
@@ -69,7 +70,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. Accepted.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric

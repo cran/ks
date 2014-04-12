@@ -3,13 +3,13 @@
 \alias{Sdr}
 \alias{dfltCounts}
 \alias{drvkde}
-\alias{kfe}
 \alias{kde.boundary}
 \alias{Sdrv}
 \alias{mur}
 \alias{nur}
 \alias{nurs}
 \alias{Qr}
+\alias{matrix.sqrt}
 
 \title{Internal functions in the ks library}
 \description{

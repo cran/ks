@@ -1,5 +1,13 @@
 Change log file for ks
 
+1.9.1
+-Fixed typos in help files
+-Added new classes "kcopula" and "kcopula.de" for output from kcopula and
+ kcopula.de to distinguish them from "kcde" and "kde" objects. 
+-Exported matrix.sqrt
+-Added "exp" option for make.grid.ks().
+ 
+
 1.9.0
 -Added efficient recursive versions for dmvnorm.deriv(), Sdr(), Sdrv(), 
  nur(), nurs(), mur(), Qr() from Chacon & Duong (2014) Statist Comput.

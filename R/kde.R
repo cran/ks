@@ -33,7 +33,7 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
   
   for (i in 1:d)
   {
-    gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "log")) 
+    gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "exp")) 
     if (gridtype1=="linear")
     {  
       gridx <- c(gridx, list(seq(xmin[i], xmax[i], length=gridsize[i])))
@@ -52,10 +52,10 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
        gridx <- c(gridx, list(xmin[i] + (xmax[i]-xmin[i])*(gridx.temp-min(gridx.temp))/(max(gridx.temp)-min(gridx.temp))))
        stepsize[i] <- NA
      }
-    else if (gridtype1=="log")
+    else if (gridtype1=="exp")
     {
-       gridx.temp <- seq(log(xmin[i]), log(xmax[i]), length=gridsize[i])
-       gridx <- c(gridx, list(exp(gridx.temp)))
+       gridx.temp <- seq(exp(xmin[i]), exp(xmax[i]), length=gridsize[i])
+       gridx <- c(gridx, list(log(gridx.temp)))
        stepsize[i] <- NA
     }
     gridtype.vec[i] <- gridtype1
@@ -234,43 +234,7 @@ predict.kde <- function(object, ..., x)
   return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
 }
 
-predict.kdde <- function(object, ..., x)
-{
-  fhat <- object
-  if (is.vector(x)) n <- length(x) else n <- nrow(x)
-  
-  if (!is.null(fhat$deriv.ind))
-  {
-    if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
-    else
-    {
-      nd <- nrow(fhat$deriv.ind)
-      pk.mat <- matrix(0, ncol=nd, nrow=n)
-      for (i in 1:nd)
-        {
-          fhat.temp <- fhat
-          fhat.temp$estimate <- fhat$estimate[[i]]
-          pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
-        }
-    }
-  }
-  else
-  {
-    pk.mat <- predict.kde(fhat, x=x, ...)
-  }
-  return(drop(pk.mat))
-}
 
-
-predict.kcde <- function(object, ..., x)
-{
-  return(predict.kde(object, ...,x=x))
-}
-
-predict.kroc <- function(object, ..., x)
-{
-  return(predict.kde(object, ..., x=x))
-}
 
 ###############################################################################
 ## Multivariate kernel density estimate using normal kernels

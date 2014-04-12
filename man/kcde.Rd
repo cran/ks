@@ -3,11 +3,14 @@
 \alias{Hpi.kcde}
 \alias{Hpi.diag.kcde}
 \alias{hpi.kcde}
+\alias{predict.kcde}
 
-\title{Kernel cumulative distribution/survival function estimate for multivariate data}
+\title{Kernel cumulative distribution/survival function estimate}
 \description{
   Kernel cumulative distribution/survival function estimate for 1- to 3-dimensional data.
 }
+
+
 \usage{
 kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
@@ -17,6 +20,8 @@ Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize,
 Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE,
   bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
 hpi.kcde(x, nstage=2, binned=TRUE)
+
+\method{predict}{kcde}(object, ..., x)
 }
 
 \arguments{
@@ -45,7 +50,10 @@ hpi.kcde(x, nstage=2, binned=TRUE)
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{amise}{flag to return the minimal scaled PI value}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
+  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or
+    \code{\link{optim}}}
+  \item{object}{object of class \code{kcde}}
+  \item{...}{other parameters} 
 }
   
 
@@ -74,18 +82,17 @@ hpi.kcde(x, nstage=2, binned=TRUE)
   \eqn{\mathrm{Pr}(\bold{X}\leq\bold{x}) \neq 1 - \mathrm{Pr}(\bold{X}>\bold{x})}{Pr(X<=x) != 1-Pr(X>x)}.
   
   If the bandwidth \code{H} is missing from \code{kcde}, then
-  the default bandwidth is the binned 2-stage plug-in selector
-  \code{Hpi.kcde(, nstage=2, binned=TRUE)}. Likewise for
-  missing \code{h}. These bandwidth selectors are optimal for cumulative
-  distribution/survival functions, see Duong (2013).  
+  the default bandwidth is the plug-in selector
+  \code{Hpi.kcde}. Likewise for missing \code{h}.
 
-  Binning/exact estimation and positive 1-d data behaviour is the same as for
-  \code{\link{kde}}. No pre-scaling/pre-sphering is used since the bandwidth
-  selectors \code{Hpi.kcde} are not invariant to translation/dilation.    
+  No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not invariant to translation/dilation.
+
+  The effective support, binning, grid size, grid range, positive data
+  parameters are the same  as for \code{\link{kde}}. 
 }
 
 \references{
-  Duong, T. (2013) Non-parametric kernel estimation of multivariate
+  Duong, T. (2014) Non-parametric kernel estimation of multivariate
   cumulative distribution functions and receiver operating
   characteristic curves. Submitted.
 }

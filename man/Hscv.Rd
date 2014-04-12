@@ -46,10 +46,12 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   Use \code{Hscv} for full bandwidth matrices and \code{Hscv.diag}
   for diagonal bandwidth matrices. 
  
-  For SAMSE pilot bandwidths, see Duong & Hazelton (2005).
-  Unconstrained pilot bandwidths are from Chacon & Duong (2011). 
+  The default pilot is \code{"samse"} for d=2,r=0, and
+  \code{"dscalar"} otherwise. For SAMSE pilot bandwidths, see Duong &
+  Hazelton (2005). Unconstrained and higher order derivative pilot
+  bandwidths are from Chacon & Duong (2011).  
 
-  For d = 1, the selector \code{hscv} is not always stable for large
+  For d=1, the selector \code{hscv} is not always stable for large
   sample sizes with binning.
   Examine the plot from \code{hscv(, plot=TRUE)} to
   determine the appropriate smoothness of the SCV function. Any
@@ -65,7 +67,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian denisty. \emph{Statistics \& Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. Accepted.
   
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 

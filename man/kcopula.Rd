@@ -16,7 +16,8 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
 
 \arguments{
   \item{x}{matrix of data values}
-  \item{H,hs}{bandwidth matrix. If these are missing, \code{Hpi} or \code{hpi} is called by default.}
+  \item{H,hs}{bandwidth matrix. If these are missing, \code{Hpi.kcde} or
+  \code{hpi.kcde} or \code{hpi} is called by default.}
   \item{Hfun}{bandwidth matrix function. If missing, \code{Hpi} is the
     default. This is called only when \code{H} is missing.}
   \item{Hfun.pilot}{pilot bandwidth matrix - see \code{\link{Hpi}}}
@@ -42,23 +43,38 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
 
 \value{
   A kernel copula estimate, output from \code{kcopula}, is an object of
-  class \code{kcde}. A kernel  copula density estimate, output from
-  \code{kcopula.de}, is an object of class \code{kde}.  
+  class \code{kcopula}. A kernel copula density estimate, output from
+  \code{kcopula.de}, is an object of class \code{kde}. These two classes
+  of objects have the same fields as \code{kcde} and \code{kde} objects
+  respectively, except for
+  \item{x}{pseudo-uniform data points}
+  \item{x.orig}{data points - same as input}
+  \item{marginal}{marginal function used to compute pseudo-uniform data}
+  \item{boundary}{flag for data points in the boundary region
+  (\code{kcopula.de} only)}
 }
 
 \details{
   For kernel copula estimates, a transformation approach is used to
-  account for the boundary effects. 
+  account for the boundary effects. If \code{H} is missing, the default
+  is \code{Hpi.kcde}; if \code{hs} are missing, the default is
+  \code{hpi.kcde}.  
   
   For kernel copula density estimates, for those points which are in
   the interior region, the usual normal kernel density estimator
   (\code{\link{kde}}) is used. For those points in the boundary region,
   a product beta kernel based on the boundary corrected univariate beta
-  kernel of Chen (1999) is used. 
+  kernel of Chen (1999) is used. If \code{H} is missing, the default
+  is \code{Hpi.kcde}; if \code{hs} are missing, the default is
+  \code{hpi}.
+  
+  The effective support, binning, grid size, grid range parameters are
+  the same  as for \code{\link{kde}}.  
+  
 }
  
 \references{
-  Duong, T. (2013) Optimal data-based smoothing for non-parametric
+  Duong, T. (2014) Optimal data-based smoothing for non-parametric
   estimation of copula functions and their densities. Submitted.
 
   Chen, S.X. (1999). Beta kernel estimator for density

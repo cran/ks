@@ -34,11 +34,11 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE,
   \item{pvalue}{matrix of local p-values at each grid point}
   \item{fhat.diff}{difference of KDEs}
   \item{mean.fhat.diff}{mean of the test statistic}  
-  \item{var.fhat.fiff}{variance of the test statistic}
+  \item{var.fhat.diff}{variance of the test statistic}
   \item{fhat.diff.pos}{binary matrix to indicate locally signficant fhat1 > fhat2}
   \item{fhat.diff.neg}{binary matrix to indicate locally signficant fhat1 < fhat2}
   \item{n1,n2}{sample sizes}
-  \item{H1,H2,h1,h2}{bandwidth matrices/bandwidths}
+  \item{H1,H2,h1,h2}{bandwidth matrices/scalar bandwidths}
 }
 
 
@@ -53,9 +53,8 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE,
   The required input is either \code{x1,x2} and \code{H1,H2}, or
   \code{fhat1,fhat2}, i.e. the data values and bandwidths or objects of class
   \code{kde}. In the former case, the \code{kde} objects are created.
-  If the \code{H1,H2} are missing then the default bandwidths are binned
-  2-stage plug-in selectors \code{Hpi(, nstage=2, binned=TRUE)}.
-  Likewise for missing \code{h1, h2}. 
+  If the \code{H1,H2} are missing then the default are the plugin
+  selectors \code{Hpi}.  Likewise for missing \code{h1,h2}. 
 
   The \code{mean.adj} flag determines whether the
 second order correction to the mean value of the test statistic should be computed. 
@@ -66,8 +65,8 @@ second order correction to the mean value of the test statistic should be comput
 
 \references{
   Duong, T. (2013) Local signficant differences from non-parametric
-  two-sample tests. \emph{Journal of Nonparametric Statistics}.
-  doi:10.1080/10485252.2013.810217.
+  two-sample tests. \emph{Journal of Nonparametric Statistics},
+  \bold{25}, 635-645.
     
   Godtliebsen, F., Marron, J.S. & Chaudhuri, P. (2002) 
   Significance in scale space for bivariate density estimation.
