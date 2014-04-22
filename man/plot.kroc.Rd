@@ -33,9 +33,9 @@
 
 \examples{
 library(MASS)
-data(iris)
-x1 <- iris[iris[,5]=="versicolor",1:2]
-x2 <- iris[iris[,5]=="virginica",1:2]
+data(fgl)
+x1 <- fgl[fgl[,"type"]=="WinF",c("RI", "Na")]
+x2 <- fgl[fgl[,"type"]=="Head",c("RI", "Na")]
 Rhat <- kroc(x1=x1, x2=x2, nref=1e3) 
 plot(Rhat)
 abline(0,1, lty=2, col="grey")

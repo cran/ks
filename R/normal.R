@@ -1214,7 +1214,10 @@ Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE
 {
   if (missing(y)) y <- x
   type1 <- match.arg(type, c("direct", "cumulant"))
-  Qr.val <- do.call(paste("Qr", type1, sep="."), list(x=x, y=y, Sigma=Sigma, r=deriv.order, inc=inc, verbose=verbose))
+  if (type1=="direct")
+    Qr.val <- Qr.direct(x=x, y=y, Sigma=Sigma, r=deriv.order, inc=inc, verbose=verbose)
+  else
+    Qr.val <- Qr.cumulant(x=x, y=y, Sigma=Sigma, r=deriv.order, inc=inc, verbose=verbose)
   return(Qr.val)
 }
 
@@ -1224,14 +1227,14 @@ Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE
 ### described in Section 6 of Chacón and Duong (2014)
 ############################################################################
 
-Qr.direct <- function(x, y, Sigma, r=0, inc=1, verbose=FALSE)
+Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize, verbose=FALSE)
 {
   if (is.vector(x)) x <- matrix(x, nrow=1)
   d <- ncol(x)
 
-  eta <- drop(Kpow(vec(diag(d)), r/2) %*% dmvnorm.deriv.sum(x=x, Sigma=Sigma, deriv.order=r, inc=inc, verbose=verbose))
-  if (inc==0) eta <- eta/(nrow(x)*(nrow(x)-1))
-  if (inc==1) eta <- eta/(nrow(x)*nrow(x))
+  eta <- drop(Kpow(vec(diag(d)), r/2) %*% kfe(x=x, G=Sigma, deriv.order=r, inc=inc, verbose=verbose, binned=binned, bin.par=bin.par, add.index=FALSE))
+  ##if (inc==0) eta <- eta/(nrow(x)*(nrow(x)-1))
+  ##if (inc==1) eta <- eta/(nrow(x)*nrow(x))
   return(eta)
 }
 

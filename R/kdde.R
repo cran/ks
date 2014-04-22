@@ -28,10 +28,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize, deriv.order=r)
   if (missing(H) & d>1)
   {
-    if (r==0)
-      H <- Hpi(x=x, nstage=2, binned=nrow(x)>1000, bgridsize=bgridsize, deriv.order=r)
-    else if (r>0)
-      H <- Hpi(x=x, nstage=2, binned=nrow(x)>1000, bgridsize=bgridsize, deriv.order=r, pilot="dscalar")
+    H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, deriv.order=r, verbose=verbose)
   }
   
   ## compute binned estimator
@@ -79,7 +76,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
       if (missing(eval.points))
       {
         if (d==2) 
-          fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec)
+          fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec, verbose=verbose)
         else if (d==3)
           stop("not yet implemented for 3 dimensions")
           ##fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
@@ -286,12 +283,12 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
 ## Computes all mixed partial derivatives for a given deriv.order
 ##############################################################################
 
-kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE)
+kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE, verbose=FALSE)
 {
   d <- 2
   r <- deriv.order
   if (r==0)
-    fhatr <- kde(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w)
+    fhatr <- kde(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose)
   else
   {  
     ## initialise grid 
@@ -308,7 +305,7 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
     fhat.grid <- list()
     for (k in 1:nderiv)
       fhat.grid[[k]] <- matrix(0, nrow=length(gridx[[1]]), ncol=length(gridx[[2]]))
-
+    if (verbose) pb <- txtProgressBar()
     for (i in 1:n)
     {
       ## compute evaluation points 
@@ -326,7 +323,9 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
       for (k in 1:nderiv)
         for (j in 1:length(eval.y))
           fhat.grid[[k]][eval.x.ind, eval.y.ind[j]] <- fhat.grid[[k]][eval.x.ind, eval.y.ind[j]] + w[i]*fhat[((j-1) * eval.x.len + 1):(j * eval.x.len),k]
+      if (verbose) setTxtProgressBar(pb, i/n)
     }
+    if (verbose) close(pb)
     
     for (k in 1:nderiv) fhat.grid[[k]] <- fhat.grid[[k]]/n
     gridx1 <- list(gridx[[1]], gridx[[2]]) 

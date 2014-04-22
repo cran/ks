@@ -35,7 +35,7 @@ kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, verbose=
 {
   r <- deriv.order
   d <- ncol(x)
-  if (missing(bin.par) & binned) bin.par <- binning(x=x, H=g^2*diag(d))
+  ##if (missing(bin.par) & binned) bin.par <- binning(x=x, H=g^2*diag(d))
   
   psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, bin.par=bin.par, verbose=verbose)
   return(psir)

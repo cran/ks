@@ -254,7 +254,7 @@ predict.kde <- function(object, ..., x)
 ##############################################################################
 
 
-kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE)
+kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
 {
   if (is.vector(x))
   {
@@ -282,8 +282,14 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     else y <- x
     if (missing(h)) h <- hpi(x=y, binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
   }
-  if (missing(H) & d>1)  H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
-
+  if (missing(H) & d>1)
+  {
+    if (binned)
+      H <- Hpi.diag(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    else 
+      H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose)
+  }
+  
   ## compute binned estimator
   if (binned)
   {
@@ -337,12 +343,12 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
      {  
        if (is.data.frame(x)) x <- as.matrix(x)
 
-       if (missing(eval.points))
+              if (missing(eval.points))
        {
          if (d==2)
-           fhat <- kde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w)
+           fhat <- kde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose)
          else if (d == 3)
-           fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w) 
+           fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose) 
          else 
            stop("need to specify eval.points for more than 3 dimensions")
        }
@@ -458,7 +464,7 @@ kde.unit.interval.1d <- function(x, h, binned=FALSE)
 ## H - bandwidth matrix 
 ###############################################################################
 
-kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w)
+kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, verbose=FALSE)
 {
   ## initialise grid 
   n <- nrow(x)
@@ -469,6 +475,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 
   if (is.null(grid.pts)) grid.pts <- find.gridpts(gridx, suppx)    
   fhat.grid <- matrix(0, nrow=length(gridx[[1]]), ncol=length(gridx[[2]]))
+  if (verbose) pb <- txtProgressBar()
   
   for (i in 1:n)
   {
@@ -486,8 +493,9 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
       fhat.grid[eval.x.ind, eval.y.ind[j]] <- 
         fhat.grid[eval.x.ind, eval.y.ind[j]] + 
           w[i]*fhat[((j-1) * eval.x.len + 1):(j * eval.x.len)]
+    if (verbose) setTxtProgressBar(pb, i/n)
   }
-  
+  if (verbose) close(pb)
   fhat.grid <- fhat.grid/n
   gridx1 <- list(gridx[[1]], gridx[[2]]) 
   
@@ -514,7 +522,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ## H - bandwidth matrix 
 ###############################################################################
 
-kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w)
+kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, verbose=FALSE)
 {
   ## initialise grid 
   n <- nrow(x)
@@ -527,6 +535,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     grid.pts <- find.gridpts(gridx, suppx)    
   fhat.grid <- array(0, dim=c(length(gridx[[1]]), length(gridx[[2]]), 
                length(gridx[[3]])))
+  if (verbose) pb <- txtProgressBar()
   
   for (i in 1:n)
   {
@@ -550,7 +559,9 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
           fhat.grid[eval.x.ind, eval.y.ind[j], eval.z.ind[k]] + 
             fhat[((j-1) * eval.x.len + 1):(j * eval.x.len)]
      }
+    if (verbose) setTxtProgressBar(pb, i/n)
   }
+  if (verbose) close(pb)
   
   fhat.grid <- fhat.grid/n
 

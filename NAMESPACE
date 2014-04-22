@@ -1,4 +1,3 @@
-
 import(KernSmooth)
 import(mvtnorm)
 import(misc3d)
@@ -45,7 +44,6 @@ export(vec, vech, invvec, invvech)
 S3method(contourLevels, kda)
 S3method(contourLevels, kde)
 S3method(contourLevels, kdde)
-S3method(contourLevels, kcopula.de)
 S3method(plot, kcde)
 S3method(plot, kcopula)
 S3method(plot, kcopula.de)

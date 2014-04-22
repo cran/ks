@@ -238,8 +238,8 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
 
   ## kernel estimation for components of test statistic
 
-  if (missing(fhat1)) fhat1 <- kde(x=x1, H=H1, binned=binned, gridsize=gridsize, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax)
-  if (missing(fhat2)) fhat2 <- kde(x=x2, H=H2, binned=binned, gridsize=gridsize, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax)
+  if (missing(fhat1)) fhat1 <- kde(x=x1, H=H1, binned=binned, gridsize=gridsize, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax, verbose=verbose)
+  if (missing(fhat2)) fhat2 <- kde(x=x2, H=H2, binned=binned, gridsize=gridsize, bgridsize=bgridsize, supp=supp, xmin=xmin, xmax=xmax, verbose=verbose)
   
   HD2fhat <- 0
   if (mean.adj)

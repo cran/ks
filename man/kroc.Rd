@@ -107,7 +107,7 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 samp <- 1000
 x <- rnorm.mixt(n=samp, mus=0, sigmas=1, props=1)
 y <- rnorm.mixt(n=samp, mus=0.5, sigmas=1, props=1)
-Rhat <- kroc(x1=x, x2=y)  
+Rhat <- kroc(x1=x, x2=y)
 summary(Rhat)
 predict(Rhat, x=0.5) 
 }

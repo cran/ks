@@ -128,7 +128,7 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 
 
 ## Scalar pilot selector for derivatives r>0 from Chacon & Duong (2011)
-gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
+gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
 {
   if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
   else cf <- c(1,1,1)
@@ -142,7 +142,10 @@ gdscalar <- function(x, d, r, n, verbose, nstage=1, scv=FALSE)
     G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=var(x))
     g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d) 
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
-    eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.nr^2*diag(d), inc=1) 
+    if (binned)
+      eta2r6 <- drop(kfe(x=x, G=g2r6.nr^2*diag(d), inc=1, binned=binned, deriv.order=2*r, add.index=FALSE, verbose=verbose) %*% vec(diag(d^r)))
+    else
+      eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.nr^2*diag(d), inc=1) 
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
     A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
     A3 <- cf[3]*eta2r6^2
@@ -302,9 +305,9 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
   if (pilot=="samse")
   {
     g6.star <- gsamse(S.star, n=n, modr=6)
-    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, bin.par=bin.par, add.index=FALSE, verbose=verbose)
+    psihat6.star <- kfe(x=x.star, G=g6.star^2*diag(d), deriv.order=6, deriv.vec=TRUE, binned=binned, add.index=FALSE, verbose=verbose)
     g.star <- gsamse(S.star, n=n, modr=4, nstage=2, psihat=psihat6.star)
-    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, bin.par=bin.par, add.index=TRUE, verbose=verbose)
+    psihat.star <- kfe(x=x.star, G=g.star^2*diag(d), deriv.order=4, deriv.vec=TRUE, binned=binned, add.index=TRUE, verbose=verbose)
   }
   ## compute different pilots for AMSE
   else if ((pilot=="amse") & (d==2))
@@ -572,9 +575,9 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
   else if (pilot1=="dscalar")
   {
     ## g2r4 is on pre-transformed data scale
-    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
+    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, binned=binned)
     G2r4 <- g2r4^2 * diag(d)
-    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
+    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
     if (missing(Hstart)) Hstart <-  Hns(x=x.star, deriv.order=r)
   }
   else
@@ -684,7 +687,6 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>=4 & nstage==2) bgridsize <- rep(11,d)
-  
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
@@ -693,7 +695,7 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   }
  
   Idr <- diag(d^r)  
-  if (pilot=="amse" | pilot=="samse")
+  if (pilot1=="amse" | pilot1=="samse")
   {
     if (nstage==1)
       psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par, deriv.order=r, verbose=verbose)$psir
@@ -703,9 +705,10 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   }
   else if (pilot1=="dscalar")
   {
-    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage)
+   
+    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, binned=binned)
     G2r4 <- g2r4^2 * diag(d)
-    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=FALSE, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
+    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
   }
   
   if (d==2 & r==0 & (pilot1=="amse" | pilot1=="samse"))
@@ -803,11 +806,10 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
     lscv <- drop(lscv1 - 2*lscv2)
   }
   else
-  { 
-    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
-    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
-    lscv <- drop(lscv1 - 2*lscv2)
-    lscv <- (-1)^r*drop(lscv %*% vec(diag(d^r)))
+  {
+    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
+    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
+     lscv <- (-1)^2*drop((lscv1 - 2*lscv2) %*% vec(diag(d^r)))
   }
 
   return(lscv)  
@@ -885,7 +887,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   lscv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
@@ -946,7 +948,7 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
@@ -1191,7 +1193,7 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, v
   if (nstage==1)
   {  
     G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
-    psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose)
+    psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
   }
   else if (nstage==0)
   {
@@ -1274,9 +1276,9 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
   }
   else
   {
-    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
-    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
-    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, inc=1, bin.par=bin.par, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
     
     bias2 <- drop((-1)^r*Kpow(vId,r) %*% (scv1 - 2*scv2 + scv3))
     if (bias2 < 0) bias2 <- 0
@@ -1415,7 +1417,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
   else if (pilot1=="dscalar")
   {
     ## Gs is on pre-transformed data scale
-    g2r4 <- gdscalar(x=x.star, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE)
+    g2r4 <- gdscalar(x=x.star, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE, binned=binned)
     Gs <- g2r4^2*diag(d)
     if (missing(Hstart)) Hstart <-Hns(x=x.star, deriv.order=r)
   }
@@ -1442,7 +1444,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
     H <- invvech(vechH) %*% invvech(vechH)
     if (pilot1=="samse" | pilot1=="amse" | pilot1=="dscalar"){ Gpilot <- Gs; xx <- x.star }
     else if (pilot1=="unconstr" | pilot1=="dunconstr") { Gpilot <- Gu; xx <- x }
-    return(scv.mat(x=xx, H=H, G=Gpilot, binned=binned, bin.par=bin.par, verbose=FALSE, deriv.order=r))
+    return(scv.mat(x=xx, H=H, G=Gpilot, binned=binned, verbose=FALSE, deriv.order=r))
   }
 
   Hstart <- matrix.sqrt(Hstart)
@@ -1509,7 +1511,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
   if (pilot1=="dscalar")
   {
     ## Gs is on pre-transformed data scale
-    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, scv=TRUE)
+    g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, scv=TRUE, binned=binned)
     Gs <- g2r4^2*diag(d)
     if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
   }
@@ -1534,7 +1536,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
   scv.mat.temp <- function(diagH)
   {
     H <- diag(diagH) %*% diag(diagH)
-    return(scv.mat(x.star, H, Gs, binned=binned, bin.par=bin.par.star, verbose=FALSE, deriv.order=r))
+    return(scv.mat(x.star, H, Gs, binned=binned, verbose=FALSE, deriv.order=r))
   }
 
   Hstart <- matrix.sqrt(Hstart)

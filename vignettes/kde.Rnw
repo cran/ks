@@ -1,7 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 
 %\usepackage{amsmath,amssymb,amsthm,amsopn,natbib}
-\usepackage{amsmath,amssymb,amsopn,natbib,titling}
+\usepackage{amsmath,amssymb,amsopn,natbib}
 \usepackage[left=2.5cm,top=2.5cm,right=2.5cm,bottom=2.5cm]{geometry}
 
 \renewcommand{\today}{\begingroup

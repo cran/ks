@@ -10,7 +10,8 @@
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
-    compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE)
+    compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE,
+    verbose=FALSE)
 
 \method{predict}{kde}(object, ..., x)
 }
@@ -26,13 +27,15 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
-  \item{unit.interval}{flag if 1-d data are bounded on unit interval
-  [0,1]. Default is FALSE.} 
-  \item{adj.positive}{adjustment applied to positive 1-d data}
+   \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
   \item{approx.cont}{flag for computing approximate probability contour
-    levels. Default is TRUE.}  
+    levels. Default is TRUE.}
+  \item{unit.interval}{flag if 1-d data are bounded on unit interval
+  [0,1]. Default is FALSE.} 
+  \item{verbose}{flag to print out progress information. Default is
+    FALSE.}
   \item{object}{object of class \code{kde}}
   \item{...}{other parameters}
 }
