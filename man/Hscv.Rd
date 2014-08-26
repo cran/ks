@@ -67,7 +67,8 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. DOI
+  10.1007/s11222-014-9465-1.
   
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 

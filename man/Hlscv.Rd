@@ -42,7 +42,8 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. DOI
+  10.1007/s11222-014-9465-1. 
   
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
   estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},

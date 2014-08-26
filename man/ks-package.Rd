@@ -96,22 +96,23 @@
 
   --For kernel estimation of a ROC (receiver operating characteristic)
   curve to compare two samples from \eqn{\hat{F}_1,
-  \hat{F}_2}{hat(F)_1, \hat(F)_2}, the main function is \code{\link{kroc}}
-  \deqn{\hat{R}(z) = \hat{F}_2 (\hat{\bar{F}}_1^{-1}(z))}{hat(R)(z) = hat(F)_2 (hat(bar(F))_1^(-1)(z))} where \eqn{\hat{\bar{F}}_1^{-1}(z)}{hat(bar(F))_1^(-1)(z)} is
-  the \eqn{z}{z}-th quantile of \eqn{\hat{\bar{F}}_1}{hat(bar(F))_1}.
+  \hat{F}_2}{hat(F)_1, hat(F)_2}, the main function is \code{\link{kroc}}
+  \deqn{(\hat{F}_{\hat{Y}_1}(z),
+  \hat{F}_{\hat{Y}_2}(z))}{(hat(F)_hat(Y1))(z), hat(F_hat(Y2))(z))} based on the cumulative distribution functions of
+  \eqn{\hat{Y}_j = \hat{\bar{F}}_1(\bold{X}_j), j=1,2}{hat(Yj)=hat(bar(F))_1(X_j), j=1,2}.
+    
   The bandwidth selectors are those used with \code{\link{kcde}},
   e.g. \code{\link{hpi.kcde}, \link{Hpi.kcde}}  for
-  \eqn{\hat{\bar{F}}_1,\hat{F}_2}{hat(bar(F))_1, hat(F)_2}. Its \code{plot} method
+  \eqn{\hat{F}_{\hat{Y}_j}, \hat{\bar{F}}_1}{hat(F)_hat(Yj), hat(bar(F))_1}. Its \code{plot} method
   is \code{\link{plot.kroc}}.   
 
   --For kernel estimation of a copula, the
   main function is \code{\link{kcopula}}
   \deqn{\hat{C}(\bold{z}) = \hat{F}(\hat{F}_1^{-1}(z_1), \dots,
-  \hat{F}_d^{-1}(z_d))}{hat(C)(z) = hat(F)(hat(F)_1^(-1)(z_1),
-  ..., hat(F)_d^(-1)(z_d))}
+  \hat{F}_d^{-1}(z_d))}{hat(C)(z) = hat(F)(hat(F)_1^(-1)(z_1),..., hat(F)_d^(-1)(z_d))}
   where \eqn{\hat{F}_j^{-1}(z_j)}{hat(F)_j^(-1)(z_j)} is
   the \eqn{z_j}{z_j}-th quantile of of the \eqn{j}{j}-th marginal
-  distribution \eqn{\hat{F}_j}{hat(F)_j}.
+  distribution \eqn{\hat{F}_j}{hat(F_j)}.
   The bandwidth selectors are those used with \code{\link{kcde}} for
   \eqn{\hat{F}, \hat{F}_j}{hat(F), hat(F)_j}.
   Its \code{plot} method is \code{\link{plot.kcde}}.

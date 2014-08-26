@@ -1,6 +1,9 @@
 \name{Hns}
 \alias{Hns}
 \alias{hns}
+\alias{Hns.kcde}
+\alias{hns.kcde}
+
 
 \title{Normal scale bandwidth}
 
@@ -12,6 +15,8 @@ Normal scale bandwidth.
 \usage{
 Hns(x, deriv.order=0)
 hns(x, deriv.order=0)
+Hns.kcde(x)
+hns.kcde(x)
 }
 
 \arguments{
@@ -21,11 +26,18 @@ hns(x, deriv.order=0)
 
 
 \value{
-  Full normal scale bandwidth matrix.  
+  Full normal scale bandwidth matrix. 
 }
 
 \details{
-  \code{Hns} is equal to \code{(4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)}, n = sample size, d = dimension of data, r = derivative order. \code{hns} is the analogue  of \code{Hns} for 1-d data.  
+  \code{Hns} is equal to \code{(4/(n*(d+2*r+2)))^(2/(d+2*r+4))*var(x)},
+  n = sample size, d = dimension of data, r = derivative
+  order. \code{hns} is the analogue  of \code{Hns} for 1-d data. These
+  can be used for density (derivative) estimators
+  \code{\link{kde}}, \code{\link{kdde}}. 
+
+  The equivalents for distribution estimators \code{\link{kcde}} are
+  \code{Hns.kcde} and \code{hns.code}. 
 }
 
 

@@ -9,8 +9,7 @@
 
 \usage{
 kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
-   nref=1e4)
+   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
 
 \method{predict}{kroc}(object, ..., x)
 \method{summary}{kroc}(object, ...)
@@ -32,8 +31,6 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
-  \item{nref}{sample size used to compute reference ROC curve. Default
-  is 1e4.}
   \item{object}{object of class \code{kroc}, output from \code{kroc}}
   \item{...}{other parameters} 
 }
@@ -61,26 +58,16 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 \details{
   In this set-up, the values in the first sample \code{x1} should
   be larger in general that those in the second sample \code{x2}. The
-  usual method for computing 1-d ROC curves is based on   
-  \eqn{R(z) = F_2 (\bar{F}_1^{-1}(z))}{(R(z) = F_2(bar(F)_1^(-1)(z))} where
-  \eqn{\bar{F}_1, F_2}{bar(F)_1,F_2} are the respective survival and
-  cumulative distribution function, and 
-  \eqn{\bar{F}_1^{-1}(z)}{bar(F)_1^(-1)(z)} is the \eqn{z}{z}-th quantile of
-  \eqn{\bar{F}_1}{bar(F)_1}, is not valid for multivariate data. Duong (2014),
+  usual method for computing 1-d ROC curves is not valid for
+  multivariate data. Duong (2014), 
   based on Lloyd (1998), develops an alternative formulation
-  \eqn{R(z) = F_Y(z)}{R(z) = F_Y(z)} as the cumulative distribution
-  function of \eqn{Y = \bar{F}_1(\bold{X}_2)}{Y=bar(F)_1(X_2)}.
+  \eqn{(F_{Y_1}(z), F_{Y_2}(z))}{(F_Y1(z), F_Y2(z))} based on the
+  cumulative distribution functions of \eqn{Y_j = \bar{F}_1(\bold{X}_j), j=1,2}{Yj=bar(F)_1(Xj), j=1,2}.
 
   If the bandwidth \code{H1} is missing from \code{kroc}, then
   the default bandwidth is the  plug-in selector
   \code{Hpi.kcde}. Likewise for missing \code{h1,hy}. A bandwidth matrix
-  \code{H1} is required for \code{x1} for d>1, but the second bandwidth \code{hy} is always a  scalar since Y is a 1-d variable.
-
-  To compute the reference ROC curve, either \code{kcde} or
-  \code{pmvnorm} (from the \pkg{mvtnorm} package) is used. The former is
-  faster because it's a binned \code{kcde} computation, whereas the
-  latter is a more exact computation of the multivariate normal CDF and
-  thus can give a smoother ROC curve. 
+  \code{H1} is required for \code{x1} for d>1, but the second bandwidth \code{hy} is always a scalar since \eqn{Y_j}{Yj} are 1-d variables.
 
   The effective support, binning, grid size, grid range, positive data
   parameters are the same  as for \code{\link{kde}}. 
@@ -93,7 +80,7 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
 \references{
   Duong, T. (2014) Non-parametric kernel estimation of multivariate
-  cumulative distribution functions and receiver operating
+  cumulative distribution and survival functions, and receiver operating
   characteristic curves. Submitted.
 
   Lloyd, C. (1998) Using smoothed receiver operating curves to summarize

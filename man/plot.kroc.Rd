@@ -36,9 +36,8 @@ library(MASS)
 data(fgl)
 x1 <- fgl[fgl[,"type"]=="WinF",c("RI", "Na")]
 x2 <- fgl[fgl[,"type"]=="Head",c("RI", "Na")]
-Rhat <- kroc(x1=x1, x2=x2, nref=1e3) 
-plot(Rhat)
-abline(0,1, lty=2, col="grey")
+Rhat <- kroc(x1=x1, x2=x2) 
+plot(Rhat, add.roc.ref=TRUE)
 }
 
 

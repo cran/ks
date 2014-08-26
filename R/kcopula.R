@@ -57,6 +57,33 @@ dbeta.kernel2 <- function(x, eval.x, h)
   return(dbeta(eval.x, shape1=shape1, shape2=shape2))
 }
 
+## Modified multivariate boundary beta product kernel
+
+dmvbeta.prod.kernel2 <- function(x, eval.x, hs)
+{
+  d <- length(hs)
+  db <- vector("list", d)
+  for (i in 1:d) db[[i]] <- 0
+  
+  for (i in 1:d)
+      db[[i]] <- dbeta.kernel2(x=x[i], eval.x=eval.x[[i]], h=hs[i])
+
+  db <- expand.grid(db)
+  db <- apply(db, 1, prod)
+  return(db)
+}
+
+## Modified multivariate boundary beta spherically symmetric kernel
+
+dmvbeta.symm.kernel2 <- function(x, eval.x, H)
+{
+  d <- ncol(H)
+  eval.y <- sqrt(apply(eval.x^2, 1, sum))/sqrt(d)
+  y <- sqrt(sum(x^2))/sqrt(d)
+  return(dbeta.kernel2(x=y, eval.x=eval.y, h=sqrt(tr(H)))/d)
+}
+
+
 #############################################################################
 ## Kernel copula estimator
 #############################################################################
@@ -199,9 +226,6 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (marginal1=="kernel")
   {  
     ## kernel pseudo-uniform
-    ##u <- list()
-    ##for (i in 1:d) u[[i]] <- kcde(x=x[,i], h=hs[i], eval.points=x[,i], binned=binned)
-    ##y <- sapply(u, getElement, "estimate")
     y <- pseudo.unif.kernel(x=x, y=x, hs=hs, binned=TRUE)
   }
   else if (marginal1=="empirical")
@@ -270,6 +294,8 @@ boundary.ind <- function(x, h, xmin, xmax, boundary.supp=1)
   return(bound.ind)
 }
 
+
+
 ## boundary kernel estimator using beta bounday kernels (2nd form)
 
 kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE, boundary.supp=1, verbose=FALSE)
@@ -328,7 +354,6 @@ kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, 
       stop("Not yet implemented.") ##fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w)     
   }
 
- 
   fhat$binned <- binned
   fhat$names <- parse.name(x)  ## add variable names
   fhat$w <- w
@@ -389,7 +414,6 @@ kde.boundary.grid.1d <- function(x, h, hb, gridsize, supp=3.7, xmin, xmax, gridt
     fhat.grid <- fhat.grid + dbeta.kernel2(x=x.star[bound.ind][i], eval.x=eval.x, h=hb.star)*w[bound.ind][i]
   fhat.grid <- fhat.grid/n
 
-  
   ## backtransform
   eval.points <- (xmax-xmin)*eval.x + xmin 
   fhat.grid <- fhat.grid/(xmax-xmin)
@@ -449,8 +473,7 @@ kde.boundary.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
         ## convert bandwidth from normal kernel to beta kernel scale
         ## for boundary points 
         hb.star <- 2*h.star
-        fhat <- expand.grid(dbeta.kernel2(x=x.star[i,1], eval.x=eval.x, h=hb.star[1]), dbeta.kernel2(x=x.star[i,2], eval.x=eval.y, h=hb.star[2]))
-        fhat <- apply(fhat, 1, prod)
+        fhat <- dmvbeta.prod.kernel2(x=x.star[i,], eval.x=list(eval.x, eval.y), hs=hb.star)
    
         ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
         for (j in 1:length(eval.y))
@@ -484,8 +507,8 @@ kde.boundary.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
         ## convert bandwidth from normal kernel to beta kernel scale
         ## for boundary points 
         hb.star <- 2*h.star
-        fhat <- expand.grid(dbeta.kernel2(x=x.star[i,1], eval.x=eval.x, h=hb.star[1]), dbeta.kernel2(x=x.star[i,2], eval.x=eval.y, h=hb.star[2]))
-        fhat <- apply(fhat, 1, prod)
+        fhat <- dmvbeta.prod.kernel2(x=x.star[i,], eval.x=list(eval.x, eval.y), hs=hb.star)
+        ##fhat <- dmvbeta.symm.kernel2(x=x.star[i,], eval.x=expand.grid(eval.x, eval.y), H=2*H.star)
       }
 
       ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
@@ -559,8 +582,7 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
         ## convert bandwidth from normal kernel to beta kernel scale
         ## for boundary points 
         hb.star <- 2*h.star
-        fhat.xy <- expand.grid(dbeta.kernel2(x=x.star[i,1], eval.x=eval.x, h=hb.star[1]), dbeta.kernel2(x=x.star[i,2], eval.x=eval.y, h=hb.star[2]))
-        fhat.xy <- apply(fhat.xy, 1, prod)
+        fhat.xy <- dmvbeta.prod.kernel2(x=x.star[i,], eval.x=list(eval.x, eval.y), hs=hb.star[1:2])
 
         ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
         for (k in 1:length(eval.z))
@@ -609,8 +631,7 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
       {
         ## convert bandwidth from normal kernel to beta kernel scale
         hb.star <- 2*h.star
-        fhat.xy <- expand.grid(dbeta.kernel2(x=x.star[i,1], eval.x=eval.x, h=hb.star[1]), dbeta.kernel2(x=x.star[i,2], eval.x=eval.y, h=hb.star[2]))
-        fhat.xy <- apply(fhat.xy, 1, prod)
+        fhat.xy <- dmvbeta.prod.kernel2(x=x.star[i,], eval.x=list(eval.x, eval.y), hs=hb.star[1:2])
         
         for (k in 1:length(eval.z))
         {
@@ -647,53 +668,21 @@ plot.kcopula.de <- function(x, ...)
   plot.kde(x, ...)
 }
 
-##############################################################################
-## compute true copula (mdvc object) on a grid
-##############################################################################
-
-copula.grid <- function(copula, xmin, xmax, gridsize, copula.fun=dCopula)
-{
-  x <- rCopula(n=1000, copula=copula)
-  H <- Hpi(x=x, binned=TRUE)
-  d <- dim(copula)
-  
-  if (missing(gridsize)) gridsize <- default.gridsize(d)
-  if (missing(xmin)) xmin <- rep(0,d)
-  if (missing(xmax)) xmax <- rep(1,d)
-
-  gridx <- list()
-  for (j in 1:d) gridx[[j]] <- seq(xmin[j], xmax[j], length=gridsize[j])
-
-  eval.points <- as.matrix(expand.grid(gridx))
-  xnames <- parse.name(x)
-  estimate <- array(copula.fun(u=eval.points, copula=copula), dim=gridsize)
-
-  copde <- list(x=x, eval.points=gridx, estimate=estimate, H=H, gridtype=rep("linear", d), gridded=TRUE, binned=FALSE, names=xnames, w=rep(1, nrow(x)), copula=copula)
-  
-  if (identical(copula.fun, dCopula)) class(copde) <- "kcopula.de"
-  else if (identical(copula.fun, pCopula))
-  {
-    copde$tail <- "lower.tail"
-    class(copde) <- "kcopula"
-  }
-  return(copde)
-}
-
 
 
 #############################################################################
 ## predict methods
 #############################################################################
 
-predict.kcopula <- function(object, ..., x)
+predict.kcopula <- function(object, ..., x, u)
 {
-  if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)
+  if (missing(u)) {if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)}
   return(predict.kde(object, ..., x=u))
 }
 
-predict.kcopula.de <- function(object, ..., x)
+predict.kcopula.de <- function(object, ..., x, u)
 {
-  if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)
+  if (missing(u)) {if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs)}
  
   return(predict.kde(object, ..., x=u))
 }

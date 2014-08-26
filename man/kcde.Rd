@@ -19,7 +19,7 @@ Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize,
   amise=FALSE, verbose=FALSE, optim.fun="nlm")
 Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE,
   bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
-hpi.kcde(x, nstage=2, binned=TRUE)
+hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 
 \method{predict}{kcde}(object, ..., x)
 }
@@ -93,7 +93,7 @@ hpi.kcde(x, nstage=2, binned=TRUE)
 
 \references{
   Duong, T. (2014) Non-parametric kernel estimation of multivariate
-  cumulative distribution functions and receiver operating
+  cumulative distribution and survival functions, and receiver operating
   characteristic curves. Submitted.
 }
 

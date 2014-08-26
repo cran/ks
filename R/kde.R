@@ -769,7 +769,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
       hts <- abs.cont 
     
-    hts <- sort(hts)
+    ##hts <- sort(hts, decreasing=TRUE)
     
     if (missing(col)) col <- 1 #rev(heat.colors(length(hts)))
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
@@ -976,7 +976,7 @@ contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=FALSE)
 
   num.int <- rep(0, length(abs.cont))
   if (!is.null(names(abs.cont))) names(num.int) <- names(abs.cont) 
-  abs.cont <- sort(abs.cont)
+  ##abs.cont <- sort(abs.cont)
   if (!is.list(x$eval.points))
     delta.int <- head(diff(x$eval.points), n=1)
   else

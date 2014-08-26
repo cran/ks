@@ -141,8 +141,6 @@ kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.ta
   return(list(x=x, eval.points=eval.points, estimate=Fhat, H=H, gridded=FALSE, binned=FALSE, names=NULL, w=w))
 }
 
-
-
 #####################################################################
 ## Plotting functions for 1-d to 3-d KCDE
 #####################################################################
@@ -344,7 +342,7 @@ Hns.kcde <- function(x)
 
 ## Plug-in bandwidth selector
 
-hpi.kcde <- function(x, nstage=2, binned=TRUE)
+hpi.kcde <- function(x, nstage=2, binned=TRUE, amise=FALSE)
 {
   n <- length(x)
   d <- 1
@@ -372,8 +370,10 @@ hpi.kcde <- function(x, nstage=2, binned=TRUE)
 
   ## formula form Polansky & Baker (2000)
   h <- (2*m1/(-m2^2*psi2.hat*n))^(1/3) 
-
-  return(h)
+  if (amise) PI <- -2*n^(-1)*m1*h - 1/4*psi2.hat*h^4
+  
+  if (!amise) return(h)
+  else return(list(h=h, PI=PI))
 }
 
 
@@ -391,6 +391,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=
   if (pilot1=="dscalar") stop("use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
   
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
+
   if (nstage==2)
   {  
     ## stage 1
@@ -402,7 +403,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=
       Hinv <- chol2inv(chol(H))
       Hinv12 <- matrix.sqrt(Hinv)
       amse2.val <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
-      return(sum(amse2.val^2)) 
+      return(sum(amse2.val^2))
     }
       
     Hstart2 <- matrix.sqrt(Gns(r=2, n=n, Sigma=var(x)))
@@ -422,16 +423,22 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=
     psi2.hat <- kfe(x=x, G=H2, deriv.order=2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
   }
   else
+  {
     psi2.hat <- psins(r=2, Sigma=var(x), deriv.vec=TRUE)    
-  
+    H2 <- Gns(r=2, n=n, Sigma=var(x))
+  }
   if (missing(Hstart)) Hstart <- Hns.kcde(x=x)
-  
+
+  Fhat.pilot <- kcde(x=x, H2)
+  VF <- sum(Fhat.pilot$estimate*(1-Fhat.pilot$estimate)*prod(sapply(Fhat.pilot$eval, diff)[1,]))
+
   ## stage 2
   amise.temp <- function(vechH)
   { 
     H <- invvech(vechH) %*% invvech(vechH)
     H12 <- matrix.sqrt(H)
     amise.val <- -2*n^(-1)*m1*tr(H12) - 1/4*t(vec(H %*% H)) %*% psi2.hat
+    ##amise.val <- -2*n^(-1)*m1*sum(vech(H12)) - 1/4*t(vec(H %*% H)) %*% psi2.hat
     return(drop(amise.val)) 
   }
   
@@ -479,7 +486,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
       Hinv <- chol2inv(chol(H))
       Hinv12 <- matrix.sqrt(Hinv)
       amse2.val <- 1/(det(H)^(1/2)*n)*((Hinv12 %x% Hinv12) %*% D2K0) + 1/2* t(vec(H) %x% diag(d^2)) %*% psi4.ns
-      return(sum((amse2.val)^2)) 
+      return(sum(amse2.val^2))
     }
       
     Hstart2 <- matrix.sqrt(Gns(r=2, n=n, Sigma=var(x)))
@@ -536,7 +543,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
 ## Multivariate kernel ROC estimators
 #####################################################################
 
-kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, nref=1e4)
+kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
 {
   if (is.vector(x1)) {d <- 1; n1 <- length(x1)} else {d <- ncol(x1); n1 <- nrow(x1)}
   if (!missing(eval.points)) stop("eval.points in kroc not yet implemented")
@@ -544,139 +551,50 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   if (d==1)
   {
     if (missing(h1)) h1 <- hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1))
-    
-    y <- kcde(x=x1, h=h1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, eval.points=x2, w=w, tail.flag="upper.tail")$estimate
+    Fhatx1 <- kcde(x=x1, h=h1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w, tail.flag="upper.tail")
   }
   else
   {
     if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1), verbose=verbose)
-    y <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, eval.points=x2, w=w, tail.flag="upper.tail", verbose=verbose)$estimate
+    Fhatx1 <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, tail.flag="upper.tail", verbose=verbose)
   }
 
   ## transform from [0,1] to reals
-  y <- qnorm(y[y>0])
-  hy <- hpi.kcde(y, binned=default.bflag(d=d, n=n1))
-  Fhaty <- kcde(x=y, h=hy, binned=TRUE) 
-  Fhaty$eval.points <- pnorm(Fhaty$eval.points)
-  Fhaty$x <- list(x1, x2)
+  y1 <- predict(Fhatx1, x=x1)
+  y2 <- predict(Fhatx1, x=x2)
+  y1 <- qnorm(y1[y1>0])
+  y2 <- qnorm(y2[y2>0])
 
- 
-  if (d==1) {Fhaty$h1 <- h1; Fhaty$H1 <- h1^2; Fhaty$hy <- hy}
-  else {Fhaty$H1 <- H1; Fhaty$hy <- hy}
+  if (missing(hy)) hy <- hpi.kcde(y2, binned=default.bflag(d=1, n=n1))
+  Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE)
+  Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, eval.points=Fhaty1$eval.points)
+  Fhaty1$eval.points <- pnorm(Fhaty1$eval.points)
+  Fhaty2$eval.points <- pnorm(Fhaty2$eval.points)
 
-  transform <- TRUE
-  if (transform & d>1) Fhaty <- kroc.transform(Fhaty, nref=nref)
-  else
-  {
-    ## Use spline to smooth out transformed ROC curve
-    Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate)
-    Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points))) 
-    Fhaty$eval.points <- Fhaty.smoothed$x
-    Fhaty$estimate <- Fhaty.smoothed$y
-    ## add (0,0) and (1,1) as endpoints
-    if (head(Fhaty$eval.points, n=1)!=0) Fhaty$eval.points[1] <- 0
-    if (head(Fhaty$estimate, n=1)!=0) Fhaty$estimate[1] <- 0
-    if (tail(Fhaty$eval.points, n=1)!=1) Fhaty$eval.points[length(Fhaty$eval.points)] <- 1
-    if (tail(Fhaty$estimate, n=1)!=1) Fhaty$estimate[length(Fhaty$estimate)] <- 1
-    Fhaty$estimate[Fhaty$estimate>1] <- 1
-    Fhaty$estimate[Fhaty$estimate<0] <- 0
-    Fhaty$indices <- indices.kroc(Fhaty)
-  }
-  
-  Fhaty <- Fhaty[-c(4,5)] 
-  class(Fhaty) <- "kroc"
-  return(Fhaty)
-}
-
-
-## ROC curve to compare normal r.v. with variance Sigma against itself
-roc.ns <- function(Sigma, nref=1e4, bgridsize)
-{
-  if (is.vector(Sigma)) d <- 1 else d <- ncol(Sigma)
-  ## locally set random seed not to interfere with global random number generators
-  if (!exists(".Random.seed")) rnorm(1)
-  old.seed <- .Random.seed
-  on.exit( { .Random.seed <<- old.seed } )
-  set.seed(8192)
-  xref <- rmvnorm.mixt(n=nref, mus=rep(0,d), Sigmas=Sigma)
-
-  ##approx.ref1 <- match.arg(approx.ref, c("kcde")) 
-  ##if (approx.ref1=="pmvnorm")
-  ##{
-  ##  y <- rep(0, nref)
-  ##  for (i in 1:length(y)) y[i] <- pmvnorm(lower=xref[i,], sigma=Sigma)
-  ##}
-  ##else if (approx.ref1=="kcde")
-  ##{
-  ##y <- kcde(x=xref, binned=TRUE, H=diag(diag(Hns(xref))), tail.flag="upper.tail", eval.points=xref)$estimate
-  y <- kcde(x=xref, binned=FALSE, H=Hns.kcde(xref), tail.flag="upper.tail", eval.points=xref)$estimate
-  ##}
- 
-  ## transform from [0,1] to reals
-  y <- qnorm(y[y>0])
-  hy <- hpi.kcde(y, binned=default.bflag(d=d, n=length(y)))
-  Fhaty <- kcde(x=y, h=hy, binned=TRUE, bgridsize=bgridsize)
-  Fhaty$eval.points <- pnorm(Fhaty$eval.points)
+  Rhat <- Fhaty1
+  Rhat$eval.points <- Fhaty1$estimate
+  Rhat$estimate <- Fhaty2$estimate
+  if (d==1) {Rhat$h1 <- h1; Rhat$H1 <- h1^2; Rhat$hy <- hy}
+  else {Rhat$H1 <- H1; Rhat$hy <- hy}
 
   ## Use spline to smooth out transformed ROC curve
-  Fhaty.smoothed <- smooth.spline(Fhaty$eval.points, Fhaty$estimate)
-  Fhaty.smoothed <- predict(Fhaty.smoothed, x=seq(0,1,length=length(Fhaty$eval.points)))
-  Fhaty$eval.points <- Fhaty.smoothed$x
-  Fhaty$estimate <- Fhaty.smoothed$y
-
+  Rhat.smoothed <- smooth.spline(Rhat$eval.points, Rhat$estimate)
+  Rhat.smoothed <- predict(Rhat.smoothed, x=seq(0,1,length=length(Rhat$eval.points))) 
+  Rhat$eval.points <- Rhat.smoothed$x
+  Rhat$estimate <- Rhat.smoothed$y
   ## add (0,0) and (1,1) as endpoints
-  if (head(Fhaty$eval.points, n=1)!=0) Fhaty$eval.points[1] <- 0
-  if (head(Fhaty$estimate, n=1)!=0) Fhaty$estimate[1] <- 0
-  if (tail(Fhaty$eval.points, n=1)!=1) Fhaty$eval.points[length(Fhaty$eval.points)] <- 1
-  if (tail(Fhaty$estimate, n=1)!=1) Fhaty$estimate[length(Fhaty$estimate)] <- 1
-
-  Fhaty$estimate[Fhaty$estimate>1] <- 1
-  Fhaty$estimate[Fhaty$estimate<0] <- 0
-  
-  Fhaty$hy <- hy
-  Fhaty$indices <- indices.kroc(Fhaty)
-  class(Fhaty) <- "kroc"
-   
-  return(Fhaty)
+  if (head(Rhat$eval.points, n=1)!=0) Rhat$eval.points[1] <- 0
+  if (head(Rhat$estimate, n=1)!=0) Rhat$estimate[1] <- 0
+  if (tail(Rhat$eval.points, n=1)!=1) Rhat$eval.points[length(Rhat$eval.points)] <- 1
+  if (tail(Rhat$estimate, n=1)!=1) Rhat$estimate[length(Rhat$estimate)] <- 1
+  Rhat$estimate[Rhat$estimate>1] <- 1
+  Rhat$estimate[Rhat$estimate<0] <- 0
+  Rhat$indices <- indices.kroc(Rhat)
+  Rhat <- Rhat[-c(4,5)] 
+  class(Rhat) <- "kroc"
+  return(Rhat)
 }
 
-
-kroc.transform <- function(Rhat, Rhat.ref, nref)
-{
-  ## transform given ROC curve to reference ROC curve
-  Rhat.trans <- Rhat
-  
-  if (missing(Rhat.ref))
-  {
-    xref <- rbind(Rhat$x[[1]], Rhat$x[[2]]) 
-    Rhat.ref <- roc.ns(Sigma=var(xref), nref=nref)
-  }
-
-  ##Rhat.ref.temp.estimate <- predict(Rhat.ref, x=Rhat$eval.points)
-  Rhat.trans$eval.points <- predict(Rhat.ref, x=Rhat$eval.points)
-  ##unique.ind <- !duplicated(Rhat.trans$eval.points)
-  ##Rhat.trans$estimate <- Rhat.trans$estimate[unique.ind]
-  ##Rhat.trans$eval.points <- Rhat.trans$eval.points[unique.ind]
-
-  ## Use spline to smooth out transformed ROC curve
-  Rhat.trans.smoothed <- smooth.spline(Rhat.trans$eval.points, Rhat.trans$estimate)
-  Rhat.trans.smoothed <- predict(Rhat.trans.smoothed, x=seq(0,1,length=length(Rhat$eval.points)))
-  Rhat.trans$eval.points <- Rhat.trans.smoothed$x
-  Rhat.trans$estimate <- Rhat.trans.smoothed$y
-
- 
-  ## add (0,0) and (1,1) as endpoints
-  if (head(Rhat.trans$eval.points, n=1)!=0) Rhat.trans$eval.points[1] <- 0
-  if (head(Rhat.trans$estimate, n=1)!=0) Rhat.trans$estimate[1] <- 0
-  if (tail(Rhat.trans$eval.points, n=1)!=1) Rhat.trans$eval.points[length(Rhat.trans$eval.points)] <- 1
-  if (tail(Rhat.trans$estimate, n=1)!=1) Rhat.trans$estimate[length(Rhat.trans$estimate)] <- 1 
-  Rhat.trans$estimate[Rhat.trans$estimate>1] <- 1
-  Rhat.trans$estimate[Rhat.trans$estimate<0] <- 0
-  
-  Rhat.trans$indices <- indices.kroc(Rhat.trans)
-  
-  return(Rhat.trans)
-}
 
 
 ### summary measure of ROC curves
@@ -710,20 +628,11 @@ plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, ylab="True positive rate 
   if (is.vector(Rhat$x[[1]])) d <- 1 else d <- ncol(Rhat$x[[1]])
   if (add.roc.ref)
   {
-    if (d==1)
-    {
       z <- seq(0,1, length=401)
       kind <- 0:(d-1)
       roc.indep <- 0
       for (k in kind) roc.indep <- roc.indep + z*(-log(z))^k/factorial(k)
       lines(z, roc.indep, lty=2, col="grey")
-    }
-    else
-    {  
-      xref <- rbind(Rhat$x[[1]], Rhat$x[[2]])
-      Rhat.ref <- roc.ns(Sigma=var(xref))
-      lines(Rhat.ref$eval.points, Rhat.ref$estimate, lty=2, col="grey")
-    }
   }
 }
 

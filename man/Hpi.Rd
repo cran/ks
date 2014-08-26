@@ -70,7 +70,8 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. Accepted.
+  Gaussian density. \emph{Statistics & Computing}. DOI
+  10.1007/s11222-014-9465-1.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric

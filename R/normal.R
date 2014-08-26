@@ -1543,9 +1543,11 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, grid
   if (missing(xlim)) xlim <- c(min(mus[,1]) - maxSigmas, max(mus[,1]) + maxSigmas)
   if (missing(ylim)) ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
   if (missing(gridsize)) gridsize <- default.gridsize(2)
-              
-  x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
-  y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
+
+  ##x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
+  ##y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
+  x <- seq(xlim[1], xlim[2], length=gridsize[1])
+  y <- seq(ylim[1], ylim[2], length=gridsize[2])
   xy <- permute(list(x, y))
   d <- ncol(Sigmas)
  
@@ -1617,9 +1619,12 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
   if (missing(zlim)) zlim <- c(min(mus[,3]) - 4*maxsd[3], max(mus[,3]) + 4*maxsd[3])
   if (missing(gridsize)) gridsize <- default.gridsize(3)
   
-  x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
-  y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
-  z <- seq(zlim[1]-0.1*abs(diff(zlim)), zlim[2]+0.1*abs(diff(zlim)), length=gridsize[3])
+  x <- seq(xlim[1], xlim[2], length=gridsize[1])
+  y <- seq(ylim[1], ylim[2], length=gridsize[2])
+  z <- seq(zlim[1], zlim[2], length=gridsize[3])
+  ##x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
+  ##y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
+  ##z <- seq(zlim[1]-0.1*abs(diff(zlim)), zlim[2]+0.1*abs(diff(zlim)), length=gridsize[3])
   xy <- permute(list(x,y))
 
   if (deriv.order>0)
