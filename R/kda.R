@@ -381,6 +381,7 @@ kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binn
   if (missing(bgridsize)) bgridsize <- default.gridsize(d)
   if (missing(gridsize)) gridsize <- default.gridsize(d)  
   fhat.list <- list()
+
   for (j in 1:m)
   {
     xx <- x[x.group==gr[j]]
@@ -515,6 +516,24 @@ contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=FALSE,...)
    
   return(hts) 
 }
+
+
+predict.kda <- function(object, ..., x)
+{
+  fhat <- object
+  m <- length(fhat$prior.prob)
+  if (is.vector(fhat$x[[1]])) n <- length(x) else {if (is.vector(x)) n <- 1 else n <- nrow(x)}
+  fhat.temp <- matrix(0, ncol=m, nrow=n)
+  for (j in 1:m)
+  {    
+      fhat.temp[,j] <- fhat$prior.prob[j]*find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate[[j]])$fx
+  }
+  est.group <- apply(fhat.temp, 1, which.max)
+  est.group <- unique(fhat$x.group)[est.group]
+
+  return(est.group)
+}
+
 
 
 

@@ -1,5 +1,11 @@
 Change log file for ks
 
+1.9.4 
+-Removed explicit prior calculation of permutation derivative indices in
+ dmvnorm.deriv.sum().
+-Fixed small bug in contourLevels.kdde() to make explicit call to 
+ predict.kde().
+
 1.9.3
 -Removed copula.grid() and hence dependence on copula package.
 -Fixed bug in displaying 2D contour level labels for plot.kde() and sorting

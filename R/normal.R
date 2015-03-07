@@ -287,7 +287,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
     dens <- 0
     ## sum of each normal density value from each component at x  
     for (i in 1:k)
-      dens <- dens + props[i]*dmvnorm(x, mean=mus[i,], sigma=Sigmas[((i-1)*d+1):(i*d),])
+      dens <- dens + props[i]*dmvnorm(x=x, mean=mus[i,], sigma=Sigmas[((i-1)*d+1):(i*d),])
   }
   
   return(dens)
@@ -315,30 +315,32 @@ dmvnorm.deriv<-function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index=F
     d <- ncol(x)
     n <- nrow(x)
   }
-  
-  ## matrix of derivative indices
-  ind.mat <- 0
-  sumr.counter <- sumr
-  if (sumr>=1) ind.mat <- diag(d)
-  {
-    while (sumr.counter >1)
-    {
-      ind.mat <- Ksum(diag(d), ind.mat)
-      sumr.counter <- sumr.counter - 1
-    }
+  if (add.index | only.index | !deriv.vec)
+  {    
+      ## matrix of derivative indices
+      ind.mat <- 0
+      sumr.counter <- sumr
+      if (sumr>=1) ind.mat <- diag(d)
+      {
+          while (sumr.counter >1)
+          {
+              ind.mat <- Ksum(diag(d), ind.mat)
+              sumr.counter <- sumr.counter - 1
+          }
+      }
+      ind.mat.minimal <- unique(ind.mat)
+      ind.mat.minimal.logical <- !duplicated(ind.mat)
+      
+      if (only.index)
+          if (deriv.vec) return (ind.mat)
+          else  return(ind.mat.minimal)
   }
-  ind.mat.minimal <- unique(ind.mat)
-  ind.mat.minimal.logical <- !duplicated(ind.mat)
   
-  if (only.index)
-    if (deriv.vec) return (ind.mat)
-    else  return(ind.mat.minimal)
-
   if (missing(mu)) mu <- rep(0,d)
   if (missing(Sigma)) Sigma <- diag(d)
-
+ 
   x.centred <- sweep(x, 2, mu)
-  
+ 
   dens <- do.call(paste("dmvnorm.deriv", type1, sep="."), list(x=x.centred, Sigma=Sigma, deriv.order=r))
   if (is.vector(dens) & r>0) dens <- matrix(dens, nrow=1)
   
@@ -359,7 +361,7 @@ dmvnorm.deriv<-function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index=F
 ############################################################################
 ### dmvnorm.deriv.direct computes the vector derivative of the Gaussian
 ### density phi_Sigma(x) on the basis of Equation (1) and Algotihm 2, as
-### described in Chacón and Duong (2014)
+### described in Chacon and Duong (2014)
 ############################################################################
 
 dmvnorm.deriv.direct<-function(x,Sigma,deriv.order=0){ 
@@ -384,7 +386,7 @@ dmvnorm.deriv.direct<-function(x,Sigma,deriv.order=0){
 ############################################################################
 ### dmvnorm.deriv.recursive computes the vector derivative of the Gaussian
 ### density phi_Sigma(x) on the basis of Equation (7) and Algorithm 2 as
-### described in Section 5 of Chacón and Duong (2014)
+### described in Section 5 of Chacon and Duong (2014)
 ############################################################################
 
 dmvnorm.deriv.recursive<-function(x,Sigma,deriv.order=0){ 
@@ -418,7 +420,7 @@ dmvnorm.deriv.recursive<-function(x,Sigma,deriv.order=0){
 ###############################################################################
 ### dmvnorm.deriv.unique computes the whole vector derivative of the Gaussian
 ### density phi_Sigma(x) from its unique coordinates, based on Algorithm 3 as
-### described in Section 5 of Chacón and Duong (2014)
+### described in Section 5 of Chacon and Duong (2014)
 ###############################################################################
 
 dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
@@ -435,7 +437,7 @@ dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
     hmnew <- hmold0  
     udind0<-matrix(rep(0,d),nrow=1,ncol=d)
     udind1<-diag(d)
-    
+     
     if(r==1){hmnew<-hmold1}
     if(r>=2){for(i in 2:r){
         Ndi1<-ncol(hmold1)
@@ -497,6 +499,7 @@ dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
         dlabs<-match(dind.base,udind.base)
         
         deriv.vector<-hmnew[,dlabs]*matrix(rep((-1)^rowSums(dind),n),nrow=n,byrow=TRUE)
+       
         result<-matrix(rep(dmvnorm(x,mean=rep(0,d),sigma=Sigma),ncol(deriv.vector)),
                 nrow=n,byrow=FALSE)*deriv.vector
     }
@@ -647,17 +650,24 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
         
         ndif <- n*(n-1)/2
         dif.ind <- numeric()
-        for(k in 2:n) dif.ind <- rbind(dif.ind,cbind(1:(k-1),rep(k,k-1)))
-             
+        ##for(k in 2:n) dif.ind <- rbind(dif.ind,cbind(1:(k-1),rep(k,k-1)))
+        
         M <- 1e6
         max.loop.size <- ceiling(M/nudind) ### Inside the loop we need to store a matrix of order max.loop.size x nudind <= M
         nblocks <- ceiling(ndif/max.loop.size)
         blength <- c(rep(max.loop.size,nblocks-1),ndif-max.loop.size*(nblocks-1)) #length of each of the blocks, the last one could be smaller
         
+        tri.num <- (1:n)*((1:n)-1)/2
         for(kk in 1:nblocks){
           b <- blength[kk]
           if (verbose) setTxtProgressBar(pb, kk/nblocks) 
-          difs.block <- x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),1],]-x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),2],]
+          kkm <- (kk-1)*max.loop.size
+         
+          tri.ind <- findInterval(kkm:(kkm+b-1), tri.num)
+          dif.ind.block <- cbind(kkm:(kkm+b-1) - tri.num[tri.ind]+1, tri.ind+1)
+                             
+          ##difs.block <- x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),1],]-x[dif.ind[((kk-1)*max.loop.size+1):((kk-1)*max.loop.size+b),2],]
+          difs.block <- x[dif.ind.block[,1],]-x[dif.ind.block[,2],]
           
           arg <- difs.block %*% Sigmainv    
           narg <- nrow(arg) 
@@ -844,8 +854,8 @@ psins <- function(r, Sigma, deriv.vec=length(r)==1)
   d <- ncol(Sigma)
   if (deriv.vec)
   {
-    dens <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, add.index=TRUE)
-    return(drop(dens$deriv))
+    dens <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), deriv.order=r, Sigma=2*Sigma, add.index=FALSE)
+    return(drop(dens)) ##dens$deriv
   }
   else
   {
@@ -858,12 +868,6 @@ psins <- function(r, Sigma, deriv.vec=length(r)==1)
      else
        dens <- dens$deriv
     return(dens)
-   
-    ##if (d==2) return(psins.2d(r=r, Sigma=Sigma))
-    ##if (d==3) return(psins.3d(r=r, Sigma=Sigma))
-    ##if (d==4) return(psins.4d(r=r, Sigma=Sigma))
-    ##if (d==5) return(psins.5d(r=r, Sigma=Sigma))
-    ##if (d==6) return(psins.6d(r=r, Sigma=Sigma))
   }
 }
 
@@ -883,7 +887,7 @@ mur <- function(r, A, mu, Sigma, type="unique")
 #############################################################################
 ### mur.direct computes the vector moment E[X^{\otimes r}] for a random
 ### vector with N(mu,Sigma) distribution, on the basis of Equation (8) in
-### Section 6 of Chacón and Duong (2014)
+### Section 6 of Chacon and Duong (2014)
 #############################################################################
 
 mur.direct<-function(r,mu,Sigma){
@@ -907,7 +911,7 @@ mur.direct<-function(r,mu,Sigma){
 #############################################################################
 ### mur.recursive computes the vector moment E[X^{\otimes r}] for a random
 ### vector with N(mu,Sigma) distribution, on the basis of Equation (9) in
-### Section 6 of Chacón and Duong (2014), using Equation (7) in Section 5
+### Section 6 of Chacon and Duong (2014), using Equation (7) in Section 5
 ### to obtain the Hermite polynomial
 #############################################################################
 
@@ -933,7 +937,7 @@ mur.recursive<-function(r,mu,Sigma){
 ###############################################################################
 ### mur.unique computes the vector moment E[X^{\otimes r}] for a random vector 
 ### with N(mu,Sigma) distribution, on the basis of Equation (9) in Section 6
-### of Chacón and Duong (2014), using Algorithm 3 in Section 5, based on the
+### of Chacon and Duong (2014), using Algorithm 3 in Section 5, based on the
 ### unique partial derivatives, to obtain the Hermite polynomial
 ###############################################################################
 
@@ -1034,7 +1038,7 @@ nurs <- function(r, s, A, B, mu, Sigma, type="cumulant")
 #############################################################################
 ### nur.direct computes the moment E[(X^T AX)^r] of the quadratic form
 ### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacón and Duong (2014), and the direct
+### Equation (10) in Section 6 of Chacon and Duong (2014), and the direct
 ### implementation mur.direct of the normal moments
 #############################################################################
 
@@ -1047,7 +1051,7 @@ nur.direct<-function(r,A,mu,Sigma){
 #############################################################################
 ### nur.recursive computes the moment E[(X^T AX)^r] of the quadratic form
 ### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacón and Duong (2014), and the recursive
+### Equation (10) in Section 6 of Chacon and Duong (2014), and the recursive
 ### implementation mur.recursive of the normal moments
 #############################################################################
 
@@ -1060,7 +1064,7 @@ nur.recursive<-function(r,A,mu,Sigma){
 #############################################################################
 ### nur.unique computes the moment E[(X^T AX)^r] of the quadratic form
 ### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacón and Duong (2014), and the function
+### Equation (10) in Section 6 of Chacon and Duong (2014), and the function
 ### mur.unique to compute the normal moments from its unique coordinates
 #############################################################################
 
@@ -1101,7 +1105,7 @@ nur.cumulant<-function(r,A,mu,Sigma){
 #############################################################################
 ### nurs.direct computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
 ### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacón and
+### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
 ### Duong (2014), and the direct implementation mur.direct of the
 ### normal moments
 #############################################################################
@@ -1116,7 +1120,7 @@ nurs.direct<-function(r,s,A,B,mu,Sigma){
 #############################################################################
 ### nurs.recursive computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
 ### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacón and
+### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
 ### Duong (2014), and the recursive implementation mur.recursive of the
 ### normal moments
 #############################################################################
@@ -1131,7 +1135,7 @@ nurs.recursive<-function(r,s,A,B,mu,Sigma){
 #############################################################################
 ### nurs.unique computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
 ### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacón and
+### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
 ### Duong (2014), and the function mur.unique to compute the normal moments
 ### from its unique coordinates
 #############################################################################
@@ -1147,7 +1151,7 @@ nurs.unique<-function(r,s,A,B,mu,Sigma){
 ### nurs.cumulant computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
 ### quadratic forms X^T AX and X^T BX, where X is a random vector with
 ### N(mu,Sigma) distribution, using the recursive formula (11) in Section 6
-### of Chacón and Duong (2014), relating moments and cumulants. The cumulants
+### of Chacon and Duong (2014), relating moments and cumulants. The cumulants
 ### are computed using the function kappars, which is based on Theorem 3
 #############################################################################
 
@@ -1224,7 +1228,7 @@ Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE
 
 ############################################################################
 ### Qr.direct computes the V-statistic using the direct approach, as
-### described in Section 6 of Chacón and Duong (2014)
+### described in Section 6 of Chacon and Duong (2014)
 ############################################################################
 
 Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize, verbose=FALSE)
@@ -1242,7 +1246,7 @@ Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize,
 
 ############################################################################
 ### Qr.cumulant computes the V-statistic using the relationship with nur
-### shown in Theorem 4 of Chacón and Duong (2014)
+### shown in Theorem 4 of Chacon and Duong (2014)
 ############################################################################
 
 Qr.cumulant <- function(x, y, Sigma, r=0, inc=1, verbose=FALSE)

@@ -490,8 +490,7 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
       fhat.temp <- fhat 
       fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind]
       fhat <- fhat.temp
-    }
-    
+    }    
   }
   else
   {
@@ -515,16 +514,17 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
     if (d==1) fhat$gridded <- fhat$binned
     else fhat$gridded <- is.list(fhat$eval.points)
   }
-  
+
+
   if (missing(prob) & missing(cont))
     hts <- pretty(fhat$estimate, n=nlevels) 
   else
   {
     if (approx & fhat$gridded)
-      dobs <- predict(fhat, x=fhat$x)
+      dobs <- predict.kde(fhat, x=fhat$x)
     else
-      dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
-
+        dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
+    
     if (is.null(fhat$deriv.order))
     {
        if (!missing(prob) & missing(cont)) hts <- quantile(dobs[dobs>=0], prob=prob)
@@ -543,6 +543,7 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
 #############################################################################
 ## predict method for KDDE 
 #############################################################################
+
 predict.kdde <- function(object, ..., x)
 {
   fhat <- object

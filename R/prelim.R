@@ -413,7 +413,7 @@ permute.mat <- function(order)
 
 ##########################################################################
 ### pinv.all generates all the permutations PR_{d,r} as described in
-### Appendix B of Chacón and Duong (2014)
+### Appendix B of Chacon and Duong (2014)
 ##########################################################################
     
 pinv.all<-function(d,r){
@@ -645,7 +645,7 @@ Sdrv<-function(d, r, v, type="recursive"){
 
 ############################################################################
 ### Sdr.direct computes the symmetrizer matrix S_{d,r} based on Equation (4)
-### as described in Section 3 of Chacón and Duong (2014)
+### as described in Section 3 of Chacon and Duong (2014)
 ############################################################################
 
 Sdr.direct<-function(d,r){ 
@@ -682,7 +682,7 @@ Sdr.direct<-function(d,r){
 ############################################################################
 ### Sdr.recursive computes the symmetrizer matrix S_{d,r} based on 
 ### the recursive approach detailed in Algorithm 1 in Section 3 of 
-### Chacón and Duong (2014)
+### Chacon and Duong (2014)
 ############################################################################     
      
 Sdr.recursive<-function(d,r){
@@ -710,7 +710,7 @@ Sdr.recursive<-function(d,r){
 ############################################################################
 ### Sdrv.direct computes the result of multiplying the symmetrizer matrix
 ### S_{d,r} by a vector v of length d^r, based on Equation (4) as described
-### in Section 4 of Chacón and Duong (2014)
+### in Section 4 of Chacon and Duong (2014)
 ############################################################################ 
 
 Sdrv.direct<-function(d,r,v){
@@ -747,7 +747,7 @@ Sdrv.direct<-function(d,r,v){
 ############################################################################
 ### Sdrv.recursive computes the result of multiplying the symmetrizer matrix
 ### S_{d,r} by a vector v of length d^r, based on the recursive Algorithm 2
-### as described in Section 4 of Chacón and Duong (2014)
+### as described in Section 4 of Chacon and Duong (2014)
 ############################################################################ 
 
 Sdrv.recursive<-function(d,r,v){

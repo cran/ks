@@ -343,7 +343,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
      {  
        if (is.data.frame(x)) x <- as.matrix(x)
 
-              if (missing(eval.points))
+       if (missing(eval.points))
        {
          if (d==2)
            fhat <- kde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose)

@@ -76,7 +76,7 @@ ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(x=ir, x.group=ir.gr, bw="plugin", pilot="dscalar")
 kda.fhat <- kda(x=ir, x.group=ir.gr, Hs=H)
-plot(kda.fhat, asp=c(2,4,1))
+plot(kda.fhat)
   ## colour indicates species, transparency indicates density heights
 }
 
