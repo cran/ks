@@ -19,7 +19,7 @@
     \describe{
       \item{\code{rugsize}}{height of rug-like plot for partition classes (1-d)}
       \item{\code{prior.prob}}{vector of prior probabilities}
-      \item{\code{partcol}}{vector of colours for partition classes (1-d, 2-d)}
+      \item{\code{col.part}}{vector of colours for partition classes (1-d, 2-d)}
     }
     
     and those used in \code{\link{plot.kde}}
@@ -37,18 +37,18 @@
   \preformatted{
   ## univariate
   plot(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
-     ylab="Weighted density function", drawpoints=FALSE, col, partcol,
-     ptcol, lty, jitter=TRUE, rugsize, ...)
+     ylab="Weighted density function", drawpoints=FALSE, col, col.part,
+     col.pt, lty, jitter=TRUE, rugsize, ...)
 
   ## bivariate
   plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, 
-    approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE, 
-    drawlabels=TRUE, col, partcol, ptcol, ...)
+     approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE, 
+     drawlabels=TRUE, col, col.part, col.pt, ...)
 
   ## trivariate
   plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, 
-    approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
-    drawpoints=FALSE, size=3, ptcol="blue", ...)
+     approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
+     drawpoints=FALSE, size=3, col.pt="blue", ...)
   }
 }
  
@@ -76,8 +76,7 @@ ir <- iris[,1:3]
 ir.gr <- iris[,5] 
 H <- Hkda(x=ir, x.group=ir.gr, bw="plugin", pilot="dscalar")
 kda.fhat <- kda(x=ir, x.group=ir.gr, Hs=H)
-plot(kda.fhat)
-  ## colour indicates species, transparency indicates density heights
+plot(kda.fhat) ## colour=species, transparency=density heights
 }
 
 

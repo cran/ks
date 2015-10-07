@@ -659,13 +659,14 @@ plot.kde <- function(x, ...)
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, ptcol="blue", cont.col=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
+  drawpoints=FALSE, col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
   
   if (add) lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, ...)
   else plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
 
+ 
   ## compute contours
   if (!missing(cont) | !missing(abs.cont)) 
   {
@@ -692,14 +693,14 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
     if (is.null(fhat$deriv.order)) cont.ind <- 1-as.numeric(fhat$estimate>=hts[1])
     else cont.ind <- (1-as.numeric(fhat$estimate>=hts[1])) * (1-as.numeric(fhat$estimate<=tail(hts,n=1)))
     cont.ind[cont.ind==1] <- NA	  
-    lines(fhat$eval.points, cont.ind, col=cont.col, lwd=cont.lwd)
+    lines(fhat$eval.points, cont.ind, col=col.cont, lwd=cont.lwd)
   }
   
   if (drawpoints)
     if (jitter)
-      rug(jitter(fhat$x), col=ptcol)
+      rug(jitter(fhat$x), col=col.pt)
     else
-      rug(fhat$x, col=ptcol)
+      rug(fhat$x, col=col.pt)
 }
 
 
@@ -714,24 +715,24 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex,  
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1,  
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
+    col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   if (!is.list(fhat$eval.points)) stop("need a grid of density estimates")
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
-  if (missing(labcex)) labcex <-1
   if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
 
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
-    hts <- seq(0, 1.1*max(fhat$estimate), length=100)
-    if (missing(col)) col <- grey(seq(0.9,0,length=length(hts)+1)) 
-    if (length(col)<100) col <- rep(col, length=100)
+    hts <- seq(0, 1.1*max(fhat$estimate), length=500)
+    if (missing(col)) col <- topo.colors(length(hts)+1)
+    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
+    if (length(col)<length(hts)) col <- rep(col, length=length(hts))
     
     ## thinning indices
     plot.ind <- list(seq(1, length(fhat$eval.points[[1]]), by=thin), seq(1, length(fhat$eval.points[[2]]), by=thin))
@@ -746,9 +747,6 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   }
   else if (disp1=="slice") 
   {
-    if (!add)
-      plot(fhat$x[,1], fhat$x[,2], type="n",xlab=xlab, ylab=ylab, ...)
-
     ## compute contours
     if (missing(abs.cont))
     {
@@ -773,7 +771,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     
     if (missing(col)) col <- 1 #rev(heat.colors(length(hts)))
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
-
+    
     ## draw contours         
     for (i in 1:length(hts)) 
     {
@@ -781,18 +779,17 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       else scale <- 1
 
       if (hts[i]>0 | !is.null(fhat$deriv.order))
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, labcex=labcex, col=col[i], lwd=lwd, ...)
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=i>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, ...)
     }
  
     ## add points 
     if (drawpoints)
-      points(fhat$x[,1], fhat$x[,2], col=ptcol, cex=cex, pch=pch)
+        points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
   }
   ## image plot
   else if (disp1=="image")
   {
-    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, 
-            xlab=xlab, ylab=ylab, add=add, ...)
+    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, ...)
     box()
   }
   else if (disp1=="filled.contour" | disp1=="filled.contour2")
@@ -819,6 +816,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     hts <- sort(hts)
 
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
+    if (!missing(col.fun)) col <- c(col.fun(length(hts)+1))
     clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
     
     if (disp1=="filled.contour2")
@@ -828,7 +826,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       ## draw contours         
      
       for (i in 1:length(hts)) 
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=7)
+        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
       if (!missing(lwd))
       {
         for (i in 1:length(hts)) 
@@ -836,7 +834,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
           if (missing(abs.cont)) scale <- cont[i]/hts[i]
           else scale <- 1
           
-          if (lwd >=1) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, labcex=labcex, lwd=lwd, ...)
+          if (lwd >=1) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
         }
       }
     }
@@ -857,7 +855,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, size=3, ptcol="blue", add=FALSE, 
+plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, size=3, col.pt="blue", add=FALSE, 
   xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
@@ -897,7 +895,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
 
   fhat.eval.mean <- sapply(fhat$eval.points, mean)
   if (drawpoints)
-    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
     plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   bg3d(col="white")
@@ -948,7 +946,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
     hts <- pretty(fhat$estimate, n=nlevels) 
   else
   {
-    if (approx & fhat$gridded)
+      if (approx & fhat$gridded)
       dobs <- predict(fhat, x=fhat$x)
     else
       dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w)$estimate 

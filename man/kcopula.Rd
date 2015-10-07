@@ -91,8 +91,8 @@ data(fgl)
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
 plot(Chat, disp="persp", thin=3, col="white", border=1)
-chat <- kcopula.de(x=x)
-plot(chat, disp="persp", thin=3, theta=40, phi=30, col="white", border=1)
+##chat <- kcopula.de(x=x)
+##plot(chat, disp="persp", thin=3, theta=40, phi=30, col="white", border=1)
 }
 
 \keyword{smooth}

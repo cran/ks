@@ -73,8 +73,7 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
 
 \examples{
 data(unicef)
-fhat1 <- kdde(x=unicef, deriv.order=1)
-  ## gradient [df/dx, df/dy]
+fhat1 <- kdde(x=unicef, deriv.order=1) ## gradient [df/dx, df/dy]
 }
 
 \keyword{smooth}

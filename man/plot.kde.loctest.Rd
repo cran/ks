@@ -42,11 +42,11 @@
   For \code{kde.loctest} objects, the function headers are  
   \preformatted{
    ## univariate
-   plot(x, col, add=FALSE, xlab="x", ylab, rugsize, add.legend=TRUE, 
-      pos.legend="topright", ...)
+   plot(x, lcol, col, add=FALSE, xlab="x", ylab, rugsize, add.legend=TRUE, 
+     pos.legend="topright", ...)
    
    ## bivariate
-   plot(x, lcol, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, 
+   plot(x, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, 
      add.legend=TRUE, pos.legend="topright", ...)
 
    ## trivariate 

@@ -29,7 +29,6 @@ Hamise.mixt.diag(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 Hmise.mixt.diag(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 hamise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
 hmise.mixt(mus, sigmas, props, samp, hstart, deriv.order=0)
-
 amise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 ise.mixt(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, 
          bgridsize)  

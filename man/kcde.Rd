@@ -15,10 +15,10 @@
 kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
   tail.flag="lower.tail")
-Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize,
-  amise=FALSE, verbose=FALSE, optim.fun="nlm")
-Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE,
-  bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE,
+  verbose=FALSE, optim.fun="nlm")
+Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE,
+  verbose=FALSE, optim.fun="nlm")
 hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 
 \method{predict}{kcde}(object, ..., x)
@@ -81,10 +81,9 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   \eqn{\mathrm{Pr}(\bold{X}>\bold{x})}{P(X>x)}. For d>1,
   \eqn{\mathrm{Pr}(\bold{X}\leq\bold{x}) \neq 1 - \mathrm{Pr}(\bold{X}>\bold{x})}{Pr(X<=x) != 1-Pr(X>x)}.
   
-  If the bandwidth \code{H} is missing from \code{kcde}, then
+  If the bandwidth \code{H} is missing in \code{kcde}, then
   the default bandwidth is the plug-in selector
   \code{Hpi.kcde}. Likewise for missing \code{h}.
-
   No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not invariant to translation/dilation.
 
   The effective support, binning, grid size, grid range, positive data
@@ -92,9 +91,10 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 }
 
 \references{
-  Duong, T. (2014) Non-parametric kernel estimation of multivariate
+  Duong, T. (2015) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
-  characteristic curves. Submitted.
+  characteristic curves. \emph{Journal of the Korean Statistical
+  Society}. In press. DOI:10.1016/j.jkss.2015.06.002.
 }
 
 

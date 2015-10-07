@@ -35,8 +35,8 @@
   plot(fhat, ylab="Density derivative function", ...)
 
   ## bivariate
-  plot(fhat, which.deriv.ind=1, col, cont=c(25,50,75), abs.cont,
-    display="slice", zlab="Density derivative function", ...)
+  plot(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", 
+     zlab="Density derivative function", ...)
   }
 }
  
@@ -53,9 +53,8 @@ plot(fhat1)
 data(unicef)
 fhat2 <- kdde(x=unicef, deriv.order=2)
 plot(fhat2, which.deriv.ind=2, display="persp", phi=20)
-plot(fhat2, which.deriv.ind=2, display="filled.contour2")
-  ## d^2 f/(dx dy)
-  ## purple=-ve, green=zero, beige=+ve
+plot(fhat2, which.deriv.ind=2, display="filled.contour2", col.fun=topo.colors)
+  ## d^2 f/(dx dy): purple=-ve, green=zero, beige=+ve
 }
 
 

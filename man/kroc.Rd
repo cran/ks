@@ -74,18 +74,19 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
    
   --The \code{summary} method for \code{kroc} objects prints out the
   summary indices of the ROC curve, as contained in the \code{indices}
-  field, namely the AUC (area under the curve) and Youden index
+  field, namely the AUC (area under the curve) and Youden index.
 
 }
 
 \references{
-  Duong, T. (2014) Non-parametric kernel estimation of multivariate
+  Duong, T. (2015) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
-  characteristic curves. Submitted.
+  characteristic curves. \emph{Journal of the Korean Statistical
+  Society}. In press. DOI:10.1016/j.jkss.2015.06.002.
 
   Lloyd, C. (1998) Using smoothed receiver operating curves to summarize
   and compare diagnostic systems. \emph{Journal of the American
-  Statistical Association}, \bold{93}, 1356-1364.
+  Statistical Association}. \bold{93}, 1356-1364.
 }
 
 \seealso{\code{\link{kcde}}}

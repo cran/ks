@@ -1548,8 +1548,6 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, grid
   if (missing(ylim)) ylim <- c(min(mus[,2]) - maxSigmas, max(mus[,2]) + maxSigmas)
   if (missing(gridsize)) gridsize <- default.gridsize(2)
 
-  ##x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
-  ##y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
   xy <- permute(list(x, y))

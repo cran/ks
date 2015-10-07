@@ -29,13 +29,13 @@
   --For kernel density estimators, there are several varieties of bandwidth selectors 
   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
-  \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) \cr
+  \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) 
   \item least squares (or unbiased) cross validation (LSCV or UCV) \code{\link{hlscv}} (1-d);
-  \code{\link{Hlscv}}, \code{\link{Hlscv.diag}} (2- to 6-d) \cr
+  \code{\link{Hlscv}}, \code{\link{Hlscv.diag}} (2- to 6-d) 
   \item biased cross validation (BCV) 
-  \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} (2- to 6-d) \cr
+  \code{\link{Hbcv}}, \code{\link{Hbcv.diag}} (2- to 6-d) 
   \item smoothed cross validation (SCV) \code{\link{hscv}} (1-d);
-  \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) \cr
+  \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) 
   \item normal scale \code{\link{hns}} (1-d); \code{\link{Hns}} (2- to 6-d).
   }
   

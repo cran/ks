@@ -1,8 +1,14 @@
 import(KernSmooth)
-import(mvtnorm)
 import(misc3d)
+import(mvtnorm)
 import(rgl)
 
+import(grDevices)
+import(graphics)
+import(multicool)
+import(stats)
+import(utils)
+    
 useDynLib(ks)
 
 export(Hamise.mixt, Hamise.mixt.diag, hamise.mixt)
@@ -40,7 +46,7 @@ export(pre.scale, pre.sphere)
 export(Sdr, Sdrv, mur, nur, nurs, Qr)
 export(vec, vech, invvec, invvech)
 
-
+S3method(contourLevels, kcopula.de) 
 S3method(contourLevels, kda)
 S3method(contourLevels, kde)
 S3method(contourLevels, kdde)

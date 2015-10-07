@@ -92,7 +92,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 {
   d <- ncol(x)
   n <- nrow(x)
-  
+
   if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d,n=n))
   Fhat <- kcde(x=x, H=H, gridsize=gridsize, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, w=w, verbose=verbose, tail.flag="lower.tail")
 
@@ -207,6 +207,8 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
 {
   d <- ncol(x)
   n <- nrow(x)
+
+  warning("kcopula.de is not as reliable as kdecop in the kdecopula package.")
   
   if (!missing(w))
     if (!(identical(all.equal(sum(w), n), TRUE)))
@@ -690,5 +692,11 @@ predict.kcopula.de <- function(object, ..., x, u)
 
 contourLevels.kcopula.de <- function(x, ...)
 {
-  return(contourLevels.kde(x=x, ...))
+  x1 <- x; class(x1) <- "kde"  
+  return(contourLevels(x=x1, ...))
 }
+
+
+
+
+    

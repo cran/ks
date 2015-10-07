@@ -26,13 +26,13 @@
   \preformatted{
   ## univariate
   plot(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, 
-    ptcol="blue", jitter=FALSE, ...) 
+       col.pt="blue", jitter=FALSE, ...) 
 
-  ##bivariate
+  ## bivariate
   plot(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont, xlab, ylab, 
-    zlab="Distribution function", cex=1, pch=1, labcex,  add=FALSE,
-    drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, ptcol="blue", 
-    col, lwd=1, border=NA, ...) 
+       zlab="Distribution function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, 
+       drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, 
+       lwd=1, border=NA, thin=1, ...) 
   }
 }
   

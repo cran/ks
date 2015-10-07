@@ -31,8 +31,6 @@ pre.scale(x, mean.centred=FALSE)
 
 \examples{
 data(unicef)
-unicef <- as.matrix(unicef)
-unicef.sp <- pre.sphere(unicef)
-var(unicef.sp)
+unicef.sp <- pre.sphere(as.matrix(unicef))
 }
 \keyword{ algebra }

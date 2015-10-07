@@ -20,18 +20,19 @@
       \item{\code{cont}}{vector of percentages for contour level curves}
       \item{\code{abs.cont}}{vector of absolute density estimate heights for contour level curves}
       \item{\code{approx.cont}}{flag to compute approximate contour levels. Default is FALSE.}
-      \item{\code{ptcol}}{plotting colour for data points}
       \item{\code{col}}{plotting colour for density estimate (1-d, 2-d)}
-      \item{\code{cont.col}}{plotting colour for contour lines (2-d)}
+      \item{\code{col.cont}}{plotting colour for contours}
+      \item{\code{col.fun}}{plotting colour function for contours}
+      \item{\code{col.pt}}{plotting colour for data points}
       \item{\code{colors}}{vector of colours for each contour (3-d)}
       \item{\code{jitter}}{flag to jitter rug plot (1-d). Default is TRUE.}
+      \item{\code{lwd.fc}}{line width for filled contours (2-d)}
       \item{\code{xlim,ylim,zlim}}{axes limits}
       \item{\code{xlab,ylab,zlab}}{axes labels}
       \item{\code{add}}{flag to add to current plot. Default is FALSE.}
       \item{\code{theta,phi,d,border}}{graphics parameters for perspective plots (2-d)}
       \item{\code{drawpoints}}{flag to draw data points on density estimate. Default is FALSE.}
       \item{\code{drawlabels}}{flag to draw contour labels (2-d). Default is TRUE.} 
-      \item{\code{labcex}}{cex magnification for contour labels (2-d). Default is 1.}
       \item{\code{alpha}}{transparency value of plotting symbol (3-d)}
       \item{\code{alphavec}}{vector of transparency values for contours (3-d)}
       \item{\code{size}}{size of plotting symbol (3-d).}
@@ -50,20 +51,20 @@
   For \code{kde} objects, the function headers for the different dimensional data are  
   \preformatted{
   ## univariate
-  plot(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, 
-    ptcol="blue", col="black", cont.col=1, cont.lwd, jitter=FALSE, cont, 
-    abs.cont, approx.cont=FALSE, ...)
+  plot(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE,
+     col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, 
+     approx.cont=TRUE, ...) 
   
   ## bivariate
-  plot(fhat, display="slice", cont=c(25,50,75), abs.cont,
-    approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1,
-    labcex, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30,
-    phi=40, d=4, ptcol="blue", col, lwd=1, border=NA, ...) 
+  plot(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
+  xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE,
+  drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", 
+  col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...)
 
   ## trivariate
   plot(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors,
     add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
-    size=3, ptcol="blue", ...)   
+    size=3, col.pt="blue", ...)   
   }
 
   The 1-d plot is a standard plot of a 1-d curve. If
@@ -110,16 +111,16 @@ library(MASS)
 data(iris)
 
 ## univariate example
-fhat <- kde(x=iris[,1])
-plot(fhat, cont=50, cont.col="blue", cont.lwd=2, xlab="Sepal length")
+fhat <- kde(x=iris[,2])
+plot(fhat, cont=50, col.cont="blue", cont.lwd=2, xlab="Sepal length")
 
 ## bivariate example
-fhat <- kde(x=iris[,1:2])
+fhat <- kde(x=iris[,2:3])
 plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 plot(fhat, display="persp", thin=3, border=1, col="white")
 
 ## trivariate example
-fhat <- kde(x=iris[,1:3])
+fhat <- kde(x=iris[,2:4])
 plot(fhat)
 }
 

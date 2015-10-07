@@ -10,14 +10,13 @@
   Kernel functional estimate for 1- to 6-dimensional data.}
 
 \usage{
+kfe(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deriv.vec=TRUE,
+    add.index=TRUE, verbose=FALSE)
 Hpi.kfe(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, 
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 Hpi.diag.kfe(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE,
     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
-
-kfe(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deriv.vec=TRUE,
-    add.index=TRUE, verbose=FALSE)
 }
 
 \arguments{
@@ -59,7 +58,7 @@ kfe(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deriv.vec=TRUE,
 
 \references{
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
-  selection with unconstrained pilot matrices. \emph{Test}, \bold{19},
+  selection with unconstrained pilot matrices. \emph{Test}. \bold{19},
   375-398.
   
   Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing}. Chapman &

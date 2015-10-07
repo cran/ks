@@ -168,7 +168,7 @@ plot.kcde <- function(x, ...)
 }
 
 
-plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, ptcol="blue", jitter=FALSE, ...) 
+plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col.pt="blue", jitter=FALSE, ...) 
 {
   if (missing(xlab)) xlab <- Fhat$names
   if (Fhat$tail=="upper.tail") zlab <- "Survival function"
@@ -176,15 +176,15 @@ plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, dra
   else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
 
   if (drawpoints)
-    if (jitter) rug(jitter(Fhat$x), col=ptcol)
-    else rug(Fhat$x, col=ptcol)
+    if (jitter) rug(jitter(Fhat$x), col=col.pt)
+    else rug(Fhat$x, col=col.pt)
 }
 
 
 plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
-    xlab, ylab, zlab="Distribution function", cex=1, pch=1, labcex,  
+    xlab, ylab, zlab="Distribution function", cex=1, pch=1,   
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    ptcol="blue", col, lwd=1, border=NA, thin=1, ...) 
+    col.pt="blue", col, col.fun, lwd=1, border=NA, thin=1, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   
@@ -192,15 +192,16 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
 
   if (missing(xlab)) xlab <- Fhat$names[1]
   if (missing(ylab)) ylab <- Fhat$names[2]
-  if (missing(labcex)) labcex <-1
   if (Fhat$tail=="upper.tail") zlab <- "Survival function"
   
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
-    hts <- seq(0, 1.1*max(Fhat$estimate), length=100)
+    hts <- seq(0, 1.1*max(Fhat$estimate), length=500)
     if (missing(col)) col <- grey(seq(0,0.9, length=length(hts)+1)) ## rev(heat.colors(length(hts)+1)) #
-    if (length(col)<100) col <- rep(col, length=100)
+    #if (length(col)<100) col <- rep(col, length=100) if (missing(col)) col <- topo.colors(length(hts)+1)
+    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
+    if (length(col)<length(hts)) col <- rep(col, length=length(hts))
 
     ## thinning indices
     plot.ind <- list(seq(1, length(Fhat$eval.points[[1]]), by=thin), seq(1, length(Fhat$eval.points[[2]]), by=thin))
@@ -230,10 +231,10 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
       if (missing(abs.cont)) scale <- cont[i]/hts[i]
       else scale <- 1
       if (hts[i]>0)
-        contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, labcex=labcex, col=col[i], lwd=lwd, ...)
+        contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=col[i], lwd=lwd, ...)
     }
     ## add points 
-    if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=ptcol, cex=cex, pch=pch)
+    if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=col.pt, cex=cex, pch=pch)
   }
   ## image plot
   else if (disp1=="image")
@@ -262,11 +263,11 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
           if (missing(abs.cont)) scale <- cont[i]/hts[i]
           else scale <- 1
           
-          if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, labcex=labcex, lwd=lwd, ...)
+          if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
         }
       }
       ## add points 
-      if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=ptcol, cex=cex, pch=pch)
+      if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=col.pt, cex=cex, pch=pch)
     }
     else
     {
@@ -279,7 +280,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
 }
   
 
-plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, ptcol="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
+plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
   hts <- sort(cont/100)
@@ -292,7 +293,7 @@ plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, ptcol=
   if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
 
   if (drawpoints)
-    plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=ptcol, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
     plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   bg3d(col="white")

@@ -67,15 +67,14 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
   Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. DOI
-  10.1007/s11222-014-9465-1.
+  Gaussian density. \emph{Statistics & Computing}. \bold{25}, 959--974.
   
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
   of Statistics}. \bold{32}, 485-506.
 
   Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
-  bandwidth selector. \emph{Annals of Statistics} \bold{19}, 1919-1932.
+  bandwidth selector. \emph{Annals of Statistics}. \bold{19}, 1919-1932.
 } 
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hpi}}}

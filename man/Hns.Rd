@@ -35,9 +35,8 @@ hns.kcde(x)
   order. \code{hns} is the analogue  of \code{Hns} for 1-d data. These
   can be used for density (derivative) estimators
   \code{\link{kde}}, \code{\link{kdde}}. 
-
   The equivalents for distribution estimators \code{\link{kcde}} are
-  \code{Hns.kcde} and \code{hns.code}. 
+  \code{Hns.kcde} and \code{hns.cde}. 
 }
 
 

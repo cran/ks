@@ -11,10 +11,10 @@
   Plug-in bandwidth for for 1- to 6-dimensional data.}
 
 \usage{
-Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
-Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize,
+   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize,
+   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 }
 
@@ -58,7 +58,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   with non-positive definiteness. Unconstrained and higher order
   derivative pilot bandwidths are from Chacon & Duong (2010). 
 
-  For d = 1, 2, 3, 4 and \code{binned=TRUE}, 
+  For d=1, 2, 3, 4 and \code{binned=TRUE}, 
   estimates are computed over a binning grid defined 
   by \code{bgridsize}. Otherwise it's computed exactly.  
   If \code{Hstart} is not given then it defaults to \code{Hns(x)}.
@@ -68,21 +68,20 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
   selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
 
-  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
+  Chacon, J.E. & Duong, T. (2015) Efficient recursive algorithms for
   functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. DOI
-  10.1007/s11222-014-9465-1.
+  Gaussian density. \emph{Statistics & Computing}. \bold{25}, 959--974.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric
-	Statistics}, \bold{15}, 17-30.
+	Statistics}. \bold{15}, 17-30.
   
   Sheather, S.J. & Jones, M.C. (1991) A reliable data-based bandwidth selection
   method for kernel density estimation. \emph{Journal of the Royal
-	Statistical Society, Series B}, \bold{53}, 683-690.
+	Statistical Society Series B}. \bold{53}, 683-690.
   
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
-  selection. \emph{Computational Statistics}, \bold{9}, 97-116.
+  selection. \emph{Computational Statistics}. \bold{9}, 97-116.
 }
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hscv}}}

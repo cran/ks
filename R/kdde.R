@@ -428,18 +428,12 @@ plotkdde.1d <- function(fhat, ylab="Density derivative function", ...)
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, col, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function",...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function",...)
 {
   disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2")) 
   
-  if (disp1=="persp")
+  if (disp1=="slice")
   {
-    if (missing(col)) col <- grey(seq(0,0.9,length=101)) 
-    if (length(col)<100) col <- rep(col, length=100) 
-  }
-  else if (disp1=="slice")
-  {
-    if (missing(col)) col <- 1
     if (missing(abs.cont))
     {
       abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
@@ -448,12 +442,6 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, col, cont=c(25,50,75), abs.cont
   } 
   else if (disp1=="filled.contour" | disp1=="filled.contour2")
   {
-    if (missing(col))
-    {
-      if (is.null(fhat$deriv.order)) col <- c("transparent", rev(heat.colors(length(cont))))
-      else if (fhat$deriv.order==0) col <- c("transparent", rev(heat.colors(length(cont))))
-      else col <- topo.colors(2*length(cont)+1)
-    }
     if (missing(abs.cont))
     {
       abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
@@ -466,8 +454,8 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, col, cont=c(25,50,75), abs.cont
   fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
   fhat <- fhat.temp
   class(fhat) <- "kde"
-  
-  plot(fhat, col=col, display=display, abs.cont=abs.cont, zlab=zlab,  ...) 
+
+  plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab,  ...) 
 }
 
 

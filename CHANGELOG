@@ -1,9 +1,14 @@
 Change log file for ks
 
-1.9.4 
+1.9.5
+-Changed DESCRIPTION to comply with CRAN checks (e.g. imports etc.)
+-Fixed inconsistencies in graphical parameters in plot() functions (e.g.
+ ptcol, cont.col, ...)
+
+1.9.4
 -Removed explicit prior calculation of permutation derivative indices in
  dmvnorm.deriv.sum().
--Fixed small bug in contourLevels.kdde() to make explicit call to 
+-Fixed small bug in contourLevels.kdde() to make explicit call to
  predict.kde().
 
 1.9.3

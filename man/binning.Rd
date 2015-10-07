@@ -38,7 +38,6 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 \examples{
 data(unicef)
 ubinned <- binning(x=unicef)
-ubinned <- binning(x=unicef, xmin=c(0, 20), xmax=c(350, 100))
 }
 
 \keyword{algebra}

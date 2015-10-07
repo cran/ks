@@ -60,11 +60,12 @@ contourSizes(x, abs.cont, cont=c(25,50,75), approx=FALSE)
 \seealso{\code{\link{contour}}, \code{\link{contourLines}}}
 
 \examples{
+set.seed(8192)
 x <- rmvnorm.mixt(n=1000, mus=c(0,0), Sigmas=diag(2), props=1)
 fhat <- kde(x=x)
 contourLevels(fhat, cont=c(75, 50, 25), approx=TRUE)
 contourSizes(fhat, cont=25, approx=TRUE) 
-   ## compare to approx circle of radius=0.75, vol=pi*0.75^2=1.77
+   ## compare to approx circle of radius=0.75 with area=1.77
 }
 
 \keyword{hplot}

@@ -13,15 +13,15 @@
 }
 \usage{
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
-   eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE,
-   approx.cont=TRUE, kde.flag=TRUE)
+  eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE,
+  kde.flag=TRUE)
 Hkda(x, x.group, Hstart, bw="plugin", ...)
 Hkda.diag(x, x.group, bw="plugin", ...)
 hkda(x, x.group, bw="plugin", ...)
 
 compare(x.group, est.group, by.group=FALSE)
-compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart,
-   by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
+compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE,
+   verbose=FALSE, recompute=FALSE, ...)
 compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, 
    verbose=FALSE, recompute=FALSE, ...)
 }

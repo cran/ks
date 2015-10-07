@@ -12,10 +12,8 @@ Random generation and density values from normal and t-mixture distributions.}
 \usage{
 dnorm.mixt(x, mus=0, sigmas=1, props=1)
 rnorm.mixt(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
-
 dmvnorm.mixt(x, mus, Sigmas, props)
 rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
-
 rmvt.mixt(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 dmvt.mixt(x, mus, Sigmas, dfs, props)
 }
