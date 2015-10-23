@@ -65,10 +65,6 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for smoothed cross
    validation. \emph{Australian & New Zealand Journal of Statistics}. \bold{53}, 331-351.
 
-  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
-  functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. \bold{25}, 959--974.
-  
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
     matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
   of Statistics}. \bold{32}, 485-506.

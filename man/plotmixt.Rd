@@ -43,14 +43,14 @@ mus <- rbind(c(0,0), c(-1,1))
 Sigma <- matrix(c(1, 0.7, 0.7, 1), nr=2, nc=2) 
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
-plotmixt(mus=mus, Sigmas=Sigmas, props=props)
-  
+plotmixt(mus=mus, Sigmas=Sigmas, props=props, display="filled.contour2")
+\donttest{  
 ## trivariate 
 mus <- rbind(c(0,0,0), c(-1,0.5,1.5))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus=mus, Sigmas=Sigmas, props=props, dfs=c(11,8), dist="t")
-}
+}}
 
 \keyword{ hplot}

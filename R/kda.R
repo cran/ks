@@ -107,7 +107,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", ...)
 compare <- function(x.group, est.group, by.group=FALSE)
 {
   if (length(x.group)!=length(est.group))
-    stop("group label vectors not the same length")
+    stop("Group label vectors not the same length")
  
   grlab <- sort(unique(x.group))
   m <- length(grlab)
@@ -339,15 +339,19 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
   else
   {
     bgridsize <- default.gridsize(ncol(x))
-    if (ncol(x)==2) pilot <- "samse"
-    if (ncol(x)>=3) pilot <- "dscalar"
-    if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", nstage=2, pilot=pilot, pre="sphere", binned=nrow(x)>1000, bgridsize=bgridsize)
-
-    if (ncol(x)>3) kde.flag <- FALSE
+    d <- ncol(x)
+    n <- nrow(x)
+    if (d==2) pilot <- "samse"
+    if (d>=3) pilot <- "dscalar"
+    if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", nstage=2, pilot=pilot, pre="sphere", binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
+    
+    ## Compute KDA on grid
+    if (d>3) kde.flag <- FALSE
     if (kde.flag)
       fhat.list <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
     
-    fhat <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
+    ## Compute KDA at eval.points
+    fhat <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=FALSE, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
     fhat.wt <- matrix(0, ncol=m, nrow=nrow(eval.points))  
   }
 
@@ -450,7 +454,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
   if (missing(xmax)) xmax <- apply(x, 2, max) + supp*4*max(sqrt(diag(Hmax)))
   if (missing(w)) w <- rep(1, nrow(x))
   
-  if (binned & d > 4) stop("binning only available for 1- to 4-d data")
+  if (binned & d > 4) stop("Binning only available for 1- to 4-d data")
   if (missing(bgridsize)) bgridsize <- default.gridsize(d)
   if (missing(gridsize)) gridsize <- default.gridsize(d)
   
@@ -482,7 +486,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
       fhat.list$cont <- c(fhat.list$cont, list(contlev))
     }
   }
-  
+
   fhat.list$binned <- binned
   fhat.list$gridded <- fhat.temp$gridded
   pr <- rep(0, length(gr))
@@ -577,9 +581,9 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
     prior.prob <- fhat$prior.prob
   
   if (m != length(prior.prob))
-    stop("prior prob. vector not same length as number of components in fhat")
+    stop("prior.prob not same length as number of components in fhat")
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
-    stop("sum of weights not equal to 1")
+    stop("Sum of weights not equal to 1")
 
   weighted.fhat <- matrix(0, nrow=length(fhat$eval.points), ncol=m) 
   for (j in 1:m)  weighted.fhat[,j] <- fhat$estimate[[j]]*fhat$prior.prob[j]
@@ -680,9 +684,9 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   if (is.null(prior.prob)) prior.prob <- fhat$prior.prob
 
   if (m != length(prior.prob))
-    stop("prior prob. vector not same length as number of components in fhat")
+    stop("prior.prob not same length as number of components in fhat")
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
-    stop("sum of weights not equal to 1")
+    stop("Sum of weights not equal to 1")
 
   ## set up plot
   if (missing(y)) 
@@ -760,20 +764,17 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   }   
 }
 
-
-
-plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, col.pt="blue", ...)
+plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alpha=0.5, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, col.pt="blue", add=FALSE, ...)
 {
   fhat <- x
    
   ##d <- 3
   m <- length(fhat$x) 
-  if (is.null(prior.prob))
-    prior.prob <- fhat$prior.prob
+  if (is.null(prior.prob)) prior.prob <- fhat$prior.prob
   if (m != length(prior.prob))
-    stop("prior prob. vector not same length as number of components in fhat")
+    stop("prior.prob not same length as number of components in fhat")
   if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
-    stop("sum of prior weights not equal to 1")
+    stop("Sum of prior weights not equal to 1")
 
   x.names <- colnames(fhat$x[[1]])
 
@@ -796,7 +797,6 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.con
     hts <- abs.cont
     nhts <- length(hts)
   }
-
   
   if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
   if (missing(colors)) colors <- rainbow(m)
@@ -804,9 +804,16 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.con
   if (missing(y.group)) col.pt <- rep("blue", m)
   else col.pt <- 1:m
   if (length(col.pt)==1) col.pt <- rep(col.pt, m)
-  
+ 
+  ##fhat.eval.mean <- sapply(fhat$eval.points, mean)
+  ##if (drawpoints)
+  ##  plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+  ##else
+  ##plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+  ##bg3d(col="white")
 
-  plot3d(x=fhat$x[[1]][,1], y=fhat$x[[1]][,2], z=fhat$x[[1]][,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
+  plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
 
   for (j in 1:m)
   {

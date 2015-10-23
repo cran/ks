@@ -3,6 +3,7 @@
 \alias{Hkda.diag}
 \alias{kda}
 \alias{hkda}
+\alias{predict.kda}
 \alias{compare}
 \alias{compare.kda.diag.cv}
 \alias{compare.kda.cv}
@@ -18,6 +19,8 @@ kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
 Hkda(x, x.group, Hstart, bw="plugin", ...)
 Hkda.diag(x, x.group, bw="plugin", ...)
 hkda(x, x.group, bw="plugin", ...)
+
+\method{predict}{kda}(object, ..., x)
 
 compare(x.group, est.group, by.group=FALSE)
 compare.kda.cv(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE,
@@ -43,6 +46,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{kde.flag}{flag for computing KDE on grid. Default is TRUE.}
+  \item{object}{object of class \code{kda}}
   \item{bw}{bandwidth: "plugin" = plug-in, "lscv" = LSCV, 
     "scv" = SCV}
   \item{Hstart}{(stacked) matrix of initial bandwidth matrices, used in
@@ -76,8 +80,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
  
   --The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
   of bandwidth matrices, one for each training data group. The result
-  from \code{hkda} is a vector of bandwidths, one for each training data
-  group.  
+  from \code{hkda} is a vector of bandwidths, one for each training group.  
 
   --The \code{compare} functions create a comparison between the true
   group labels \code{x.group} and the estimated ones. 
@@ -86,10 +89,10 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
     indicating the true group and the columns the estimated group}
   \item{error}{misclassification rate (MR)}
     
-  In the case where we have test data that is independent of the
-  training data, \code{compare} computes MR = (number of points wrongly classified)/(total number of points).
-    
-  In the case where we don't have independent test data e.g.
+  In the case where the test data is independent of the
+  training data, \code{compare} computes MR = (number of points wrongly
+  classified)/(total number of points). In the case where the test data
+  are not independent e.g. 
   we are classifying the training data set itself, then the cross
   validated estimate of MR is more appropriate. These
   are implemented as \code{compare.kda.cv} (full bandwidth
@@ -113,8 +116,8 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   are \code{"plugin"}, \code{"lscv"} and \code{"scv"} which in turn call
   \code{\link{Hpi}}, \code{\link{Hlscv}} and \code{\link{Hscv}}.
 
-  The effective support, binning, grid size, grid range, positive data
-  parameters are the same  as for \code{\link{kde}}.
+  The effective support, binning, grid size, grid range, positive
+  parameters are the same as \code{\link{kde}}.
   
   If prior probabilities are known then set \code{prior.prob} to these.
   Otherwise \code{prior.prob=NULL} uses the sample
@@ -129,11 +132,13 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 \seealso{\code{\link{plot.kda}}}
 
 \examples{
+set.seed(8192)
 x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 kda.gr <- kda(x, x.gr, eval.points=y)
 compare(kda.gr$x.group, kda.gr$x.group.est, by.group=TRUE)
+predict(kda.gr, x=0)
 
 ## See other examples in ? plot.kda
 }

@@ -61,7 +61,7 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   \code{hpi.kcde}.  
   
   For kernel copula density estimates, for those points which are in
-  the interior region, the usual normal kernel density estimator
+  the interior region, the usual kernel density estimator
   (\code{\link{kde}}) is used. For those points in the boundary region,
   a product beta kernel based on the boundary corrected univariate beta
   kernel of Chen (1999) is used. If \code{H} is missing, the default
@@ -91,8 +91,6 @@ data(fgl)
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
 plot(Chat, disp="persp", thin=3, col="white", border=1)
-##chat <- kcopula.de(x=x)
-##plot(chat, disp="persp", thin=3, theta=40, phi=30, col="white", border=1)
 }
 
 \keyword{smooth}

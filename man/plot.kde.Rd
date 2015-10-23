@@ -118,11 +118,11 @@ plot(fhat, cont=50, col.cont="blue", cont.lwd=2, xlab="Sepal length")
 fhat <- kde(x=iris[,2:3])
 plot(fhat, display="filled.contour2", cont=seq(10,90,by=10))
 plot(fhat, display="persp", thin=3, border=1, col="white")
-
+\donttest{
 ## trivariate example
 fhat <- kde(x=iris[,2:4])
-plot(fhat)
-}
+plot(fhat, drawpoints=TRUE)
+}}
 
 
 \keyword{hplot}

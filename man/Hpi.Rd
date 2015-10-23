@@ -67,10 +67,6 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 \references{
   Chacon, J.E. & Duong, T. (2010) Multivariate plug-in bandwidth
   selection with unconstrained pilot matrices. \emph{Test}, \bold{19}, 375-398.
-
-  Chacon, J.E. & Duong, T. (2015) Efficient recursive algorithms for
-  functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. \bold{25}, 959--974.
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric

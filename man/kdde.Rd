@@ -65,15 +65,20 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   the default bandwidth is the  plug-in selector
   \code{Hpi}. Likewise for missing \code{h}.
   
-  The effective support, binning, grid size, grid range, positive data
-  parameters are the same  as for \code{\link{kde}}. 
+  The effective support, binning, grid size, grid range, positive
+  parameters are the same as \code{\link{kde}}. 
 }
 
 \seealso{\code{\link{kde}}}
 
 \examples{
-data(unicef)
-fhat1 <- kdde(x=unicef, deriv.order=1) ## gradient [df/dx, df/dy]
+## large data example
+set.seed(8192)
+x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
+fhat <- kdde(x=x, binned=TRUE, deriv.order=1) ## gradient [df/dx, df/dy]
+predict(fhat, x=c(0,0))
+
+## See other examples in ? plot.kdde
 }
 
 \keyword{smooth}

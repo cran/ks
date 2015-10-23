@@ -81,7 +81,7 @@ invvec <- function(x, ncol, nrow, byrow=FALSE)
   {
     ncol <- d; nrow <- d
     if (round(d) != d)
-      stop("need to specify nrow and ncol for non-square matrices")
+      stop("Need to specify nrow and ncol for non-square matrices")
   }
   
   invvecx <- matrix(0, nrow = nrow, ncol = ncol)
@@ -104,7 +104,7 @@ invvech <- function(x)
   
   d <- (-1 + sqrt(8*length(x) + 1))/2
   if (round(d) != d)
-    stop("number of elements in x will not form a square matrix")
+    stop("Number of elements in x will not form a square matrix")
   invvechx <- matrix(0, nrow=d, ncol=d)
 
   for (j in 1:d)
@@ -122,7 +122,7 @@ tr <- function(A)
   count <- 0
   if (is.vector(A)) return (A[1])
   if (nrow(A)!=ncol(A))
-    stop("not square matrix")
+    stop("Not square matrix")
 
   else 
      for (i in 1:nrow(A))
@@ -508,7 +508,7 @@ matrix.sqrt <- function(A)
   if (min(sva$d)>=0)
     Asqrt <- sva$u %*% diag(sqrt(sva$d)) %*% t(sva$v)
   else
-    stop("matrix square root is not defined")
+    stop("Matrix square root is not defined")
   return(Asqrt)
 }
 
@@ -754,7 +754,7 @@ Sdrv.recursive<-function(d,r,v){
     if((!is.vector(v))&(!is.matrix(v))){stop("v must be a vector or a matrix")}
     if(is.vector(v)){v<-matrix(v,nrow=1)}
     n<-nrow(v)   
-    if(ncol(v)!=d^r){stop("The length of the vector(s) must equal d^r")}
+    if(ncol(v)!=d^r){stop("Length of the vector(s) must equal d^r")}
     
     if((r==0)|(r==1)){w<-v}
     
@@ -784,11 +784,12 @@ Sdrv.recursive<-function(d,r,v){
 ## Lp norm between two functions (grid based)
 #############################################################################
 
-Lpdiff <- function(f1, f2, p=2)
+Lpdiff <- function(f1, f2, p=2, index=1)
 {
-  d <- ncol(f1$H)
+  if (is.vector(f1$H)) d <- 1 else d <- ncol(f1$H)
   f.diff <- f1
-  f.diff$estimate <- (abs(f1$estimate - f2$estimate))^p
+  if (is.list(f1$estimate)) f.diff$estimate <- (abs(f1$estimate[[index]] - f2$estimate[[index]]))^p
+  else f.diff$estimate <- (abs(f1$estimate - f2$estimate))^p
   if (d==1)
   {
     delta <- diff(f.diff$eval.points)

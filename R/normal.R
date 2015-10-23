@@ -7,7 +7,7 @@
 rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
 
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -50,7 +50,7 @@ rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -113,7 +113,7 @@ dnorm.deriv <- function(x, mu=0, sigma=1, deriv.order=0)
     derivt <- (x^10 - 45*x^8*sigma^2 + 630*x^6*sigma^4 - 3150*x^4*sigma^6 + 4725*x^2*sigma^8 - 945*sigma^10)/sigma^20*phi
   
   if (r > 10)
-    stop ("up to 10th order derivatives only")
+    stop ("Up to 10th order derivatives only")
     
   return(derivt)
 }
@@ -164,7 +164,7 @@ dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par,
 dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -207,7 +207,7 @@ dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
   
   #if (is.vector(Sigmas))
   ##  return(rnorm.mixt(n=n, mus=mus, sigmas=Sigmas, props=props))
@@ -266,7 +266,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
 dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 {  
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
 
   if (is.vector(x)) d <- length(x)
   else d <- ncol(x)
@@ -297,7 +297,7 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
 ### Computation of the r-th derivative vector of the Gaussian density
 ##########################################################################
 
-dmvnorm.deriv<-function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, type="unique")
+dmvnorm.deriv <- function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, type="unique")
 {
   type1 <- match.arg(type, c("recursive", "direct", "unique"))
 
@@ -510,7 +510,7 @@ dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
 dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
 
   if (is.vector(x)) d <- length(x)
   else d <- ncol(x)
@@ -576,16 +576,16 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   d <- ncol(x)
   n <- nrow(x)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  
+ 
   if (binned)
   {
     d <- ncol(Sigma)
     n <- nrow(x)
-    
-    if (is.diagonal(Sigma))
-    {
+    ##if (is.diagonal(Sigma))
+    ##{
       if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
-      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, verbose=verbose)$estimate 
+      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, verbose=verbose)$estimate
+      
       if (r>0)
       {
         sumval <- rep(0, length(est))
@@ -593,19 +593,19 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
       }
       else
         sumval <- sum(bin.par$counts * n * est)
-    }
+    ##}
     ## transformation approach from Jose E. Chacon 06/12/2010
-    else
+    if (0)
     {
       Sigmainv12 <- matrix.sqrt(chol2inv(chol(Sigma)))
       y <- x %*% Sigmainv12
-      if (missing(bin.par)) bin.par <- binning(x=y, H=diag(d), bgridsize=bgridsize)  
-
+      if (missing(bin.par)) bin.par <- binning(x=y, H=diag(d), bgridsize=bgridsize)
+     
       est <- kdde.binned(x=y, bin.par=bin.par, H=diag(d), deriv.order=r, verbose=verbose)$estimate
       if (r>0)
       {
         sumval <- rep(0, length(est))
-        for (j in 1:length(est)) sumval[j] <- sum(bin.par$counts * n * est[[j]]) 
+        for (j in 1:length(est)) sumval[j] <- sum(bin.par$counts *n*est[[j]]) 
       }
       else
         sumval <- sum(bin.par$counts * n * est)
@@ -632,7 +632,7 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
     {
       ## only with r>0 
       ## original recursive code from Jose E. Chacon 03/2012
-      if (2*floor(r/2)!=r){result<-rep(0,d^r)}
+      if (2*floor(r/2)!=r){sumval <- rep(0,d^r)}
       else
       {
         Sigmainv<-chol2inv(chol(Sigma))
@@ -740,8 +740,8 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
         result <- result[dlabs]    
         hm0 <- dmvnorm.deriv(x=rep(0,d),Sigma=Sigma,deriv.order=deriv.order)
         sumval <- 2*result+n*hm0
-        if (verbose) close(pb)            
-      }   
+        if (verbose) close(pb)
+        }   
     }        
     if (verbose) close(pb)
   }
@@ -1453,7 +1453,7 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
 moments.mixt <- function (mus, Sigmas, props)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
   d <- ncol(Sigmas)
   k <- length(props)
   mn <- rep(0, d)
@@ -1624,9 +1624,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
   z <- seq(zlim[1], zlim[2], length=gridsize[3])
-  ##x <- seq(xlim[1]-0.1*abs(diff(xlim)), xlim[2]+0.1*abs(diff(xlim)), length=gridsize[1])
-  ##y <- seq(ylim[1]-0.1*abs(diff(ylim)), ylim[2]+0.1*abs(diff(ylim)), length=gridsize[2])
-  ##z <- seq(zlim[1]-0.1*abs(diff(zlim)), zlim[2]+0.1*abs(diff(zlim)), length=gridsize[3])
   xy <- permute(list(x,y))
 
   if (deriv.order>0)
@@ -1726,9 +1723,9 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
   else if (length(dfs) != length(props))
-    stop("length of df and mixing proportions vectors not equal")
+    stop("Length of df and mixing proportions vectors not equal")
   
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
@@ -1766,9 +1763,9 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))  
-    stop("proportions don't sum to one")
+    stop("Proportions don't sum to one")
   else if (length(dfs) != length(props))
-    stop("length of df and mixing proportions vectors not equal")  
+    stop("Length of df and mixing proportions vectors not equal")  
 
   ## single component mixture
   if (identical(all.equal(props[1], 1), TRUE))

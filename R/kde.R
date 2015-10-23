@@ -284,16 +284,16 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   }
   if (missing(H) & d>1)
   {
-    if (binned)
-      H <- Hpi.diag(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose)
-    else 
-      H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose)
+    ##if (binned)
+    ##  H <- Hpi.diag(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    ##else 
+    H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose)
   }
   
   ## compute binned estimator
   if (binned)
   {
-    if (d>1) { if (!identical(diag(diag(H)), H)) warning("Binned estimation for non-diagonal bandwidth matrix H can be inaccurate.") }
+    ##if (d>1) { if (!identical(diag(diag(H)), H)) warning("Binned estimation for non-diagonal bandwidth matrix H can be inaccurate.") }
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
     if (positive)
     {
@@ -350,7 +350,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
          else if (d == 3)
            fhat <- kde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose) 
          else 
-           stop("need to specify eval.points for more than 3 dimensions")
+           stop("Need to specify eval.points for more than 3 dimensions")
        }
        else
          fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w)     
@@ -654,17 +654,17 @@ plot.kde <- function(x, ...)
       invisible()
     }
     else 
-      stop ("plot function only available for 1, 2 or 3-d data")
+      stop ("Plot function only available for 1, 2 or 3-d data")
   }
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
+  drawpoints=FALSE, col=1, col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
   
-  if (add) lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, ...)
-  else plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
+  if (add) lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
+  else plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
 
  
   ## compute contours
@@ -720,7 +720,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
-  if (!is.list(fhat$eval.points)) stop("need a grid of density estimates")
+  if (!is.list(fhat$eval.points)) stop("Need a grid of density estimates")
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
@@ -855,8 +855,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alphavec, size=3, col.pt="blue", add=FALSE, 
-  xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
+plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col.fun, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
   if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
@@ -884,6 +883,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
   nc <- length(hts)
   
   if (missing(colors)) colors <- rev(heat.colors(nc))
+  if (!missing(col.fun)) colors <- col.fun(nc)
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
   if (missing(zlab)) zlab <- fhat$names[3]
@@ -892,13 +892,13 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
     if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
     else alphavec <- c(rev(seq(0.1,0.5,length=round(nc/2))), rev(seq(0.1,0.5,length=round(nc/2))))
   }
-
+ 
   fhat.eval.mean <- sapply(fhat$eval.points, mean)
   if (drawpoints)
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
-    plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  bg3d(col="white")
+    plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, alpha=0, ...)
+  ##bg3d(col="white")
   
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))

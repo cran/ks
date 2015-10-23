@@ -69,8 +69,8 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \code{Hpi.kcde}. Likewise for missing \code{h1,hy}. A bandwidth matrix
   \code{H1} is required for \code{x1} for d>1, but the second bandwidth \code{hy} is always a scalar since \eqn{Y_j}{Yj} are 1-d variables.
 
-  The effective support, binning, grid size, grid range, positive data
-  parameters are the same  as for \code{\link{kde}}. 
+  The effective support, binning, grid size, grid range, positive
+  parameters are the same as \code{\link{kde}}. 
    
   --The \code{summary} method for \code{kroc} objects prints out the
   summary indices of the ROC curve, as contained in the \code{indices}

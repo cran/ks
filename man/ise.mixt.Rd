@@ -68,7 +68,7 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 
 \examples{
 x <- rmvnorm.mixt(100)
-Hamise.mixt(samp=nrow(x), mus=rep(0,2), var(x), props=1, deriv.order=1)
+Hamise.mixt(samp=nrow(x), mus=rep(0,2), Sigmas=var(x), props=1, deriv.order=1)
 }
 
 \keyword{smooth}

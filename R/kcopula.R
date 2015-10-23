@@ -237,7 +237,7 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   }
 
   if (missing(gridsize)) gridsize <- default.gridsize(d)
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  if (missing(bgridsize)) bgridsize <- default.gridsize(d)
   if (missing(Hfun)) Hfun <- Hpi
 
   if (missing(H))
@@ -257,7 +257,7 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (d==2 | d==3) 
     chat <- kde.boundary(x=y, H=H, gridsize=gridsize, supp=supp, xmin=rep(0,d), xmax=rep(1,d), gridtype=gridtype, w=w, boundary.supp=boundary.supp, binned=binned, verbose=verbose, bgridsize=bgridsize)
  else
-   stop("KCOPULA.DE requires 2-d or 3-d data.")
+   stop("kcopula.de requires 2-d or 3-d data.")
    
   ## normalise KDE to integrate to 1 
   chat$estimate <- chat$estimate/sum(chat$estimate*apply(sapply(chat$eval.points, diff), 1, prod)[1])
@@ -350,7 +350,7 @@ kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, 
       else if (d == 3)
         fhat <- kde.boundary.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, boundary.supp=boundary.supp, binned=binned, verbose=verbose) 
       else 
-        stop("need to specify eval.points for more than 3 dimensions")
+        stop("Need to specify eval.points for more than 3 dimensions")
     }
     else
       stop("Not yet implemented.") ##fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w)     

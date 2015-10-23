@@ -1,5 +1,17 @@
 Change log file for ks
 
+1.10.0
+-Implemented binned estimation via symconv.1d(), symconv.nd() with
+ unconstrained b/w for kde(), kdde(), kfe(), dmvnorm.deriv.sum(), Hlscv()
+ Hscv().
+-Added aliases Hucv(), Hcv.diag(), hucv() for Hlscv(), Hlscv.diag(), h.lscv().
+-Added predict method for kda objects.
+-Fixed inconsistency in plot.kde1d(,col=).
+-Added 3d exact estimation and 3d plot for kdde().
+-Adjusted calls to symconv.1d(), symconv.nd() in drvkde for feature library.
+-Included calls to RGL plots in help file examples in \donttest{}.
+-Moved dfltCounts(), drvkde() to feature library.
+
 1.9.5
 -Changed DESCRIPTION to comply with CRAN checks (e.g. imports etc.)
 -Fixed inconsistencies in graphical parameters in plot() functions (e.g.

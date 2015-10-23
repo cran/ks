@@ -46,9 +46,10 @@ hns.kcde(x)
 }
 
 \examples{
-x <- rmvnorm.mixt(1000)
-Hns(x, deriv.order=1)
-hns(x[,1], deriv.order=1)
+library(MASS)
+data(forbes)
+Hns(forbes, deriv.order=2)
+hns(forbes$bp, deriv.order=2)
 }
 
 \keyword{smooth}

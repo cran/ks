@@ -163,7 +163,7 @@ plot.kcde <- function(x, ...)
       plotkcde.3d(Fhat, ...)
       invisible()
     }
-    else stop ("plot function only available for 1, 2 or 3-d data")
+    else stop ("kde.plot function only available for 1, 2 or 3-d data")
   }
 }
 
@@ -188,7 +188,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   
-  if (!is.list(Fhat$eval.points)) stop("need a grid of density estimates")
+  if (!is.list(Fhat$eval.points)) stop("Needs a grid of density estimates")
 
   if (missing(xlab)) xlab <- Fhat$names[1]
   if (missing(ylab)) ylab <- Fhat$names[2]
@@ -389,7 +389,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=
   if (missing(pilot)) pilot <- "dunconstr"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
  
-  if (pilot1=="dscalar") stop("use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
+  if (pilot1=="dscalar") stop("Use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
   
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
 
@@ -473,7 +473,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
   if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) pilot <- "dscalar"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
-  if (pilot1=="dunconstr") stop("use dscalar pilot for Hpi.diag.kcde since pre-sphering approaches are not valid")
+  if (pilot1=="dunconstr") stop("Use dscalar pilot for Hpi.diag.kcde since pre-sphering approaches are not valid")
 
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   if (nstage==2)

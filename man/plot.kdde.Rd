@@ -24,7 +24,7 @@
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window (not yet implemented).
+  RGL window.
 }
 
 
@@ -45,12 +45,12 @@
 
 \examples{
 ## univariate example
-x <- rnorm.mixt(n=100, mus=1, sigmas=1, props=1)
-fhat1 <- kdde(x=x, deriv.order=1)
-plot(fhat1)
+data(unicef)
+fhat1 <- kdde(x=unicef[,1], deriv.order=1)  ## gradient [df/dx, df/dy]
+plot(fhat1, xlab="Under-5")                 ## df/dx
+points(30,predict(fhat1, x=30))
 
 ## bivariate example
-data(unicef)
 fhat2 <- kdde(x=unicef, deriv.order=2)
 plot(fhat2, which.deriv.ind=2, display="persp", phi=20)
 plot(fhat2, which.deriv.ind=2, display="filled.contour2", col.fun=topo.colors)

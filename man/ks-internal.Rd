@@ -1,15 +1,15 @@
 \name{ks-internal}
 
-\alias{Sdr}
-\alias{dfltCounts}
-\alias{drvkde}
 \alias{kde.boundary}
-\alias{Sdrv}
+\alias{matrix.sqrt}
 \alias{mur}
 \alias{nur}
 \alias{nurs}
 \alias{Qr}
-\alias{matrix.sqrt}
+\alias{Sdr}
+\alias{Sdrv}
+\alias{symconv.1d}
+\alias{symconv.nd}
 
 \title{Internal functions in the ks library}
 \description{

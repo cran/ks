@@ -481,8 +481,8 @@ psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0
 hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 {
   ## 1-d selector is taken from KernSmooth's dpik
-
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(1)
+  d <- 1 
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (deriv.order==0) h <- dpik(x=x, level=nstage, gridsize=bgridsize)
   else
   {
@@ -530,7 +530,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
  
   if (pilot1=="amse" & (d>2 | r>0)) stop("amse pilot selectors not defined for d>2 and/or r>0")
   if ((pilot1=="samse" | pilot1=="unconstr") & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
-  if (pilot1=="unconstr" & d>=6) stop("unconstrained pilots are not implemented for d>6")
+  if (pilot1=="unconstr" & d>=6) stop("Unconstrained pilots are not implemented for d>6")
   
   if (pre1=="scale")
   {
@@ -550,7 +550,6 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
 
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   
   if (pilot1=="unconstr")
   {
@@ -585,7 +584,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
     if (binned)
     {
       H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-      bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
+      bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
     }
       
     ## psi4.mat is on pre-transformed data scale
@@ -666,10 +665,10 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   pre1 <- match.arg(pre, c("scale", "sphere"))
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
  
-  if (pre1=="sphere") stop("using pre-sphering won't give diagonal bandwidth matrix")
+  if (pre1=="sphere") stop("Using pre-sphering won't give diagonal bandwidth matrix")
   if (pilot1=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deri.v.order>0")
   if (pilot1=="samse" & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
-  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag")
+  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hpi.diag")
   
   if (pre1=="scale")
   {
@@ -685,13 +684,11 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   }
   
   if (d > 4) binned <- FALSE
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(H.max)) 
+    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
   }
  
   Idr <- diag(d^r)  
@@ -781,10 +778,10 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   pre1 <- match.arg(pre, c("scale", "sphere"))
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
  
-  if (pre1=="sphere") stop("using pre-sphering won't give diagonal bandwidth matrix")
+  if (pre1=="sphere") stop("Using pre-sphering won't give diagonal bandwidth matrix")
   if (pilot1=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deri.v.order>0")
   if (pilot1=="samse" & r>0) stop("dscalar or dunconstr pilot selectors are better for derivatives r>0")
-  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag")
+  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hpi.diag")
   
   if (pre1=="scale")
   {
@@ -800,13 +797,11 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   }
   
   if (d > 4) binned <- FALSE
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=diag(H.max)) 
+    bin.par <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
   }
  
   Idr <- diag(d^r)  
@@ -881,6 +876,8 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
   if (!amise) return(H)
   else return(list(H = H, PI.star=amise.star))
 }
+
+
 ###############################################################################
 ## Cross-validation bandwidth selectors
 ###############################################################################
@@ -918,8 +915,8 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
   }
   else
   {
-    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
-    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
+    lscv1 <- kfe(x=x, G=2*H, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
+    lscv2 <- kfe(x=x, G=H, inc=0, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.order=2*r, add.index=FALSE)
      lscv <- (-1)^2*drop((lscv1 - 2*lscv2) %*% vec(diag(d^r)))
   }
 
@@ -956,7 +953,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   }
   else
   {
-    if (r>0) stop("unbinned hlscv not yet implemented for deriv.order>0") 
+    if (r>0) stop("Unbinned hlscv not yet implemented for deriv.order>0") 
     difs<-x%*%t(rep(1,n))-rep(1,n)%*%t(x)
     difs<-difs[lower.tri(difs)]  
     edifs<-exp(-difs^2/2)
@@ -991,14 +988,14 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   Hstart <- matrix.sqrt(Hstart)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (d>4) binned <- FALSE
-  if (binned) bin.par <- binning(x=x, H=diag(diag(Hnorm)))
+  if (binned) bin.par <- binning(x=x, H=Hnorm, bgridsize=bgridsize)
   if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
 
-  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, deriv.order=r)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, bin.par=bin.par, deriv.order=r)
   lscv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, deriv.order=r)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
@@ -1051,15 +1048,15 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-    bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(diag(Hnorm))))
+    bin.par <- binning(x=x, bgridsize=bgridsize, H=Hnorm)
   }
   
-  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, deriv.order=r)
+  lscv.init <- lscv.mat(x=x, H=Hnorm, binned=binned, bin.par=bin.par, deriv.order=r)
 
   lscv.mat.temp <- function(diagH)
   {
     H <- diag(diagH^2)
-    lscv <- lscv.mat(x=x, H=H, binned=binned, deriv.order=r)
+    lscv <- lscv.mat(x=x, H=H, binned=binned, bin.par=bin.par, deriv.order=r)
     if (det(H) < 1/trunc*det(Hnorm) | det(H) > trunc*det(Hnorm) | abs(lscv) > trunc*abs(lscv.init)) lscv <- lscv.init 
     return(lscv)  
   }
@@ -1081,6 +1078,10 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   if (!amise) return(H)
   else return(list(H=H, LSCV=amise.opt))
 }
+
+hucv <- function(...) { hlscv(...) }
+Hucv <- function(...) { Hlscv(...) }
+Hucv.diag <- function(...) { Hlscv.diag(...) }
 
 ###############################################################################
 ## Computes the biased cross validation BCV function for 2-dim
@@ -1387,9 +1388,9 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
   }
   else
   {
-    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
-    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
-    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, inc=1, binned=binned, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv1 <- kfe(x=x, G=2*H + 2*G, deriv.order=2*r, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv2 <- kfe(x=x, G=H + 2*G, deriv.order=2*r, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
+    scv3 <- kfe(x=x, G=2*G, deriv.order=2*r, inc=1, binned=binned, bin.par=bin.par, bgridsize=bgridsize, verbose=verbose, add.index=FALSE)
     
     bias2 <- drop((-1)^r*Kpow(vId,r) %*% (scv1 - 2*scv2 + scv3))
     if (bias2 < 0) bias2 <- 0
@@ -1503,15 +1504,11 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
   if (binned)
   {
     if (pilot1=="unconstr" | pilot1=="dunconstr")
-    {
-      H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
-      bin.par <- binning(x=x, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
-    }
+        H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
     else
-    {  
-      H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-      bin.par <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
-    }
+        H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+    if (default.bflag(d=d, n=n))
+        bin.par <- binning(x=x.star, bgridsize=bgridsize, H=matrix.sqrt(H.max))
   }
   if (pilot1=="unconstr")
   {
@@ -1550,12 +1547,18 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
   }
 
   ## SCV is estimate of AMISE
+  
   scv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
     if (pilot1=="samse" | pilot1=="amse" | pilot1=="dscalar"){ Gpilot <- Gs; xx <- x.star }
     else if (pilot1=="unconstr" | pilot1=="dunconstr") { Gpilot <- Gu; xx <- x }
-    return(scv.mat(x=xx, H=H, G=Gpilot, binned=binned, verbose=FALSE, deriv.order=r))
+
+    if (default.bflag(d=d, n=n))
+        scvm <- scv.mat(x=xx, H=H, G=Gpilot, binned=binned, bin.par=bin.par, verbose=FALSE, deriv.order=r)
+    else
+        scvm <- scv.mat(x=xx, H=H, G=Gpilot, binned=binned, verbose=FALSE, deriv.order=r)
+    return(scvm)
   }
 
   Hstart <- matrix.sqrt(Hstart)
@@ -1593,9 +1596,9 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
   
   if (pilot1=="amse" & (d>2 | r>0)) stop("samse pilot selectors are better for higher dimensions and/or deriv.order>0")
   if (pilot1=="samse" & r>0) stop("dscalar pilot selectors are better for deriv.order>0")
-  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hscv.diag")
+  if (pilot1=="unconstr" | pilot1=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hscv.diag")
 
-  if (pre1=="sphere") stop("using pre-sphering doesn't give a diagonal bandwidth matrix")
+  if (pre1=="sphere") stop("Using pre-sphering doesn't give a diagonal bandwidth matrix")
 
   if (pre1=="scale")
   {
@@ -1612,11 +1615,10 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
 
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   if (binned)
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-    bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=sqrt(diag(H.max))) 
+    bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
   }
   
   if (pilot1=="dscalar")
@@ -1647,7 +1649,9 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
   scv.mat.temp <- function(diagH)
   {
     H <- diag(diagH) %*% diag(diagH)
-    return(scv.mat(x.star, H, Gs, binned=binned, verbose=FALSE, deriv.order=r))
+    if (default.bflag(d=d, n=n)) scvm <- scv.mat(x.star, H, Gs, binned=binned, verbose=FALSE, bin.par=bin.par.star, deriv.order=r)
+    else scvm <- scv.mat(x.star, H, Gs, binned=binned, verbose=FALSE, deriv.order=r)
+    return(scvm)
   }
 
   Hstart <- matrix.sqrt(Hstart)

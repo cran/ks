@@ -86,8 +86,8 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   \code{Hpi.kcde}. Likewise for missing \code{h}.
   No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not invariant to translation/dilation.
 
-  The effective support, binning, grid size, grid range, positive data
-  parameters are the same  as for \code{\link{kde}}. 
+  The effective support, binning, grid size, grid range, positive
+  parameters are the same as \code{\link{kde}}. 
 }
 
 \references{
@@ -104,6 +104,7 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 library(MASS)
 data(iris)
 Fhat <- kcde(iris[,1:2])  
+predict(Fhat, x=iris[,1:2])
 
 ## See other examples in ? plot.kcde
 }

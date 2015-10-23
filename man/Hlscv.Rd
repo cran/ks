@@ -1,7 +1,10 @@
 \name{Hlscv}
 \alias{Hlscv}
 \alias{Hlscv.diag}
+\alias{Hucv}
+\alias{Hucv.diag}
 \alias{hlscv}
+\alias{hucv}
 
 
 \title{Least-squares cross-validation (LSCV) bandwidth matrix selector
@@ -14,6 +17,9 @@ Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0,
 Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, 
       verbose=FALSE, optim.fun="nlm", trunc)
 hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
+Hucv(...)
+Hucv.diag(...)
+hucv(...)
 }
 
 
@@ -28,7 +34,9 @@ hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
   \item{trunc}{parameter to control truncation for numerical
-  optimisation. Default is 4 for density.deriv>0, otherwise no truncation. For details see below.}  
+  optimisation. Default is 4 for density.deriv>0, otherwise no
+  truncation. For details see below.}
+  \item{...}{parameters as above}
 }
 
 \value{
@@ -40,20 +48,18 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   smoothing of kernel density estimates. \emph{Biometrika}. \bold{71},
   353-360.
 
-  Chacon, J.E. & Duong, T. (2014) Efficient recursive algorithms for
-  functionals based on higher order derivatives of the multivariate
-  Gaussian density. \emph{Statistics & Computing}. \bold{25}, 959--974.
-  
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
   estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},
   65-78.
 }
 
-\details{\code{hlscv} is the univariate SCV
+\details{\code{hlscv} is the univariate LSCV
   selector of Bowman (1984) and Rudemo (1982). \code{Hlscv} is a
-  multivariate generalisation of this. Use \code{Hlscv} for full bandwidth matrices and \code{Hlscv.diag}
-  for diagonal bandwidth matrices. 
-
+  multivariate generalisation of this. Use \code{Hlscv} for full
+  bandwidth matrices and \code{Hlscv.diag} for diagonal bandwidth matrices. 
+  \code{Hucv}, \code{Hucv.diag} and \code{hucv} are aliases with UCV
+  unbiased cross validation instead of LSCV. 
+  
   Truncation of the parameter space is usually required for the LSCV selector,
   for r > 0, to find a reasonable solution to the numerical optimisation. 
   If a candidate matrix \code{H} is

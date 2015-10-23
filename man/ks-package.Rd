@@ -59,7 +59,7 @@
   --For kernel functional estimation, the main function is
   \code{kfe} which computes the \eqn{r}{r}-th order integrated density functional  
   \deqn{\hat{{\bold \psi}}_r  = n^{-2} \sum_{i=1}^n \sum_{j=1}^n {\sf D}^{\otimes r}K_{\bold{{\rm H}}}(\bold{X}_i-\bold{X}_j).}{hat(psi)_r = n^(-2) sum_i sum_j D^r K_H (X_i - X_j).} The plug-in selectors are \code{\link{hpi.kfe}} (1-d), \code{\link{Hpi.kfe}} (2- to 6-d).
-  Kernel function estimates are usually not required to computed
+  Kernel functional estimates are usually not required to computed
   directly by the user, but only within other functions in the package.
     
   --For kernel-based 2-sample testing, the main function is
@@ -138,7 +138,10 @@
   M.P. Wand for the binned estimation, univariate plug-in selector
   and univariate density derivative estimator code.
   Jose E. Chacon for the unconstrained pilot
-  functional estimation and fast implementation of derivative-based estimation code.   
+  functional estimation and fast implementation of derivative-based
+  estimation code.
+  Artur and Jaroslaw Gramacki for the binned estimation for
+  unconstrained bandwidth matrices. 
 }
 
 \references{

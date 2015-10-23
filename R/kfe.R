@@ -7,7 +7,7 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deri
 {
   r <- deriv.order
   d <- ncol(x)
-  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, kfe=TRUE, add.index=FALSE)
+  psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, kfe=TRUE, add.index=FALSE)
  
  if (add.index)
  {
@@ -79,7 +79,7 @@ hpi.kfe <- function(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.ord
 
 Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
-  if (deriv.order!=0) stop("currently only deriv.order=0 is implemented")
+  if (deriv.order!=0) stop("Currently only deriv.order=0 is implemented")
    
   n <- nrow(x)
   d <- ncol(x)
@@ -208,7 +208,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
  
 Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE,  deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
-  if (deriv.order!=0) stop("currently only dervi.order=0 is implemented")
+  if (deriv.order!=0) stop("Currently only dervi.order=0 is implemented")
 
   n <- nrow(x)
   d <- ncol(x)
@@ -221,8 +221,8 @@ Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
   pre1 <- match.arg(pre, c("scale", "sphere"))
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
 
-  if (pre1=="sphere") stop("using pre-sphering won't give diagonal bandwidth matrix")
-  if (pilot1=="dunconstr") stop("unconstrained pilot selectors are not suitable for Hpi.diag.kfe")
+  if (pre1=="sphere") stop("Using pre-sphering won't give diagonal bandwidth matrix")
+  if (pilot1=="dunconstr") stop("Unconstrained pilot selectors are not suitable for Hpi.diag.kfe")
   
   if (pre1=="scale")
   {
@@ -277,142 +277,5 @@ Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
   if (pilot1=="dscalar") H <- S12 %*% H %*% S12 
   if (!amise) return(H)
   else return(list(H=H, PI=amise.star))
-}
-
-
-
-
-
-
-
-
-
-
-
-#####################################################################
-## Matt Wand's version of binned kernel density derivative estimation
-## Used in the feature library
-##
-## Computes the mth derivative of a binned
-## d-variate kernel density estimate based
-## on grid counts.
-#############################################################
-
-drvkde <- function(x,drv,bandwidth,gridsize,range.x,binned=FALSE,se=TRUE, w)
-{  
-   d <- length(drv)
-   if (d==1) x <- as.matrix(x)
-
-   ## Rename common variables
-   h <- bandwidth
-   tau <- 4 + max(drv)    
-   if (length(h)==1) h <- rep(h,d)
-
-   if (missing(gridsize))
-     if (!binned)   ## changes 16/02/2009
-     {  
-       if (d==1) gridsize <- 401
-       else if (d==2) gridsize <- rep(151,d)
-       else if (d==3) gridsize <- rep(51, d)
-       else if (d==4) gridsize <- rep(21, d)
-     }
-     else
-     {
-       if (d==1) gridsize <- dim(x)[1]
-       else gridsize <- dim(x)
-     }
-
-   if(missing(w)) w <- rep(1,nrow(x))
-   ## Bin the data if not already binned
-  
-   if (missing(range.x)) 
-   {
-     range.x <- list()
-     for (id in 1:d)
-       range.x[[id]] <- c(min(x[,id])-tau*h[id],max(x[,id])+tau*h[id])  
-   }
-   
-   a <- unlist(lapply(range.x,min))
-   b <- unlist(lapply(range.x,max))
-   
-   M <- gridsize
-   gpoints <- list()
-
-   for (id in 1:d)
-     gpoints[[id]] <- seq(a[id],b[id],length=M[id])
-
-   if (binned==FALSE)
-   {
-     if (d==1) gcounts <- linbin.ks(x,gpoints[[1]], w=w)
-     if (d==2) gcounts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
-     if (d==3) gcounts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
-     if (d==4) gcounts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
-   }
-   else
-     gcounts <- x
-
-   n <- sum(gcounts)
-
-   kapmid <- list()
-   for (id in (1:d))
-   {
-     ## changes to Lid 13/02/2009
-     Lid <- max(min(floor(tau*h[id]*(M[id]-1)/(b[id]-a[id])),M[id]),d)
-     lvecid <- (0:Lid)
-     facid  <- (b[id]-a[id])/(h[id]*(M[id]-1))
-     argid <- lvecid*facid
-     kapmid[[id]] <- dnorm(argid)/(h[id]^(drv[id]+1))
-     hmold0 <- 1
-     hmold1 <- argid
-     if (drv[id]==0) hmnew <- 1
-     if (drv[id]==1) hmnew <- argid
-     if (drv[id] >= 2) 
-       for (ihm in (2:drv[id])) 
-       {
-         hmnew <- argid*hmold1 - (ihm-1)*hmold0
-         hmold0 <- hmold1   # Compute drv[id] degree Hermite polynomial
-         hmold1 <- hmnew    # by recurrence.
-       }
-     kapmid[[id]] <- hmnew*kapmid[[id]]*(-1)^drv[id]
-   }
-  
-   if (d==1) kappam <- kapmid[[1]]/n
-   if (d==2) kappam <- outer(kapmid[[1]],kapmid[[2]])/n
-   if (d==3) kappam <- outer(kapmid[[1]],outer(kapmid[[2]],kapmid[[3]]))/n
-   if (d==4) kappam <- outer(kapmid[[1]],outer(kapmid[[2]],outer(kapmid[[3]],kapmid[[4]])))/n
-  
-   if (!any(c(d==1,d==2,d==3,d==4))) stop("only for d=1,2,3,4")
-
-   if (d==1) 
-   {
-     est <- symconv.ks(kappam,gcounts,skewflag=(-1)^drv)
-     if (se) est.var <- ((symconv.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
-   }
-
-   if (d==2) 
-   {     
-     est <- symconv2D.ks(kappam,gcounts,skewflag=(-1)^drv)
-     if (se) est.var <- ((symconv2D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-   }
-     
-   if (d==3)
-   {
-     est <- symconv3D.ks(kappam,gcounts,skewflag=(-1)^drv) 
-     if (se) est.var <- ((symconv3D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1)
-   }
-     
-   if (d==4)
-   {
-     est <- symconv4D.ks(kappam,gcounts,skewflag=(-1)^drv) 
-     if (se) est.var <- ((symconv4D.ks((n*kappam)^2,gcounts)/n) - est^2)/(n-1) 
-   }
-   
-   if (se)
-   {
-     est.var[est.var<0] <- 0
-     return(list(x.grid=gpoints,est=est,se=sqrt(est.var)))
-   }
-   else if (!se)
-     return(list(x.grid=gpoints,est=est))
 }
 

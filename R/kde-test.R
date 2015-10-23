@@ -299,7 +299,7 @@ plot.kde.loctest <- function(x, ...)
 
     if (d==2) plotkde.loctest.2d(x, ...)
     else if (d==3) plotkde.loctest.3d(x, ...)
-    else stop("plot function only defined for d=1,2,3")   
+    else stop("Plot function only available for 1, 2 or 3-d data")   
   }
 }
 

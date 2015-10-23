@@ -72,6 +72,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   density estimate is computed exactly at \code{eval.points}.
   For d>4, the kernel density estimate is computed exactly
   and \code{eval.points} must be specified.
+
+  The default \code{bgridsize,gridsize} are  d=1: 401; d=2: rep(151, 2);
+  d=3: rep(51, 3); d=4: rep(21,4).
   
   The effective support for a normal kernel is where  
   all values outside \code{[-supp,supp]^d} are zero. 
@@ -80,9 +83,6 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}. The grid produced is the outer
   product of \code{c(xmin[1], xmax[1])}, ..., \code{c(xmin[d], xmax[d])}.
-  
-  The default \code{bgridsize, gridsize} are  d=1: 401; d=2: rep(151, 2);
-  d=3: rep(31, 3); d=4: rep(21,4).
 }
 
 \seealso{\code{\link{plot.kde}}}
@@ -92,8 +92,14 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 set.seed(8192)
 x <- 2^rnorm(100)
 fhat <- kde(x=x, positive=TRUE)
-plot(fhat)
+plot(fhat, col=3)
 points(c(0.5, 1), predict(fhat, x=c(0.5, 1)))
+
+## large data example
+set.seed(8192)
+x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
+fhat <- kde(x=x, binned=TRUE, compute.cont=TRUE)
+plot(fhat)
 
 ## See other examples in ? plot.kde
 }
