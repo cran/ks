@@ -173,8 +173,8 @@ find.nearest.gridpts <- function(x, gridx, f)
     w <- matrix(0, nrow=2^d, ncol=d)
     gridw <- matrix(0, nrow=2^d, ncol=d)
     for (j in 1:d)
-    {  
-      gind.list[[i]][gind.list[[i]][,j]>=gridsize[j]] <- gridsize[j]
+    {
+      gind.list[[i]][,j][gind.list[[i]][,j]>=gridsize[j]] <- gridsize[j]
       gridw[,j] <- gridx[[j]][gind.list[[i]][,j]]
     }
     w <- 1/apply((matrix(as.numeric(x[i,]), nrow=2^d, ncol=d, byrow=TRUE) - gridw)^2, 1, sum)
@@ -200,9 +200,10 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
     else
       gind[i] <- tsum
   }
-
+ 
   gind2 <- gind+1
   gind2[gind2>length(gridx)] <- length(gridx)
+  gind2[x<=gridx[1]] <- gind[x<=gridx[1]]
   gind <- cbind(gind, gind2)
   colnames(gind) <- NULL
 
@@ -304,7 +305,8 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     }
     else if (unit.interval)
     {
-      fhat <- kde.unit.interval.1d(x=x, binned=binned)
+      
+      fhat <- kde.unit.interval.1d(x=x, binned=binned, h=h)
     }
     else 
     {
@@ -330,7 +332,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
       {
         if (unit.interval)
         {
-          fhat <- kde.unit.interval.1d(x=x, binned=FALSE)
+          fhat <- kde.unit.interval.1d(x=x, h=h, binned=FALSE)
         }
         else
           fhat <- kde.grid.1d(x=x, h=h, gridsize=gridsize, supp=supp, positive=positive, xmin=xmin, xmax=xmax, adj.positive=adj.positive, gridtype=gridtype, w=w)
@@ -946,7 +948,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
     hts <- pretty(fhat$estimate, n=nlevels) 
   else
   {
-      if (approx & fhat$gridded)
+    if (approx & fhat$gridded)
       dobs <- predict(fhat, x=fhat$x)
     else
       dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w)$estimate 

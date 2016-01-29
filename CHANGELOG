@@ -1,5 +1,11 @@
 Change log file for ks
 
+1.10.1
+-Fixed small bug in find.nearest.gridpts when treating edge points.
+-Modified pre.scale, pre.sphere to use sweep().
+-Fixed lower edge interpolation in find.nearest.gridpts.1d().
+-Fixed incorrect derivative order in kfe calculation in gdscalar(,binned=TRUE).
+
 1.10.0
 -Implemented binned estimation via symconv.1d(), symconv.nd() with
  unconstrained b/w for kde(), kdde(), kfe(), dmvnorm.deriv.sum(), Hlscv()

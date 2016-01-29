@@ -223,13 +223,9 @@ pre.sphere <- function(x, mean.centred=FALSE)
   S <- var(x)
   Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
 
-  if (mean.centred)
-  {
-    xmean <- apply(x,2,mean)
-    for (i in 1:ncol(x))
-      x[,i] <- x[,i] - xmean[i]
-  }
-  x.sphered <- x %*% Sinv12
+  if (mean.centred) x.sphered <- sweep(x, 2, apply(x, 2, mean))
+  else x.sphered <- x  
+  x.sphered <- x.sphered %*% Sinv12
 
   return (x.sphered)
 }
@@ -282,21 +278,15 @@ which.mat <- function(r, mat)
 
 pre.scale <- function(x, mean.centred=FALSE)
 {
-  x.scaled <- numeric()
-  x.sd <- apply(x, 2, sd)
-  d <- ncol(x)
+  S <- diag(diag(var(x)))
+  Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
 
-  for (i in 1:d)
-    if (mean.centred)
-      x.scaled <- cbind(x.scaled, (x[,i] - mean(x[,i]))/x.sd[i])
-    else
-      x.scaled <- cbind(x.scaled, x[,i]/x.sd[i])                  
-
+  if (mean.centred) x.scaled <- sweep(x, 2, apply(x, 2, mean))
+  else x.scaled <- x  
+  x.scaled <- x.scaled %*% Sinv12
+  
   return (x.scaled)
 }
-
-
-
 
 
 ###################################################################

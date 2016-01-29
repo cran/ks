@@ -1,6 +1,7 @@
 \name{ks-internal}
 
 \alias{kde.boundary}
+\alias{Lpdiff}
 \alias{matrix.sqrt}
 \alias{mur}
 \alias{nur}
