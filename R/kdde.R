@@ -495,9 +495,11 @@ kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0)
 kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE) 
 {
   n <- nrow(x)
-  Hs <- numeric(0)
-  for (i in 1:n)
-    Hs <- rbind(Hs, H)
+  ##Hs <- numeric(0)
+  ##for (i in 1:n)
+  ##  Hs <- rbind(Hs, H)
+  Hs <- replicate(n, H, simplify=FALSE) 
+  Hs <- do.call(rbind, Hs)
   r <- deriv.order
   fhat <- dmvnorm.deriv.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, deriv.order=r, deriv.vec=deriv.vec, add.index=TRUE)
   

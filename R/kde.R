@@ -594,10 +594,11 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 kde.points <- function(x, H, eval.points, w) 
 {
   n <- nrow(x)
-  Hs <- numeric(0)
-  for (i in 1:n)
-    Hs <- rbind(Hs, H)
-
+  ##Hs <- numeric(0)
+  ##for (i in 1:n)
+  ##  Hs <- rbind(Hs, H)
+  Hs <- replicate(n, H, simplify=FALSE) 
+  Hs <- do.call(rbind, Hs)
   fhat <- dmvnorm.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n)
 
   return(list(x=x, eval.points=eval.points, estimate=fhat, H=H, gridded=FALSE))
@@ -781,7 +782,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       else scale <- 1
 
       if (hts[i]>0 | !is.null(fhat$deriv.order))
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=i>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, ...)
+          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=i>1 |add, drawlabels=drawlabels, col=col[i], lwd=lwd, xlab=xlab, ylab=ylab, ...)
     }
  
     ## add points 

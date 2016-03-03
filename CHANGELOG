@@ -1,5 +1,10 @@
 Change log file for ks
 
+1.10.2
+-Improved speed for kde.points(), kdde.points().
+-Improved speed for compare().
+-Fixed missing xlab, ylab in plot.kde() for 2D KDE.
+
 1.10.1
 -Fixed small bug in find.nearest.gridpts when treating edge points.
 -Modified pre.scale, pre.sphere to use sweep().

@@ -108,15 +108,19 @@ compare <- function(x.group, est.group, by.group=FALSE)
 {
   if (length(x.group)!=length(est.group))
     stop("Group label vectors not the same length")
- 
-  grlab <- sort(unique(x.group))
-  m <- length(grlab)
-  comp <- matrix(0, nrow=m, ncol=m)
-  
-  for (i in 1:m)
-    for (j in 1:m)
-      comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))  
 
+  if (!is.factor(x.group)) x.group <- factor(x.group)
+  ##est.group <- factor(est.group)
+  grlab <- levels(x.group)
+  
+  ##grlab <- sort(unique(x.group))
+  m <- length(grlab)
+  comp <- table(x.group, est.group)
+  ##comp <- matrix(0, nrow=m, ncol=m)
+  ##for (i in 1:m)
+  ##  for (j in 1:m)
+  ##    comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))  
+  
   if (by.group)
   {
     er <- vector()
@@ -130,19 +134,21 @@ compare <- function(x.group, est.group, by.group=FALSE)
   }
   else 
     er <- 1 - sum(diag(comp))/sum(comp)
-  
+
   comp <- cbind(comp, rowSums(comp))
   comp <- rbind(comp, colSums(comp))
 
   colnames(comp) <- c(as.character(paste(grlab, "(est.)")), "Total")
   rownames(comp) <- c(as.character(paste(grlab, "(true)")), "Total")
 
-  TN <- comp[1,1]; FP <- comp[1,2]; FN <- comp[2,1]; TP <- comp[2,2]
-  spec <- 1-(FP/(FP+TN))
-  sens <- 1-(FN/(TP+FN))
- 
-  return(list(cross=comp, error=er, TP=TP, FP=FP, FN=FN, TN=TN, spec=spec, sens=sens))
- 
+  if (nrow(comp)==2 & nrow(comp)==2)
+  {
+      TN <- comp[1,1]; FP <- comp[1,2]; FN <- comp[2,1]; TP <- comp[2,2]
+      spec <- 1-(FP/(FP+TN))
+      sens <- 1-(FN/(TP+FN))
+      return(list(cross=comp, error=er, TP=TP, FP=FP, FN=FN, TN=TN, spec=spec, sens=sens))
+  }
+  else return(list(cross=comp, error=er))
 }
 
 ###############################################################################
