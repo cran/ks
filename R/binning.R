@@ -45,10 +45,6 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linea
   d <- ncol(x)
   n <- nrow(x)
   if (missing(w)) w <- rep(1,n)
-  ##if (d>1 & !missing(H))
-     ##if (!identical(diag(diag(H)), H))
-     ##  stop("binning requires diagonal bandwidth matrix")
-  
   if (missing(h)) h <- rep(0,d)
   if (!missing(H)) h <- sqrt(diag(H))
 
@@ -65,9 +61,12 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linea
     for (i in 1:d)
       range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
   }
+  if (!(missing(xmax))) {if (any(sweep(x, 2, FUN=">", xmax))) warning("Points in x greater than xmax don't contribute to binning grid counts.")}
+  if (!(missing(xmin))) {if (any(sweep(x, 2, FUN="<", xmin))) warning("Points in x less than xmin don't contribute to binning grid counts.")}
+      
   a <- unlist(lapply(range.x,min))
   b <- unlist(lapply(range.x,max))
-
+  
   if (missing(gridtype)) gridtype <- rep("linear", d)
   gridtype.vec <- rep("", d)
   
@@ -85,7 +84,7 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linea
   if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
   if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
   if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
- 
+
   bin.counts <- list(counts=counts, eval.points=gpoints, w=w)
   if (d==1) bin.counts <- lapply(bin.counts, unlist)
   return(bin.counts)
@@ -96,21 +95,21 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linea
 ## Linear binning
 ########################################################################
 
-linbin.ks <- function(X, gpoints, w)
+linbin.ks <- function(x, gpoints, w)
 {
-   n <- length(X)
+   n <- length(x)
    M <- length(gpoints)
    if (missing(w)) w <- rep(1, n)
    a <- gpoints[1]
    b <- gpoints[M]
-   xi <- .C("massdist1d", x1=as.double(X[,1]), n=as.integer(n), a1=as.double(a), b1=as.double(b), M1=as.integer(M), weight=as.double(w), est=double(M), PACKAGE="ks")$est
+   xi <- .C("massdist1d", x1=as.double(x[,1]), n=as.integer(n), a1=as.double(a), b1=as.double(b), M1=as.integer(M), weight=as.double(w), est=double(M), PACKAGE="ks")$est
 
    return(xi)
 }
 
-linbin2D.ks <- function(X, gpoints1, gpoints2, w)
+linbin2D.ks <- function(x, gpoints1, gpoints2, w)
 {
-   n <- nrow(X)
+   n <- nrow(x)
    M1 <- length(gpoints1)
    M2 <- length(gpoints2)
    a1 <- gpoints1[1]
@@ -120,31 +119,14 @@ linbin2D.ks <- function(X, gpoints1, gpoints2, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   out <- .C("massdist2d", x1=as.double(X[,1]), x2=as.double(X[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2), PACKAGE="ks")
-   xi <- matrix(out$est, nrow=M1, ncol=M2)
-
-   ## adjust binning weights for boundary points
-   xbmaxpos1 <- which(X[,1]>=max(gpoints1))
-   xbmaxpos2 <- which(X[,2]>=max(gpoints2))
-   if (length(xbmaxpos1)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos1,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos1,2], gpoints2)
-     xi[ind1, ind2] <- xi[ind1, ind2] + w[xbmaxpos1]
-   }
-   if (length(xbmaxpos2)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos2,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos2,2], gpoints2)
-     xi[ind1, ind2] <- xi[ind1, ind2] + w[xbmaxpos2]
-   }
-   
+   out <- .C("massdist2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2), PACKAGE="ks")
+   xi <- matrix(out$est, nrow=M1, ncol=M2)   
    return(xi)
 }
 
-linbin3D.ks <- function(X, gpoints1, gpoints2, gpoints3, w)
+linbin3D.ks <- function(x, gpoints1, gpoints2, gpoints3, w)
 {
-   n <- nrow(X)
+   n <- nrow(x)
    M1 <- length(gpoints1)
    M2 <- length(gpoints2)
    M3 <- length(gpoints3)
@@ -157,41 +139,15 @@ linbin3D.ks <- function(X, gpoints1, gpoints2, gpoints3, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   out <- .C("massdist3d", x1=as.double(X[,1]), x2=as.double(X[,2]), x3=as.double(X[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3), PACKAGE="ks")
+   out <- .C("massdist3d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3), PACKAGE="ks")
    xi <- array(out$est, dim=c(M1,M2,M3))
-   
-   ## adjust binning weights for boundary points
-   xbmaxpos1 <- which(X[,1]>=max(gpoints1))
-   xbmaxpos2 <- which(X[,2]>=max(gpoints2))
-   xbmaxpos3 <- which(X[,3]>=max(gpoints3))
 
-   if (length(xbmaxpos1)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos1,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos1,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos1,3], gpoints3)
-     xi[ind1,ind2,ind3] <- xi[ind1,ind2,ind3] + w[xbmaxpos1]
-   }
-   if (length(xbmaxpos2)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos2,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos2,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos2,3], gpoints3)
-     xi[ind1,ind2,ind3] <- xi[ind1,ind2,ind3] + w[xbmaxpos2]
-   }
-   if (length(xbmaxpos3)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos3,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos3,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos3,3], gpoints3)
-     xi[ind1,ind2,ind3] <- xi[ind1,ind2,ind3] + w[xbmaxpos3]
-   }
    return(xi)
 }
 
-linbin4D.ks <- function(X, gpoints1, gpoints2, gpoints3, gpoints4, w)
+linbin4D.ks <- function(x, gpoints1, gpoints2, gpoints3, gpoints4, w)
 {
-   n <- nrow(X)
+   n <- nrow(x)
    M1 <- length(gpoints1)
    M2 <- length(gpoints2)
    M3 <- length(gpoints3)
@@ -207,48 +163,9 @@ linbin4D.ks <- function(X, gpoints1, gpoints2, gpoints3, gpoints4, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   out <- .C("massdist4d", x1=as.double(X[,1]), x2=as.double(X[,2]), x3=as.double(X[,3]), x4=as.double(X[,4]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), a4=as.double(a4), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), b4=as.double(b4), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), M4=as.integer(M4), weight=as.double(w), est=double(M1*M2*M3*M4), PACKAGE="ks")
+   out <- .C("massdist4d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), x4=as.double(x[,4]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), a4=as.double(a4), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), b4=as.double(b4), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), M4=as.integer(M4), weight=as.double(w), est=double(M1*M2*M3*M4), PACKAGE="ks")
    xi <- array(out$est, dim=c(M1,M2,M3,M4))
 
-   ## adjust binning weights for boundary points
-   xbmaxpos1 <- which(X[,1]>=max(gpoints1))
-   xbmaxpos2 <- which(X[,2]>=max(gpoints2))
-   xbmaxpos3 <- which(X[,3]>=max(gpoints3))
-   xbmaxpos4 <- which(X[,4]>=max(gpoints4))
-   
-   if (length(xbmaxpos1)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos1,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos1,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos1,3], gpoints3)
-     ind4 <- findInterval(X[xbmaxpos1,4], gpoints4)
-     xi[ind1,ind2,ind3,ind4] <- xi[ind1,ind2,ind3,ind4] + w[xbmaxpos1]
-   }
-   if (length(xbmaxpos2)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos2,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos2,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos2,3], gpoints3)
-     ind4 <- findInterval(X[xbmaxpos2,4], gpoints4)
-     xi[ind1,ind2,ind3,ind4] <- xi[ind1,ind2,ind3,ind4] + w[xbmaxpos2]
-   }
-   if (length(xbmaxpos3)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos3,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos3,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos3,3], gpoints3)
-     ind4 <- findInterval(X[xbmaxpos3,4], gpoints4)
-     xi[ind1,ind2,ind3,ind4] <- xi[ind1,ind2,ind3,ind4] + w[xbmaxpos3]
-   }
-   if (length(xbmaxpos4)>0)
-   {
-     ind1 <- findInterval(X[xbmaxpos4,1], gpoints1)
-     ind2 <- findInterval(X[xbmaxpos4,2], gpoints2)
-     ind3 <- findInterval(X[xbmaxpos4,3], gpoints3)
-     ind4 <- findInterval(X[xbmaxpos4,4], gpoints4)
-     xi[ind1,ind2,ind3,ind4] <- xi[ind1,ind2,ind3,ind4] + w[xbmaxpos4]
-   }
-   
    return(xi)
 }
 

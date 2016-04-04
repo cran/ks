@@ -72,11 +72,10 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
 \seealso{\code{\link{kde}}}
 
 \examples{
-## large data example
 set.seed(8192)
-x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
+x <- rmvnorm.mixt(1000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
 fhat <- kdde(x=x, binned=TRUE, deriv.order=1) ## gradient [df/dx, df/dy]
-predict(fhat, x=c(0,0))
+predict(fhat, x=x[1:5,])
 
 ## See other examples in ? plot.kdde
 }

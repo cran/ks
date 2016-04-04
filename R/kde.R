@@ -136,88 +136,113 @@ find.gridpts <- function(gridx, suppx)
 } 
 
 ##############################################################################
-## Find the nearest grid points surrounding point x
+## Interpolate the values of f defined on gridx at new values x 
 ##############################################################################
 
-find.nearest.gridpts <- function(x, gridx, f)
+grid.interp <- function(x, gridx, f)
 {
   if (!is.list(gridx))
-    return(find.nearest.gridpts.1d(x=x, gridx=gridx, f=f))
+    return(grid.interp.1d(x=x, gridx=gridx, f=f))
   else
   {  
     if (is.vector(x)) x <- as.matrix(t(x))
     d <- ncol(x)
     n <- nrow(x)
-    gridsize <- sapply(gridx,length)
-    gind <- matrix(0, nrow=n, ncol=d)
-    
-    for (i in 1:n)
-      for (j in 1:d)
-      {
-        tsum <- sum(x[i,j] >= gridx[[j]])
-        if (tsum==0) gind[i,j] <- 1
-        else gind[i,j] <- tsum
-      }
-  }
 
-  bperm <- list()
-  for (j in 1:d) bperm[[j]] <- elem(1,2)
-  binary.perm <- as.matrix(expand.grid(bperm))
-  colnames(binary.perm) <- NULL
-
-  gind.list <- list()
-  fx <- rep(0, length=n)
-  for (i in 1:n)
-  {
-    gind.list[[i]] <- matrix(gind[i,], nrow=2^d, ncol=d, byrow=TRUE) + binary.perm
-    w <- matrix(0, nrow=2^d, ncol=d)
-    gridw <- matrix(0, nrow=2^d, ncol=d)
-    for (j in 1:d)
-    {
-      gind.list[[i]][,j][gind.list[[i]][,j]>=gridsize[j]] <- gridsize[j]
-      gridw[,j] <- gridx[[j]][gind.list[[i]][,j]]
+    if (d==2) fx <- grid.interp.2d(x=x, gridx=gridx, f=f)
+    else if (d==3) fx <- grid.interp.3d(x=x, gridx=gridx, f=f)
+    else
+    {    
+        gridsize <- sapply(gridx,length)
+        gind <- matrix(0, nrow=n, ncol=d)
+        
+        for (i in 1:n)
+          for (j in 1:d)
+          {
+              tsum <- sum(x[i,j] >= gridx[[j]])
+              if (tsum==0) gind[i,j] <- 1
+              else gind[i,j] <- tsum
+          }
+  
+        bperm <- list()
+        for (j in 1:d) bperm[[j]] <- elem(1,2)
+        binary.perm <- as.matrix(expand.grid(bperm))
+        colnames(binary.perm) <- NULL
+        
+        gind.list <- list()
+        fx <- rep(0, length=n)
+        for (i in 1:n)
+        {
+            gind.list[[i]] <- matrix(gind[i,], nrow=2^d, ncol=d, byrow=TRUE) + binary.perm
+            w <- matrix(0, nrow=2^d, ncol=d)
+            gridw <- matrix(0, nrow=2^d, ncol=d)
+            for (j in 1:d)
+            {
+                gind.list[[i]][,j][gind.list[[i]][,j]>=gridsize[j]] <- gridsize[j]
+                gridw[,j] <- gridx[[j]][gind.list[[i]][,j]]
+            }
+            
+            w <- apply(abs(matrix(as.numeric(x[i,]), nrow=2^d, ncol=d, byrow=TRUE) - gridw), 1, prod)
+            w <- 1/apply(abs(sweep(gridw, 2, x[i,])), 1, prod)
+            w[w>1e5] <- 1e5
+            w <- w/sum(w)
+            fx[i] <- sum(w*f[gind.list[[i]]])
+        }
     }
-    w <- 1/apply((matrix(as.numeric(x[i,]), nrow=2^d, ncol=d, byrow=TRUE) - gridw)^2, 1, sum)
-    w[w>1e5] <- 1e5
-    w <- w/sum(w)
-    fx[i] <- sum(w*f[gind.list[[i]]])
   }
-
-  return(list(index=gind.list, fx=fx))
+  
+  return(fx)
 }
 
 
-find.nearest.gridpts.1d <- function(x, gridx, f)
+grid.interp.1d <- function(x, gridx, f)
 {
-  n <- length(x)
-  gind <- rep(0, length=n)
+   n <- length(x)
+   gpoints1 <- gridx
+   M1 <- length(gpoints1)
+   a1 <- gpoints1[1]
+   b1 <- gpoints1[M1]
+   out <- .C("interp1d", x1=as.double(x), n=as.integer(n), a1=as.double(a1), b1=as.double(b1), M1=as.integer(M1), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   return(out$est)
+}
 
-  for (i in 1:length(x))
-  {
-    tsum <- sum(x[i] >= gridx)
-    if (tsum==0)
-      gind[i] <- 1
-    else
-      gind[i] <- tsum
-  }
- 
-  gind2 <- gind+1
-  gind2[gind2>length(gridx)] <- length(gridx)
-  gind2[x<=gridx[1]] <- gind[x<=gridx[1]]
-  gind <- cbind(gind, gind2)
-  colnames(gind) <- NULL
 
-  fx <- rep(0, n)
-  for (i in 1:n)
-  {
-    w <- 1/(x[i] - gridx[gind[i,]])^2
-    w[w>1e5] <- 1e5
-    w <- w/sum(w)
+grid.interp.2d <- function(x, gridx, f)
+{
+   n <- nrow(x)
+   gpoints1 <- gridx[[1]]
+   gpoints2 <- gridx[[2]]
+   M1 <- length(gpoints1)
+   M2 <- length(gpoints2)
+   a1 <- gpoints1[1]
+   a2 <- gpoints2[1]
+   b1 <- gpoints1[M1]
+   b2 <- gpoints2[M2]
+
+   out <- .C("interp2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
    
-    fx[i] <- sum(w*f[gind[i,]])
-  }
+   return(out$est)
+}
 
-  return(list(index=gind, fx=fx))
+grid.interp.3d <- function(x, gridx, f)
+{
+   n <- nrow(x)
+   gpoints1 <- gridx[[1]]
+   gpoints2 <- gridx[[2]]
+   gpoints3 <- gridx[[3]]
+   M1 <- length(gpoints1)
+   M2 <- length(gpoints2)
+   M3 <- length(gpoints3)
+   a1 <- gpoints1[1]
+   a2 <- gpoints2[1]
+   a3 <- gpoints3[1]
+   b1 <- gpoints1[M1]
+   b2 <- gpoints2[M2]
+   b3 <- gpoints3[M3]
+   
+   out <- .C("interp3d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   
+   return(out$est)
 }
 
 ###############################################################################
@@ -226,15 +251,14 @@ find.nearest.gridpts.1d <- function(x, gridx, f)
 
 kde.approx <- function(fhat, x)
 {
-  return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
+  return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
 
 predict.kde <- function(object, ..., x)
 {
   fhat <- object
-  return(find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate)$fx)
+  return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
-
 
 
 ###############################################################################
@@ -253,7 +277,6 @@ predict.kde <- function(object, ..., x)
 ## list with first d components with the points that the density
 ## estimate is evaluated at, and values of the density estimate 
 ##############################################################################
-
 
 kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
 {
@@ -639,7 +662,7 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 plot.kde <- function(x, ...)
 { 
   fhat <- x
-
+  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.vector(fhat$x))
     plotkde.1d(fhat, ...)
   else
@@ -659,6 +682,7 @@ plot.kde <- function(x, ...)
     else 
       stop ("Plot function only available for 1, 2 or 3-d data")
   }
+  if (!is.null(opr)) options("preferRaster"=opr)
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
@@ -733,7 +757,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   if (disp1=="persp")
   {
     hts <- seq(0, 1.1*max(fhat$estimate), length=500)
-    if (missing(col)) col <- topo.colors(length(hts)+1)
+    if (missing(col)) col <- topo.colors(length(hts)+1, alpha=0.5)
     if (!missing(col.fun)) col <- col.fun(length(hts)+1)
     if (length(col)<length(hts)) col <- rep(col, length=length(hts))
     
@@ -786,13 +810,16 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     }
  
     ## add points 
-    if (drawpoints)
-        points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
+    if (drawpoints) points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
   }
   ## image plot
   else if (disp1=="image")
   {
-    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, ...)
+    if (missing(col)) col <- rev(heat.colors(100))  
+    image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
+
+    ## add points 
+    if (drawpoints) points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
     box()
   }
   else if (disp1=="filled.contour" | disp1=="filled.contour2")
@@ -821,10 +848,10 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
     if (!missing(col.fun)) col <- c(col.fun(length(hts)+1))
     clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
-    
+      
     if (disp1=="filled.contour2")
     {
-      image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
+        image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
 
       ## draw contours         
      
@@ -923,7 +950,7 @@ contourLevels <- function(x, ...){
   UseMethod("contourLevels")  
 }   
 
-contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
+contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
 { 
   fhat <- x
   if (is.vector(fhat$x))
@@ -969,7 +996,7 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=FALSE, ...)
 ## Riemann sums to compute approximate Lebesgue measure of contour set
 ###############################################################################
 
-contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=FALSE)
+contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 {
   num.int <- vector()
   if (missing(abs.cont))

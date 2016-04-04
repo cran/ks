@@ -3,7 +3,6 @@
 ## Univariate mixture normal densities
 ###############################################################################
 
-
 rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))

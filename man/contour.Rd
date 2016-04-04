@@ -11,10 +11,10 @@
 
 \usage{
 contourLevels(x, ...)
-\method{contourLevels}{kde}(x, prob, cont, nlevels=5, approx=FALSE, ...)
-\method{contourLevels}{kda}(x, prob, cont, nlevels=5, approx=FALSE, ...)
+\method{contourLevels}{kde}(x, prob, cont, nlevels=5, approx=TRUE, ...)
+\method{contourLevels}{kda}(x, prob, cont, nlevels=5, approx=TRUE, ...)
 
-contourSizes(x, abs.cont, cont=c(25,50,75), approx=FALSE)
+contourSizes(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 }
 
 \arguments{
@@ -24,7 +24,7 @@ contourSizes(x, abs.cont, cont=c(25,50,75), approx=FALSE)
 	of \code{prob}}
   \item{abs.cont}{vector of absolute contour levels}
   \item{nlevels}{number of pretty contour levels} 
-  \item{approx}{flag to compute approximate contour levels. Default is FALSE.} 
+  \item{approx}{flag to compute approximate contour levels. Default is TRUE.} 
   \item{...}{other parameters}
 }
   
@@ -63,7 +63,7 @@ contourSizes(x, abs.cont, cont=c(25,50,75), approx=FALSE)
 set.seed(8192)
 x <- rmvnorm.mixt(n=1000, mus=c(0,0), Sigmas=diag(2), props=1)
 fhat <- kde(x=x, binned=TRUE)
-contourLevels(fhat, cont=c(75, 50, 25), approx=TRUE)
+contourLevels(fhat, cont=c(75, 50, 25))
 contourSizes(fhat, cont=25, approx=TRUE) 
    ## compare to approx circle of radius=0.75 with area=1.77
 }

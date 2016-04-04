@@ -256,7 +256,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
       if (r==0) sf <- rep(1,d)
       else sf <- (-1)^deriv.index.minimal[s,]
       est.temp <- symconv.nd(kevals, bin.par$counts, d=d)
-      for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <-  zapsmall(est.temp)
+      for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp ##zapsmall(est.temp)
       if (verbose) setTxtProgressBar(pb, s/nderiv)
     }
   else
@@ -267,10 +267,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
       if (r==0) sf <- rep(1,d)
       else sf <- (-1)^deriv.index[s,]
       est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-      #if (d==2) est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-      #if (d==3) est[[s]] <- symconv3D.ks(kevals, bin.par$counts, skewflag=sf)
-      #if (d==4) est[[s]] <- symconv4D.ks(kevals, bin.par$counts, skewflag=sf)
-      est[[s]] <- zapsmall(est[[s]])
+      ##est[[s]] <- zapsmall(est[[s]])
       if (verbose) setTxtProgressBar(pb, s/ncol(keval))
     }
   }
@@ -431,8 +428,6 @@ kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
       ## Create list of matrices for different partial derivatives
       ##fhat <- dmvnorm.deriv(x=eval.pts, mu=x[i,], Sigma=H, deriv.order=r)
 
-      ##browser()
-      
       ## place vector of density estimate values `fhat' onto grid 'fhat.grid'
       for (ell in 1:nderiv)
           for (k in 1:length(eval.z))
@@ -513,7 +508,7 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
 plot.kdde <- function(x, ...)
 {
   fhat <- x
-
+  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.null(fhat$deriv.order))
   {
     class(fhat) <- "kde"
@@ -544,6 +539,7 @@ plot.kdde <- function(x, ...)
         stop ("Plot function only available for 1, 2 or 3-d data")
     }
   }
+  if (!is.null(opr)) options("preferRaster"=opr)
 }
 
 plotkdde.1d <- function(fhat, ylab="Density derivative function", ...)
@@ -678,7 +674,7 @@ predict.kdde <- function(object, ..., x)
   if (d==1) n <- length(x)
   else
   {
-    x <- matrix(x, ncol=d) 
+    x <- as.matrix(x) 
     n <- nrow(x)
   }
   

@@ -40,6 +40,7 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   else if (d==2)
   {
     if (missing(H)) Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
+   
     Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
     diffe1 <- abs(diff(Fhat$eval.points[[1]]))
     diffe2 <- abs(diff(Fhat$eval.points[[2]]))
@@ -148,6 +149,7 @@ kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.ta
 plot.kcde <- function(x, ...)
 { 
   Fhat <- x
+  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.vector(Fhat$x)) plotkcde.1d(Fhat, ...)
   else
   {
@@ -165,6 +167,7 @@ plot.kcde <- function(x, ...)
     }
     else stop ("kde.plot function only available for 1, 2 or 3-d data")
   }
+  if (!is.null(opr)) options("preferRaster"=opr) 
 }
 
 
@@ -239,18 +242,19 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
   ## image plot
   else if (disp1=="image")
   {
-    image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, ...)
+    if (missing(col)) col <- rev(heat.colors(100))
+    image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
     box()
   }
   else if (disp1=="filled.contour" | disp1=="filled.contour2") 
   {
     hts <- cont/100
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
-    
     clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
     
     if (disp1=="filled.contour2")
     {
+    
       image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
 
       ## draw contours         
@@ -430,8 +434,8 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=
   }
   if (missing(Hstart)) Hstart <- Hns.kcde(x=x)
 
-  Fhat.pilot <- kcde(x=x, H2)
-  VF <- sum(Fhat.pilot$estimate*(1-Fhat.pilot$estimate)*prod(sapply(Fhat.pilot$eval, diff)[1,]))
+  ##Fhat.pilot <- kcde(x=x, H2)
+  ##VF <- sum(Fhat.pilot$estimate*(1-Fhat.pilot$estimate)*prod(sapply(Fhat.pilot$eval, diff)[1,]))
 
   ## stage 2
   amise.temp <- function(vechH)

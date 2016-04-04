@@ -208,6 +208,26 @@ dupl <- function(order, ret.q = FALSE)
 }
 
 
+###############################################################################
+## Pre-scaling
+## Parameters
+## x - data points
+##
+## Returns
+## Pre-scaled x values
+###############################################################################
+
+pre.scale <- function(x, mean.centred=FALSE)
+{
+  S <- diag(diag(var(x)))
+  Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
+
+  if (mean.centred) x.scaled <- sweep(x, 2, apply(x, 2, mean))
+  else x.scaled <- x  
+  x.scaled <- x.scaled %*% Sinv12
+  
+  return (x.scaled)
+}
 
 ###############################################################################
 ## Pre-sphering
@@ -265,28 +285,6 @@ which.mat <- function(r, mat)
   return(ind)  
 }
 
-
-
-###############################################################################
-## Pre-scaling
-## Parameters
-## x - data points
-##
-## Returns
-## Pre-scaled x values
-###############################################################################
-
-pre.scale <- function(x, mean.centred=FALSE)
-{
-  S <- diag(diag(var(x)))
-  Sinv12 <- matrix.sqrt(chol2inv(chol(S)))
-
-  if (mean.centred) x.scaled <- sweep(x, 2, apply(x, 2, mean))
-  else x.scaled <- x  
-  x.scaled <- x.scaled %*% Sinv12
-  
-  return (x.scaled)
-}
 
 
 ###################################################################

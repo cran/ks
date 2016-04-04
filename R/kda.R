@@ -511,7 +511,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
 ## Contour method for kda objects
 ##############################################################################
 
-contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=FALSE,...) 
+contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=TRUE,...) 
 {
   fhat <- x
   m <- length(fhat$x)
@@ -536,7 +536,7 @@ predict.kda <- function(object, ..., x)
   fhat.temp <- matrix(0, ncol=m, nrow=n)
   for (j in 1:m)
   {    
-      fhat.temp[,j] <- fhat$prior.prob[j]*find.nearest.gridpts(x=x, gridx=fhat$eval.points, f=fhat$estimate[[j]])$fx
+      fhat.temp[,j] <- fhat$prior.prob[j]*grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate[[j]])
   }
   est.group <- apply(fhat.temp, 1, which.max)
   est.group <- unique(fhat$x.group)[est.group]
@@ -562,17 +562,19 @@ predict.kda <- function(object, ..., x)
 
 plot.kda <- function(x, y, y.group, ...) 
 {
+  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.vector(x$x[[1]]))
     plotkda.1d(x=x, y=y, y.group=y.group,  ...)
   else
   {  
     d <- ncol(x$x[[1]])
-    
+   
     if (d==2)
-      plotkda.2d(x=x, y=y, y.group=y.group, ...) 
+        plotkda.2d(x=x, y=y, y.group=y.group, ...)
     else if (d==3)  
-       plotkda.3d(x=x, y=y, y.group=y.group, ...) 
+        plotkda.3d(x=x, y=y, y.group=y.group, ...)
   }
+  if (!is.null(opr)) options("preferRaster"=opr) 
 }
 
 
@@ -619,7 +621,6 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
  
   plot.lim <- par()$usr
   if (missing(rugsize)) rugsize <- abs(plot.lim[4]-plot.lim[3])/50
-
   for (j in 1:m)
   {
     image(ydata, c(plot.lim[3], plot.lim[3]+rugsize), cbind(as.numeric(ydata.gr), as.numeric(ydata.gr)), level=0.5+(0:length(levels(fhat$x.group))), add=TRUE, col=col.part, ...)
@@ -669,7 +670,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   if (length(lty) < m) lty <- rep(lty, m)
   if (missing(col)) col <- 1:m
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.part)) col.part <- grey.colors(m, start=0.7, end=1) 
+  if (missing(col.part)) col.part <- grey.colors(m, start=0.7, end=1, alpha=0.5) 
   if (missing(col.pt))
     if (missing(y.group)) col.pt <- rep("blue", m)
     else col.pt <- 1:m
@@ -713,6 +714,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   }
 
   ## draw partition
+ 
   image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=col.part, xlim=xlim, ylim=ylim, add=TRUE, ...)
   box()
 

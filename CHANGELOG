@@ -1,5 +1,12 @@
 Change log file for ks
 
+1.10.3
+-Fixed bugs in col specification in plot.kde(,disp="persp") and disp="image".
+-Approx computation in contourLevels(,approx=TRUE) is now default.
+-Boundary adjustments in binning() moved to C functions linbin*d.ks().
+-Grid interpolation functions renamed from find.nearest.gridpts() to
+ grid.interp() and coded in C to increase speed.
+
 1.10.2
 -Improved speed for kde.points(), kdde.points().
 -Improved speed for compare().
@@ -27,6 +34,8 @@ Change log file for ks
 -Changed DESCRIPTION to comply with CRAN checks (e.g. imports etc.)
 -Fixed inconsistencies in graphical parameters in plot() functions (e.g.
  ptcol, cont.col, ...)
+-Added raster graphics if available for display="image" and "filled.contour2"
+ plots.
 
 1.9.4
 -Removed explicit prior calculation of permutation derivative indices in

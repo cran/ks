@@ -96,10 +96,10 @@ plot(fhat, col=3)
 points(c(0.5, 1), predict(fhat, x=c(0.5, 1)))
 
 ## large data example on non-default grid
-## 151 x 151 grid = [-3,-2.96,...,3] x [-4,-3.96,....,2]
+## 151 x 151 grid = [-5,-4.933,..,5] x [-5,-4.933,..,5]
 set.seed(8192)
 x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
-fhat <- kde(x=x, binned=TRUE, compute.cont=TRUE, xmin=c(-3,-4), xmax=c(3,2), bgridsize=c(151,151))
+fhat <- kde(x=x, binned=TRUE, compute.cont=TRUE, xmin=c(-5,-5), xmax=c(5,5), bgridsize=c(151,151))
 plot(fhat)
 
 ## See other examples in ? plot.kde

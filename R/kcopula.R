@@ -136,13 +136,15 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
   Chat$x.orig <- x
   Chat$eval.points <- ep ##lapply(u.eval.points, getElement, "estimate")
   Chat$hs <- hs
-  
+
   ## loess smoothing on a uniform grid
   if (d==2)
   {
-    eval.points.df <- data.frame(expand.grid(Chat$eval.points))
+    ## select smaller grid for d==2 for memory usage reasons
+    subselect <- round(cbind(seq(1,length(Chat$eval.points[[1]]), length=101), seq(1,length(Chat$eval.points[[2]]), length=101)),0)
+    eval.points.df <- data.frame(expand.grid(Chat$eval.points[[1]][subselect[,1]], Chat$eval.points[[2]][subselect[,2]]))
     names(eval.points.df) <- paste("x", 1:ncol(eval.points.df), sep="")
-    eval.points.df <- data.frame(estimate=as.numeric(Chat$estimate), eval.points.df)
+    eval.points.df <- data.frame(estimate=as.numeric(Chat$estimate[subselect[,1], subselect[,2]]), eval.points.df)
   }
   else if (d==3)
   {
@@ -191,6 +193,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     Chat.smoothed$estimate[gsdim[1],gsdim[2],gsdim[3]] <- 1
     Chat.smoothed$estimate[Chat.smoothed$estimate>1] <- 1
   }
+  
   Chat <- Chat.smoothed
   Chat$marginal <- marginal1
   class(Chat) <- "kcopula"
