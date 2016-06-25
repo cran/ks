@@ -137,17 +137,17 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
   if (nstage==1)
   {
     G2r4 <- Gns(r=2*r+4,n=n,Sigma=var(x))
-    g2r4 <- sqrt(G2r4[1,1])
+    g2r4 <- prod(sqrt(diag(G2r4)))^(1/d) ##sqrt(G2r4[1,1])
   }
   else if (nstage==2)
   {
-    G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=var(x))
-    g2r6.nr <- prod(sqrt(diag(G2r6.NR)))^(1/d) 
+    G2r6.NS <- Gns(r=2*r+6,n=n,Sigma=var(x))
+    g2r6.ns <- prod(sqrt(diag(G2r6.NS)))^(1/d) 
     L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
     if (binned)
-      eta2r6 <- drop(kfe(x=x, G=g2r6.nr^2*diag(d), inc=1, binned=binned, deriv.order=2*r+6, add.index=FALSE, verbose=verbose) %*% vec(diag(d^(r+3))))
+      eta2r6 <- drop(kfe(x=x, G=g2r6.ns^2*diag(d), inc=1, binned=binned, deriv.order=2*r+6, add.index=FALSE, verbose=verbose) %*% vec(diag(d^(r+3))))
     else
-      eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.nr^2*diag(d), inc=1)
+      eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.ns^2*diag(d), inc=1)
 
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
     A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6

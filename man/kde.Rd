@@ -13,7 +13,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE,
     verbose=FALSE)
 
-\method{predict}{kde}(object, ..., x)
+\method{predict}{kde}(object, ..., x, zero.flag=TRUE)
 }
 
 \arguments{
@@ -37,6 +37,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kde}}
+  \item{zero.flag}{interploted values \code{object$estimate} of when \code{x}
+  outside of \code{object$eval.points}=0 (if \code{TRUE}), = nearest
+  \code{object$estimate} (if \code{FALSE})}
   \item{...}{other parameters}
 }
   
@@ -54,7 +57,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{binned}{flag for binned estimation}
   \item{names}{variable names} 
   \item{w}{weights}
-  \item{cont}{probability contour levels (if \code{compute.cont=TRUE})}
+  \item{cont}{probability contour levels (if \code{compute.cont=TRUE})}    
 }
 
 \details{

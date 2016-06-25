@@ -657,11 +657,11 @@ summary.kroc <- function(object, ...)
 #############################################################################
 predict.kcde <- function(object, ..., x)
 {
-  return(predict.kde(object, ...,x=x))
+    return(predict.kde(object, ..., x=x, zero.flag=FALSE))
 }
 
 predict.kroc <- function(object, ..., x)
 {
-  return(predict.kde(object, ..., x=x))
+    return(predict.kde(object, ..., x=x, zero.flag=FALSE))
 }
 

@@ -1,11 +1,19 @@
 Change log file for ks
 
+1.10.4
+-Fixed bug in plot.kde(,display="slice",abs.cont=) not plotting contours
+ correctly.
+-Fixed bug in predict.kde(object, ..., x) by adding zero.flag which controls
+ behaviour when x is outside interpolation grid object$eval.points: TRUE = 0,
+ FALSE = object$estimate corr to nearest grid point.
+
 1.10.3
 -Fixed bugs in col specification in plot.kde(,disp="persp") and disp="image".
 -Approx computation in contourLevels(,approx=TRUE) is now default.
 -Boundary adjustments in binning() moved to C functions linbin*d.ks().
 -Grid interpolation functions renamed from find.nearest.gridpts() to
  grid.interp() and coded in C to increase speed.
+-Reduced time complexity of loess smoother in kcopula().
 
 1.10.2
 -Improved speed for kde.points(), kdde.points().

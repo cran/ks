@@ -35,6 +35,11 @@ void interp2d(double *x1, double *x2,	int *n,
 	      double *a1, double *a2, double *b1, double *b2,
 	      int *M1, int *M2, double *fun, double *est);
 
+void interp3d(double *x1, double *x2,	double *x3, int *n, 
+	      double *a1, double *a2, double *a3, 
+	      double *b1, double *b2, double *b3,
+              int *M1, int *M2, int *M3, double *fun, double *est);
+
 
 /* Code */
 

@@ -254,10 +254,32 @@ kde.approx <- function(fhat, x)
   return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
 
-predict.kde <- function(object, ..., x)
+predict.kde <- function(object, ..., x, zero.flag=TRUE)
 {
-  fhat <- object
-  return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
+  fhat <- grid.interp(x=x, gridx=object$eval.points, f=object$estimate)
+  if (!zero.flag)
+  {    
+      if (!is.list(object$eval.points)) d <- 1 else d <- length(object$eval.points)
+      if (d==1)
+      {
+          gs <- length(object$eval.points)
+          x.ind <- findInterval(x, object$eval.points, all.inside=FALSE)
+          fhat[x.ind==0] <- object$estimate[1] 
+          fhat[x.ind==gs] <- object$estimate[gs]
+      }
+      else
+      {
+          x <- as.matrix(x, ncol=d)
+          gs <- sapply(object$eval.points, length)
+          x.ind <- matrix(0, nrow=nrow(x), ncol=d)
+          for (i in 1:d) x.ind[,i] <- findInterval(x[,i], object$eval.points[[i]], all.inside=FALSE)
+          x.ind[x.ind==0] <- 1
+          x.ind.flag <- x.ind==1
+          for (i in 1:d) x.ind.flag[,i] <- x.ind.flag[,i] | x.ind[,i]==gs[i] 
+          fhat[apply(x.ind.flag, 1, any)] <- object$estimate[x.ind[apply(x.ind.flag, 1, any),]]
+      }
+  }
+  return(fhat)
 }
 
 
@@ -742,9 +764,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1,  
-    add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...) 
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   if (!is.list(fhat$eval.points)) stop("Need a grid of density estimates")
@@ -794,19 +814,21 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
       hts <- abs.cont 
     
-    ##hts <- sort(hts, decreasing=TRUE)
-    
     if (missing(col)) col <- 1 #rev(heat.colors(length(hts)))
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
-    
-    ## draw contours         
+
+    ## draw contours
+    j <- 0
     for (i in 1:length(hts)) 
     {
       if (missing(abs.cont)) scale <- cont[i]/hts[i]
       else scale <- 1
 
       if (hts[i]>0 | !is.null(fhat$deriv.order))
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=i>1 |add, drawlabels=drawlabels, col=col[i], lwd=lwd, xlab=xlab, ylab=ylab, ...)
+      {
+          j<-j+1;
+          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=j>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, xlab=xlab, ylab=ylab, ...)
+      }
     }
  
     ## add points 
