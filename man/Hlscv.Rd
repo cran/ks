@@ -55,7 +55,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 
 \details{\code{hlscv} is the univariate LSCV
   selector of Bowman (1984) and Rudemo (1982). \code{Hlscv} is a
-  multivariate generalisation of this. Use \code{Hlscv} for full
+  multivariate generalisation of this. Use \code{Hlscv} for unconstrained
   bandwidth matrices and \code{Hlscv.diag} for diagonal bandwidth matrices. 
   \code{Hucv}, \code{Hucv.diag} and \code{hucv} are aliases with UCV
   unbiased cross validation instead of LSCV. 

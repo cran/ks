@@ -1,5 +1,16 @@
 Change log file for ks
 
+1.10.5
+-Fixed bug in invisible return values for plot.kda(), plot.kcde(), plot.kdde(),
+ plot.kde().
+-Added more detail about eval.points in kde.Rd.
+-Changed default approx.cont=TRUE in plot methods.
+-Changed default to compute.cont=TRUE in estimation functions and
+ corresponding plot methods.
+-Fixed bug in contour plot colours in plot.kdde() for 2D.
+-Fixed bug in calculation of scalar pilot in gdscalar().
+-Fixed bug in calculation of unconstrained SCV pilot in Gunconstr.scv().
+
 1.10.4
 -Fixed bug in plot.kde(,display="slice",abs.cont=) not plotting contours
  correctly.

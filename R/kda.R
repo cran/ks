@@ -323,12 +323,12 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE, kde.flag=TRUE)
+kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
   if (missing(eval.points)) eval.points <- x
   gr <- sort(unique(x.group))
   m <- length(gr)
-
+  
   if (is.vector(x))
   {
     bgridsize <- default.gridsize(1)
@@ -360,7 +360,7 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
     fhat <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=FALSE, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
     fhat.wt <- matrix(0, ncol=m, nrow=nrow(eval.points))  
   }
-
+  
   for (j in 1:m)
     fhat.wt[,j] <- fhat$estimate[[j]]* fhat$prior.prob[j]
     
@@ -485,7 +485,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
     fhat.list$H <- c(fhat.list$H, list(H))
     fhat.list$w <- c(fhat.list$w, list(ww))
     
-      ## compute prob contour levels
+    ## compute prob contour levels
     if (compute.cont & missing(eval.points))
     {
       contlev <- contourLevels(fhat.temp, cont=1:99, approx.cont=approx.cont)
@@ -562,7 +562,7 @@ predict.kda <- function(object, ..., x)
 
 plot.kda <- function(x, y, y.group, ...) 
 {
-  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
+ 
   if (is.vector(x$x[[1]]))
     plotkda.1d(x=x, y=y, y.group=y.group,  ...)
   else
@@ -570,11 +570,15 @@ plot.kda <- function(x, y, y.group, ...)
     d <- ncol(x$x[[1]])
    
     if (d==2)
+    {
+        opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
         plotkda.2d(x=x, y=y, y.group=y.group, ...)
+        if (!is.null(opr)) options("preferRaster"=opr) 
+    }
     else if (d==3)  
         plotkda.3d(x=x, y=y, y.group=y.group, ...)
   }
-  if (!is.null(opr)) options("preferRaster"=opr) 
+ 
 }
 
 

@@ -31,7 +31,7 @@ BCV bandwidth matrix. If \code{amise=TRUE} then the minimal BCV value is returne
 }
 
 \details{
-  Use \code{Hbcv} for full bandwidth matrices and \code{Hbcv.diag}
+  Use \code{Hbcv} for unconstrained bandwidth matrices and \code{Hbcv.diag}
   for diagonal bandwidth matrices. These selectors are only
   available for bivariate data. Two types of BCV criteria are
   considered here.  They are known as BCV1 and BCV2, from Sain, Baggerly

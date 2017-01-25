@@ -47,7 +47,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   selector of Wand & Jones (1994), i.e. it is exactly the same as
   \pkg{KernSmooth}'s \code{dpik}. For deriv.order>0, the formula is
   taken from Wand & Jones (1995). \code{Hpi} is a multivariate
-  generalisation of this. Use \code{Hpi} for full bandwidth matrices and
+  generalisation of this. Use \code{Hpi} for unconstrained bandwidth matrices and
   \code{Hpi.diag} for diagonal bandwidth matrices.
 
   The default pilot is \code{"samse"} for d=2,r=0, and

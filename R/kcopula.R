@@ -206,7 +206,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 ## Kernel copula density estimator
 #############################################################################
 
-kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=FALSE, approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
+kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=TRUE, approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -303,7 +303,7 @@ boundary.ind <- function(x, h, xmin, xmax, boundary.supp=1)
 
 ## boundary kernel estimator using beta bounday kernels (2nd form)
 
-kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE, boundary.supp=1, verbose=FALSE)
+kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, boundary.supp=1, verbose=FALSE)
 {
   if (is.vector(x))
   {
@@ -372,7 +372,6 @@ kde.boundary <- function(x, H, h, hb, gridsize, gridtype, xmin, xmax, supp=3.7, 
  }
 
 
-
 kde.boundary.grid.1d <- function(x, h, hb, gridsize, supp=3.7, xmin, xmax, gridtype, w, boundary.supp=0.5, binned=FALSE)
 {
   if (missing(xmin)) xmin <- min(x)
@@ -428,7 +427,6 @@ kde.boundary.grid.1d <- function(x, h, hb, gridsize, supp=3.7, xmin, xmax, gridt
   
   return(fhat)
 }
-
 
 kde.boundary.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, boundary.supp=1, binned=FALSE, verbose=FALSE)
 {
@@ -661,8 +659,6 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
   return(fhat.list)
 }
 
-
-
 plot.kcopula <- function(x, ...)
 {
   plot.kcde(x, ...)
@@ -672,7 +668,6 @@ plot.kcopula.de <- function(x, ...)
 {
   plot.kde(x, ...)
 }
-
 
 
 #############################################################################

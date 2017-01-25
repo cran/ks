@@ -50,7 +50,7 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 
 
 \value{
-  Full MISE- or AMISE-optimal bandwidth matrix. ISE, MISE or AMISE value. 
+  Unconstrained MISE- or AMISE-optimal bandwidth matrix. ISE, MISE or AMISE value. 
 }
 
 \details{

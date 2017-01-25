@@ -128,7 +128,9 @@
   \eqn{\hat{c}}{hat(c)} and \code{\link{kcde}} for \eqn{\hat{F}_j}{hat(F)_j}.
   Its \code{plot} method is \code{\link{plot.kde}}.
   
-  --Binned kernel estimation is available for d = 1, 2, 3, 4. This makes kernel estimators feasible for large samples.
+  --Binned kernel estimation is an approximation to the exact kernel
+  estimation and is available for d=1, 2, 3, 4. This makes
+  kernel estimators feasible for large samples. 
   
   --For an overview of this package with 2-d density estimation, see 
   \code{vignette("kde")}. 

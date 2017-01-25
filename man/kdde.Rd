@@ -22,7 +22,7 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
-  \item{eval.points}{points at which estimate is evaluated}
+  \item{eval.points}{vector or matrix of points at which estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
@@ -41,7 +41,7 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   A kernel density derivative estimate is an object of class
   \code{kdde} which is a list with fields:
   \item{x}{data points - same as input}
-  \item{eval.points}{points at which the estimate is evaluated}
+  \item{eval.points}{vector or list of points at which the estimate is evaluated}
   \item{estimate}{density derivative estimate at \code{eval.points}}
   \item{h}{scalar bandwidth (1-d only)}
   \item{H}{bandwidth matrix}

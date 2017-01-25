@@ -32,7 +32,7 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
-  \item{eval.points}{points at which estimate is evaluated}
+  \item{eval.points}{vector or matrix of points at which estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
@@ -61,7 +61,7 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   A kernel cumulative distribution estimate is an object of class
   \code{kcde} which is a list with fields:
   \item{x}{data points - same as input}
-  \item{eval.points}{points at which the estimate is evaluated}
+  \item{eval.points}{vector or list of points at which the estimate is evaluated}
   \item{estimate}{cumulative distribution/survival function estimate at
   \code{eval.points}} 
   \item{h}{scalar bandwidth (1-d only)}
@@ -91,10 +91,10 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 }
 
 \references{
-  Duong, T. (2015) Non-parametric smoothed estimation of multivariate
+  Duong, T. (2016) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
   characteristic curves. \emph{Journal of the Korean Statistical
-  Society}. In press. DOI:10.1016/j.jkss.2015.06.002.
+  Society}. \bold{45}, 33-50.
 }
 
 

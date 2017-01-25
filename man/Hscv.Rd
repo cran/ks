@@ -43,10 +43,10 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 \details{ \code{hscv} is the univariate SCV
   selector of Jones, Marron & Park (1991). \code{Hscv} is a
   multivariate generalisation of this, see Duong & Hazelton (2005).
-  Use \code{Hscv} for full bandwidth matrices and \code{Hscv.diag}
+  Use \code{Hscv} for unconstrained bandwidth matrices and \code{Hscv.diag}
   for diagonal bandwidth matrices. 
  
-  The default pilot is \code{"samse"} for d=2,r=0, and
+  The default pilot is \code{"samse"} for d=2, r=0, and
   \code{"dscalar"} otherwise. For SAMSE pilot bandwidths, see Duong &
   Hazelton (2005). Unconstrained and higher order derivative pilot
   bandwidths are from Chacon & Duong (2011).  

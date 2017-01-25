@@ -14,7 +14,7 @@
 }
 \usage{
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
-  eval.points, binned=FALSE, bgridsize, w, compute.cont=FALSE, approx.cont=TRUE,
+  eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
   kde.flag=TRUE)
 Hkda(x, x.group, Hstart, bw="plugin", ...)
 Hkda.diag(x, x.group, bw="plugin", ...)
@@ -38,11 +38,11 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{gridsize}{vector of grid sizes}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
-  \item{eval.points}{points at which estimate is evaluated}
+  \item{eval.points}{vector or matrix of points at which estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Not yet implemented.}
-  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
+  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{kde.flag}{flag for computing KDE on grid. Default is TRUE.}
@@ -65,7 +65,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   which is a list with fields 
   \item{x}{list of data points, one for each group label}
   \item{estimate}{list of density estimates at \code{eval.points}, one for each group label}  
-  \item{eval.points}{points that the estimate is evaluated at, one
+  \item{eval.points}{vector or list of points that the estimate is evaluated at, one
     for each group label}
   \item{h}{vector of bandwidths (1-d only)}
   \item{H}{stacked matrix of bandwidth matrices or vector of bandwidths}
@@ -95,7 +95,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   are not independent e.g. 
   we are classifying the training data set itself, then the cross
   validated estimate of MR is more appropriate. These
-  are implemented as \code{compare.kda.cv} (full bandwidth
+  are implemented as \code{compare.kda.cv} (unconstrained bandwidth
   selectors) and \code{compare.kda.diag.cv} (for diagonal bandwidth
   selectors). These functions are only available for d > 1.
 

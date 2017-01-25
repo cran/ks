@@ -300,7 +300,7 @@ predict.kde <- function(object, ..., x, zero.flag=TRUE)
 ## estimate is evaluated at, and values of the density estimate 
 ##############################################################################
 
-kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
+kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
 {
   if (is.vector(x))
   {
@@ -330,16 +330,12 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
   }
   if (missing(H) & d>1)
   {
-    ##if (binned)
-    ##  H <- Hpi.diag(x=x, binned=binned, bgridsize=bgridsize, verbose=verbose)
-    ##else 
-    H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose)
+      H <- Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose)
   }
   
   ## compute binned estimator
   if (binned)
   {
-    ##if (d>1) { if (!identical(diag(diag(H)), H)) warning("Binned estimation for non-diagonal bandwidth matrix H can be inaccurate.") }
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
     if (positive)
     {
@@ -684,7 +680,6 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 plot.kde <- function(x, ...)
 { 
   fhat <- x
-  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.vector(fhat$x))
     plotkde.1d(fhat, ...)
   else
@@ -693,18 +688,20 @@ plot.kde <- function(x, ...)
 
     if (d==2) 
     {
-      plotret <- plotkde.2d(fhat, ...)
-      invisible(plotret)
+        opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
+        plotret <- plotkde.2d(fhat, ...)
+        if (!is.null(opr)) options("preferRaster"=opr)
+        invisible(plotret)
     }
     else if (d==3)
     {
-      plotkde.3d(fhat, ...)
-      invisible()
+        plotkde.3d(fhat, ...)
+        invisible()
     }
     else 
       stop ("Plot function only available for 1, 2 or 3-d data")
   }
-  if (!is.null(opr)) options("preferRaster"=opr)
+  
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
@@ -714,8 +711,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
   
   if (add) lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
   else plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
-
- 
+  
   ## compute contours
   if (!missing(cont) | !missing(abs.cont)) 
   {
@@ -725,8 +721,8 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
       {
         cont.ind <- rep(FALSE, length(fhat$cont))
         for (j in 1:length(cont))
-          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-        
+          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+
         if (all(!cont.ind))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
         else
@@ -737,12 +733,25 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
     }
     else
       hts <- abs.cont 
+
+    ##
     
-    hts <- sort(hts, decreasing=TRUE)
-    if (is.null(fhat$deriv.order)) cont.ind <- 1-as.numeric(fhat$estimate>=hts[1])
-    else cont.ind <- (1-as.numeric(fhat$estimate>=hts[1])) * (1-as.numeric(fhat$estimate<=tail(hts,n=1)))
-    cont.ind[cont.ind==1] <- NA	  
-    lines(fhat$eval.points, cont.ind, col=col.cont, lwd=cont.lwd)
+    if (is.null(fhat$deriv.order))
+    {
+        hts <- sort(hts, decreasing=TRUE)
+        cont.ind <- 1-as.numeric(fhat$estimate>=hts[1])
+        cont.ind[cont.ind==1] <- NA	  
+        lines(fhat$eval.points, cont.ind, col=col.cont, lwd=cont.lwd)
+    }
+    else
+    {
+       for (i in 1:length(hts))
+       {     
+           cont.ind <- 1-as.numeric(abs(fhat$estimate)>=abs(hts[i]))
+           cont.ind[cont.ind==1] <- NA	  
+           lines(fhat$eval.points, cont.ind, col=col.cont, lwd=cont.lwd)      
+       }
+    }
   }
   
   if (drawpoints)
@@ -764,14 +773,13 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...) 
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, kdde.flag=FALSE, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   if (!is.list(fhat$eval.points)) stop("Need a grid of density estimates")
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
-  if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
 
   ## perspective/wireframe plot
   if (disp1=="persp")
@@ -801,7 +809,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       {
         cont.ind <- rep(FALSE, length(fhat$cont))
         for (j in 1:length(cont))
-          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
         
         if (all(!cont.ind))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
@@ -853,7 +861,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       {
         cont.ind <- rep(FALSE, length(fhat$cont))
         for (j in 1:length(cont))
-          cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
         
         if (all(!cont.ind))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
@@ -877,8 +885,18 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 
       ## draw contours         
      
-      for (i in 1:length(hts)) 
-        contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
+      for (i in 1:length(hts))
+      {      
+          if (!kdde.flag) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
+          else
+          {
+              if (i <= length(hts)%/%2)
+                  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i], lwd=lwd.fc)
+              else
+                  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
+          }
+      }
+        
       if (!missing(lwd))
       {
         for (i in 1:length(hts)) 
@@ -892,10 +910,11 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     }
     else
     {
-      if (tail(hts, n=1) < max(fhat$estimate)) hts <- c(hts,  max(fhat$estimate))
-      filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, levels=hts, ...)
+        if (tail(hts, n=1) < max(fhat$estimate)) hts <- c(hts,  max(fhat$estimate))
+        filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, xlab=xlab, ylab=ylab, levels=clev, color.palette=col.fun, ...)
     }
   }
+  
   if (disp1=="persp")  invisible(plotret)
   else invisible()
 }
@@ -910,8 +929,6 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col.fun, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 
 {
-  if (missing(approx.cont)) approx.cont <- (nrow(fhat$x) > 2000)
-    
   ## compute contours
   if (missing(abs.cont))
   {
@@ -919,7 +936,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
       {
         cont.ind <- rep(FALSE, length(fhat$cont))
           for (j in 1:length(cont))
-            cont.ind[which(cont[j] == as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+            cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
           
         if (all(!cont.ind))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
@@ -942,15 +959,15 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
   if (missing(alphavec))
   {
     if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
-    else alphavec <- c(rev(seq(0.1,0.5,length=round(nc/2))), rev(seq(0.1,0.5,length=round(nc/2))))
+    else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
   }
  
   fhat.eval.mean <- sapply(fhat$eval.points, mean)
   if (drawpoints)
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
-    plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, alpha=0, ...)
-  ##bg3d(col="white")
+    plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)  
+    ##plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, alpha=0, ...)
   
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))

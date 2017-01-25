@@ -307,7 +307,7 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
     est <- dnorm.deriv.mixt(x=gridy, mus=y, sigmas=rep(h, n), props=w/n, deriv.order=r)
     fhatr <- list(x=y, eval.points=gridy, estimate=est, h=h, H=h^2, gridtype=gridtype.vec, gridded=TRUE, binned=FALSE, names=NULL, w=w, deriv.order=r, deriv.ind=deriv.order)
       
-    class(fhatr) <- "kde"
+    class(fhatr) <- "kdde"
   }
   
   return(fhatr)
@@ -508,7 +508,7 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
 plot.kdde <- function(x, ...)
 {
   fhat <- x
-  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
+  
   if (is.null(fhat$deriv.order))
   {
     class(fhat) <- "kde"
@@ -526,8 +526,10 @@ plot.kdde <- function(x, ...)
       d <- ncol(fhat$x)
       if (d==2) 
       {
-        plotret <- plotkdde.2d(fhat, ...)
-        invisible(plotret)
+          opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
+          plotret <- plotkdde.2d(fhat, ...)
+          if (!is.null(opr)) options("preferRaster"=opr)
+          invisible(plotret)
       }
       else if (d==3)
       {
@@ -539,17 +541,22 @@ plot.kdde <- function(x, ...)
         stop ("Plot function only available for 1, 2 or 3-d data")
     }
   }
-  if (!is.null(opr)) options("preferRaster"=opr)
 }
 
-plotkdde.1d <- function(fhat, ylab="Density derivative function", ...)
+plotkdde.1d <- function(fhat, ylab="Density derivative function", cont=50, abs.cont, ...)
 {
+  if (missing(abs.cont))
+  {
+    abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol = length(cont))
+    abs.cont <- c(abs.cont[1, ], rev(abs.cont[2, ]))
+  }
   class(fhat) <- "kde"
-  plot(fhat, ylab=ylab, ...)
+
+  plot(fhat, ylab=ylab, abs.cont=abs.cont, ...)
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function",...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col.fun=topo.colors, kdde.flag=TRUE, ...)
 {
   disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2")) 
   
@@ -568,12 +575,12 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
   fhat <- fhat.temp
   class(fhat) <- "kde"
 
-  plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab,  ...) 
+  plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, ...) 
 }
 
 
 
-plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, colors, col.fun=topo.colors, ...)
+plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, colors, col.fun=cm.colors, ...)
 {
   if (missing(abs.cont))
   {
@@ -591,7 +598,7 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, col
   {
       colors <- rev(col.fun(length(abs.cont)))
       nc <- length(colors)
-      colors[(nc/2+1):nc] <- rev(colors[(nc/2+1):nc])
+      colors[1: (nc/2)] <- rev(colors[1:(nc/2)])
   }
   plot(fhat, abs.cont=abs.cont, colors=colors, ...) 
 }
@@ -654,9 +661,9 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
        if (missing(prob) & !missing(cont)) hts <- quantile(dobs[dobs>=0], prob=(100-cont)/100)
     }
     else
-    {   
-      if (!missing(prob) & missing(cont)) hts <- rbind(quantile(dobs[dobs<0], prob=prob), quantile(dobs[dobs>=0], prob=prob))
-      if (missing(prob) & !missing(cont)) hts <- rbind(quantile(dobs[dobs<0], prob=(100-cont)/100), quantile(dobs[dobs>=0], prob=(100-cont)/100))
+    {
+      if (!missing(prob) & missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=prob), quantile(dobs[dobs>=0], prob=prob))
+      if (missing(prob) & !missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=(100-cont)/100), quantile(dobs[dobs>=0], prob=(100-cont)/100))
     }
   }
   

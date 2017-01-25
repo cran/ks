@@ -2,7 +2,7 @@
 \alias{kcopula}
 \alias{kcopula.de}
 
-\title{Kernel copula/copula density estimate}
+\title{Kernel copula (density) estimate}
 \description{
   Kernel copula and copula density estimator for 2-dimensional data.
 }
@@ -10,7 +10,7 @@
 kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned=FALSE, bgridsize, w, verbose=FALSE, marginal="kernel")
 kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
-  eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=FALSE,
+  eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=TRUE,
   approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
 }
 
@@ -25,14 +25,14 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
-  \item{eval.points}{points at which estimate is evaluated}
+  \item{eval.points}{matrix of points at which estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{marginal}{"kernel" = kernel cdf or "empirical" = empirical cdf
     to calculate pseudo-uniform values. Default is "kernel".}
-  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
+  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{boundary.supp}{scaled boundary region is [0, boundary.supp*h]

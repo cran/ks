@@ -39,7 +39,7 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   A kernel ROC curve is an object of class \code{kroc} which is a list
   with fields:
   \item{x}{list of data values \code{x1, x2} - same as input}
-  \item{eval.points}{points at which the estimate is evaluated}
+  \item{eval.points}{vector or list of points at which the estimate is evaluated}
   \item{estimate}{ROC curve estimate at \code{eval.points}}
   \item{gridtype}{"linear"}
   \item{gridded}{flag for estimation on a grid}
@@ -79,10 +79,10 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 }
 
 \references{
-  Duong, T. (2015) Non-parametric smoothed estimation of multivariate
+  Duong, T. (2016) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
   characteristic curves. \emph{Journal of the Korean Statistical
-  Society}. In press. DOI:10.1016/j.jkss.2015.06.002.
+  Society}. \bold{45}, 33-50.
 
   Lloyd, C. (1998) Using smoothed receiver operating curves to summarize
   and compare diagnostic systems. \emph{Journal of the American

@@ -149,7 +149,6 @@ kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.ta
 plot.kcde <- function(x, ...)
 { 
   Fhat <- x
-  opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
   if (is.vector(Fhat$x)) plotkcde.1d(Fhat, ...)
   else
   {
@@ -157,8 +156,10 @@ plot.kcde <- function(x, ...)
 
     if (d==2) 
     {
-      plotret <- plotkcde.2d(Fhat, ...)
-      invisible(plotret)
+        opr <- options()$preferRaster; if (!is.null(opr)) if (!opr) options("preferRaster"=TRUE)
+        plotret <- plotkcde.2d(Fhat, ...)
+        if (!is.null(opr)) options("preferRaster"=opr) 
+        invisible(plotret)
     }
     else if (d==3)
     {
@@ -167,7 +168,6 @@ plot.kcde <- function(x, ...)
     }
     else stop ("kde.plot function only available for 1, 2 or 3-d data")
   }
-  if (!is.null(opr)) options("preferRaster"=opr) 
 }
 
 

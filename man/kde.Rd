@@ -10,7 +10,7 @@
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
-    compute.cont=FALSE, approx.cont=TRUE, unit.interval=FALSE,
+    compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE,
     verbose=FALSE)
 
 \method{predict}{kde}(object, ..., x, zero.flag=TRUE)
@@ -23,13 +23,13 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
-  \item{eval.points}{points at which estimate is evaluated}
+  \item{eval.points}{vector or matrix of points at which estimate is evaluated}
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
-   \item{adj.positive}{adjustment applied to positive 1-d data}
+  \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
-  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is FALSE.}
+  \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{unit.interval}{flag if 1-d data are bounded on unit interval
@@ -48,7 +48,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   A kernel density estimate is an object of class \code{kde} which is a
   list with fields: 
   \item{x}{data points - same as input}
-  \item{eval.points}{points at which the estimate is evaluated}
+  \item{eval.points}{vector or list of points at which the estimate is evaluated}
   \item{estimate}{density estimate at \code{eval.points}}
   \item{h}{scalar bandwidth (1-d only)}
   \item{H}{bandwidth matrix}
@@ -64,18 +64,30 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   For d=1, if \code{h} is missing, the default bandwidth is \code{hpi}.
   For d>1, if \code{H} is missing, the default is \code{Hpi}.
 
-  For d=1, if \code{positive=TRUE} then \code{x<-log(x+adj.positive)}
-  where the default \code{adj.positive} is the minimum of \code{x}.
+  For d=1, if \code{positive=TRUE} then \code{x} is transformed to
+  \code{log(x+adj.positive)} where the default \code{adj.positive} is
+  the minimum of \code{x}. 
   
   For d=1, 2, 3, 4, and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
   defined by \code{gridsize} (if \code{binned=FALSE}) or
-  by \code{bgridsize} (if \code{binned=TRUE}).
-  If \code{eval.points} is specified, then the
-  density estimate is computed exactly at \code{eval.points}.
-  For d>4, the kernel density estimate is computed exactly
-  and \code{eval.points} must be specified.
+  by \code{bgridsize} (if \code{binned=TRUE}). This form is suitable for
+  visualisation in conjuction with the \code{plot} method.
+  
+  --If \code{eval.points} is specified, as a vector (d=1) or 
+  as a matrix (d=2, 3, 4), then the
+  density estimate is computed at \code{eval.points}. This form is
+  suitable for numerical summaries (e.g. maximum likelilood), and is
+  not compatible with the \code{plot} method. 
 
+  --For d>4, computing the kernel
+  density estimate over a grid is not feasible, and so it is computed exactly
+  and \code{eval.points} (as a matrix) must be specified.
+
+  Binned kernel estimation is an approximation to the exact kernel
+  estimation and is available for d=1, 2, 3, 4. This makes
+  kernel estimators feasible for large samples. 
+  
   The default \code{bgridsize,gridsize} are  d=1: 401; d=2: rep(151, 2);
   d=3: rep(51, 3); d=4: rep(21,4).
   

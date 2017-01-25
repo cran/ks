@@ -150,7 +150,7 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
       eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.ns^2*diag(d), inc=1)
 
     A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
-    A2 <- cf[2]*(-1)^(r+2)*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
+    A2 <- cf[2]*(d+2*r+2)*L0*OF(2*r+4)*eta2r6#*(-1)^(r+2)
     A3 <- cf[3]*eta2r6^2
     
     g2r4 <- (2*A1/((-A2+ sqrt(A2^2 +4*A1*A3))*n))^(1/(d+2*r+6))
@@ -1187,7 +1187,7 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, v
   ## stage 1 of plug-in
   if (nstage==1)
   {  
-    G6 <- (2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
+    G6 <- Gns(r=6,n=n,Sigma=S)/2  #(2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
     psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
   }
   else if (nstage==0)

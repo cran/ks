@@ -26,7 +26,7 @@ hns.kcde(x)
 
 
 \value{
-  Full normal scale bandwidth matrix. 
+  Unconstrained normal scale bandwidth matrix. 
 }
 
 \details{
