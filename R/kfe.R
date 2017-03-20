@@ -7,6 +7,7 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deri
 {
   r <- deriv.order
   d <- ncol(x)
+
   psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, kfe=TRUE, add.index=FALSE)
  
  if (add.index)

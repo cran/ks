@@ -547,7 +547,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
 
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  
+
   if (pilot1=="unconstr")
   {
     ## psi4.mat is on data scale

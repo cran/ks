@@ -1,5 +1,10 @@
 Change log file for ks
 
+1.10.6
+-Registered native C routines in src/ks.c.
+-Added kernel mean shift kms().
+-Fixed bug in predict.kdde() for vector x for d>2.
+
 1.10.5
 -Fixed bug in invisible return values for plot.kda(), plot.kcde(), plot.kdde(),
  plot.kde().

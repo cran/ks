@@ -26,7 +26,7 @@
   parameters and its choice is crucial for the performance of kernel
   estimators. For display, its \code{plot} method calls \code{\link{plot.kde}}.
 
-  --For kernel density estimators, there are several varieties of bandwidth selectors 
+  --For kernel density estimation, there are several varieties of bandwidth selectors 
   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
   \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) 
@@ -117,17 +117,29 @@
   \eqn{\hat{F}, \hat{F}_j}{hat(F), hat(F)_j}.
   Its \code{plot} method is \code{\link{plot.kcde}}.
 
-  --For kernel estimation of a copula density, the
-  main function is \code{\link{kcopula.de}}
-  \deqn{\hat{c}(\bold{z}) = n^{-1} \sum_{i=1}^n
-  K_{\bold{{\rm H}}} (\bold{z} - \hat{\bold{Z}}_i)}{hat(c)(z) =
-  hat(f)(z) = n^(-1) sum_i K_H (z - hat(Z)_i)}
-  where \eqn{\hat{\bold{Z}}_i = (\hat{F}_1(X_{i1}), \dots,
-    \hat{F}_d(X_{id}))}{hat(Z)_i = (hat(F)_1(X_i1), \dots, hat(F)_d(X_id))}.
-  The bandwidth selectors are those used with \code{\link{kde}} for
-  \eqn{\hat{c}}{hat(c)} and \code{\link{kcde}} for \eqn{\hat{F}_j}{hat(F)_j}.
-  Its \code{plot} method is \code{\link{plot.kde}}.
+  %--For kernel estimation of a copula density, the
+  %main function is \code{\link{kcopula.de}}
+  %\deqn{\hat{c}(\bold{z}) = n^{-1} \sum_{i=1}^n
+  %K_{\bold{{\rm H}}} (\bold{z} - \hat{\bold{Z}}_i)}{hat(c)(z) =
+  %hat(f)(z) = n^(-1) sum_i K_H (z - hat(Z)_i)}
+  %where \eqn{\hat{\bold{Z}}_i = (\hat{F}_1(X_{i1}), \dots,
+  %  \hat{F}_d(X_{id}))}{hat(Z)_i = (hat(F)_1(X_i1), \dots, hat(F)_d(X_id))}.
+  %The bandwidth selectors are those used with \code{\link{kde}} for
+  %\eqn{\hat{c}}{hat(c)} and \code{\link{kcde}} for \eqn{\hat{F}_j}{hat(F)_j}.
+  %Its \code{plot} method is \code{\link{plot.kde}}.
+
+  --For kernel mean shift clustering, the main function is \code{\link{kms}}. The mean shift recurrence relation of the
+  candidate point \eqn{{\bold x}}{x}
+  \deqn{{\bold x}_{j+1} = {\bold x}_j + \bold{{\rm H}} {\sf D} \hat{f}({\bold
+      x}_j)/\hat{f}({\bold x}_j),}{x_j+1 = x_j + H D hat(f)(x_j)/hat(f)(x_j),}
+  where \eqn{j\geq 0}{j>=0} and \eqn{{\bold x}_0 = {\bold x}}{x_0 = x},
+  is iterated until \eqn{{\bold x}}{x} converges to its
+  local mode in the density estimate \eqn{\hat{f}}{hat(f)} by following
+  the density gradient ascent paths. This mode determines the cluster
+  label for \eqn{\bold{x}}{x}. 
+  The bandwidth selectors are those used with \code{\link{kdde}(,deriv.order=1)}. 
   
+
   --Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. 

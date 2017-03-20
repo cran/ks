@@ -35,7 +35,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   if (binned)
   {
     if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-    
+
     ##if (d>1) { if (!identical(diag(diag(H)), H)) warning("binned estimation for non-diagonal bandwidth matrix H can be inaccurate") }
     
     if (positive & is.vector(x))
@@ -118,8 +118,8 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
       else {h <- sqrt(H); H <- as.matrix(H)}
 
     if (d==1) Hd <- H else Hd <- diag(diag(H))
-    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-    
+    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+
     bin.par <- binning(x=x, H=Hd, h=h, bgridsize, xmin, xmax, supp=3.7+max(r), w=w)
   }
   else
@@ -132,7 +132,6 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
       if (missing(H)) H <- as.matrix(h^2)
       else {h <- sqrt(H); H <- as.matrix(H)}
   }
-
  
   if (d==1)
   {
@@ -216,7 +215,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
       grid2 <- seq(-(L[2]-1), L[2]-1)
       xgrid <- expand.grid(delta[1]*grid1, delta[2]*grid2)
   }
-  else if(d==3)
+  else if (d==3)
   {
      grid1 <- seq(-(L[1]-1), L[1]-1)
      grid2 <- seq(-(L[2]-1), L[2]-1)
@@ -645,7 +644,6 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
     else fhat$gridded <- is.list(fhat$eval.points)
   }
 
-
   if (missing(prob) & missing(cont))
     hts <- pretty(fhat$estimate, n=nlevels) 
   else
@@ -681,8 +679,9 @@ predict.kdde <- function(object, ..., x)
   if (d==1) n <- length(x)
   else
   {
-    x <- as.matrix(x) 
-    n <- nrow(x)
+      if (is.vector(x)) x <- matrix(x, nrow=1)
+      else x <- as.matrix(x)
+      n <- nrow(x)
   }
   
   if (!is.null(fhat$deriv.ind))
@@ -690,14 +689,15 @@ predict.kdde <- function(object, ..., x)
     if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
     else
     {
+     
       nd <- nrow(fhat$deriv.ind)
       pk.mat <- matrix(0, ncol=nd, nrow=n)
       for (i in 1:nd)
-        {
+      {
           fhat.temp <- fhat
           fhat.temp$estimate <- fhat$estimate[[i]]
           pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
-        }
+      }
     }
   }
   else

@@ -202,7 +202,8 @@ grid.interp.1d <- function(x, gridx, f)
    M1 <- length(gpoints1)
    a1 <- gpoints1[1]
    b1 <- gpoints1[M1]
-   out <- .C("interp1d", x1=as.double(x), n=as.integer(n), a1=as.double(a1), b1=as.double(b1), M1=as.integer(M1), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   ##out <- .C("interp1d", x1=as.double(x), n=as.integer(n), a1=as.double(a1), b1=as.double(b1), M1=as.integer(M1), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   out <- .C(C_interp1d, x1=as.double(x), n=as.integer(n), a1=as.double(a1), b1=as.double(b1), M1=as.integer(M1), fun=as.double(as.vector(f)), est=double(n))
    return(out$est)
 }
 
@@ -219,7 +220,8 @@ grid.interp.2d <- function(x, gridx, f)
    b1 <- gpoints1[M1]
    b2 <- gpoints2[M2]
 
-   out <- .C("interp2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   ##out <- .C("interp2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   out <- .C(C_interp2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), fun=as.double(as.vector(f)), est=double(n))
    
    return(out$est)
 }
@@ -240,7 +242,8 @@ grid.interp.3d <- function(x, gridx, f)
    b2 <- gpoints2[M2]
    b3 <- gpoints3[M3]
    
-   out <- .C("interp3d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   ##out <- .C("interp3d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), fun=as.double(as.vector(f)), est=double(n), PACKAGE="ks")
+   out <- .C(C_interp3d, x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), fun=as.double(as.vector(f)), est=double(n))
    
    return(out$est)
 }

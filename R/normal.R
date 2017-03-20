@@ -580,19 +580,17 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
   {
     d <- ncol(Sigma)
     n <- nrow(x)
-    ##if (is.diagonal(Sigma))
-    ##{
-      if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
-      est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, verbose=verbose)$estimate
-      
-      if (r>0)
-      {
+
+    if (missing(bin.par)) bin.par <- binning(x, H=diag(diag(Sigma)), bgridsize=bgridsize)  
+    est <- kdde.binned(x=x, bin.par=bin.par, H=Sigma, deriv.order=r, verbose=verbose)$estimate
+    
+    if (r>0)
+    {
         sumval <- rep(0, length(est))
         for (j in 1:length(est)) sumval[j] <- sum(bin.par$counts * n * est[[j]])
-      }
-      else
+    }
+    else
         sumval <- sum(bin.par$counts * n * est)
-    ##}
     ## transformation approach from Jose E. Chacon 06/12/2010
     if (0)
     {

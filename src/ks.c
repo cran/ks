@@ -1,10 +1,14 @@
 #include <stdlib.h>
+#include <R.h>
+#include <Rdefines.h>
 #include <math.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 #include <R_ext/Arith.h>
 #include <R_ext/Applic.h>
+#include <R_ext/Rdynload.h>
+#include <R_ext/Visibility.h>
 
 /* Multivariate linear binning functions 
    translated from the Fortran code of M. Wand & T.Duong in ks < 1.8.0
@@ -28,14 +32,15 @@ void massdist4d(double *x1, double *x2,	double *x3, double *x4, int *n,
 		double *b1, double *b2, double *b3, double *b4, 
 		int *M1, int *M2, int *M3, int *M4, double *weight, double *est);
 
-void interp1d(double *x1, int *n, double *a1, double *b1, int *M1,
+void interp1d(double *x1, int *n, 
+              double *a1, double *b1, int *M1,
               double *fun, double *est);
 
-void interp2d(double *x1, double *x2,	int *n, 
+void interp2d(double *x1, double *x2, int *n, 
 	      double *a1, double *a2, double *b1, double *b2,
 	      int *M1, int *M2, double *fun, double *est);
 
-void interp3d(double *x1, double *x2,	double *x3, int *n, 
+void interp3d(double *x1, double *x2, double *x3, int *n, 
 	      double *a1, double *a2, double *a3, 
 	      double *b1, double *b2, double *b3,
               int *M1, int *M2, int *M3, double *fun, double *est);
@@ -384,7 +389,7 @@ void massdist4d(double *x1, double *x2,	double *x3, double *x4, int *n,
 void interp1d(double *x1, int *n, double *a1, double *b1, int *M1,
               double *fun, double *est)
 { 
-  double fx1, wi, xdelta1, xpos1;   
+  double fx1, xdelta1, xpos1;   
   int i, ix1, ixmax1, ixmin1, MM1;
 
   MM1 = M1[0];
@@ -420,7 +425,7 @@ void interp2d(double *x1, double *x2,	int *n,
 	      double *a1, double *a2, double *b1, double *b2,
 	      int *M1, int *M2, double *fun, double *est)
 {
-  double fx1, fx2, wi, xdelta1, xdelta2, xpos1, xpos2;   
+  double fx1, fx2, xdelta1, xdelta2, xpos1, xpos2;   
   int i, ix1, ix2, ixmax1, ixmin1, ixmax2, ixmin2, MM1, MM2;
   
   MM1 = M1[0];
@@ -550,4 +555,42 @@ void interp3d(double *x1, double *x2,	double *x3, int *n,
       }
     }
   }
+}
+
+
+/* Registration of native routines added 17/03/2017 */
+
+static R_NativePrimitiveArgType md1_t[] = {
+  REALSXP, INTSXP, REALSXP, REALSXP, INTSXP, REALSXP, REALSXP
+};
+
+static R_NativePrimitiveArgType md2_t[] = {
+  REALSXP, REALSXP, INTSXP, REALSXP, REALSXP, REALSXP, REALSXP, INTSXP, INTSXP, REALSXP, REALSXP
+};
+
+static R_NativePrimitiveArgType md3_t[] = {
+  REALSXP, REALSXP, REALSXP, INTSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, INTSXP, INTSXP, INTSXP, REALSXP, REALSXP
+};
+
+static R_NativePrimitiveArgType md4_t[] = {
+  REALSXP, REALSXP, REALSXP, REALSXP, INTSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, INTSXP, INTSXP, INTSXP, INTSXP, REALSXP, REALSXP
+};
+
+const static R_CMethodDef cMethods[] = {
+  {"massdist1d", (DL_FUNC) &massdist1d, 7,  md1_t},
+  {"massdist2d", (DL_FUNC) &massdist2d, 11, md2_t},
+  {"massdist3d", (DL_FUNC) &massdist3d, 15, md3_t},
+  {"massdist4d", (DL_FUNC) &massdist4d, 19, md4_t},
+  {"interp1d", (DL_FUNC) &interp1d, 7,  md1_t},
+  {"interp2d", (DL_FUNC) &interp2d, 11, md2_t},
+  {"interp3d", (DL_FUNC) &interp3d, 15, md3_t},
+  {NULL, NULL, 0}
+};
+
+
+void attribute_visible R_init_ks(DllInfo *info)
+{
+  R_registerRoutines(info, cMethods, NULL, NULL, NULL);
+  R_useDynamicSymbols(info, FALSE);
+  R_forceSymbols(info, TRUE); 	
 }
