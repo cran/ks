@@ -9,7 +9,7 @@
 \usage{
 kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, 
    bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05,
-   min.ESS)
+   min.ESS, xmin, xmax)
 }
 
 \arguments{
@@ -23,7 +23,8 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE,
   \item{supp}{effective support for normal kernel}
   \item{mean.adj}{flag to compute second order correction for mean value of critical sampling distribution. Default is FALSE. Currently implemented for d<=2 only.}
   \item{signif.level}{significance level. Default is 0.05.}
-  \item{min.ESS}{minimum effective sample size. See below for details.}  
+  \item{min.ESS}{minimum effective sample size. See below for details.}
+  \item{xmin,xmax}{vector of minimum/maximum values for grid} 
 }
 
 \value{

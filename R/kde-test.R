@@ -140,7 +140,7 @@ hochberg.mult.test <- function(pvalue, gridsize, signif.level)
 
 ### 1-d local test
 
-kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS)
+kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
   if (missing(h1) & !missing(x1)) h1 <- hpi(x1, nstage=2, binned=binned, bgridsize=bgridsize)
   if (missing(h2) & !missing(x2)) h2 <- hpi(x2, nstage=2, binned=binned, bgridsize=bgridsize)
@@ -151,9 +151,9 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
     n2 <- length(x2)
     d <- 1 
     RK <- (4*pi)^(-d/2)
-    xrange <- range(rbind(x1,x2))
-    xmin <- xrange[1] - supp*sqrt(h1*h2)
-    xmax <- xrange[2] + supp*sqrt(h1*h2)
+    xrange <- range(c(x1,x2))
+    if (missing(xmin)) xmin <- xrange[1] - supp*sqrt(h1*h2)
+    if (missing(xmax)) xmax <- xrange[2] + supp*sqrt(h1*h2)
   }
   else
   {
@@ -209,9 +209,9 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
 
 ### multivariate local test
 
-kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS)
+kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
-  if (is.vector(x1) & is.vector(x2)) {return(kde.local.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, fhat1=fhat1, fhat2=fhat2, gridsize=gridsize, binned=binned, bgridsize=bgridsize, verbose=verbose, supp=supp, mean.adj=mean.adj))}
+  if (is.vector(x1) & is.vector(x2)) {return(kde.local.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, fhat1=fhat1, fhat2=fhat2, gridsize=gridsize, binned=binned, bgridsize=bgridsize, verbose=verbose, supp=supp, mean.adj=mean.adj, xmin=xmin, xmax=xmax))}
 
   if (missing(H1) & !missing(x1)) H1 <- Hpi(x=x1, deriv.order=0, binned=default.bflag(d=ncol(x1), n=nrow(x1)), bgridsize=bgridsize, verbose=verbose)
   if (missing(H2) & !missing(x2)) H2 <- Hpi(x=x2, deriv.order=0, binned=default.bflag(d=ncol(x2), n=nrow(x2)), bgridsize=bgridsize, verbose=verbose)
@@ -222,9 +222,10 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
     n2 <- nrow(x2)
     d <- ncol(x1)
     RK <- (4*pi)^(-d/2)
+   
     xrange <- apply(rbind(x1,x2), 2, range)
-    xmin <- xrange[1,] - supp*sqrt(det(H1)*det(H2))
-    xmax <- xrange[2,] + supp*sqrt(det(H1)*det(H2))
+    if (missing(xmin)) xmin <- xrange[1,] - supp*sqrt(det(H1)*det(H2))
+    if (missing(xmax)) xmax <- xrange[2,] + supp*sqrt(det(H1)*det(H2))
   }
   else
   {
@@ -304,8 +305,9 @@ plot.kde.loctest <- function(x, ...)
 }
 
 
-plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab="x", ylab, rugsize, add.legend=TRUE, pos.legend="topright", ...)
+plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add.legend=TRUE, pos.legend="topright", ...)
 {
+  if (missing(xlab)) xlab <- x$fhat.diff.pos$names[1]
   if (missing(ylab)) ylab <- expression("Density difference  "*f[1]-f[2])
   if (missing(col)) col <- c("purple", "darkgreen")
   if (missing(lcol)) lcol <- 1
@@ -318,30 +320,24 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab="x", ylab, rugsize,
    image(x$fhat.diff.pos$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.pos$estimate==1, x$fhat.diff.pos$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[1]), ...)
    image(x$fhat.diff.neg$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.neg$estimate==1, x$fhat.diff.neg$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[2]), ...)
      
-   if (add.legend)  legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n") 
+   if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n") 
 }
 
 
-plotkde.loctest.2d <- function(x, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, add.legend=TRUE, pos.legend="topright", ...)
+plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", ...)
 { 
-  if (!add) plot(x$fhat1$eval.points[[1]], x$fhat1$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
-  if (missing(col)) col <- c("purple", "darkgreen")
-  plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=TRUE, ...)
-  plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=TRUE, ...)
+    if (missing(col)) col <- c("purple", "darkgreen")
+    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=add, ...)
+    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=TRUE, ...)
      
-  if (add.contour)
-  {
-     plot(x$fhat.diff.pos, abs.cont=0.5, drawlabel=FALSE, disp="slice", add=TRUE, ...)
-     plot(x$fhat.diff.neg, abs.cont=0.5, drawlabel=FALSE, disp="slice", add=TRUE, ...)
-  }
-  if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n", ...)  
+    if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n")  
 }
 
 
-plotkde.loctest.3d <- function(x, col, add=FALSE, xlab="x", ylab="y", zlab="z", box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), ...)
+plotkde.loctest.3d <- function(x, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), ...)
 {
   if (length(alphavec)==1) alphavec <- rep(alphavec,2)
-  if (missing(col)) col <- c("purple", "darkgreen")
-  plot(x$fhat.diff.pos, col=col[1], abs.cont=0.5, add=add, xlab=xlab, ylab=ylab, zlab=zlab, box=FALSE, axes=FALSE, alphavec=alphavec[1], ...)
-  plot(x$fhat.diff.neg, col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
+  if (missing(color)) color <- c("purple", "darkgreen")
+  plot(x$fhat.diff.pos, color=color[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1], ...)
+  plot(x$fhat.diff.neg, color=color[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
 }

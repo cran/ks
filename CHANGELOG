@@ -1,5 +1,15 @@
 Change log file for ks
 
+1.10.7
+-Changed mvtnorm from `Depends' to `Imports' in DESCRIPTION.
+-Implemented per-block caluction for large sampl sizes in kdde(, binned=TRUE).
+-Fixed small in col.fun for plot.kcde(, display="filled.contour2")
+-Swapped order of computation of CDFs in kroc to prevent possible segmentation
+faults.
+-Fixed bug in default bandwidth for kcde().
+-Fixed bug in default estimation grid limits for kda.nd().
+-Corrected formulas for scalar pilots in gdscalar() to match those in bok.
+
 1.10.6
 -Registered native C routines in src/ks.c.
 -Added kernel mean shift kms().

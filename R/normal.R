@@ -567,8 +567,6 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRU
 ## Double sum at x
 ##############################################################################
 
-
-
 dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, verbose=FALSE)
 {
   r <- deriv.order
@@ -1547,7 +1545,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, grid
 
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
-  xy <- permute(list(x, y))
+  xy <- expand.grid(x, y)
   d <- ncol(Sigmas)
  
   if (dist1=="normal")
@@ -1621,7 +1619,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
   x <- seq(xlim[1], xlim[2], length=gridsize[1])
   y <- seq(ylim[1], ylim[2], length=gridsize[2])
   z <- seq(zlim[1], zlim[2], length=gridsize[3])
-  xy <- permute(list(x,y))
+  xy <- expand.grid(x,y)
 
   if (deriv.order>0)
   {

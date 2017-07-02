@@ -50,8 +50,8 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
   \item{amise}{flag to return the minimal scaled PI value}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or
-    \code{\link{optim}}}
+  \item{optim.fun}{optimiser function: one of \code{nlm} or
+    \code{optim}}
   \item{object}{object of class \code{kcde}}
   \item{...}{other parameters} 
 }

@@ -211,7 +211,7 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   d <- ncol(x)
   n <- nrow(x)
 
-  warning("kcopula.de is not as reliable as kdecop in the kdecopula package.")
+  warning("Use kcopula.de with care as it can be less accurate than kdecop in the kdecopula package.")
   
   if (!missing(w))
     if (!(identical(all.equal(sum(w), n), TRUE)))
@@ -502,7 +502,7 @@ kde.boundary.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
       ## interior points - use normal kernel
       if (!bound.ind[i])
       {
-        eval.pts <- permute(list(eval.x, eval.y))
+        eval.pts <- expand.grid(eval.x, eval.y)
         fhat <- dmvnorm(eval.pts, x.star[i,], H.star)
       }
       else
@@ -580,7 +580,7 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
         eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
         eval.z.ind <- c(grid.pts$xmin[i,3]:grid.pts$xmax[i,3])
         eval.x.len <- length(eval.x)
-        eval.pts <- permute(list(eval.x, eval.y))
+        eval.pts <- expand.grid(eval.x, eval.y)
         
         ## convert bandwidth from normal kernel to beta kernel scale
         ## for boundary points 
@@ -613,12 +613,11 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
       eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
       eval.z.ind <- c(grid.pts$xmin[i,3]:grid.pts$xmax[i,3])
       eval.x.len <- length(eval.x)
-      eval.pts <- permute(list(eval.x, eval.y))
+      eval.pts <- expand.grid(eval.x, eval.y)
       
       ## interior points - use normal kernel
       if (!bound.ind[i])
       {
-        eval.pts <- permute(list(eval.x, eval.y))
         ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
         
         for (k in 1:length(eval.z))

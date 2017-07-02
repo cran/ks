@@ -34,12 +34,13 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     if (missing(h)) h <- hpi.kcde(x=x, binned=default.bflag(d=d, n=n))
     Fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
     diffe <- abs(diff(Fhat$eval.points))
+    
     if (tail.flag1=="lower.tail") Fhat$estimate <- c(0, diffe) * cumsum(Fhat$estimate)
     else Fhat$estimate <- c(diffe[1], diffe) * (sum(Fhat$estimate) - cumsum(Fhat$estimate))
   }
   else if (d==2)
   {
-    if (missing(H)) Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
+    if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
    
     Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
     diffe1 <- abs(diff(Fhat$eval.points[[1]]))
@@ -60,12 +61,13 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   else if (d==3)
   {
-     if (missing(H)) Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
-     Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
-    Fhat.temp <- Fhat$estimate
-    diffe1 <- abs(diff(Fhat$eval.points[[1]]))
-    diffe2 <- abs(diff(Fhat$eval.points[[2]]))
-    diffe3 <- abs(diff(Fhat$eval.points[[3]]))
+      if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
+
+      Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
+      Fhat.temp <- Fhat$estimate
+      diffe1 <- abs(diff(Fhat$eval.points[[1]]))
+      diffe2 <- abs(diff(Fhat$eval.points[[2]]))
+      diffe3 <- abs(diff(Fhat$eval.points[[3]]))
     if (tail.flag1=="lower.tail")
     {
       for (i in 1:dim(Fhat$estimate)[3])
@@ -249,6 +251,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
   else if (disp1=="filled.contour" | disp1=="filled.contour2") 
   {
     hts <- cont/100
+    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
     clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
     
@@ -560,10 +563,16 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   }
   else
   {
-    if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1), verbose=verbose)
-    Fhatx1 <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, tail.flag="upper.tail", verbose=verbose)
+      if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1), verbose=verbose)
+      ##x1x2min <- pmin(apply(x1,2,min), apply(x2,2,min))
+      ##x1x2max <- pmax(apply(x1,2,max), apply(x2,2,max))
+      ##browser()
+      ##if (missing(xmin)) xmin <- x1x2min - 3.7*max(sqrt(abs(H1)))
+      ##if (missing(xmax)) xmax <- x1x2max + 3.7*max(sqrt(abs(H1)))
+      Fhatx1 <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, tail.flag="upper.tail", verbose=verbose)
   }
 
+  
   ## transform from [0,1] to reals
   y1 <- predict(Fhatx1, x=x1)
   y2 <- predict(Fhatx1, x=x2)
@@ -571,8 +580,11 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   y2 <- qnorm(y2[y2>0])
 
   if (missing(hy)) hy <- hpi.kcde(y2, binned=default.bflag(d=1, n=n1))
-  Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE)
-  Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, eval.points=Fhaty1$eval.points)
+  Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
+  Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
+  ##Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, eval.points=Fhaty2$eval.points)
+  ##Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
+  ##Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, eval.points=Fhaty1$eval.points)
   Fhaty1$eval.points <- pnorm(Fhaty1$eval.points)
   Fhaty2$eval.points <- pnorm(Fhaty2$eval.points)
 
@@ -581,12 +593,13 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   Rhat$estimate <- Fhaty2$estimate
   if (d==1) {Rhat$h1 <- h1; Rhat$H1 <- h1^2; Rhat$hy <- hy}
   else {Rhat$H1 <- H1; Rhat$hy <- hy}
-
+  
   ## Use spline to smooth out transformed ROC curve
-  Rhat.smoothed <- smooth.spline(Rhat$eval.points, Rhat$estimate)
+  Rhat.smoothed <- smooth.spline(Rhat$eval.points, Rhat$estimate, spar=0.5)
   Rhat.smoothed <- predict(Rhat.smoothed, x=seq(0,1,length=length(Rhat$eval.points))) 
   Rhat$eval.points <- Rhat.smoothed$x
   Rhat$estimate <- Rhat.smoothed$y
+  
   ## add (0,0) and (1,1) as endpoints
   if (head(Rhat$eval.points, n=1)!=0) Rhat$eval.points[1] <- 0
   if (head(Rhat$estimate, n=1)!=0) Rhat$estimate[1] <- 0

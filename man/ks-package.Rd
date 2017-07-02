@@ -138,8 +138,27 @@
   the density gradient ascent paths. This mode determines the cluster
   label for \eqn{\bold{x}}{x}. 
   The bandwidth selectors are those used with \code{\link{kdde}(,deriv.order=1)}. 
-  
 
+  -- For kernel feature significance, the main function
+     \code{\link{kfs}}.  The hypothesis test at a point \eqn{\bold{x}}{x} is
+  \eqn{H_0(\bold{x}): \mathsf{H} f(\bold{x}) < 0}{H0(x): H f(x) < 0},
+     i.e. the density Hessian matrix \eqn{\mathsf{H} f(\bold{x})}{H f(x)} is negative definite.
+  The test statistic is  
+  \deqn{W(\bold{x}) = \Vert 
+    \mathbf{S}(\bold{x})^{-1/2} \mathrm{vech} \ \mathsf{H} \hat{f} (\bold{x})\Vert ^2}{%
+    W(x) = ||S(x)^(-1/2) vech H hat{f}(x)||^2}
+  where \eqn{{\sf H}\hat{f}}{H hat{f}} is the
+  Hessian estimate, vech is the vector-half operator, and
+  \eqn{\mathbf{S}}{S} is an estimate of the null variance.
+  \eqn{W(\bold{x})}{W(x)} is
+  approximately \eqn{\chi^2}{chi-squared} distributed with
+     \eqn{d(d+1)/2}{d(d+1)/2} degrees of freedom.
+  If \eqn{H_0(\bold{x})}{H0(x)} is rejected, then \eqn{\bold{x}}{x}
+  belongs to a significant modal region.
+  The bandwidth selectors are those used with
+     \code{\link{kdde}(,deriv.order=2)}. Its \code{plot} method is
+     \code{\link{plot.kfs}}.
+     
   --Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. 
@@ -151,10 +170,10 @@
   Tarn Duong for most of the package. 
   M.P. Wand for the binned estimation, univariate plug-in selector
   and univariate density derivative estimator code.
-  Jose E. Chacon for the unconstrained pilot
+  J. E. Chacon for the unconstrained pilot
   functional estimation and fast implementation of derivative-based
   estimation code.
-  Artur and Jaroslaw Gramacki for the binned estimation for
+  A. and J. Gramacki for the binned estimation for
   unconstrained bandwidth matrices. 
 }
 
@@ -172,7 +191,7 @@
   Data Analysis}. Chapman & Hall/CRC, London.
 
   Simonoff, J. S. (1996) \emph{Smoothing Methods in Statistics}.
-  Springer-Verlag. New York.
+  Springer-Verlag, New York.
 
   Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing}. Chapman &
   Hall/CRC, London.
@@ -180,6 +199,6 @@
 
 \keyword{package}
 
-\seealso{\code{sm}, \code{KernSmooth}
+\seealso{\pkg{feature}, \pkg{sm}, \pkg{KernSmooth}
 }
 

@@ -34,7 +34,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   \item{amise}{flag to return the minimal scaled PI value}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
+  \item{optim.fun}{optimiser function: one of \code{nlm} or \code{optim}}
 }
 
 \value{

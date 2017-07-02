@@ -531,7 +531,7 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     eval.x.ind <- c(grid.pts$xmin[i,1]:grid.pts$xmax[i,1])
     eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
     eval.x.len <- length(eval.x)
-    eval.pts <- permute(list(eval.x, eval.y))
+    eval.pts <- expand.grid(eval.x, eval.y)
     fhat <- dmvnorm(eval.pts, x[i,], H)
     
     ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
@@ -593,7 +593,7 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
     eval.z.ind <- c(grid.pts$xmin[i,3]:grid.pts$xmax[i,3])
     eval.x.len <- length(eval.x)
-    eval.pts <- permute(list(eval.x, eval.y))
+    eval.pts <- expand.grid(eval.x, eval.y)
    
     ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
 
@@ -787,7 +787,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
-    hts <- seq(0, 1.1*max(fhat$estimate), length=500)
+    hts <- seq(0, 1.1*max(fhat$estimate,na.rm=TRUE), length=500)
     if (missing(col)) col <- topo.colors(length(hts)+1, alpha=0.5)
     if (!missing(col.fun)) col <- col.fun(length(hts)+1)
     if (length(col)<length(hts)) col <- rep(col, length=length(hts))
@@ -970,8 +970,7 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
     plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)  
-    ##plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, alpha=0, ...)
-  
+    
   for (i in 1:nc)
     if (hts[nc-i+1] < max(fhat$estimate))
       contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)

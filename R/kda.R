@@ -455,9 +455,9 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
       detH[j] <- det(Hs[((j-1)*d+1) : (j*d),])  
   Hmax.ind <- which.max(detH)
   Hmax <- Hs[((Hmax.ind-1)*d+1) : (Hmax.ind*d),]
-  
-  if (missing(xmin)) xmin <- apply(x, 2, min) - supp*4*max(sqrt(diag(Hmax)))
-  if (missing(xmax)) xmax <- apply(x, 2, max) + supp*4*max(sqrt(diag(Hmax)))
+  ##Hmax <- Hns(x) 
+  if (missing(xmin)) xmin <- apply(x, 2, min) - supp*max(sqrt(diag(Hmax)))
+  if (missing(xmax)) xmax <- apply(x, 2, max) + supp*max(sqrt(diag(Hmax)))
   if (missing(w)) w <- rep(1, nrow(x))
   
   if (binned & d > 4) stop("Binning only available for 1- to 4-d data")
@@ -585,9 +585,7 @@ plot.kda <- function(x, y, y.group, ...)
 plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", ylab="Weighted density function", drawpoints=FALSE, col, col.part, col.pt, lty, jitter=TRUE, rugsize, ...)
 { 
   fhat <- x
-  
   m <- length(fhat$x)
-  ##eval1 <- fhat$eval.points
   
   if (is.null(prior.prob))
     prior.prob <- fhat$prior.prob
@@ -619,7 +617,7 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
       lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
 
   ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
-  ydata.gr <- unique(fhat$x.group)[apply(weighted.fhat,1, which.max)] ##kda(unlist(fhat$x), binned=FALSE, x.group=fhat$x.group, hs=fhat$h, eval.points=ydata, prior.prob=fhat$prior.prob, kde.flag=FALSE)$x.group.estimate
+  ydata.gr <- unique(fhat$x.group)[apply(weighted.fhat,1, which.max)] 
 
   ## draw partition class as rug-like plot
  

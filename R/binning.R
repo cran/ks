@@ -18,7 +18,7 @@ default.bgridsize <- function(d)
   else if (d==2) gridsize <- rep(151,d)
   else if (d==3) gridsize <- rep(31, d)
   else if (d==4) gridsize <- rep(11, d)
-  else  gridsize <- NA
+  else gridsize <- NA
   
   return(gridsize)
 }
@@ -122,7 +122,7 @@ linbin2D.ks <- function(x, gpoints1, gpoints2, w)
    ## binning for interior points
    ##out <- .C("massdist2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2), PACKAGE="ks")
    out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
-   xi <- matrix(out$est, nrow=M1, ncol=M2)   
+   xi <- matrix(out$est, nrow=M1, ncol=M2)
    return(xi)
 }
 

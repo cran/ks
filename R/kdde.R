@@ -28,7 +28,8 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize, deriv.order=r)
   if (missing(H) & d>1)
   {
-    H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, deriv.order=r, verbose=verbose)
+      if (r==0) nstage=2 else if (r>0) nstage <- 2-(d>2)
+      H <- Hpi(x=x, nstage=nstage, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, deriv.order=r, verbose=verbose)
   }
   
   ## compute binned estimator
@@ -197,16 +198,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
   L <- pmin(ceiling((4+r)*max(sqrt(abs(diag(H))))*(M-1)/(b-a)), M-1)
   delta <- (b-a)/(M-1)
   N <- 2*L-1 
-
-  ##supp <- 3.7 
-  ##L <- numeric(2)
-  ##delta <- c(0, 0)
-  #eig <- eigen(H)
-  #for (i in 1:2) {
-  #    delta[i] <- (b[i] - a[i]) / (M[i] - 1)
-  #    if (all(H[!diag(nrow(H))] == 0)) L[i] <- min(abs(floor(supp*sqrt(eig$values[i])/delta[i])), M[i]-1)
-  #    else  L[i] <- min(abs(floor(supp*sqrt(max(eig$values))*eig$vectors[i,1] / delta[i])), M[i] - 1)
-  #}
+  
   if (min(L)==0) warning("Binning grid too coarse for current (small) bandwidth: consider increasing gridsize")
 
   if(d==2)
@@ -231,48 +223,72 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
      xgrid <- expand.grid(delta[1]*grid1, delta[2]*grid2, delta[3]*grid3, delta[4]*grid4)
   }
   
-  ##if (d==2) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2])
-  ##if (d==3) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3])
-  ##if (d==4) xgrid <- expand.grid((b[1]-a[1])*(0:L[1])/M[1], (b[2]-a[2])*(0:L[2])/M[2], (b[3]-a[3])*(0:L[3])/M[3], (b[4]-a[4])*(0:L[4])/M[4])
-  
   deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=FALSE)
 
-  keval <- dmvnorm.deriv(x=xgrid, mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, deriv.vec=FALSE)
-  keval <- keval$deriv/n
-  if (r==0) keval <- as.matrix(keval, ncol=1)
-  est <- list()
-  if (verbose) pb <- txtProgressBar() 
+  if (verbose) pb <- txtProgressBar()
 
-  ## loop over only unique partial derivative indices
-  nderiv <- nrow(deriv.index.minimal)
-  if (!(is.null(nderiv)))
-    for (s in 1:nderiv)
-    {
-      if (deriv.vec) deriv.rep.index <- which.mat(deriv.index.minimal[s,], deriv.index)
-      else deriv.rep.index <- s
-      kevals <- array(keval[,s], dim=N)
-      if (r==0) sf <- rep(1,d)
-      else sf <- (-1)^deriv.index.minimal[s,]
-      est.temp <- symconv.nd(kevals, bin.par$counts, d=d)
-      for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp ##zapsmall(est.temp)
-      if (verbose) setTxtProgressBar(pb, s/nderiv)
-    }
-  else
+  if (r==0)
   {
-    for (s in 1:ncol(keval))
-    {  
-      kevals <- array(keval[,s], dim=N)
-      if (r==0) sf <- rep(1,d)
-      else sf <- (-1)^deriv.index[s,]
-      est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-      ##est[[s]] <- zapsmall(est[[s]])
-      if (verbose) setTxtProgressBar(pb, s/ncol(keval))
-    }
+      n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE)
+      est.list <- vector(1, mode="list")
+      est.list[[1]] <- array(0, dim=dim(bin.par$counts))
+  }
+  else if (r>0)
+  {
+      n.deriv <- nrow(deriv.index)
+      n.deriv.minimal <- nrow(deriv.index.minimal)
+      if (deriv.vec) n.est.list <- n.deriv else n.est.list <- n.deriv.minimal
+      est.list <- vector(n.est.list, mode="list")
+      
+      for (j in 1:n.est.list) est.list[[j]] <- array(0, dim=dim(bin.par$counts))
+      n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE, block.limit=1e6/n.deriv.minimal)
+  }
+    
+  for (i in 1:(length(n.seq)-1))
+  {  
+      ##difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
+      ##sumval <- sumval + sum(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec))
+      if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
+      
+      keval <- dmvnorm.deriv(x=xgrid[n.seq[i]:(n.seq[i+1]-1),], mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, deriv.vec=FALSE)
+      keval <- keval$deriv/n
+      if (r==0) keval <- as.matrix(keval, ncol=1)
+      est <- list()
+      
+      ## loop over only unique partial derivative indices
+      nderiv <- nrow(deriv.index.minimal)
+      if (!(is.null(nderiv)))
+          for (s in 1:nderiv)
+          {
+              if (deriv.vec) deriv.rep.index <- which.mat(deriv.index.minimal[s,], deriv.index)
+              else deriv.rep.index <- s
+              kevals <- array(keval[,s], dim=N)
+              if (r==0) sf <- rep(1,d)
+              else sf <- (-1)^deriv.index.minimal[s,]
+              est.temp <- symconv.nd(kevals, bin.par$counts, d=d)
+              for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp 
+              ##if (verbose) setTxtProgressBar(pb, s/nderiv)
+          }
+      else
+      {
+          for (s in 1:ncol(keval))
+          {  
+              kevals <- array(keval[,s], dim=N)
+              if (r==0) sf <- rep(1,d)
+              else sf <- (-1)^deriv.index[s,]
+              est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
+              ##est[[s]] <- zapsmall(est[[s]])
+              ##if (verbose) setTxtProgressBar(pb, s/ncol(keval))
+          }
+      }
+
+      if (r==0) est.list[[1]] <- est.list[[1]] + est[[1]]
+      else if (r>0) for (j in 1:n.est.list) est.list[[j]] <- est.list[[j]] + est[[j]]  
   }
   if (verbose) close(pb)
  
-  return(list(eval.points=bin.par$eval.points, estimate=est, deriv.order=r))
+  return(list(eval.points=bin.par$eval.points, estimate=est.list, deriv.order=r))
 }
 
 
@@ -350,7 +366,7 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
       eval.x.ind <- c(grid.pts$xmin[i,1]:grid.pts$xmax[i,1])
       eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
       eval.x.len <- length(eval.x)
-      eval.pts <- permute(list(eval.x, eval.y))
+      eval.pts <- expand.grid(eval.x, eval.y)
 
       ## Create list of matrices for different partial derivatives
       fhat <- dmvnorm.deriv(x=eval.pts, mu=x[i,], Sigma=H, deriv.order=r)
@@ -422,7 +438,7 @@ kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
       eval.y.ind <- c(grid.pts$xmin[i,2]:grid.pts$xmax[i,2])
       eval.z.ind <- c(grid.pts$xmin[i,3]:grid.pts$xmax[i,3])
       eval.x.len <- length(eval.x)
-      eval.pts <- permute(list(eval.x, eval.y))
+      eval.pts <- expand.grid(eval.x, eval.y)
 
       ## Create list of matrices for different partial derivatives
       ##fhat <- dmvnorm.deriv(x=eval.pts, mu=x[i,], Sigma=H, deriv.order=r)

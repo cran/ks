@@ -10,7 +10,7 @@
 
 \title{Kernel discriminant analysis}
 \description{
-  Kernel discriminant analysis for 1- to 6-dimensional data.
+  Kernel discriminant analysis for 1- to d-dimensional data.
 }
 \usage{
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
@@ -61,8 +61,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 }
 
 \value{
-  --A kernel discriminant analysis is an object of class \code{kda}
-  which is a list with fields 
+  --For \code{kde.flag=TRUE}, a kernel discriminant analysis is an object of class \code{kda} which is a list with fields
   \item{x}{list of data points, one for each group label}
   \item{estimate}{list of density estimates at \code{eval.points}, one for each group label}  
   \item{eval.points}{vector or list of points that the estimate is evaluated at, one
@@ -77,7 +76,9 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{x.group.estimate}{estimated group labels. If the test data
     \code{eval.points} are given then these are classified. Otherwise
     the training data \code{x} are classified.}
- 
+  For \code{kde.flag=FALSE}, which is always the case for \eqn{d>3}{d>3},
+  then only the vector of estimated group labels is returned. 
+  
   --The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
   of bandwidth matrices, one for each training data group. The result
   from \code{hkda} is a vector of bandwidths, one for each training group.  

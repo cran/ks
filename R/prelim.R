@@ -23,7 +23,6 @@ parse.name <-function(x)
 }
 
 
-
 #############################################################################
 ## Basic vectors and matrices and their operations
 #############################################################################
@@ -793,3 +792,5 @@ Lpdiff <- function(f1, f2, p=2, index=1)
   
   return(riemann.sum)
 }
+
+

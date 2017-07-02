@@ -132,30 +132,64 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 
 gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
 {
-  if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
-  else cf <- c(1,1,1)
-  if (nstage==1)
-  {
-    G2r4 <- Gns(r=2*r+4,n=n,Sigma=var(x))
-    g2r4 <- prod(sqrt(diag(G2r4)))^(1/d) ##sqrt(G2r4[1,1])
-  }
-  else if (nstage==2)
-  {
-    G2r6.NS <- Gns(r=2*r+6,n=n,Sigma=var(x))
-    g2r6.ns <- prod(sqrt(diag(G2r6.NS)))^(1/d) 
-    L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
-    if (binned)
-      eta2r6 <- drop(kfe(x=x, G=g2r6.ns^2*diag(d), inc=1, binned=binned, deriv.order=2*r+6, add.index=FALSE, verbose=verbose) %*% vec(diag(d^(r+3))))
-    else
-      eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.ns^2*diag(d), inc=1)
-
-    A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
-    A2 <- cf[2]*(d+2*r+2)*L0*OF(2*r+4)*eta2r6#*(-1)^(r+2)
-    A3 <- cf[3]*eta2r6^2
+    if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
+    else cf <- c(1,1,1)
+    S <- var(x)
+    Sinv <- chol2inv(chol(S))
     
-    g2r4 <- (2*A1/((-A2+ sqrt(A2^2 +4*A1*A3))*n))^(1/(d+2*r+6))
-  }
-  return(g2r4)
+    if (nstage==1)
+    {
+        ##G2r4 <- Gns(r=2*r+4,n=n,Sigma=var(x))
+        ##g2r4 <- prod(sqrt(diag(G2r4)))^(1/d) ##sqrt(G2r4[1,1])
+
+        psi2r6.ns <- psins(r=2*r+6, Sigma=S)
+        B3 <- sum(psi2r6.ns^2)  ## approx to reduce memopry usage
+        ##B3 <- drop(psi2r6.ns %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^(2*r+4))) %*% psi2r6.ns) 
+        if (!scv)
+        {
+            B1 <- 2*(2*pi)^(-d)*OF(2*r+4)*prod(d+2*(0:(r+2)))  
+            B2 <- -(d+2*r+2)*2^(-d/2-r)*(2*pi)^(-d)*det(S)^(-1/2)*OF(2*r+4)*nu(r=r+2, A=Sinv)
+        }
+        else
+        {
+            B1 <- 2^(-2*r-3)*(4*pi)^(-d)*OF(2*r+6)*prod(d+2*(0:(r+2)))
+            B2 <- -(d+2*r+2)*2^(-2*r-4)*(4*pi)^(-d)*det(S)^(-1/2)*OF(2*r+4)*nu(r=r+2, A=Sinv)
+            B3 <- 4*B3
+        }
+        g2r4 <- (2*B1/(-B2 + sqrt(B2^2 + 4*B1*B3)))^(1/(d+2*r+8))*n^(-1/(d+2*r+8))
+    }
+    else if (nstage==2)
+    {
+        ##G2r6.NS <- Gns(r=2*r+6,n=n,Sigma=var(x))
+        ##g2r6.ns <- prod(sqrt(diag(G2r6.NS)))^(1/d)
+        psi2r8.ns <- psins(r=2*r+8, Sigma=S)
+        ##B3 <- sum(psi2r8.ns^2)
+        B3 <- drop(psi2r8.ns %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^(2*r+6))) %*% psi2r8.ns) 
+        if (!scv)
+        {
+            B1 <- 2*(2*pi)^(-d)*OF(2*r+6)*prod(d+2*(0:(r+3)))  
+            B2 <- -(d+2*r+4)*2^(-d/2-r+2)*(2*pi)^(-d)*det(S)^(-1/2)*OF(2*r+6)*nu(r=r+4, A=Sinv)
+        }
+        else
+        {
+            B1 <- 2^(-2*r-5)*(4*pi)^(-d)*OF(2*r+6)*prod(d+2*(0:(r+3)))
+            B2 <- -(d+2*r+4)*2^(-2*r-6)*(4*pi)^(-d)*det(S)^(-1/2)*OF(2*r+6)*nu(r=r+4, A=Sinv)
+            B3 <- 4*B3
+        }
+        g2r6.ns <- (2*B1/(-B2 + sqrt(B2^2 + 4*B1*B3)))^(1/(d+2*r+8))*n^(-1/(d+2*r+8))
+        L0 <- dmvnorm.mixt(x=rep(0,d), mus=rep(0,d), Sigmas=diag(d), props=1)
+        if (binned)
+            eta2r6 <- drop(kfe(x=x, G=g2r6.ns^2*diag(d), inc=1, binned=binned, deriv.order=2*r+6, add.index=FALSE, verbose=verbose) %*% vec(diag(d^(r+3))))
+        else
+            eta2r6 <- Qr(x=x, deriv.order=2*r+6, Sigma=g2r6.ns^2*diag(d), inc=1)
+        
+        A1 <- cf[1]*(2*d+4*r+8)*L0^2*OF(2*r+4)*nu(r=r+2, A=diag(d))
+        A2 <- cf[2]*(d+2*r+2)*L0*OF(2*r+4)*eta2r6
+        A3 <- cf[3]*eta2r6^2
+        
+        g2r4 <- (2*A1/((-A2+ sqrt(A2^2 +4*A1*A3))*n))^(1/(d+2*r+6))
+    }
+    return(g2r4)
 }
 
 ##############################################################################
@@ -548,6 +582,14 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
   if (d > 4) binned <- FALSE
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
 
+  if (binned)
+  {
+      H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
+      bin.par <- binning(x=x.star, bgridsize=bgridsize, H=H.max)
+      H.max.star <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
+      bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=H.max.star)    
+  }
+
   if (pilot1=="unconstr")
   {
     ## psi4.mat is on data scale
@@ -564,7 +606,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
   {
     ## G2r4 is on data scale
     G2r4 <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, binned=binned, optim.fun=optim.fun)
-    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
+    vecPsi2r4 <- kfe(x=x, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, bin.par=bin.par)
     if (missing(Hstart)) Hstart <-  Hns(x=x, deriv.order=r)
   }
   else if (pilot1=="dscalar")
@@ -573,17 +615,11 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
     g2r4 <- gdscalar(x=x.star, r=r, n=n, d=d, verbose=verbose, nstage=nstage, binned=binned)
 
     G2r4 <- g2r4^2 * diag(d)
-    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
+    vecPsi2r4 <- kfe(x=x.star, G=G2r4, binned=binned, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose, bin.par=bin.par.star)
     if (missing(Hstart)) Hstart <-  Hns(x=x.star, deriv.order=r)
   }
   else
-  {
-    if (binned)
-    {
-      H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
-      bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
-    }
-      
+  {      
     ## psi4.mat is on pre-transformed data scale
     if (nstage==1)
       psi.fun <- psifun1(x.star, pilot=pilot, binned=binned, bin.par=bin.par.star, deriv.order=r, verbose=verbose)$psir

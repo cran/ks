@@ -36,9 +36,12 @@ kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merg
             ms$nclust <- ms$nclust + ms.temp$nclust
             ms$nclust.table <- table(ms$label)
             ms$path <- c(ms$path, ms.temp$path)
+
+            ## merge clusters which are closer than tol.clust distance
+            ms <- ms.merge.dist(ms=ms, tol=tol.clust, verbose=FALSE)
         }
-        ## merge clusters which are closer than tol.clust distance
-        ms <- ms.merge.dist(ms=ms, tol=tol.clust, verbose=FALSE)
+        
+       
     }
     if (verbose) close(pb)
     path.temp <- ms$path
@@ -77,6 +80,7 @@ kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE
     i <- 1
     eps <- max(sqrt(rowSums(y.update^2)))
 
+    disp.ind <- head(sample(1:nrow(y)), n=min(100,nrow(y)))
     while (eps > tol.iter & i< max.iter)
     {
 	y.curr <- y.update
@@ -94,8 +98,9 @@ kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE
     
         if (verbose>1)
         {
-            if (d==2) plot(y.update[1:min(100, nrow(y)),], col=1, xlim=range(y), ylim=range(y), xlab="x", ylab="y")
-            else pairs(y.update[1:min(100, nrow(y)),], col=1, xlim=range(y), ylim=range(y))
+            y.range <- apply(y, 2, range)
+            if (d==2) plot(y.update[disp.ind,], col=1, xlim=y.range[,1], ylim=y.range[,2], xlab="x", ylab="y")
+            else pairs(y.update[disp.ind,], col=1)
         }
         i <- i+1
     }
@@ -171,6 +176,7 @@ ms.merge.dist <- function(ms, tol, verbose)
 ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 {
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(ms$y),0)
+    min.clust.size <- round(min.clust.size, 0)
     if (any(ms$nclust.table<=min.clust.size))
     {
         if (verbose) cat("Min cluster size merging begins. Min size = ", min.clust.size, "\n")
@@ -193,6 +199,7 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
             }
         }
         ms <- ms.temp
+        ms$min.clust.size <- min.clust.size
         ##ms <- ms.merge.num1(ms, num=min.clust.size, verbose=verbose)
         
         if (verbose) cat("Min cluster size merging ends.\n\n")
@@ -209,4 +216,30 @@ summary.kms <- function(object, ...)
     cat("Cluster label table =", object$nclust.table, "\n")
     cat("Cluster modes =\n")
     print(object$mode, ...)
+}
+
+
+plot.kms <- function(x, splom=TRUE, col, add=FALSE, ...)
+{
+    fhat <- x
+    if (is.vector(fhat$H)) d <- 1 else d <- ncol(fhat$H)
+    if (missing(col)) col <- rainbow(length(unique(fhat$label)))
+    if (d==1) stop("kms plot not yet implemented")
+    else if (d==2)
+    {
+        if (!add) plot(fhat$x, col=col[fhat$label], ...)
+        else points(fhat$x, col=col[fhat$label], ...)
+    }
+    else if (d==3 & !splom)
+    {
+        if (!add) plot3d(fhat$x, col=col[fhat$label], ...)
+        else points3d(fhat$x, col=col[fhat$label], ...) 
+    }
+    else if (d>=3)
+    {
+        pairs(fhat$x, col=col[fhat$label], ...)
+    }    
+        
+    
+    
 }

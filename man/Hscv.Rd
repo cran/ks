@@ -30,7 +30,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   \item{amise}{flag to return the minimal scaled SCV value. Default is FALSE.}
   \item{deriv.order}{derivative order}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{optim.fun}{optimiser function: one of \code{\link{nlm}} or \code{\link{optim}}}
+  \item{optim.fun}{optimiser function: one of \code{nlm} or \code{optim}}
   \item{nstage}{number of stages in the SCV bandwidth selector (1 or 2)}
   \item{plot}{flag to display plot of SCV(h) vs h (1-d only). Default is FALSE.}
 }
