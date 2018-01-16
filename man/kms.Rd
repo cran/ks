@@ -2,7 +2,7 @@
 \alias{kms}
 \alias{summary.kms}
 
-\title{Kernel mean shift clustering.}
+\title{Kernel mean shift clustering}
 \description{
   Kernel mean shift clustering for 2- to 6-dimensional data.
 }
@@ -49,7 +49,7 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{tol.iter,tol.clust,min.clust.size}{tuning parameter values -
   same as input}
   \item{path}{list of density gradient ascent paths where \code{path[[i]]} is
-  the path of \code{y[i,]} (only if \code{keep.path=TRUE})}   
+    the path of \code{y[i,]} (only if \code{keep.path=TRUE})}
 }
 
 \details{ 
@@ -80,19 +80,16 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
 }
 
 \references{
-  %Chacon, J.E. (2015). A population background for nonparametric
-  %density-based clustering. \emph{Statistical Science}, \bold{30}, 518-532.
-  %
   Chacon, J.E. & Duong, T. (2013) Data-driven density estimation, with
   applications to nonparametric clustering and bump hunting. \emph{Electronic
-    Journal of Statistics }, \bold{7}, 499-532.
+    Journal of Statistics}, \bold{7}, 499-532.
 
   Comaniciu, D. & Meer, P. (2002). Mean shift: a robust approach
   toward feature space analysis. \emph{ IEEE Transactions on Pattern
   Analysis and Machine Intelligence}, \bold{24}, 603-619.
 }  
 
-%\seealso{\code{\link{kde}}}
+\seealso{\code{\link{kde}}}
 
 \examples{
 library(MASS)

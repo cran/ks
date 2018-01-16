@@ -29,7 +29,7 @@ hkda <- function(x, x.group, bw="plugin", ...)
   {
     y <- x[x.group==gr[i]]
     if (bw1=="plugin") h <- hpi(y, ...)
-    else if (bw1=="lscv") h <- hlscv(y, ...)
+    else if ((bw1=="lscv") | (bw1=="ucv")) h <- hlscv(y, ...)
     else if (bw1=="scv") h <- hscv(y, ...)
     hs <- c(hs, h)
   }
@@ -42,7 +42,7 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", ...)
   d <- ncol(x)
   gr <- sort(unique(x.group))
   m <- length(gr)
-  bw1 <- match.arg(bw, c("lscv", "plugin", "scv")) 
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv", "ucv")) 
   Hs <- numeric(0)
  
   for (i in 1:m)
@@ -51,15 +51,15 @@ Hkda <- function(x, x.group, Hstart, bw="plugin", ...)
     if (!missing(Hstart)) 
     {
       Hstarty <- Hstart[((i-1)*d+1) : (i*d),]
-      if (bw1=="lscv") H <- Hlscv(y, Hstart=Hstarty, ...)
+      if ((bw1=="lscv") | (bw1=="ucv")) H <- Hlscv(y, Hstart=Hstarty, ...)
       else if (bw1=="scv") H <- Hscv(y, Hstart=Hstarty, ...)
       else if (bw1=="plugin") H <- Hpi(y, Hstart=Hstarty, ...)
     }
     else
     {
-      if (bw1=="lscv") H <- Hlscv(y, ...)
-      else if (bw=="scv") H <- Hscv(y, ...)
-      else if (bw=="plugin") H <- Hpi(y, ...)
+      if ((bw1=="lscv") | (bw1=="ucv")) H <- Hlscv(y, ...)
+      else if (bw1=="scv") H <- Hscv(y, ...)
+      else if (bw1=="plugin") H <- Hpi(y, ...)
     }
     Hs <- rbind(Hs, H)
   }
@@ -72,13 +72,13 @@ Hkda.diag <- function(x, x.group, bw="plugin", ...)
   d <- ncol(x)
   gr <- sort(unique(x.group))
   m <- length(gr)
-  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv", "ucv"))
   Hs <- numeric(0)
 
   for (i in 1:m)
   {
     y <- x[x.group==gr[i],]
-    if (bw1=="lscv") H <- Hlscv.diag(y, ...)
+    if ((bw1=="lscv") | (bw1=="ucv")) H <- Hlscv.diag(y, ...)
     else if (bw1=="plugin") H <- Hpi.diag(y, ...)
     else if (bw1=="scv") H <- Hscv.diag(y, ...)
     Hs <- rbind(Hs, H)
@@ -110,16 +110,9 @@ compare <- function(x.group, est.group, by.group=FALSE)
     stop("Group label vectors not the same length")
 
   if (!is.factor(x.group)) x.group <- factor(x.group)
-  ##est.group <- factor(est.group)
   grlab <- levels(x.group)
-  
-  ##grlab <- sort(unique(x.group))
   m <- length(grlab)
   comp <- table(x.group, est.group)
-  ##comp <- matrix(0, nrow=m, ncol=m)
-  ##for (i in 1:m)
-  ##  for (j in 1:m)
-  ##    comp[i,j] <- sum((x.group==grlab[i]) & (est.group==grlab[j]))  
   
   if (by.group)
   {
@@ -129,8 +122,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
     er <- matrix(er, ncol=1)
     er <- rbind(er, 1 - sum(diag(comp))/sum(comp)) 
     rownames(er) <- c(as.character(paste(grlab, "(true)")), "Total")
-    colnames(er) <- "error"
-    
+    colnames(er) <- "error"    
   }
   else 
     er <- 1 - sum(diag(comp))/sum(comp)
@@ -172,7 +164,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
 compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 {
   if (verbose) pb <- txtProgressBar()
-  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv", "ucv"))
   
   ## 1-d
   if (is.vector(x))
@@ -190,7 +182,7 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
       indx <- x.group==gr[ind]
       indx[i] <- FALSE
 
-      if (bw1=="lscv") h.temp <- hlscv(x[indx], , ...)
+      if ((bw1=="lscv") | (bw1=="ucv")) h.temp <- hlscv(x[indx], , ...)
       else if (bw1=="plugin") h.temp <- hpi(x[indx], , ...)
       else if (bw1=="scv") h.temp <- hscv(x[indx], , ...)
       h.mod[ind] <- h.temp
@@ -238,13 +230,13 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
         
         if (bw1=="plugin") H.temp <- Hpi(x[indx,], Hstart=Hstart.temp,  ...)
         else if (bw1=="scv") H.temp <- Hscv(x[indx,],  Hstart=Hstart.temp, ...)
-        else if (bw1=="lscv") H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, ...)
+        else if ((bw1=="lscv") | (bw1=="ucv")) H.temp <- Hlscv(x[indx,],  Hstart=Hstart.temp, ...)
       }
       else
       {
         if (bw1=="plugin") H.temp <- Hpi(x[indx,], ...)
         else if (bw1=="scv") H.temp <- Hscv(x[indx,], ...)
-        else if (bw1=="lscv") H.temp <- Hlscv(x[indx,], ...) 
+        else if ((bw1=="lscv") | (bw1=="ucv")) H.temp <- Hlscv(x[indx,], ...) 
       }
       
       H.mod[((ind-1)*d+1):(ind*d),] <- H.temp
@@ -274,7 +266,7 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
   H <- Hkda.diag(x, x.group, bw=bw, ...)
  
   if (verbose) pb <- txtProgressBar()
-  bw1 <- match.arg(bw, c("lscv", "plugin", "scv"))
+  bw1 <- match.arg(bw, c("lscv", "plugin", "scv", "ucv"))
   gr <- sort(unique(x.group)) 
   kda.cv.gr <- x.group
   
@@ -289,7 +281,7 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
       indx[i] <- FALSE
       if (bw1=="plugin")
         H.temp <- Hpi.diag(x[indx,], ...)
-      else if (bw1=="lscv")
+      else if ((bw1=="lscv") | (bw1=="ucv"))
         H.temp <- Hlscv.diag(x[indx,], ...)
       else if (bw1=="scv")
         H.temp <- Hscv.diag(x[indx,], ...)
@@ -323,33 +315,34 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 # H - list of bandwidth matrices
 ##############################################################################
 
-kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
+kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
   if (missing(eval.points)) eval.points <- x
   gr <- sort(unique(x.group))
   m <- length(gr)
-  
-  if (is.vector(x))
+
+  ## default values 
+  ksd <- ks.defaults(x=x, w=w, bgridsize=bgridsize, gridsize=gridsize)
+  d <- ksd$d; n <- ksd$n; w <- ksd$w
+  binned <- ksd$binned
+  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+  if (missing(gridsize)) gridsize <- ksd$gridsize
+
+  if (d==1)
   {
-    bgridsize <- default.gridsize(1)
- 
-    if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=TRUE, bgridsize=bgridsize)
+      if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=default.bflag(d=d,n=n))
+
     ## Compute KDA on grid
     if (kde.flag)
-      fhat.list <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
-    
+      fhat.list <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
+      
     ## Compute KDA at eval.points
-    fhat <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=FALSE, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
-    fhat.wt <- matrix(0, ncol=m, nrow=length(eval.points))  
+    fhat <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
+    fhat.wt <- matrix(0, ncol=m, nrow=length(eval.points)) 
   }
   else
   {
-    bgridsize <- default.gridsize(ncol(x))
-    d <- ncol(x)
-    n <- nrow(x)
-    if (d==2) pilot <- "samse"
-    if (d>=3) pilot <- "dscalar"
-    if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", nstage=2, pilot=pilot, pre="sphere", binned=default.bflag(d=d, n=n), bgridsize=bgridsize)
+    if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", binned=default.bflag(d=d, n=n))
     
     ## Compute KDA on grid
     if (d>3) kde.flag <- FALSE
@@ -366,13 +359,9 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
     
   ## Assign y according largest weighted density value 
   disc.gr.temp <- apply(fhat.wt, 1, which.max)
+  disc.gr <- factor(disc.gr.temp, labels=gr)
+  if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
   
-  disc.gr <- gr
-  for (j in 1:m)
-  {
-    ind <- which(disc.gr.temp==j)
-    disc.gr[ind] <- gr[j]
-  }
   if (kde.flag) fhat.list$x.group.estimate <- disc.gr
   else fhat.list <- disc.gr
   
@@ -387,9 +376,6 @@ kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binn
   hmax <- max(hs)
   if (missing(xmin)) xmin <- min(x) - supp*hmax
   if (missing(xmax)) xmax <- max(x) + supp*hmax
-  if (missing(w)) w <- rep(1, length(x))
-  if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-  if (missing(gridsize)) gridsize <- default.gridsize(d)  
   fhat.list <- list()
 
   for (j in 1:m)
@@ -397,15 +383,16 @@ kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binn
     xx <- x[x.group==gr[j]]
     ww <- w[x.group==gr[j]]
     h <- hs[j]
-    
-    ## compute individual density estimate
-    if (binned)
-      fhat.temp <- kdde.binned(x=xx, h=h, xmin=xmin, xmax=xmax, bgridsize=bgridsize, w=ww, deriv.order=0)
-    else if (missing(eval.points))
-      fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
-    else
-      fhat.temp <- kde(x=xx, h=h, eval.points=eval.points, w=ww)
 
+    ## compute individual density estimate
+    if (missing(eval.points))
+        fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, bgridsize=bgridsize, gridsize=gridsize, w=ww, binned=binned)
+    else
+    {
+        fhat.temp <- kde(x=xx, h=h, w=ww, binned=binned, bgridsize=bgridsize, gridsize=gridsize, eval.points=xx)
+        ##fhat.temp <- predict(fhat.temp, x=xx)
+    }
+     
     fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
     fhat.list$eval.points <- fhat.temp$eval.points
     fhat.list$x <- c(fhat.list$x, list(xx))
@@ -716,9 +703,19 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   }
 
   ## draw partition
- 
-  image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=col.part, xlim=xlim, ylim=ylim, add=TRUE, ...)
-  box()
+
+  fhat.part <- fhat
+  fhat.part$estimate <- class.grid
+  fhat.part$H <- fhat$H[[1]]
+  fhat.part$x <- fhat$x[[1]]
+  fhat.part$w <- fhat$w[[1]]
+  fhat.part$cont <- fhat$cont[[1]]
+  class(fhat.part) <- "kde.part"
+  plot(fhat.part, col=col.part, add=TRUE, ...)
+  
+  ##.filled.contour(x=fhat$eval[[1]], y=fhat$eval[[2]], z=class.grid, col=col.part, levels=(0:k)+0.5)
+  ##image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=col.part, xlim=xlim, ylim=ylim, add=TRUE, ...)
+  ##box()
 
   ## common contour levels removed from >= v1.5.3 
 
@@ -815,15 +812,8 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.con
   else col.pt <- 1:m
   if (length(col.pt)==1) col.pt <- rep(col.pt, m)
  
-  ##fhat.eval.mean <- sapply(fhat$eval.points, mean)
-  ##if (drawpoints)
-  ##  plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  ##else
-  ##plot3d(fhat.eval.mean[1], fhat.eval.mean[2], fhat.eval.mean[3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  ##bg3d(col="white")
-
   xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
-  plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
+  rgl::plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
 
   for (j in 1:m)
   {
@@ -831,22 +821,22 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.con
     { 
       cti <- hts[[j]][nhts-i+1]
       if (cti <= max(fhat$estimate[[j]]))
-        contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], f=fhat$estimate[[j]], level=cti, add=TRUE, alpha=alphavec[i], color=colors[j], ...)
+        misc3d::contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], f=fhat$estimate[[j]], level=cti, add=TRUE, alpha=alphavec[i], color=colors[j], ...)
     }
     if (drawpoints)   ## plot points
     {
       if (missing(y))
-        points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
+        rgl::points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
                     color=col.pt[j], size=size, alpha=1)
       else
       {
         if (missing(y.group))
-          points3d(y[,1], y[,2], y[,3], color=col.pt, size=size, alpha=1)
+          rgl::points3d(y[,1], y[,2], y[,3], color=col.pt, size=size, alpha=1)
         else
         {
           y.temp <- y[y.group==levels(y.group)[j],]
           if (nrow(y.temp)>0)
-            points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=1)
+            rgl::points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=1)
         }
       }
     }

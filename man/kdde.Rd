@@ -1,6 +1,7 @@
 \name{kdde}
 \alias{kdde}
 \alias{predict.kdde}
+\alias{kcurv}
 
 \title{Kernel density derivative estimate}
 \description{
@@ -8,8 +9,9 @@
 }
 \usage{
 kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, 
-    eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
+    eval.points, binned, bgridsize, positive=FALSE, adj.positive, w,
     deriv.vec=TRUE, verbose=FALSE)
+kcurv(fhat, compute.cont=TRUE)
 
 \method{predict}{kdde}(object, ..., x)
 }
@@ -23,15 +25,18 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{vector or matrix of points at which estimate is evaluated}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
-  \item{positive}{flag if 1-d data are positive. Default is FALSE.}
+  \item{positive}{flag if data are positive (1-d, 2-d). Default is FALSE.}
   \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{deriv.vec}{flag to compute all derivatives in vectorised
   derivative. Default is TRUE. If FALSE then only the unique derivatives are computed.}
   \item{verbose}{flag to print out progress information. Default is
-    FALSE.} 
+    FALSE.}
+  \item{compute.cont}{flag for computing 1\% to 99\% probability contour
+    levels. Default is TRUE.}
+  \item{fhat}{object of class \code{kdde} with \code{deriv.order=2}} 
   \item{object}{object of class \code{kdde}}
   \item{...}{other parameters} 
 }
@@ -66,7 +71,17 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
   \code{Hpi}. Likewise for missing \code{h}.
   
   The effective support, binning, grid size, grid range, positive
-  parameters are the same as \code{\link{kde}}. 
+  parameters are the same as \code{\link{kde}}.
+
+  The summary curvature is computed by \code{kcurv}, i.e.
+  \deqn{\hat{s}(\bold{x})= - \bold{1}\{\mathsf{D}^2 \hat{f}(\bold{x}) <
+  0\} \mathrm{abs}(|\mathsf{D}^2 \hat{f}(\bold{x})|)}{hat(s)(x) = -1(D^2
+  hat(f)(x) <0)*abs(det(D^2 hat(f)(x)))} where \eqn{\mathsf{D}^2
+  \hat{f}(\bold{x})}{D^2 hat(f)(x)} is the kernel Hessian matrix
+  estimate. So \eqn{\hat{s}}{hat{s}} calculates the absolute value of
+  the determinant of the Hessian matrix and whose sign is the opposite of
+  the negative definiteness indicator.
+ 
 }
 
 \seealso{\code{\link{kde}}}
@@ -74,7 +89,7 @@ kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7,
 \examples{
 set.seed(8192)
 x <- rmvnorm.mixt(1000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
-fhat <- kdde(x=x, binned=TRUE, deriv.order=1) ## gradient [df/dx, df/dy]
+fhat <- kdde(x=x, deriv.order=1) ## gradient [df/dx, df/dy]
 predict(fhat, x=x[1:5,])
 
 ## See other examples in ? plot.kdde

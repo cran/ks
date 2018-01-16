@@ -9,7 +9,7 @@
 
 \usage{
 kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-   binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
+   binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
 
 \method{predict}{kroc}(object, ..., x)
 \method{summary}{kroc}(object, ...)
@@ -24,7 +24,7 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{not yet implemented}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
   \item{adj.positive}{adjustment applied to positive 1-d data}
@@ -82,11 +82,11 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   Duong, T. (2016) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
   characteristic curves. \emph{Journal of the Korean Statistical
-  Society}. \bold{45}, 33-50.
+  Society}, \bold{45}, 33-50.
 
   Lloyd, C. (1998) Using smoothed receiver operating curves to summarize
   and compare diagnostic systems. \emph{Journal of the American
-  Statistical Association}. \bold{93}, 1356-1364.
+  Statistical Association}, \bold{93}, 1356-1364.
 }
 
 \seealso{\code{\link{kcde}}}

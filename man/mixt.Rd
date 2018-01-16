@@ -5,6 +5,7 @@
 \alias{dmvnorm.mixt}
 \alias{rmvt.mixt}
 \alias{dmvt.mixt}
+\alias{mvnorm.mixt.mode}
 
 \title{Normal and t-mixture distributions}
 \description{
@@ -16,6 +17,7 @@ dmvnorm.mixt(x, mus, Sigmas, props)
 rmvnorm.mixt(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 rmvt.mixt(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 dmvt.mixt(x, mus, Sigmas, dfs, props)
+mvnorm.mixt.mode(mus, Sigmas, props=1, verbose=FALSE)
 }
 
 \arguments{
@@ -27,6 +29,7 @@ dmvt.mixt(x, mus, Sigmas, dfs, props)
   \item{props}{vector of mixing proportions}
   \item{mixt.label}{flag to output numeric label indicating mixture
     component. Default is FALSE.}
+  \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{dfs}{vector of degrees of freedom}
   }
   
@@ -37,19 +40,25 @@ dmvt.mixt(x, mus, Sigmas, dfs, props)
   \code{rmvnorm.mixt} and \code{dmvnorm.mixt} are based on the
   \code{rmvnorm} and \code{dmvnorm} functions from the \pkg{mvtnorm}
   package. Likewise for \code{rmvt.mixt} and \code{dmvt.mixt}.
-}  
+
+  For the normal mixture densities, \code{mvnorm.mixt.mode} computes the
+  local modes: these are usually very close but not exactly equal to the
+  component means.
+}
 
 \examples{
 ## univariate normal mixture
 x <- rnorm.mixt(1000, mus=c(-1,1), sigmas=c(0.5, 0.5), props=c(1/2, 1/2))
 
 ## bivariate mixtures 
-mus <- rbind(c(-3/2,0), c(3/2,0))
-Sigmas <- rbind(diag(c(1/16, 1)), rbind(c(1/16, 1/18), c(1/18, 1/16)))
-props <- c(2/3, 1/3)
-dfs <- c(7,3)
+mus <- rbind(c(-1,0), c(1, 2/sqrt(3)), c(1,-2/sqrt(3)))
+Sigmas <- 1/25*rbind(invvech(c(9, 63/10, 49/4)), invvech(c(9,0,49/4)), invvech(c(9,0,49/4)))
+props <- c(3,3,1)/7
+dfs <- c(7,3,2)
 x <- rmvnorm.mixt(1000, mus=mus, Sigmas=Sigmas, props=props)
 y <- rmvt.mixt(1000, mus=mus, Sigmas=Sigmas, dfs=dfs, props=props)
+
+mvnorm.mixt.mode(mus=mus, Sigmas=Sigmas, props=props)
 }
 
 \keyword{ distribution }

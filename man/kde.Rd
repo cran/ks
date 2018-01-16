@@ -9,7 +9,7 @@
 }
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
-    binned=FALSE, bgridsize, positive=FALSE, adj.positive, w,
+    binned, bgridsize, positive=FALSE, adj.positive, w,
     compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE,
     verbose=FALSE)
 
@@ -24,9 +24,9 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{vector or matrix of points at which estimate is evaluated}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation.}
   \item{bgridsize}{vector of binning grid sizes}
-  \item{positive}{flag if 1-d data are positive. Default is FALSE.}
+  \item{positive}{flag if data are positive (1-d, 2-d). Default is FALSE.}
   \item{adj.positive}{adjustment applied to positive 1-d data}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
@@ -37,7 +37,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kde}}
-  \item{zero.flag}{interploted values \code{object$estimate} of when \code{x}
+  \item{zero.flag}{interpolated values \code{object$estimate} of when \code{x}
   outside of \code{object$eval.points}=0 (if \code{TRUE}), = nearest
   \code{object$estimate} (if \code{FALSE})}
   \item{...}{other parameters}
@@ -66,27 +66,32 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
   For d=1, if \code{positive=TRUE} then \code{x} is transformed to
   \code{log(x+adj.positive)} where the default \code{adj.positive} is
-  the minimum of \code{x}. 
+  the minimum of \code{x}. This is known as a log transformation density
+  estimate. 
   
-  For d=1, 2, 3, 4, and if \code{eval.points} is not specified, then the
+  For d=1, 2, 3, and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
   defined by \code{gridsize} (if \code{binned=FALSE}) or
   by \code{bgridsize} (if \code{binned=TRUE}). This form is suitable for
-  visualisation in conjuction with the \code{plot} method.
+  visualisation in conjunction with the \code{plot} method.
+
+  For d=4, 5, 6,  and if \code{eval.points} is not specified, then the
+  density estimate is computed over a grid defined by \code{gridsize}. 
   
   --If \code{eval.points} is specified, as a vector (d=1) or 
   as a matrix (d=2, 3, 4), then the
   density estimate is computed at \code{eval.points}. This form is
-  suitable for numerical summaries (e.g. maximum likelilood), and is
+  suitable for numerical summaries (e.g. maximum likelihood), and is
   not compatible with the \code{plot} method. 
 
-  --For d>4, computing the kernel
-  density estimate over a grid is not feasible, and so it is computed exactly
-  and \code{eval.points} (as a matrix) must be specified.
+  %--For d>4, computing the kernel
+  %density estimate over a grid is not feasible, and so it is computed exactly
+  %and \code{eval.points} (as a matrix) must be specified.
 
   Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
-  kernel estimators feasible for large samples. 
+  kernel estimators feasible for large samples. The default value of the
+  binning flag \code{binned} is d=1: n>1; d=2: n>500, d>=3: n>1000. 
   
   The default \code{bgridsize,gridsize} are  d=1: 401; d=2: rep(151, 2);
   d=3: rep(51, 3); d=4: rep(21,4).
@@ -104,17 +109,20 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
 \examples{
 ## positive data example
-set.seed(8192)
-x <- 2^rnorm(100)
-fhat <- kde(x=x, positive=TRUE)
-plot(fhat, col=3)
-points(c(0.5, 1), predict(fhat, x=c(0.5, 1)))
+data(worldbank)
+wb <- as.matrix(na.omit(worldbank[,2:3]))
+wb[,2] <- wb[,2]/1000
+fhat <- kde(x=wb)
+fhat.trans <- kde(x=wb, adj.positive=c(0,0), positive=TRUE)
+plot(fhat, xlim=c(0,20), ylim=c(0,80))
+plot(fhat.trans, add=TRUE, col=2)
+rect(0,0,100,100, lty=2)
 
 ## large data example on non-default grid
 ## 151 x 151 grid = [-5,-4.933,..,5] x [-5,-4.933,..,5]
 set.seed(8192)
 x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
-fhat <- kde(x=x, binned=TRUE, compute.cont=TRUE, xmin=c(-5,-5), xmax=c(5,5), bgridsize=c(151,151))
+fhat <- kde(x=x, compute.cont=TRUE, xmin=c(-5,-5), xmax=c(5,5), bgridsize=c(151,151))
 plot(fhat)
 
 ## See other examples in ? plot.kde

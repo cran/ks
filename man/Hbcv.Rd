@@ -27,7 +27,7 @@ BCV bandwidth matrix. If \code{amise=TRUE} then the minimal BCV value is returne
 
 \references{Sain, S.R, Baggerly, K.A. & Scott, D.W. (1994)
   Cross-validation of multivariate densities. \emph{Journal of the
-  American Statistical Association}. \bold{82}, 1131-1146.
+  American Statistical Association}, \bold{82}, 1131-1146.
 }
 
 \details{

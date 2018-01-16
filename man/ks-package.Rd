@@ -25,9 +25,9 @@
   The bandwidth matrix \eqn{\bold{{\rm H}}}{H} is a matrix of smoothing
   parameters and its choice is crucial for the performance of kernel
   estimators. For display, its \code{plot} method calls \code{\link{plot.kde}}.
-
+    
   --For kernel density estimation, there are several varieties of bandwidth selectors 
-  \itemize{
+   \itemize{
   \item plug-in \code{\link{hpi}} (1-d); 
   \code{\link{Hpi}}, \code{\link{Hpi.diag}} (2- to 6-d) 
   \item least squares (or unbiased) cross validation (LSCV or UCV) \code{\link{hlscv}} (1-d);
@@ -38,6 +38,44 @@
   \code{\link{Hscv}}, \code{\link{Hscv.diag}} (2- to 6-d) 
   \item normal scale \code{\link{hns}} (1-d); \code{\link{Hns}} (2- to 6-d).
   }
+
+  --For kernel density support estimation, the main function is
+  \code{\link{ksupp}} which is (the convex hull of) 
+  \deqn{\{\bold{x}: \hat{f}(\bold{x}) >
+    \tau\}}{\{x: hat(f) > tau\}}
+  for a suitable level \eqn{\tau}{tau}. This is closely related to the \eqn{\tau}{tau}-level set of
+  \eqn{\hat{f}}{hat(f)}. 
+  
+  --For truncated kernel density estimation, the main function is
+  \code{\link{kde.truncate}}
+  \deqn{\hat{f} (\bold{x}) \bold{1}\{\bold{x} \in \Omega\} /
+  \int_{\Omega}\hat{f} (\bold{x}) \, d\bold{x}}{\{hat(f)(x) 1\{x in
+  Omega\}/int  hat(f) 1\{x in Omega\}}
+  for a bounded data support \eqn{\Omega}{Omega}. The standard density
+  estimate \eqn{\hat{f}}{hat(f)} is truncated and rescaled to give
+  unit integral over \eqn{\Omega}{Omega}. Its \code{plot} method calls \code{\link{plot.kde}}.
+
+  --For boundary kernel density estimation where the kernel function is
+  modified explicitly in the boundary region, the main function is
+  \code{\link{kde.boundary}}
+  \deqn{ n^{-1} \sum_{i=1}^n K^*_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i)}{hat(f)(x) = n^(-1) sum_i K*_H (x - X_i)} 
+  for a boundary kernel \eqn{K^*}{K*}. Its \code{plot} method calls \code{\link{plot.kde}}.
+
+  --For variable kernel density estimation where the bandwidth is not a
+  constant matrix, the main functions are \code{\link{kde.balloon}}
+  \deqn{\hat{f}_{\rm ball}(\bold{x}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}(\bold{x})} (\bold{x} - \bold{X}_i)}{hat(f)_ball(x) = n^(-1) sum_i K_H(x) (x - X_i)}
+  and
+  \code{\link{kde.sp}} 
+  \deqn{\hat{f}_{\rm SP}(\bold{x}) = n^{-1} \sum_{i=1}^n K_{\bold{{\rm H}}(\bold{X}_i)} (\bold{x} - \bold{X}_i).}{hat(f)_SP(x) = n^(-1) sum_i K_H(X_i) (x - X_i).}
+  For the balloon estimation \eqn{\hat{f}_{\rm ball}}{hat(f)_ball} the
+  bandwidth varies with the estimation point \eqn{\bold{x}}{x}, whereas
+  for the sample point estimation  \eqn{\hat{f}_{\rm SP}}{hat(f)_SP}
+  the bandwidth varies with the data point
+  \eqn{\bold{X}_i, i=1,\dots,n}{X_i, i=1, ..., n}. 
+  Their \code{plot} methods call \code{\link{plot.kde}}. The bandwidth
+  selectors for \code{kde.balloon} are based on the normal scale bandwidth
+  \code{Hns(,deriv.order=2)} via the MSE minimal formula, and for
+  \code{kde.SP} on \code{Hns(,deriv.order=4)} via the Abramson formula.
   
   --For kernel density derivative estimation, the main function is \code{\link{kdde}}
   \deqn{{\sf D}^{\otimes r}\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n {\sf
@@ -48,6 +86,15 @@
    Its \code{plot} method is \code{\link{plot.kdde}} for plotting each
    partial derivative singly.
 
+  --For kernel summary curvature estimation, the main function is
+  \code{\link{kcurv}}
+  \deqn{\hat{s}(\bold{x})= - \bold{1}\{{\sf D}^2 \hat{f}(\bold{x}) <
+    0\} \mathrm{abs}(|{\sf D}^2 \hat{f}(\bold{x})|)}{hat(s)(x) = -1(D^2
+    hat(f)(x) <0)*abs(det(D^2 hat(f)(x)))} where \eqn{{\sf D}^2
+    \hat{f}(\bold{x})}{D^2 hat(f)(x)} is the kernel Hessian matrix estimate.
+  It has the same structure as a kernel density estimate so its \code{plot}
+  method calls \code{\link{plot.kde}}. 
+   
   --For kernel discriminant analysis, the main function is
   \code{\link{kda}} which computes density estimates for each the 
   groups in the training data, and the discriminant surface. 
@@ -180,6 +227,9 @@
 \references{
   Bowman, A. & Azzalini, A. (1997) \emph{Applied Smoothing Techniques
     for Data Analysis}. Oxford University Press, Oxford.
+
+  Chacon, J.E. & Duong, T. (2018) \emph{Multivariate Kernel Smoothing
+  and Its Applications}. To appear. 
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis, University of Western Australia. 

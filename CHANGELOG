@@ -1,5 +1,26 @@
 Change log file for ks
 
+1.11.0
+-Added multivariate version of rkde().
+-Added histogram estimators histde().
+-Simplified calculation of default values in kde(), etc.
+-Changed default flag binned=FALSE to binned=default.bflag.
+-Fixed estimated group labels calculation in kda().
+-Fixed interpolation for d>3 in grid.interp() and predict.kde().
+-Added histogram density estimate histde().
+-Added kernel density estimate for bounded data kde.boundary().
+-Added truncated kernel density estimate kde.truncate().
+-Added kernel support estimate ksupp().
+-Added kernel partition plot plot.kde.part().
+-Added variable kernel density estimates vkde().
+-Added quiver plot to plot.kdde() for deriv.order=1.
+-Added kernel summary curvature kcurv() for deriv.order=2.
+-Added World Bank data data(worldbank).
+-Added any dim KDE in kde.grid.nd().
+-Changed display="filled.contour" for 2D plots to not give adjecent colour
+ scalebar.
+-Fixed bug in 1d kde.test() p-value to return scalar.
+
 1.10.7
 -Changed mvtnorm from `Depends' to `Imports' in DESCRIPTION.
 -Implemented per-block caluction for large sampl sizes in kdde(, binned=TRUE).
@@ -8,7 +29,8 @@ Change log file for ks
 faults.
 -Fixed bug in default bandwidth for kcde().
 -Fixed bug in default estimation grid limits for kda.nd().
--Corrected formulas for scalar pilots in gdscalar() to match those in bok.
+-Corrected formulas for scalar pilots in gdscalar() to match those in book.
+-Added feature significance function kfs().
 
 1.10.6
 -Registered native C routines in src/ks.c.

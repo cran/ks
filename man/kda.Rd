@@ -14,7 +14,7 @@
 }
 \usage{
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
-  eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
+  eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
   kde.flag=TRUE)
 Hkda(x, x.group, Hstart, bw="plugin", ...)
 Hkda.diag(x, x.group, bw="plugin", ...)
@@ -39,7 +39,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{vector or matrix of points at which estimate is evaluated}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Not yet implemented.}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
@@ -137,9 +137,10 @@ set.seed(8192)
 x <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
 x.gr <- rep(c(1,2), times=c(100,100))
 y <- c(rnorm.mixt(n=100, mus=1), rnorm.mixt(n=100, mus=-1))
-kda.gr <- kda(x, x.gr, eval.points=y)
-compare(kda.gr$x.group, kda.gr$x.group.est, by.group=TRUE)
-predict(kda.gr, x=0)
+y.gr <- rep(c(1,2), times=c(100,100))
+kda.gr <- kda(x, x.gr)
+y.gr.est <- predict(kda.gr, x=y)
+compare(y.gr, y.gr.est)
 
 ## See other examples in ? plot.kda
 }

@@ -12,9 +12,9 @@
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
 \usage{
-Hlscv(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, 
+Hlscv(x, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, 
       verbose=FALSE, optim.fun="nlm", trunc)
-Hlscv.diag(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, 
+Hlscv.diag(x, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, 
       verbose=FALSE, optim.fun="nlm", trunc)
 hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
 Hucv(...)
@@ -27,7 +27,7 @@ hucv(...)
   \item{x}{vector or matrix of data values}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal LSCV value. Default is FALSE.}	
   \item{deriv.order}{derivative order} 
@@ -45,11 +45,11 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 
 \references{
   Bowman, A. (1984) An alternative method of cross-validation for the
-  smoothing of kernel density estimates. \emph{Biometrika}. \bold{71},
+  smoothing of kernel density estimates. \emph{Biometrika}, \bold{71},
   353-360.
 
   Rudemo, M. (1982) Empirical choice of histograms and kernel density
-  estimators. \emph{Scandinavian Journal of Statistics}. \bold{9},
+  estimators. \emph{Scandinavian Journal of Statistics}, \bold{9},
   65-78.
 }
 
@@ -58,7 +58,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   multivariate generalisation of this. Use \code{Hlscv} for unconstrained
   bandwidth matrices and \code{Hlscv.diag} for diagonal bandwidth matrices. 
   \code{Hucv}, \code{Hucv.diag} and \code{hucv} are aliases with UCV
-  unbiased cross validation instead of LSCV. 
+  (unbiased cross validation) instead of LSCV. 
   
   Truncation of the parameter space is usually required for the LSCV selector,
   for r > 0, to find a reasonable solution to the numerical optimisation. 

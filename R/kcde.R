@@ -2,36 +2,21 @@
 ## Kernel estimators of the multivariate cdf (cumulative distribution function)
 #####################################################################
 
-kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, tail.flag="lower.tail")
+kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, tail.flag="lower.tail")
 {
-  r <- 0
-  if (is.vector(x))
-  {
-    if (missing(H)) {d <- 1; n <- length(x)}
-    else
-    {
-      if (is.vector(H)) { d <- 1; n <- length(x)}
-      else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-    }
-  }
-  else {d <- ncol(x); n <- nrow(x)}
-
-  if (!missing(w))
-  {
-    if (!(identical(all.equal(sum(w), n), TRUE)))
-    {
-      warning("Weights don't sum to sample size - they have been scaled accordingly\n")
-      w <- w*n/sum(w)
-    }
-  }
-  else w <- rep(1,n)
+    ## default values 
+    ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    d <- ksd$d; n <- ksd$n; w <- ksd$w
+    if (missing(binned)) binned <- ksd$binned
+    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+    if (missing(gridsize)) gridsize <- ksd$gridsize
 
   tail.flag1 <- match.arg(tail.flag, c("lower.tail", "upper.tail")) 
 
   ## KCDE is computed as cumulative Riemann sum of KDE on a grid
   if (d==1)
   {
-    if (missing(h)) h <- hpi.kcde(x=x, binned=default.bflag(d=d, n=n))
+    if (missing(h) & !positive) h <- hpi.kcde(x=x, binned=default.bflag(d=d, n=n))
     Fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
     diffe <- abs(diff(Fhat$eval.points))
     
@@ -40,7 +25,7 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   else if (d==2)
   {
-    if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
+    if (missing(H) & !positive) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
    
     Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
     diffe1 <- abs(diff(Fhat$eval.points[[1]]))
@@ -61,7 +46,7 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   }
   else if (d==3)
   {
-      if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
+      if (missing(H) & !positive) H <- Hpi.kcde(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=FALSE)
 
       Fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
       Fhat.temp <- Fhat$estimate
@@ -125,7 +110,6 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.tail") 
 {
   n <- nrow(x)
-  if (missing(w)) w <- rep(1,n)
   if (verbose) pb <- txtProgressBar() 
   Fhat <- rep(0, nrow(eval.points))
   pmvnorm.temp <- function(x, ...) { return(pmvnorm(mean=x, ...)) }
@@ -300,17 +284,17 @@ plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt
   if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
 
   if (drawpoints)
-    plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
   else
-    plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  bg3d(col="white")
+    rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+  rgl::bg3d(col="white")
   
   for (i in 1:nc)
     if (hts[nc-i+1] < max(Fhat$estimate))
-      contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+      misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
 
-  if (box) box3d()
-  if (axes) axes3d()
+  if (box) rgl::box3d()
+  if (axes) rgl::axes3d()
 }
 
 
@@ -350,10 +334,11 @@ Hns.kcde <- function(x)
 
 ## Plug-in bandwidth selector
 
-hpi.kcde <- function(x, nstage=2, binned=TRUE, amise=FALSE)
+hpi.kcde <- function(x, nstage=2, binned, amise=FALSE)
 {
   n <- length(x)
   d <- 1
+  if (missing(binned)) binned <- default.bflag(d,n)
   
   K2 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=2)  
   K4 <- dnorm.deriv(x=0, mu=0, sigma=1, deriv.order=4) 
@@ -385,13 +370,14 @@ hpi.kcde <- function(x, nstage=2, binned=TRUE, amise=FALSE)
 }
 
 
-Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
   m1 <- (4*pi)^(-1/2)
   Jd <- matrix(1, ncol=d, nrow=d)
   
+  if (missing(binned)) binned <- default.bflag(d,n)
   if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) pilot <- "dunconstr"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
@@ -477,6 +463,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
   m1 <- (4*pi)^(-1/2)
   Jd <- matrix(1, ncol=d, nrow=d)
   
+  if (missing(binned)) binned <- default.bflag(d,n)
   if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) pilot <- "dscalar"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
@@ -551,9 +538,9 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
 ## Multivariate kernel ROC estimators
 #####################################################################
 
-kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
+kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
 {
-  if (is.vector(x1)) {d <- 1; n1 <- length(x1)} else {d <- ncol(x1); n1 <- nrow(x1)}
+  if (is.vector(x1)) {d <- 1; n1 <- length(x1)} else {d <- ncol(x1); n1 <- nrow(x1); x1 <- as.matrix(x1); x2 <- as.matrix(x2)}
   if (!missing(eval.points)) stop("eval.points in kroc not yet implemented")
   
   if (d==1)
@@ -564,15 +551,9 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   else
   {
       if (missing(H1)) H1 <- Hpi.kcde(x=x1, binned=default.bflag(d=d, n=n1), verbose=verbose)
-      ##x1x2min <- pmin(apply(x1,2,min), apply(x2,2,min))
-      ##x1x2max <- pmax(apply(x1,2,max), apply(x2,2,max))
-      ##browser()
-      ##if (missing(xmin)) xmin <- x1x2min - 3.7*max(sqrt(abs(H1)))
-      ##if (missing(xmax)) xmax <- x1x2max + 3.7*max(sqrt(abs(H1)))
       Fhatx1 <- kcde(x=x1, H=H1, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, w=w, tail.flag="upper.tail", verbose=verbose)
   }
 
-  
   ## transform from [0,1] to reals
   y1 <- predict(Fhatx1, x=x1)
   y2 <- predict(Fhatx1, x=x2)
@@ -582,9 +563,6 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   if (missing(hy)) hy <- hpi.kcde(y2, binned=default.bflag(d=1, n=n1))
   Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
   Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
-  ##Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, eval.points=Fhaty2$eval.points)
-  ##Fhaty1 <- kcde(x=y1, h=hy, binned=TRUE, xmin=min(y1,y2)-3.7*hy, xmax=max(y1,y2)+3.7*hy)
-  ##Fhaty2 <- kcde(x=y2, h=hy, binned=TRUE, eval.points=Fhaty1$eval.points)
   Fhaty1$eval.points <- pnorm(Fhaty1$eval.points)
   Fhaty2$eval.points <- pnorm(Fhaty2$eval.points)
 
@@ -670,11 +648,11 @@ summary.kroc <- function(object, ...)
 #############################################################################
 predict.kcde <- function(object, ..., x)
 {
-    return(predict.kde(object, ..., x=x, zero.flag=FALSE))
+    return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
 }
 
 predict.kroc <- function(object, ..., x)
 {
-    return(predict.kde(object, ..., x=x, zero.flag=FALSE))
+    return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
 }
 

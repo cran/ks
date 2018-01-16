@@ -10,7 +10,7 @@ kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merg
     if (missing(tol.clust)) tol.clust <- 1e-2*max(apply(x, 2, IQR)) ##mean(apply(apply(x, 2, range), 2, diff))  
     if (missing(y)) y <- x
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(y),0) 
-    if (missing(H)) H <- Hpi(x, deriv.order=1, binned=TRUE, nstage=2-(d>2))
+    if (missing(H)) H <- Hpi(x, deriv.order=1, binned=default.bflag(d=d, n=n), nstage=2-(d>2))
     Hinv <- chol2inv(chol(H))
     if (is.vector(y)) y <- matrix(y, nrow=1)
    
@@ -39,9 +39,7 @@ kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merg
 
             ## merge clusters which are closer than tol.clust distance
             ms <- ms.merge.dist(ms=ms, tol=tol.clust, verbose=FALSE)
-        }
-        
-       
+        }     
     }
     if (verbose) close(pb)
     path.temp <- ms$path
@@ -177,19 +175,20 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 {
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(ms$y),0)
     min.clust.size <- round(min.clust.size, 0)
+
     if (any(ms$nclust.table<=min.clust.size))
     {
         if (verbose) cat("Min cluster size merging begins. Min size = ", min.clust.size, "\n")
 
         ms.temp <- ms
-        while(any(ms.temp$nclust.table<=min.clust.size))
+        while(any(ms.temp$nclust.table<=min.clust.size) & ms.temp$nclust>1)
         {
             nclust.table <- table(ms.temp$label)
             small.clust.ind <- which.min(nclust.table)
             
             if (nclust.table[small.clust.ind] <= min.clust.size)
             {
-                nearest.clust.ind <- get.knnx(ms.temp$mode, ms.temp$mode, k=2)$nn.index[small.clust.ind,2]
+                nearest.clust.ind <- FNN::get.knnx(ms.temp$mode, ms.temp$mode, k=2)$nn.index[small.clust.ind,2]
 
                 merge.label <- ms$label
                 merge.label[merge.label==small.clust.ind] <- nearest.clust.ind 
@@ -232,14 +231,46 @@ plot.kms <- function(x, splom=TRUE, col, add=FALSE, ...)
     }
     else if (d==3 & !splom)
     {
-        if (!add) plot3d(fhat$x, col=col[fhat$label], ...)
-        else points3d(fhat$x, col=col[fhat$label], ...) 
+        if (!add) rgl::plot3d(fhat$x, col=col[fhat$label], ...)
+        else rgl::points3d(fhat$x, col=col[fhat$label], ...) 
     }
     else if (d>=3)
     {
         pairs(fhat$x, col=col[fhat$label], ...)
     }    
-        
+}
+
+
+
+######################################################################
+## Cluster partition for 2D kernel mean shift
+#####################################################################
+
+kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
+{
+    if (missing(H)) H <- Hpi(x, deriv.order=1, binned=TRUE)
+    tol <- 5 ##3.7
+    tol.H <-  tol * diag(H)
+    if (missing(xmin)) xmin <- apply(x, 2, min) - tol.H
+    if (missing(xmax)) xmax <- apply(x, 2, max) + tol.H
+    if (missing(gridsize)) gridsize <- default.gridsize(2) 
+    xx <- seq(xmin[1], xmax[1], length = gridsize[1])
+    yy <- seq(xmin[2], xmax[2], length = gridsize[2])
+    xy <- expand.grid(xx, yy)
+
+    xy.kms <- kms(x=x, y=xy, H=H, verbose=verbose, ...)
+    xy.lab <- array(xy.kms$label, dim=gridsize)
     
+    fhat <- kde(x=x, binned=TRUE, xmin=xmin, xmax=xmax, bgridsize=gridsize)
+    fhat$estimate <- xy.lab
+
+    fhat <- c(fhat, xy.kms[c("end.points", "label", "mode", "nclust", "nclust.table", "min.clust.size", "tol.iter", "tol.clust")])
+    class(fhat) <- "kde.part"
     
+    return(fhat)
+}
+
+plot.kde.part <- function(x, display="filled.contour", ...)
+{
+    plot.kde(x, abs.cont=sort(unique(as.vector(x$estimate)))-0.5, display=display, ...) 
 }

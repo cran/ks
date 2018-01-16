@@ -3,11 +3,13 @@
 ## Kernel functional estimation
 #############################################################################
 
-kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deriv.vec=TRUE, add.index=TRUE, verbose=FALSE)
+kfe <- function(x, G, deriv.order, inc=1, binned, bin.par, bgridsize, deriv.vec=TRUE, add.index=TRUE, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
-
+  n <- nrow(x)
+  
+  if (missing(binned)) binned <- default.bflag(d, n)
   psir <- dmvnorm.deriv.sum(x=x, Sigma=G, deriv.order=r, inc=inc, binned=binned, bin.par=bin.par, bgridsize=bgridsize, deriv.vec=deriv.vec, verbose=verbose, kfe=TRUE, add.index=FALSE)
  
  if (add.index)
@@ -21,7 +23,7 @@ kfe <- function(x, G, deriv.order, inc=1, binned=FALSE, bin.par, bgridsize, deri
 }
 
 
-kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
+kfe.1d <- function(x, g, deriv.order, inc=1, binned=TRUE, bin.par)
 {
   r <- deriv.order
   n <- length(x)
@@ -32,11 +34,10 @@ kfe.1d <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par)
 }
 
 
-kfe.scalar <- function(x, g, deriv.order, inc=1, binned=FALSE, bin.par, verbose=FALSE)
+kfe.scalar <- function(x, g, deriv.order, inc=1, binned=TRUE, bin.par, verbose=FALSE)
 {
   r <- deriv.order
   d <- ncol(x)
-  ##if (missing(bin.par) & binned) bin.par <- binning(x=x, H=g^2*diag(d))
   
   psir <- dmvnorm.deriv.scalar.sum(x=x, sigma=g, deriv.order=r, inc=inc, kfe=TRUE, binned=binned, bin.par=bin.par, verbose=verbose)
   return(psir)

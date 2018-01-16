@@ -2,43 +2,26 @@
 ### Multivariate kernel density derivative estimate 
 ###############################################################################
 
-kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
+kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
 {
+  ## default values 
   r <- deriv.order
-  
-  if (is.vector(x))
+  ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+  d <- ksd$d; n <- ksd$n; w <- ksd$w
+  if (missing(binned)) binned <- ksd$binned
+  if (missing(gridsize)) gridsize <- ksd$gridsize
+  if (missing(bgridsize)) bgridsize <- gridsize ##ksd$bgridsize
+    
+  if (d==1 & missing(h) & !positive) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
+  if (d>1 & missing(H) & !positive)
   {
-    if (missing(H)) {d <- 1; n <- length(x)}
-    else
-    {
-      if (is.vector(H)) { d <- 1; n <- length(x)}
-      else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-    }
-  }
-  else {d <- ncol(x); n <- nrow(x)}
-
-  if (!missing(w))
-    if (!(identical(all.equal(sum(w), n), TRUE)))
-    {
-      warning("Weights don't sum to sample size - they have been scaled accordingly\n")
-      w <- w*n/sum(w)
-    }
-  if (missing(w)) w <- rep(1,n)
-
-  if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize, deriv.order=r)
-  if (missing(H) & d>1)
-  {
-      if (r==0) nstage=2 else if (r>0) nstage <- 2-(d>2)
-      H <- Hpi(x=x, nstage=nstage, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, deriv.order=r, verbose=verbose)
+      if ((r>0) & (d>2)) nstage <- 1 else nstage <- 2
+      H <- Hpi(x=x, nstage=nstage, binned=default.bflag(d=d, n=n), deriv.order=r, verbose=verbose)
   }
   
   ## compute binned estimator
   if (binned)
   {
-    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-
-    ##if (d>1) { if (!identical(diag(diag(H)), H)) warning("binned estimation for non-diagonal bandwidth matrix H can be inaccurate") }
-    
     if (positive & is.vector(x))
     {
       y <- log(x)
@@ -48,13 +31,17 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
       fhat$x <- x
     }
     else
-      fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.vec=deriv.vec, verbose=verbose)
+        fhat <- kdde.binned(x=x, H=H, h=h, deriv.order=r, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.vec=deriv.vec, verbose=verbose)
+
+    if (!missing(eval.points))
+    {
+        fhat$estimate <- predict(fhat, x=eval.points)
+        fhat$eval.points <- eval.points
+    }
   }
   else
   {
     ## compute exact (non-binned) estimator
-    if (missing(gridsize)) gridsize <- default.gridsize(d)
-    
     ## 1-dimensional    
     if (d==1)
     {
@@ -79,7 +66,6 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
         if (d==2) 
           fhat <- kdde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec, verbose=verbose)
         else if (d==3)
-          ##stop("Exact kdde not yet implemented for 3 dimensions")
           fhat <- kdde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec, verbose=verbose) 
         else 
           stop("Need to specify eval.points for more than 3 dimensions")
@@ -112,15 +98,12 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
     if (is.vector(x)) {d <- 1; n <- length(w)}
     else {d <- ncol(x); n <- nrow(x)}
 
-    if (missing(w)) w <- rep(1,n)
-    
     if (d==1)
-      if (missing(H)) { H <- as.matrix(h^2)} 
-      else {h <- sqrt(H); H <- as.matrix(H)}
+    if (missing(H)) { H <- as.matrix(h^2)} 
+    else {h <- sqrt(H); H <- as.matrix(H)}
 
     if (d==1) Hd <- H else Hd <- diag(diag(H))
-    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-
+    
     bin.par <- binning(x=x, H=Hd, h=h, bgridsize, xmin, xmax, supp=3.7+max(r), w=w)
   }
   else
@@ -222,7 +205,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
      grid4 <- seq(-(L[4]-1), L[4]-1)
      xgrid <- expand.grid(delta[1]*grid1, delta[2]*grid2, delta[3]*grid3, delta[4]*grid4)
   }
-  
+
   deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=FALSE)
 
@@ -242,17 +225,15 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
       est.list <- vector(n.est.list, mode="list")
       
       for (j in 1:n.est.list) est.list[[j]] <- array(0, dim=dim(bin.par$counts))
-      n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE, block.limit=1e6/n.deriv.minimal)
+      if (d^r >= 3^7) n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE, block.limit=1e4)
+      else n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE, block.limit=1e5)
   }
-    
+ 
   for (i in 1:(length(n.seq)-1))
   {  
-      ##difs <- differences(x=x, y=x[n.seq[i]:(n.seq[i+1]-1),])
-      ##sumval <- sumval + sum(dmvnorm.deriv(x=difs, mu=rep(0,d), Sigma=Sigma, deriv.order=r, deriv.vec=deriv.vec))
       if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
       
-      keval <- dmvnorm.deriv(x=xgrid[n.seq[i]:(n.seq[i+1]-1),], mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, deriv.vec=FALSE)
-      keval <- keval$deriv/n
+      keval <- dmvnorm.deriv(x=xgrid[n.seq[i]:(n.seq[i+1]-1),], mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, deriv.vec=FALSE)$deriv/n
       if (r==0) keval <- as.matrix(keval, ncol=1)
       est <- list()
       
@@ -267,8 +248,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
               if (r==0) sf <- rep(1,d)
               else sf <- (-1)^deriv.index.minimal[s,]
               est.temp <- symconv.nd(kevals, bin.par$counts, d=d)
-              for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp 
-              ##if (verbose) setTxtProgressBar(pb, s/nderiv)
+              for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp
           }
       else
       {
@@ -278,8 +258,6 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
               if (r==0) sf <- rep(1,d)
               else sf <- (-1)^deriv.index[s,]
               est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-              ##est[[s]] <- zapsmall(est[[s]])
-              ##if (verbose) setTxtProgressBar(pb, s/ncol(keval))
           }
       }
 
@@ -571,9 +549,9 @@ plotkdde.1d <- function(fhat, ylab="Density derivative function", cont=50, abs.c
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col.fun=topo.colors, kdde.flag=TRUE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col.fun=topo.colors, kdde.flag=TRUE, thin=5, transf=1/4, neg.grad=FALSE, ...)
 {
-  disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2")) 
+  disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2", "quiver"))
   
   if (disp1=="slice" | disp1=="filled.contour" | disp1=="filled.contour2")
   {
@@ -584,15 +562,23 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
     }
   } 
  
-  fhat.temp <- fhat 
-  fhat.temp$deriv.ind <- fhat.temp$deriv.ind[which.deriv.ind,]
-  fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
-  fhat <- fhat.temp
-  class(fhat) <- "kde"
-
-  plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, ...) 
+  if (disp1=="quiver")
+  {
+      if (fhat$deriv.order==1)
+          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, ...)
+      else warning("Quiver plot requires gradient estimate.")
+  }
+  else
+  {
+      fhat.temp <- fhat 
+      fhat.temp$deriv.ind <- fhat.temp$deriv.ind[which.deriv.ind,]
+      fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
+      fhat <- fhat.temp
+      class(fhat) <- "kde"
+      
+      plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, ...) 
+  }
 }
-
 
 
 plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, colors, col.fun=cm.colors, ...)
@@ -618,6 +604,32 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, col
   plot(fhat, abs.cont=abs.cont, colors=colors, ...) 
 }
 
+
+######################################################################
+## Quiver plot
+######################################################################
+
+plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, ...)
+{
+    ev <- fhat$eval.points
+    est <- fhat$estimate
+
+    if (transf!=0){
+        est[[1]] <- sign(est[[1]])*abs(est[[1]])^(transf)
+        est[[2]] <- sign(est[[2]])*abs(est[[2]])^(transf)
+    }
+    
+    thin1.ind <- seq(1, length(ev[[1]]), by=thin)
+    thin2.ind <- seq(1, length(ev[[2]]), by=thin)
+
+    fx <- est[[1]][thin1.ind, thin2.ind]
+    fy <- est[[2]][thin1.ind, thin2.ind]
+    if (neg.grad) { fx <- -fx; fy <- -fy }
+    if (missing(xlab)) xlab <- fhat$names[1]
+    if (missing(ylab)) ylab <- fhat$names[2]
+    
+    OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, ...)
+}
 
   
 #############################################################################
@@ -723,4 +735,44 @@ predict.kdde <- function(object, ..., x)
   return(drop(pk.mat))
 }
 
+
+
+######################################################################
+## Summary kernel curvature 
+######################################################################
+
+kcurv <- function(fhat, compute.cont=TRUE)
+{
+    fhat.curv <- fhat
+    if (is.vector(fhat$H)) d <- 1 else d <- ncol(fhat$H)
+    if (fhat$deriv.order!=2) stop("Requires output from kdde(, deriv.order=2).")
+
+    if (d==1)
+    {
+        Hessian.det <- fhat$estimate 
+        local.mode <- fhat$estimate <0
+        fhat.curv$estimate <- local.mode*abs(Hessian.det)
+    }
+    else if (d>1)
+    {
+        fhat.est <- sapply(fhat$estimate, as.vector)
+        Hessian.det <- sapply(seq(1,nrow(fhat.est)), function(i) {det(invvec(fhat.est[i,]))})
+        Hessian.eigen <- lapply(lapply(seq(1,nrow(fhat.est)), function(i) {invvec(fhat.est[i,])}), eigen, only.values=TRUE)
+        Hessian.eigen <- t(sapply(Hessian.eigen, getElement, "values"))
+        local.mode <- apply(Hessian.eigen <= 0, 1, all)
+        fhat.curv$estimate <- local.mode*array(abs(Hessian.det), dim=dim(fhat$estimate[[1]]))
+    }
+    
+    fhat.curv$deriv.order <- NULL
+    fhat.curv$deriv.ind <- NULL
+    if (compute.cont)
+    {
+        fhat.temp <- fhat.curv
+        fhat.temp$x <- fhat.curv$x[predict(fhat.curv, x=fhat.curv$x)>0,]
+        fhat.temp$estimate <- fhat.temp$estimate
+        fhat.curv$cont <- contourLevels(fhat.temp, cont=1:99)
+    }
+    class(fhat.curv) <- "kde"
+    return(fhat.curv)
+}
 

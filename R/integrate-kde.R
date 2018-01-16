@@ -98,16 +98,25 @@ rkde <- function(n, fhat, positive=FALSE)
 {
   if (positive) x <- log(fhat$x)
   else x <- fhat$x
+
+  if (is.vector(fhat$H)) {d <- 1; nsamp <- length(x)}
+  else {d <- ncol(fhat$H); nsamp <- nrow(x)} 
   
-  nsamp <- length(x)
-  h <- fhat$h
-
   x.ind <- sample(1:nsamp, size=n, replace=TRUE)
-  rkde <- x[x.ind] + h*rnorm(n=n, mean=0, sd=1)
-  if (positive)
-    rkde <- exp(rkde)
+ 
+  if (d==1)
+  {
+      h <- fhat$h
+      rkde.val <- x[x.ind] + h*rnorm(n=n, mean=0, sd=1)
+      if (positive) rkde.val <- exp(rkde.val)
+  }
+  else if (d>1)
+  {
+      H <- fhat$H
+      rkde.val <- x[x.ind,] + rmvnorm(n=n, mean=rep(0,d), sigma=diag(d)) %*% matrix.sqrt(H)
+  }
 
-  return(rkde)
+  return(rkde.val)
 }
 
 

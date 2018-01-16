@@ -1,17 +1,18 @@
 Package: ks
-Version: 1.10.7
-Date: 2017-06-30
+Version: 1.11.0
+Date: 2018-01-13
 Title: Kernel Smoothing
 Author: Tarn Duong <tarn.duong@gmail.com>
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
 Depends: R (>= 1.4.0)
-Imports: FNN (>= 1.1), KernSmooth (>= 2.22), misc3d (>= 0.4-0),
-        multicool, mvtnorm (>= 1.0-0), rgl (>= 0.66)
-Suggests: MASS
-Description: Kernel smoothers for univariate and multivariate data, including density functions, density derivatives, cumulative distributions, modal clustering, discriminant analysis, significant modal regions and two-sample hypothesis testing.   
+Imports: FNN (>= 1.1), kernlab, KernSmooth (>= 2.22), Matrix, mclust,
+        mgcv, misc3d (>= 0.4-0), multicool, mvtnorm (>= 1.0-0),
+        OceanView, rgl (>= 0.66)
+Suggests: MASS, oz
+Description: Kernel smoothers for univariate and multivariate data, including density functions, density derivatives, cumulative distributions, modal clustering, classification (discriminant analysis), significant modal regions and two-sample hypothesis testing.   
 License: GPL-2 | GPL-3
 URL: http://www.mvstat.net/tduong
 NeedsCompilation: yes
-Packaged: 2017-07-01 19:19:12 UTC; tduong
+Packaged: 2018-01-16 00:00:27 UTC; tduong
 Repository: CRAN
-Date/Publication: 2017-07-02 06:18:21 UTC
+Date/Publication: 2018-01-16 18:32:22 UTC

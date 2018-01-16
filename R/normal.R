@@ -1442,28 +1442,6 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
 
 
 ###############################################################################
-## Compute moments of multivariate normal mixture
-###############################################################################
-
-moments.mixt <- function (mus, Sigmas, props)
-{
-  if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one")
-  d <- ncol(Sigmas)
-  k <- length(props)
-  mn <- rep(0, d)
-  va <- matrix(0, nrow=d, ncol=d)
-  for (i in 1:k)
-  {
-    mn <- mn + props[i] * mus[i,]
-    va <- va + props[i] * (Sigmas[((i-1)*d+1):(i*d),] + mus[i,] %*% t(mus[i,]))
-  } 
-  va <- va + mn %*% t(mn)
-  return( list(mean=mn, var=va))
-}
-
-
-###############################################################################
 ## Creates plots of mixture density functions
 #
 ## Parameters
@@ -1800,4 +1778,95 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
   return(rand[sample(n),])
 }
 
+###############################################################################
+## Moments of multivariate normal mixture
+###############################################################################
+
+mvnorm.mixt.moment <- function (mus, Sigmas, props)
+{
+  if (!(identical(all.equal(sum(props), 1), TRUE)))
+    stop("Proportions don't sum to one")
+  d <- ncol(Sigmas)
+  k <- length(props)
+  mn <- rep(0, d)
+  va <- matrix(0, nrow=d, ncol=d)
+  for (i in 1:k)
+  {
+    mn <- mn + props[i] * mus[i,]
+    va <- va + props[i] * (Sigmas[((i-1)*d+1):(i*d),] + mus[i,] %*% t(mus[i,]))
+  } 
+  va <- va + mn %*% t(mn)
+  return( list(mean=mn, var=va))
+}
+
+
+######################################################################
+## Modes for normal mixture
+######################################################################
+
+mvnorm.mixt.mode <- function(mus, Sigmas, props=1, verbose=FALSE)
+{
+    if (!(identical(all.equal(sum(props), 1), TRUE))) 
+        stop("Proportions don't sum to one")
+    
+    if (identical(all.equal(props[1], 1), TRUE)) 
+        mm <- mus
+    else
+    {
+        k <- length(props)
+        d <- ncol(Sigmas)
+        mm <- matrix(0, nrow=k, ncol=d)
+        dmvnorm.mixt.temp <- function(x) {
+            return(-1*dmvnorm.mixt(x=x, mus=mus, Sigmas=Sigmas, props=props))
+        }
+        
+        for (i in 1:k)
+        {
+            result <- nlm(p=mus[i,], f=dmvnorm.mixt.temp, print.level=2*as.numeric(verbose))
+            mm[i,] <- result$estimate
+        }
+    }
+    return(mm)
+}
+
+######################################################################
+## Parition for 2-d normal mixture
+######################################################################
+
+mvnorm.mixt.part <- function(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100, verbose=FALSE)
+{
+    maxSigmas <- 4*max(Sigmas)
+    if (is.vector(mus)) mus <- as.matrix(t(mus))
+    if (missing(xmin)) xmin <- c(min(mus[,1]) - maxSigmas, min(mus[,2]) - maxSigmas)
+    if (missing(xmax)) xmax <- c(max(mus[,1]) + maxSigmas, max(mus[,2]) + maxSigmas)
+    if (missing(gridsize)) gridsize <- c(201,201)
+    x <- seq(xmin[1], xmax[1], length=gridsize[1])
+    y <- seq(xmin[2], xmax[2], length=gridsize[2])
+    xy <- expand.grid(x, y)
+    xy.orig <- xy
+    d <- ncol(Sigmas)
+    k <- length(props)
+    a <- min(c(xmax[1]-xmin[1], xmax[2]-xmin[2]))/1e3
+
+    ## max.iter mean shift iterations
+    for (i in 1:max.iter)
+    {
+        dens <- dmvnorm.mixt(xy, mus=mus, Sigmas=Sigmas, props=props)
+        grad <- dmvnorm.deriv.mixt(xy, mus=mus, Sigmas=Sigmas, props=props,deriv.order=1)
+        xy[,1] <- xy[,1] + a*grad[,1]/dens
+        xy[,2] <- xy[,2] + a*grad[,2]/dens 
+    }
+    xy.dist <- matrix(0, ncol=k, nrow=nrow(xy))
+    for (i in 1:k) xy.dist[,i] <- apply(sweep(xy, 2, mus[i,])^2, 1, sum)
+    xy.lab <- array(apply(xy.dist, 1, which.min), dim=gridsize)
+
+    x.rand <- rmvnorm.mixt(n=1e3, mus=mus, Sigmas=Sigmas, props=props)
+    fhat <- kde(x=x.rand, binned=TRUE)
+    fhat$eval.points <- list(x, y)
+    fhat$estimate <- xy.lab
+    fhat$names <- c("x", "y") 
+    class(fhat) <- "kde.part"
+    
+    return(fhat)
+}
 

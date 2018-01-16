@@ -8,9 +8,9 @@
 }
 \usage{
 kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-  binned=FALSE, bgridsize, w, verbose=FALSE, marginal="kernel")
+  binned, bgridsize, w, verbose=FALSE, marginal="kernel")
 kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
-  eval.points, binned=FALSE, bgridsize, w, verbose=FALSE, compute.cont=TRUE,
+  eval.points, binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE,
   approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
 }
 
@@ -26,7 +26,7 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{matrix of points at which estimate is evaluated}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Default is a vector of all ones.}
   \item{verbose}{flag to print out progress information. Default is FALSE.}

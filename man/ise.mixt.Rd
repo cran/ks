@@ -62,8 +62,8 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 
 
 \references{Chacon J.E., Duong, T. & Wand, M.P. (2011). Asymptotics for
-	general multivariate kernel density derivative
-	estimators. \emph{Statistica Sinica}. \bold{21}, 807-840.  
+  general multivariate kernel density derivative
+  estimators. \emph{Statistica Sinica}, \bold{21}, 807-840.  
 }
 
 \examples{

@@ -584,6 +584,35 @@ Ksum <- function(A,B)
   return(AB)
 }
 
+
+#############################################################################
+## Row-wise Kronecker product
+#############################################################################
+
+rowKpow <- function(A,B,r=1,s=1)
+{
+    A <- as.matrix(A)
+    if (missing(B))
+    {
+        res <- t(apply(t(A), 2, Kpow, r))
+    }
+    else
+    {    
+        B <- as.matrix(B)
+        if (nrow(A)!=nrow(B)) stop("A and B must have same number of rows") 
+        res <- numeric()
+        
+        Ar <- t(apply(t(A), 2, Kpow, r))
+        Bs <- t(apply(t(B), 2, Kpow, s))
+        for (i in 1:ncol(Ar)) res <- cbind(res, apply(Bs, 2, FUN="*", Ar[,i]))
+    }
+    
+    return(drop(res))
+}
+
+getRow <- function(object, n) {return(object[n,])}
+
+
 #### Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
 
 mat.Kpow<-function(A,pow){ 
@@ -793,4 +822,37 @@ Lpdiff <- function(f1, f2, p=2, index=1)
   return(riemann.sum)
 }
 
+
+ks.defaults <- function(x, w, binned, bgridsize, gridsize)
+{
+    ## dimensions of x
+    if (is.vector(x)) {d <- 1; n <- length(x)}
+    ##{
+    ##    if (missing(H)) {d <- 1; n <- length(x)}
+    ##    else
+    ##    {
+    ##        if (is.vector(H)) { d <- 1; n <- length(x)}
+    ##        else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
+    ##    }
+    ##}
+    else {d <- ncol(x); n <- nrow(x)}
+
+    ## default uniform weights
+    if (missing(w)) w <- rep(1,n)
+    else if (!missing(w))
+        if (!(identical(all.equal(sum(w), n), TRUE)))
+        {
+            warning("Weights don't sum to sample size - they have been scaled accordingly\n")
+            w <- w*n/sum(w)
+        }
+   
+    ## default binning flag
+    if (missing(binned)) binned <- default.bflag(d=d, n=n)
+
+    ## defsault grid sizes
+    if (missing(gridsize)) gridsize <- default.gridsize(d)
+    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+
+    return(list(d=d, n=n, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize))
+}
 

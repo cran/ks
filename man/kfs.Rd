@@ -4,11 +4,11 @@
 \title{Kernel feature significance }
 
 \description{
-  Kernel feature signficance for 1- to 6-dimensional data.
+  Kernel feature significance for 1- to 6-dimensional data.
 }
 \usage{
 kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
-    eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, 
+    eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, 
     verbose=FALSE, signif.level=0.05)
 }
 
@@ -21,7 +21,7 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{supp}{effective support for standard normal}
   \item{eval.points}{vector or matrix of points at which estimate is evaluated}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{positive}{flag if 1-d data are positive. Default is FALSE.}
   \item{adj.positive}{adjustment applied to positive 1-d data}

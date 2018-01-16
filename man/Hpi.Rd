@@ -11,9 +11,9 @@
   Plug-in bandwidth for for 1- to 6-dimensional data.}
 
 \usage{
-Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize,
+Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize,
    amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
-Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize,
+Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize,
    amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 }
@@ -29,7 +29,7 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal scaled PI value}
   \item{deriv.order}{derivative order}
@@ -70,14 +70,14 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   
   Duong, T. & Hazelton, M.L. (2003) Plug-in bandwidth matrices for
   bivariate kernel density estimation. \emph{Journal of Nonparametric
-	Statistics}. \bold{15}, 17-30.
+    Statistics}, \bold{15}, 17-30.
   
   Sheather, S.J. & Jones, M.C. (1991) A reliable data-based bandwidth selection
   method for kernel density estimation. \emph{Journal of the Royal
-	Statistical Society Series B}. \bold{53}, 683-690.
+    Statistical Society Series B}, \bold{53}, 683-690.
   
   Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
-  selection. \emph{Computational Statistics}. \bold{9}, 97-116.
+  selection. \emph{Computational Statistics}, \bold{9}, 97-116.
 }
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hscv}}}

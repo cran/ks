@@ -2,9 +2,16 @@
 ## Test statistic for multivariate 2-sample test
 ##############################################################################
 
-kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned=FALSE, bgridsize, verbose=FALSE, pilot="dscalar")
+kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned=FALSE, bgridsize, verbose=FALSE)
 {
   ##if (binned) warning("From ks 1.8.8, binned estimation now only applies to the calculation of the bandwidths H1 and H2, and not the pvalue.") 
+
+  ## default values 
+  ksd <- ks.defaults(x=x1, binned=binned, bgridsize=bgridsize)
+  d <- ksd$d
+  if (missing(binned)) binned <- ksd$binned
+  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+  ##if (missing(gridsize)) gridsize <- ksd$gridsize
   
   if (is.vector(x1) & is.vector(x2))
     return(kde.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, psi1=psi1, psi2=psi2, var.fhat1=var.fhat1, var.fhat2=var.fhat2, binned=binned, bgridsize=bgridsize, verbose=verbose))
@@ -17,8 +24,8 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
   K0 <- drop(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0))
   
   ## kernel estimation for components of test statistic
-  if (missing(H1)) H1 <- Hpi.kfe(x1, deriv.order=0, binned=default.bflag(d=d,n=n1), bgridsize=bgridsize, verbose=FALSE, pilot=pilot)
-  if (missing(H2)) H2 <- Hpi.kfe(x2, deriv.order=0, binned=default.bflag(d=d,n=n2), bgridsize=bgridsize, verbose=FALSE, pilot=pilot)
+  if (missing(H1)) H1 <- Hpi.kfe(x1, deriv.order=0, binned=default.bflag(d=d,n=n1), bgridsize=bgridsize, verbose=FALSE)
+  if (missing(H2)) H2 <- Hpi.kfe(x2, deriv.order=0, binned=default.bflag(d=d,n=n2), bgridsize=bgridsize, verbose=FALSE)
 
   if (missing(psi1)) psi1 <- Qr(x=x1, y=x1, Sigma=H1, verbose=verbose) 
   if (missing(psi2)) psi2 <- Qr(x=x2, y=x2, Sigma=H2, verbose=verbose)
@@ -29,16 +36,16 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
   if (missing(var.fhat1))
   {
     H1.r1 <- Hns(x=x1, deriv.order=1)
-    fhat1.r1 <- kdde(x=x1, H=H1.r1, deriv.order=1, eval.points=apply(x1, 2, mean))$estimate
-    var.fhat1 <- drop(fhat1.r1 %*% S1 %*% t(fhat1.r1))
+    fhat1.r1 <- predict(kdde(x=x1, H=H1.r1, deriv.order=1), x=apply(x1, 2, mean))
+    var.fhat1 <- drop(fhat1.r1 %*% S1 %*% fhat1.r1)
   }
   psi12 <- Qr(x=x1, y=x2, Sigma=H1, verbose=verbose) 
   
   if (missing(var.fhat2))
   {
     H2.r1 <- Hns(x=x2, deriv.order=1)
-    fhat2.r1 <- kdde(x=x2, H=H2.r1, deriv.order=1, eval.points=apply(x2, 2, mean))$estimate
-    var.fhat2 <- drop(fhat2.r1 %*% S2 %*% t(fhat2.r1))
+    fhat2.r1 <- predict(kdde(x=x2, H=H2.r1, deriv.order=1), x=apply(x2, 2, mean))
+    var.fhat2 <- drop(fhat2.r1 %*% S2 %*% fhat2.r1)
   }
   psi21 <- Qr(x=x2, y=x1, Sigma=H2, verbose=verbose) 
   
@@ -50,7 +57,7 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
 
   zstat <- (T.hat-muT.hat)/sqrt(varT.hat)
   pval <- 1-pnorm(zstat)
-  if (pval==0) pval <- pnorm(-abs(zstat)) 
+  if (length(pval==0)>0) pval[pval==0] <- pnorm(-abs(zstat[pval==0]))
  
   val <- list(Tstat=T.hat, zstat=zstat, pvalue=pval, mean=muT.hat, var=varT.hat, var.fhat1=var.fhat1, var.fhat2=var.fhat2, n1=n1, n2=n2, H1=H1, H2=H2, psi1=psi1, psi12=psi12, psi21=psi21, psi2=psi2)
   return(val)
@@ -77,7 +84,7 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
   if (missing(var.fhat1))
   {
     h1.r1 <- hns(x=x1, deriv.order=1) 
-    fhat1.r1 <- kdde(x=x1, h=h1.r1, deriv.order=1, eval.points=mean(x1))$estimate
+    fhat1.r1 <- predict(kdde(x=x1, h=h1.r1, deriv.order=1), x=mean(x1))
     var.fhat1 <- fhat1.r1^2*s1^2
   }
   psi12 <- Qr.1d(x=x1, sigma=h1, y=x2, verbose=verbose)
@@ -85,7 +92,7 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
   if (missing(var.fhat2))
   {
     h2.r1 <- hns(x=x2, deriv.order=1) 
-    fhat2.r1 <- kdde(x=x2, h=h2.r1, deriv.order=1, eval.points=mean(x2))$estimate
+    fhat2.r1 <- predict(kdde(x=x2, h=h2.r1, deriv.order=1), x=mean(x2))
     var.fhat2 <- fhat2.r1^2*s2^2
   }
   psi21 <- Qr.1d(x=x2, sigma=h2, y=x1, verbose=verbose)
@@ -97,11 +104,11 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
   varT.hat <- 3*(n1*var.fhat1 + n2*var.fhat2)/(n1+n2) *(1/n1+1/n2) 
   zstat <- (T.hat-muT.hat)/sqrt(varT.hat)
   pval <- 1-pnorm(zstat)
-  if (pval==0) pval <- pnorm(-abs(zstat)) 
+  if (length(pval==0)>0) pval[pval==0] <- pnorm(-abs(zstat[pval==0])) 
  
   val <- list(Tstat=T.hat, zstat=zstat, pvalue=pval, mean=muT.hat, var=varT.hat, var.fhat1=var.fhat1, var.fhat2=var.fhat2, n1=n1, n2=n2, h1=h1, h2=h2, psi1=psi1, psi12=psi12, psi21=psi21, psi2=psi2)
-  return(val)
 
+  return(val)
 }
 
 
@@ -209,8 +216,15 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
 
 ### multivariate local test
 
-kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
+kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
+  ## default values 
+  ksd <- ks.defaults(x=x1, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+  d <- ksd$d
+  if (missing(binned)) binned <- ksd$binned
+  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+  if (missing(gridsize)) gridsize <- ksd$gridsize
+   
   if (is.vector(x1) & is.vector(x2)) {return(kde.local.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, fhat1=fhat1, fhat2=fhat2, gridsize=gridsize, binned=binned, bgridsize=bgridsize, verbose=verbose, supp=supp, mean.adj=mean.adj, xmin=xmin, xmax=xmax))}
 
   if (missing(H1) & !missing(x1)) H1 <- Hpi(x=x1, deriv.order=0, binned=default.bflag(d=ncol(x1), n=nrow(x1)), bgridsize=bgridsize, verbose=verbose)
@@ -327,8 +341,8 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
 plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", ...)
 { 
     if (missing(col)) col <- c("purple", "darkgreen")
-    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=add, ...)
-    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour2", add=TRUE, ...)
+    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=add, ...)
+    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=TRUE, ...)
      
     if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n")  
 }

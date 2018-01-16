@@ -1,5 +1,6 @@
 \name{Hns}
 \alias{Hns}
+\alias{Hns.diag}
 \alias{hns}
 \alias{Hns.kcde}
 \alias{hns.kcde}
@@ -14,6 +15,7 @@ Normal scale bandwidth.
 
 \usage{
 Hns(x, deriv.order=0)
+Hns.diag(x)
 hns(x, deriv.order=0)
 Hns.kcde(x)
 hns.kcde(x)
@@ -26,7 +28,7 @@ hns.kcde(x)
 
 
 \value{
-  Unconstrained normal scale bandwidth matrix. 
+  Normal scale bandwidth. 
 }
 
 \details{
@@ -41,8 +43,8 @@ hns.kcde(x)
 
 
 \references{Chacon J.E., Duong, T. & Wand, M.P. (2011). Asymptotics for
-	general multivariate kernel density derivative
-	estimators. \emph{Statistica Sinica}. \bold{21}, 807-840.  
+  general multivariate kernel density derivative
+  estimators. \emph{Statistica Sinica}, \bold{21}, 807-840.   
 }
 
 \examples{

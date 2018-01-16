@@ -412,10 +412,10 @@ void interp1d(double *x1, int *n, double *a1, double *b1, int *M1,
 	est[i] = fun[ix1]*(1-fx1) + fun[ix1 + 1]*fx1;
       }
       else if(ix1 <= -1) {
-	est[0] = fun[0]; 
+	est[i] = fun[0]; 
       }
       else if(ix1 >= ixmax1 + 1) {
-	est[ix1] = fun[ixmax1 + 1];  
+	est[i] = fun[ixmax1 + 1];  
       }
     }
   } 

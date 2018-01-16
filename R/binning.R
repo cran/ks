@@ -28,8 +28,9 @@ default.bflag <- function(d, n)
   if (d==1) thr <- 1
   else if (d==2) thr <- 500
   else if (d>2) thr <- 1000
+  bf <- n>thr
   
-  return(n>thr)
+  return(bf)
 }
 
 ########################################################################
@@ -102,9 +103,8 @@ linbin.ks <- function(x, gpoints, w)
    if (missing(w)) w <- rep(1, n)
    a <- gpoints[1]
    b <- gpoints[M]
-   ##xi <- .C("massdist1d", x1=as.double(x[,1]), n=as.integer(n), a1=as.double(a), b1=as.double(b), M1=as.integer(M), weight=as.double(w), est=double(M), PACKAGE="ks")$est
-
    xi <- .C(C_massdist1d, x1=as.double(x[,1]), n=as.integer(n), a1=as.double(a), b1=as.double(b), M1=as.integer(M), weight=as.double(w), est=double(M))$est
+
    return(xi)
 }
 
@@ -120,9 +120,9 @@ linbin2D.ks <- function(x, gpoints1, gpoints2, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   ##out <- .C("massdist2d", x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2), PACKAGE="ks")
-   out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
+      out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
    xi <- matrix(out$est, nrow=M1, ncol=M2)
+
    return(xi)
 }
 
@@ -141,7 +141,6 @@ linbin3D.ks <- function(x, gpoints1, gpoints2, gpoints3, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   ##out <- .C("massdist3d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3), PACKAGE="ks")
    out <- .C(C_massdist3d, x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), weight=as.double(w), est=double(M1*M2*M3))
    xi <- array(out$est, dim=c(M1,M2,M3))
 
@@ -166,7 +165,6 @@ linbin4D.ks <- function(x, gpoints1, gpoints2, gpoints3, gpoints4, w)
    if (missing(w)) w <- rep(1, n)
 
    ## binning for interior points
-   ##out <- .C("massdist4d", x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), x4=as.double(x[,4]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), a4=as.double(a4), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), b4=as.double(b4), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), M4=as.integer(M4), weight=as.double(w), est=double(M1*M2*M3*M4), PACKAGE="ks")
    out <- .C(C_massdist4d, x1=as.double(x[,1]), x2=as.double(x[,2]), x3=as.double(x[,3]), x4=as.double(x[,4]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), a3=as.double(a3), a4=as.double(a4), b1=as.double(b1), b2=as.double(b2), b3=as.double(b3), b4=as.double(b4), M1=as.integer(M1), M2=as.integer(M2), M3=as.integer(M3), M4=as.integer(M4), weight=as.double(w), est=double(M1*M2*M3*M4))
    xi <- array(out$est, dim=c(M1,M2,M3,M4))
 

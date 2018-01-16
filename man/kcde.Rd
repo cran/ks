@@ -13,13 +13,13 @@
 
 \usage{
 kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-  binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
+  binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
   tail.flag="lower.tail")
-Hpi.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE,
+Hpi.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
   verbose=FALSE, optim.fun="nlm")
-Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE,
+Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
   verbose=FALSE, optim.fun="nlm")
-hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
+hpi.kcde(x, nstage=2, binned, amise=FALSE)
 
 \method{predict}{kcde}(object, ..., x)
 }
@@ -94,7 +94,7 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
   Duong, T. (2016) Non-parametric smoothed estimation of multivariate
   cumulative distribution and survival functions, and receiver operating
   characteristic curves. \emph{Journal of the Korean Statistical
-  Society}. \bold{45}, 33-50.
+  Society}, \bold{45}, 33-50.
 }
 
 
@@ -104,7 +104,7 @@ hpi.kcde(x, nstage=2, binned=TRUE, amise=FALSE)
 library(MASS)
 data(iris)
 Fhat <- kcde(iris[,1:2])  
-predict(Fhat, x=iris[,1:2])
+predict(Fhat, x=as.matrix(iris[,1:2]))
 
 ## See other examples in ? plot.kcde
 }

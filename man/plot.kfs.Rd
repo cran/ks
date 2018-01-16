@@ -7,7 +7,7 @@
 }
 
 \usage{
-\method{plot}{kfs}(x, display="filled.contour2", col="orange", colors="orange", abs.cont,
+\method{plot}{kfs}(x, display="filled.contour", col="orange", colors="orange", abs.cont,
    alphavec=0.4, add=FALSE, ...)
 }
 
@@ -33,11 +33,11 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-library(MASS)
+\donttest{library(MASS)
 data(geyser)
 geyser.fs <- kfs(geyser, binned=TRUE)
 plot(geyser.fs)
-}
+}}
 
 
 \keyword{hplot}

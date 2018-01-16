@@ -2,32 +2,19 @@
 ### Feature significance for ultivariate kernel density stimate 
 ###############################################################################
 
-kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, signif.level=0.05)
+kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, signif.level=0.05)
 {
     r <- deriv.order
-  
-    if (is.vector(x))
-    {
-        if (missing(H)) {d <- 1; n <- length(x)}
-        else
-        {
-            if (is.vector(H)) { d <- 1; n <- length(x)}
-            else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-        }
-    }
-    else {d <- ncol(x); n <- nrow(x)}
 
-    if (!missing(w))
-        if (!(identical(all.equal(sum(w), n), TRUE)))
-        {
-            warning("Weights don't sum to sample size - they have been scaled accordingly\n")
-      w <- w*n/sum(w)
-        }
-    if (missing(w)) w <- rep(1,n)
+    ## default values 
+    ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    d <- ksd$d; n <- ksd$n; w <- ksd$w
+    if (missing(binned)) binned <- ksd$binned
+    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+    if (missing(gridsize)) gridsize <- ksd$gridsize
     
-    if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=TRUE, bgridsize=bgridsize, deriv.order=r)
-    
-    if (missing(H) & d>1) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=2, verbose=verbose)
+    if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
+    if (missing(H) & d>1) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=r, verbose=verbose)
     
     if (d==1)
     {
@@ -46,7 +33,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         local.mode <- fhatr.est <= 0
         fhatr.wald <- fhatr.est^2
 
-        gridsize <- length(fhat$estimate)        
+        gs <- length(fhat$estimate)        
     }
     else if (d>1)
     {
@@ -77,7 +64,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         local.mode <- apply(fhatr.eigen <= 0, 1, all)
         fhatr.wald <- apply(fhatr.est^2, 1, sum)/fhat.est
         
-        gridsize <- dim(fhat$estimate)
+        gs <- dim(fhat$estimate)
     }
 
     ## Hochberg adjustment for sequential tests 
@@ -86,12 +73,12 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     pval.wald.ord <- pval.wald[order(pval.wald)]
     num.test <- sum(!is.na(pval.wald.ord))
     
-    if (num.test>=1) num.test.seq <- c(1:num.test, rep(NA, prod(gridsize) - num.test))
-    else num.test.seq <- rep(NA, prod(gridsize))
+    if (num.test>=1) num.test.seq <- c(1:num.test, rep(NA, prod(gs) - num.test))
+    else num.test.seq <- rep(NA, prod(gs))
     reject.nonzero <- ((pval.wald.ord <= signif.level/(num.test + 1 - num.test.seq)) &(pval.wald.ord > 0))  
     reject.nonzero.ind <- which(reject.nonzero)
     
-    signif.wald <- array(FALSE, dim=gridsize)
+    signif.wald <- array(FALSE, dim=gs)
     
     ## p-value == 0 => reject null hypotheses automatically
     signif.wald[which(pval.wald==0, arr.ind=TRUE)] <- TRUE
@@ -104,7 +91,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     ##ess <- n*fhat$estimate*dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=H, props=1)
     ##signif.ess <- ess >= 5
 
-    signif.wald <- signif.wald & local.mode & fhat.est>contourLevels(fhat, cont=99)
+    signif.wald <- signif.wald & array(local.mode, dim=gs) & array(fhat.est>contourLevels(fhat, cont=99), dim=gs)
     fhatr$estimate <- signif.wald+0
     ##fhatr$dens.estimate <- fhat.est
     class(fhatr) <- "kfs"
@@ -113,7 +100,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
 }
 
 
-plot.kfs <- function(x, display="filled.contour2", col="orange", colors="orange", abs.cont, alphavec=0.4, add=FALSE, ...)
+plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange", abs.cont, alphavec=0.4, add=FALSE, ...)
 {
     fhatr <- x
     fhatr$deriv.order <- NULL

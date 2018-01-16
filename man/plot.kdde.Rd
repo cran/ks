@@ -25,6 +25,12 @@
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   RGL window.
+
+  In addition to the display options inherited from \code{plot.kde}, the
+  first derivative has \code{display="quiver"}. This is a quiver plot
+  where the size and direction of the arrow indicates the
+  magnitude/direction of the density gradient. See \code{quiver2D} from
+  the \pkg{OceanView} package for more details. 
 }
 
 
@@ -51,11 +57,18 @@ plot(fhat1, xlab="Under-5")                 ## df/dx
 points(30,predict(fhat1, x=30))
 
 ## bivariate example
+fhat1 <- kdde(x=unicef, deriv.order=1)
+plot(fhat1, display="quiver")
+  ## gradient [df/dx, df/dy]
+
 fhat2 <- kdde(x=unicef, deriv.order=2)
 plot(fhat2, which.deriv.ind=2, display="persp", phi=20)
-plot(fhat2, which.deriv.ind=2, display="filled.contour2", col.fun=topo.colors)
+plot(fhat2, which.deriv.ind=2, display="filled.contour", col.fun=topo.colors)
   ## d^2 f/(dx dy): purple=-ve, green=zero, beige=+ve
-}
+\donttest{s2 <- kcurv(fhat2)
+plot(s2, display="filled.contour")
+  ## summary curvature 
+}}
 
 
 \keyword{hplot}

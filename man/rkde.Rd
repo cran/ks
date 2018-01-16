@@ -1,13 +1,13 @@
-\name{kde.1d}
+\name{rkde}
 \alias{dkde}
 \alias{pkde}
 \alias{qkde}
 \alias{rkde}
 
-\title{Functions for univariate kernel density estimates}
+\title{Derived quantities from kernel density estimates}
 
 \description{
-   Functions for 1-dimensional kernel density estimates.
+   Derived quantities from kernel density estimates.
 }
 
 
@@ -29,11 +29,13 @@
 
 
 \value{
-   For the kernel density estimate \code{fhat},
+   For the 1-d kernel density estimate \code{fhat},
    \code{pkde} computes the cumulative probability for the quantile
    \code{q}, \code{qkde} computes the quantile corresponding to the probability
    \code{p}, \code{dkde} computes the density value at
-   \code{x} and \code{rkde} computes a random sample of size \code{n}.  
+   \code{x}.
+
+   For any kernel density estimate, \code{rkde} computes a random sample of size \code{n}.  
 }
 
 \details{ 
@@ -46,11 +48,19 @@
   Data Analysis}. Chapman & Hall/CRC. London.}
 
 \examples{
+set.seed(8192)
 x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
 fhat <- kde(x=x, binned=TRUE)
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
 qkde(fhat=fhat, p=p1)    
 y <- rkde(fhat=fhat, n=100)
+
+x <- rmvnorm.mixt(n=10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
+fhat <- kde(x=x, binned=TRUE)
+y <- rkde(fhat=fhat, n=1000)
+fhaty <- kde(x=y, binned=TRUE)
+plot(fhat)
+plot(fhaty, add=TRUE, col=2)
 }
 
 \keyword{ smooth }

@@ -8,7 +8,7 @@
 
 \usage{
 kde.test(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, 
-    binned=FALSE, bgridsize, verbose=FALSE, pilot="dscalar")
+    binned=FALSE, bgridsize, verbose=FALSE)
 }
 
 \arguments{
@@ -20,8 +20,6 @@ kde.test(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2,
   \item{binned}{flag for binned estimation. Default is FALSE.}
   \item{bgridsize}{vector of binning grid sizes}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
-  \item{pilot}{"dscalar" = single pilot bandwidth (default) \cr
-    "dunconstr" = single unconstrained pilot bandwidth}
 }
 
 \value{

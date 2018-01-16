@@ -139,12 +139,10 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
     
     if (nstage==1)
     {
-        ##G2r4 <- Gns(r=2*r+4,n=n,Sigma=var(x))
-        ##g2r4 <- prod(sqrt(diag(G2r4)))^(1/d) ##sqrt(G2r4[1,1])
-
         psi2r6.ns <- psins(r=2*r+6, Sigma=S)
-        B3 <- sum(psi2r6.ns^2)  ## approx to reduce memopry usage
-        ##B3 <- drop(psi2r6.ns %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^(2*r+4))) %*% psi2r6.ns) 
+        ##B3 <- sum(psi2r6.ns^2)  ## approx to reduce memory usage
+        B3 <- norm(Matrix(psi2r6.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+4))) %*% Matrix(psi2r6.ns, ncol=1), "2")
+        ##B3 <- B3@x
         if (!scv)
         {
             B1 <- 2*(2*pi)^(-d)*OF(2*r+4)*prod(d+2*(0:(r+2)))  
@@ -160,11 +158,10 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
     }
     else if (nstage==2)
     {
-        ##G2r6.NS <- Gns(r=2*r+6,n=n,Sigma=var(x))
-        ##g2r6.ns <- prod(sqrt(diag(G2r6.NS)))^(1/d)
         psi2r8.ns <- psins(r=2*r+8, Sigma=S)
         ##B3 <- sum(psi2r8.ns^2)
-        B3 <- drop(psi2r8.ns %*% (vec(diag(d)) %*% t(vec(diag(d))) %x% diag(d^(2*r+6))) %*% psi2r8.ns) 
+        B3 <- norm(Matrix(psi2r8.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+6))) %*% Matrix(psi2r8.ns, ncol=1), "2")
+        ##B3 <- B3@x
         if (!scv)
         {
             B1 <- 2*(2*pi)^(-d)*OF(2*r+6)*prod(d+2*(0:(r+3)))  
@@ -513,7 +510,7 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 {
   ## 1-d selector is taken from KernSmooth's dpik
   d <- 1 
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  if (missing(bgridsize)) bgridsize <- default.gridsize(d)
   if (deriv.order==0) h <- dpik(x=x, level=nstage, gridsize=bgridsize)
   else
   {
@@ -547,13 +544,16 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   return(h)
 }
 
-Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
- 
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d > 4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (!is.matrix(x)) x <- as.matrix(x)
+
   if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
   pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
   pre1 <- match.arg(pre, c("scale", "sphere"))
@@ -578,14 +578,11 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
   
   Idr <- diag(d^r)
   RKr <- nu(r=r, diag(d))*2^(-d-r)*pi^(-d/2)
-
-  if (d > 4) binned <- FALSE
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-
+ 
   if (binned)
   {
       H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x)
-      bin.par <- binning(x=x.star, bgridsize=bgridsize, H=H.max)
+      bin.par <- binning(x=x, bgridsize=bgridsize, H=H.max)
       H.max.star <- (((d+8)^((d+6)/2)*pi^(d/2)*RKr)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
       bin.par.star <- binning(x=x.star, bgridsize=bgridsize, H=H.max.star)    
   }
@@ -684,14 +681,17 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsiz
 ## Plug-in diagonal bandwidth matrix
 ###############################################################################
 
-Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
-  if(!is.matrix(x)) x <- as.matrix(x)
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
   RK <- (4*pi)^(-d/2)
- 
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d > 4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  if (!is.matrix(x)) x <- as.matrix(x)
+  
   if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
   pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
   pre1 <- match.arg(pre, c("scale", "sphere"))
@@ -715,10 +715,8 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgri
     Sinv12 <- chol2inv(chol(S12))
   }
   
-  if (d > 4) binned <- FALSE
   if (binned)
   {
-    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
     bin.par <- binning(x=x.star, bgridsize=bgridsize, H=H.max) 
   }
@@ -825,7 +823,7 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
   r <- deriv.order
   d <- ncol(x)
   n <- nrow(x)
-
+  
   if (!binned)
   {
     lscv1 <- Qr(x=x, deriv.order=2*r, Sigma=2*H, inc=1)
@@ -863,20 +861,21 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   d <- 1
   r <- deriv.order
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
-
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  
   if (binned)
   {
-    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     bin.par <- binning(x, bgridsize=bgridsize, h=hnorm)
     lscv.1d.temp <- function(h) { return(lscv.1d(x=x, h=h, binned=binned, bin.par=bin.par, deriv.order=r)) }
   }
   else
   {
     if (r>0) stop("Unbinned hlscv not yet implemented for deriv.order>0") 
-    difs<-x%*%t(rep(1,n))-rep(1,n)%*%t(x)
-    difs<-difs[lower.tri(difs)]  
-    edifs<-exp(-difs^2/2)
-    RK<-1/(2*sqrt(pi))
+    difs <- x%*%t(rep(1,n))-rep(1,n)%*%t(x)
+    difs <- difs[lower.tri(difs)]  
+    edifs <- exp(-difs^2/2)
+    RK <- 1/(2*sqrt(pi))
 
     lscv.1d.temp <- function(h)
     {
@@ -899,14 +898,16 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order 
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d>4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
   ## use normal reference selector as initial condn
   Hnorm <- Hns(x=x, deriv.order=r)
   if (missing(Hstart)) Hstart <- Hnorm
   Hstart <- matrix.sqrt(Hstart)
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>4) binned <- FALSE
   if (binned) bin.par <- binning(x=x, H=Hnorm, bgridsize=bgridsize)
   if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
 
@@ -954,11 +955,13 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d>4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
   Hnorm <- Hns(x=x, deriv.order=r)
   if (missing(Hstart)) Hstart <- Hnorm
-  if (d>4) binned <- FALSE
 
   ## don't truncate optimisation for deriv.order==0
   if (missing(trunc)) {if (deriv.order==0) trunc <- 1e10 else trunc <- 4}
@@ -966,7 +969,6 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   ## linear binning
   if (binned)
   {
-    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
     bin.par <- binning(x=x, bgridsize=bgridsize, H=Hnorm)
   }
   
@@ -1034,8 +1036,6 @@ bcv.mat <- function(x, H1, H2, binned=FALSE)
   
   return(list(bcv=bcv, psimat=psi4.mat))
 }
-
-
 
 ###############################################################################
 ## Find the bandwidth matrix that minimises the BCV for 2-dim
@@ -1338,6 +1338,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   n <- length(x)
   d <- 1
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
   if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   hmin <- 0.1*hnorm
   hmax <- 2*hnorm
@@ -1385,12 +1386,15 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
-  ##S <- var(x)
   r <- deriv.order
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d > 4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  ##if (d>=4 & nstage==2) bgridsize <- rep(11,d)
 
   if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
@@ -1415,10 +1419,6 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
   }
     
   RK <- (4*pi)^(-d/2)
-
-  if (d > 4) binned <- FALSE
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-  if (d>=4 & nstage==2) bgridsize <- rep(11,d)
   
   if (binned)
   {
@@ -1501,14 +1501,17 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, bgridsi
 }
 
 
-Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 {
   n <- nrow(x)
   d <- ncol(x)
   r <- deriv.order
   RK <- (4*pi)^(-d/2)
-  
+  if (missing(binned)) binned <- default.bflag(d=d,n=n)
+  if (d > 4) binned <- FALSE
+  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if(!is.matrix(x)) x <- as.matrix(x)
+
   if (missing(pilot)) {if (d==2 & r==0) pilot <- "samse" else pilot <- "dscalar"}
   pilot1 <- match.arg(pilot, c("amse", "samse", "unconstr", "dunconstr", "dscalar"))
   pre1 <- match.arg(pre, c("scale", "sphere"))
@@ -1533,8 +1536,6 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, bgr
     Sinv12 <- chol2inv(chol(S12))
   }
 
-  if (d > 4) binned <- FALSE
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
   if (binned)
   {
     H.max <- (((d+8)^((d+6)/2)*pi^(d/2)*RK)/(16*(d+2)*n*gamma(d/2+4)))^(2/(d+4))* var(x.star)
@@ -1607,6 +1608,19 @@ Hns <- function(x, deriv.order=0)
   return(H)
 }
 
+Hns.diag <- function(x)
+{
+    if (is.vector(x)){ n<-1; d <- length(x)} 
+    else { n <- nrow(x); d <- ncol(x)}
+    S <- var(x)
+    Delta <- chol2inv(chol(diag(diag(S))))%*%S
+    Deltainv <- chol2inv(chol(Delta))
+    H <- ((4*d*det(Delta)^(1/2))/(2*tr(Deltainv%*% Deltainv) + (tr(Deltainv))^2))^(2/(d+4))*diag(diag(S))*n^(-2/(d+4))
+    return(H)
+    
+}
+
+
 hns <- function(x, deriv.order=0)
 {
   n <- length(x)
@@ -1625,4 +1639,56 @@ Gns <- function(r,n,Sigma)
   d <- ncol(Sigma)
   G <- (2/((n*(d+r))))^(2/(d+r+2))*2*Sigma
   return(G)
+}
+
+
+##############################################################################
+## Normal mixture selector 
+##############################################################################
+
+Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
+{
+    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
+    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
+
+    if (is.vector(x)) {d <- length(x); n <- 1} else {d <- ncol(x); n <- nrow(x)} 
+
+    mus <- t(nmixt.fit$parameters$mean)
+    Sigmas <- matrix(nmixt.fit$parameters$variance$sigma, byrow=TRUE, ncol=d)
+    props <- nmixt.fit$parameters$pro
+    if (mise.flag) H.nm <- Hmise.mixt(samp=n, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+    else H.nm <- Hamise.mixt(samp=n, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+
+    return(H.nm)
+}
+
+Hnm.diag <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
+{
+    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
+    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
+
+    if (is.vector(x)) {d <- length(x); n <- 1} else {d <- ncol(x); n <- nrow(x)} 
+    mus <- t(nmixt.fit$parameters$mean)
+    Sigmas <- matrix(nmixt.fit$parameters$variance$sigma, byrow=TRUE, ncol=d)
+    props <- nmixt.fit$parameters$pro
+    if (mise.flag) H.nm <- Hmise.mixt.diag(samp=n, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+    else H.nm <- Hamise.mixt.diag(samp=n, mus=mus, Sigmas=Sigmas, props=props, deriv.order=deriv.order)
+
+    return(H.nm)
+}
+
+
+hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
+{
+    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind], G=G, verbose=verbose, ...)
+    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
+
+    mus <- nmixt.fit$parameters$mean
+    sigmas <- sqrt(nmixt.fit$parameters$variance$sigma)
+    props <- nmixt.fit$parameters$pro
+    n <- length(x)
+    if (mise.flag) h.nm <- hmise.mixt(samp=n, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order)
+    else h.nm <- hamise.mixt(samp=n, mus=mus, sigmas=sigmas, props=props, deriv.order=deriv.order)
+    
+    return(h.nm)
 }

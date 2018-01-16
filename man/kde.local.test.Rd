@@ -7,7 +7,7 @@
   Kernel density based local two-sample comparison test for 1- to 6-dimensional data.}
 
 \usage{
-kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE, 
+kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned, 
    bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05,
    min.ESS, xmin, xmax)
 }
@@ -16,7 +16,7 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE,
   \item{x1,x2}{vector/matrix of data values}
   \item{H1,H2,h1,h2}{bandwidth matrices/scalar bandwidths.  If these are missing, \code{Hpi} or \code{hpi} is called by default.}
   \item{fhat1,fhat2}{objects of class \code{kde}}
-  \item{binned}{flag for binned estimation. Default is FALSE.}
+  \item{binned}{flag for binned estimation}
   \item{gridsize}{vector of grid sizes}
   \item{bgridsize}{vector of binning grid sizes}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
@@ -36,8 +36,8 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned=FALSE,
   \item{fhat.diff}{difference of KDEs}
   \item{mean.fhat.diff}{mean of the test statistic}  
   \item{var.fhat.diff}{variance of the test statistic}
-  \item{fhat.diff.pos}{binary matrix to indicate locally signficant fhat1 > fhat2}
-  \item{fhat.diff.neg}{binary matrix to indicate locally signficant fhat1 < fhat2}
+  \item{fhat.diff.pos}{binary matrix to indicate locally significant fhat1 > fhat2}
+  \item{fhat.diff.neg}{binary matrix to indicate locally significant fhat1 < fhat2}
   \item{n1,n2}{sample sizes}
   \item{H1,H2,h1,h2}{bandwidth matrices/scalar bandwidths}
 }
@@ -65,7 +65,7 @@ second order correction to the mean value of the test statistic should be comput
 }
 
 \references{
-  Duong, T. (2013) Local signficant differences from non-parametric
+  Duong, T. (2013) Local significant differences from non-parametric
   two-sample tests. \emph{Journal of Nonparametric Statistics},
   \bold{25}, 635-645.
     

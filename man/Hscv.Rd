@@ -9,9 +9,9 @@
   SCV bandwidth for 1- to 6-dimensional data.}
 
 \usage{
-Hscv(x, nstage=2, pre="sphere", pilot, Hstart, binned=FALSE, 
+Hscv(x, nstage=2, pre="sphere", pilot, Hstart, binned, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
-Hscv.diag(x, nstage=2, pre="scale", pilot, Hstart, binned=FALSE, 
+Hscv.diag(x, nstage=2, pre="scale", pilot, Hstart, binned, 
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
@@ -25,7 +25,7 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
     "dunconstr" = single unconstrained pilot bandwidth for deriv.order>0}
   \item{Hstart}{initial bandwidth matrix, used in numerical
     optimisation}
-  \item{binned}{flag for binned kernel estimation. Default is FALSE.}
+  \item{binned}{flag for binned kernel estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{amise}{flag to return the minimal scaled SCV value. Default is FALSE.}
   \item{deriv.order}{derivative order}
@@ -62,15 +62,16 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 }
 
 \references{
-  Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for smoothed cross
-   validation. \emph{Australian & New Zealand Journal of Statistics}. \bold{53}, 331-351.
+  Chacon, J.E. & Duong, T. (2011) Unconstrained pilot selectors for
+  smoothed cross validation. \emph{Australian & New Zealand Journal of
+  Statistics}, \bold{53}, 331-351. 
 
   Duong, T. & Hazelton, M.L. (2005) Cross-validation bandwidth
-    matrices for multivariate kernel density estimation. \emph{Scandinavian Journal 
-  of Statistics}. \bold{32}, 485-506.
-
+  matrices for multivariate kernel density
+  estimation. \emph{Scandinavian Journal of Statistics}, \bold{32}, 485-506.
+   
   Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
-  bandwidth selector. \emph{Annals of Statistics}. \bold{19}, 1919-1932.
+  bandwidth selector. \emph{Annals of Statistics}, \bold{19}, 1919-1932.
 } 
 
 \seealso{\code{\link{Hbcv}}, \code{\link{Hlscv}}, \code{\link{Hpi}}}
