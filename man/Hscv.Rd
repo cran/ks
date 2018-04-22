@@ -10,9 +10,9 @@
 
 \usage{
 Hscv(x, nstage=2, pre="sphere", pilot, Hstart, binned, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 Hscv.diag(x, nstage=2, pre="scale", pilot, Hstart, binned, 
-     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+     bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 \arguments{
@@ -56,6 +56,9 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   Examine the plot from \code{hscv(, plot=TRUE)} to
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
+
+  From \pkg{ks} 1.11.1 onwards, the default optimisation function is
+  \code{optim.fun="optim"}.
   
   For details about the advanced options for \code{binned, Hstart}, 
   see \code{\link{Hpi}}.

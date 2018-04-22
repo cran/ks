@@ -1,8 +1,6 @@
-
 ##############################################################################
 # Kernel discriminant analysis
 ###############################################################################
-
 
 ###############################################################################
 # Find bandwidths for each class in training set, for 2- to 6-dim 
@@ -318,15 +316,17 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
   if (missing(eval.points)) eval.points <- x
-  gr <- sort(unique(x.group))
+  if (is.factor(x.group)) gr <- levels(x.group)
+  else gr <- sort(unique(x.group))
+  
   m <- length(gr)
 
   ## default values 
   ksd <- ks.defaults(x=x, w=w, bgridsize=bgridsize, gridsize=gridsize)
   d <- ksd$d; n <- ksd$n; w <- ksd$w
   binned <- ksd$binned
-  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-  if (missing(gridsize)) gridsize <- ksd$gridsize
+  bgridsize <- ksd$bgridsize
+  gridsize <- ksd$gridsize
 
   if (d==1)
   {
@@ -358,8 +358,8 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
     fhat.wt[,j] <- fhat$estimate[[j]]* fhat$prior.prob[j]
     
   ## Assign y according largest weighted density value 
-  disc.gr.temp <- apply(fhat.wt, 1, which.max)
-  disc.gr <- factor(disc.gr.temp, labels=gr)
+  disc.gr.temp <- apply(fhat.wt, 1, which.max) 
+  disc.gr <- factor(disc.gr.temp, levels=gr)
   if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
   
   if (kde.flag) fhat.list$x.group.estimate <- disc.gr
@@ -645,7 +645,7 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x", yla
 
 plotkda.2d <- function(x, y, y.group, prior.prob=NULL, 
     cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
-    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, col.part, col.pt, ...)
+    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, col.part, col.pt, display.part="filled.contour", ...)
 { 
   fhat <- x
   m <- length(fhat$x)
@@ -659,7 +659,10 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   if (length(lty) < m) lty <- rep(lty, m)
   if (missing(col)) col <- 1:m
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.part)) col.part <- grey.colors(m, start=0.7, end=1, alpha=0.5) 
+  if (missing(col.part))
+      if (display.part=="slice") col.part <- 1:3
+      else col.part <- grey.colors(m, start=0.7, end=1, alpha=0.5)
+ 
   if (missing(col.pt))
     if (missing(y.group)) col.pt <- rep("blue", m)
     else col.pt <- 1:m
@@ -692,31 +695,27 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   
 
   ## set up common grid for all densities 
-  class.grid <- array(0, dim=dim(fhat$est[[1]]))
+  class.grid <- array(0, dim=dim(fhat$estimate[[1]]))
   temp <- matrix(0, ncol=length(fhat$est), nrow=nrow(fhat$est[[1]]))
-  for (j in 1:ncol(fhat$est[[1]]))
+  for (j in 1:ncol(fhat$estimate[[1]]))
   {
-    for (k in 1:length(fhat$est))
-      temp[,k] <- fhat$est[[k]][,j]* prior.prob[k]
+    for (k in 1:length(fhat$estimate))
+      temp[,k] <- fhat$estimate[[k]][,j]* prior.prob[k]
     class.grid[,j] <- max.col(temp)
-    
   }
 
   ## draw partition
 
   fhat.part <- fhat
-  fhat.part$estimate <- class.grid
+  fhat.part$estimate <- class.grid  
   fhat.part$H <- fhat$H[[1]]
   fhat.part$x <- fhat$x[[1]]
   fhat.part$w <- fhat$w[[1]]
   fhat.part$cont <- fhat$cont[[1]]
   class(fhat.part) <- "kde.part"
-  plot(fhat.part, col=col.part, add=TRUE, ...)
   
-  ##.filled.contour(x=fhat$eval[[1]], y=fhat$eval[[2]], z=class.grid, col=col.part, levels=(0:k)+0.5)
-  ##image(fhat$eval[[1]], fhat$eval[[2]], class.grid, col=col.part, xlim=xlim, ylim=ylim, add=TRUE, ...)
-  ##box()
-
+  plot(fhat.part, col=col.part, add=TRUE, display=display.part, drawlabels=drawlabels, ...)
+  
   ## common contour levels removed from >= v1.5.3 
 
   if (missing(abs.cont))
@@ -773,74 +772,75 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
 
 plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alpha=0.5, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, col.pt="blue", add=FALSE, ...)
 {
-  fhat <- x
-   
-  ##d <- 3
-  m <- length(fhat$x) 
-  if (is.null(prior.prob)) prior.prob <- fhat$prior.prob
-  if (m != length(prior.prob))
-    stop("prior.prob not same length as number of components in fhat")
-  if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
-    stop("Sum of prior weights not equal to 1")
+    if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+    if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
 
-  x.names <- colnames(fhat$x[[1]])
-
-  if (missing(xlab)) if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
-  if (missing(ylab)) if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
-  if (missing(zlab)) if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
-             
-  xx <- numeric(0)
-  for (j in 1:m) xx <- rbind(xx, fhat$x[[j]])
-  
-  ## common contour levels removed from >= v1.5.3 
-
-  if (missing(abs.cont))
-  {
-    hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-    nhts <- length(hts[[1]])
-  }
-  else
-  {
-    hts <- abs.cont
-    nhts <- length(hts)
-  }
-  
-  if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
-  if (missing(colors)) colors <- rainbow(m)
-  if (missing(col.pt))
-  if (missing(y.group)) col.pt <- rep("blue", m)
-  else col.pt <- 1:m
-  if (length(col.pt)==1) col.pt <- rep(col.pt, m)
- 
-  xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
-  rgl::plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
-
-  for (j in 1:m)
-  {
-    for (i in 1:nhts)
-    { 
-      cti <- hts[[j]][nhts-i+1]
-      if (cti <= max(fhat$estimate[[j]]))
-        misc3d::contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], f=fhat$estimate[[j]], level=cti, add=TRUE, alpha=alphavec[i], color=colors[j], ...)
-    }
-    if (drawpoints)   ## plot points
+    fhat <- x
+    
+    m <- length(fhat$x) 
+    if (is.null(prior.prob)) prior.prob <- fhat$prior.prob
+    if (m != length(prior.prob))
+        stop("prior.prob not same length as number of components in fhat")
+    if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
+        stop("Sum of prior weights not equal to 1")
+    
+    x.names <- colnames(fhat$x[[1]])
+    
+    if (missing(xlab)) if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
+    if (missing(ylab)) if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
+    if (missing(zlab)) if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
+    
+    xx <- numeric(0)
+    for (j in 1:m) xx <- rbind(xx, fhat$x[[j]])
+    
+    ## common contour levels removed from >= v1.5.3 
+    
+    if (missing(abs.cont))
     {
-      if (missing(y))
-        rgl::points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3],
-                    color=col.pt[j], size=size, alpha=1)
-      else
-      {
-        if (missing(y.group))
-          rgl::points3d(y[,1], y[,2], y[,3], color=col.pt, size=size, alpha=1)
-        else
-        {
-          y.temp <- y[y.group==levels(y.group)[j],]
-          if (nrow(y.temp)>0)
-            rgl::points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=1)
-        }
-      }
+        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+        nhts <- length(hts[[1]])
     }
-  }
+    else
+    {
+        hts <- abs.cont
+        nhts <- length(hts)
+    }
+    
+    if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
+    if (missing(colors)) colors <- rainbow(m)
+    if (missing(col.pt))
+        if (missing(y.group)) col.pt <- rep("blue", m)
+        else col.pt <- 1:m
+    if (length(col.pt)==1) col.pt <- rep(col.pt, m)
+    
+    xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
+    rgl::plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
+
+    for (j in 1:m)
+    {
+        for (i in 1:nhts)
+        { 
+            cti <- hts[[j]][nhts-i+1]
+            if (cti <= max(fhat$estimate[[j]]))
+                misc3d::contour3d(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], f=fhat$estimate[[j]], level=cti, add=TRUE, alpha=alphavec[i], color=colors[j], ...)
+        }
+        if (drawpoints)   ## plot points
+        {
+            if (missing(y))
+                rgl::points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3], color=col.pt[j], size=size, alpha=1)
+            else
+            {
+                if (missing(y.group))
+                    rgl::points3d(y[,1], y[,2], y[,3], color=col.pt, size=size, alpha=1)
+                else
+                {
+                    y.temp <- y[y.group==levels(y.group)[j],]
+                    if (nrow(y.temp)>0)
+                        rgl::points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=1)
+                }
+            }
+        }
+    }
 }
 
 

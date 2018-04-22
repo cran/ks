@@ -37,8 +37,8 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 \references{
   Gramacki, A. & Gramacki, J. (2016) FFT-based fast computation of
   multivariate kernel estimators with unconstrained bandwidth
-  matrices. \emph{Journal of Computational & Graphical Statistics}, DOI: 
-  10.1080/10618600.2016.1182918. 
+  matrices. \emph{Journal of Computational & Graphical Statistics},
+  \bold{26}, 459-462.
 
   Wand, M.P. & Jones, M.C. (1995) \emph{Kernel Smoothing}.
   Chapman & Hall. London.

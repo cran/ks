@@ -51,21 +51,22 @@
 
 \examples{
 ## univariate example
-data(unicef)
-fhat1 <- kdde(x=unicef[,1], deriv.order=1)  ## gradient [df/dx, df/dy]
-plot(fhat1, xlab="Under-5")                 ## df/dx
-points(30,predict(fhat1, x=30))
+data(tempb)
+fhat1 <- kdde(x=tempb[,"tmin"], deriv.order=1)   ## gradient [df/dx, df/dy]
+plot(fhat1, xlab="Min. temp.")                   ## df/dx
+points(20,predict(fhat1, x=20))
 
 ## bivariate example
-fhat1 <- kdde(x=unicef, deriv.order=1)
+fhat1 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=1)
 plot(fhat1, display="quiver")
   ## gradient [df/dx, df/dy]
 
-fhat2 <- kdde(x=unicef, deriv.order=2)
-plot(fhat2, which.deriv.ind=2, display="persp", phi=20)
+\donttest{
+fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
+plot(fhat2, which.deriv.ind=2, display="persp", phi=15)
 plot(fhat2, which.deriv.ind=2, display="filled.contour", col.fun=topo.colors)
   ## d^2 f/(dx dy): purple=-ve, green=zero, beige=+ve
-\donttest{s2 <- kcurv(fhat2)
+s2 <- kcurv(fhat2)
 plot(s2, display="filled.contour")
   ## summary curvature 
 }}

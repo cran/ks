@@ -15,9 +15,7 @@
 
 % Write Rd help files for these functions
 
-\alias{kdr}
 \alias{dwsupp}
-\alias{dckde}
 \alias{reg.ucv}
 \alias{kr}
   

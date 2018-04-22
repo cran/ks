@@ -9,9 +9,9 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
   ## default values 
   ksd <- ks.defaults(x=x1, binned=binned, bgridsize=bgridsize)
   d <- ksd$d
-  if (missing(binned)) binned <- ksd$binned
-  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-  ##if (missing(gridsize)) gridsize <- ksd$gridsize
+  binned <- ksd$binned
+  bgridsize <- ksd$bgridsize
+  gridsize <- ksd$gridsize
   
   if (is.vector(x1) & is.vector(x2))
     return(kde.test.1d(x1=x1, x2=x2, h1=h1, h2=h2, psi1=psi1, psi2=psi2, var.fhat1=var.fhat1, var.fhat2=var.fhat2, binned=binned, bgridsize=bgridsize, verbose=verbose))

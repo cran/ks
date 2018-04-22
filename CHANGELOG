@@ -1,5 +1,22 @@
 Change log file for ks
 
+1.11.1
+-Fixed missing passing of h, H parameter in kde.positive.1d() and
+ kde.positive.2d().
+-Fixed bug in kdecopula.de().
+-Fixed bug in partition colours in 2D plot.kda().
+-Changed default optim.fun="nlm" to optim.fun="optim" everywhere.
+-Moved rgl, misc3d, OceanView from Imports to Suggests, so ks can run in
+ environments which can't install these visual functionalities.
+-Fixed inconsistencies in gridsize and bgridsize default values in
+ ks.defaults().
+-Added varying.grid.interp.*d() in predict method for non-uniform grids.
+-Fixed bug in 1D predict.kde() with non-uniform grid (i.e. output from
+ kde(, positive=TRUE)).
+-Extended limits of grid plotting for in plot.histde().
+-Fixed bug in creating factor levels for estimated labels in kda().
+-Added air, cardio, hsct, plate, quake, tempb datasets.
+
 1.11.0
 -Added multivariate version of rkde().
 -Added histogram estimators histde().
@@ -17,16 +34,18 @@ Change log file for ks
 -Added kernel summary curvature kcurv() for deriv.order=2.
 -Added World Bank data data(worldbank).
 -Added any dim KDE in kde.grid.nd().
--Changed display="filled.contour" for 2D plots to not give adjecent colour
- scalebar.
+-Changed display="filled.contour" for 2D plots to not give adjacent colour
+ scale bar.
 -Fixed bug in 1d kde.test() p-value to return scalar.
+-Fixed bug in interp1d in ks.C which had assigned values outside of estimation
+ array.
 
 1.10.7
 -Changed mvtnorm from `Depends' to `Imports' in DESCRIPTION.
--Implemented per-block caluction for large sampl sizes in kdde(, binned=TRUE).
--Fixed small in col.fun for plot.kcde(, display="filled.contour2")
+-Implemented per-block calculation for large sample sizes in kdde(, binned=TRUE).
+-Fixed small bug in col.fun for plot.kcde(, display="filled.contour2")
 -Swapped order of computation of CDFs in kroc to prevent possible segmentation
-faults.
+ faults.
 -Fixed bug in default bandwidth for kcde().
 -Fixed bug in default estimation grid limits for kda.nd().
 -Corrected formulas for scalar pilots in gdscalar() to match those in book.
@@ -124,7 +143,7 @@ faults.
 -Fixed bug in Hscv(,binned=TRUE), Hscv.diag(,binned=TRUE) which was still
  computing unbinned estimators.
 -Fixed bug in 1-d KDA plot.
--Added sensitivity, specifity as output to compare().
+-Added sensitivity, specificity as output to compare().
 -Made small changes to default selectors to be more consistent across
  selectors.
 -Fixed bug in point colour in rug plot for plotkda.1d().
@@ -196,12 +215,12 @@ faults.
 -Changed output from kfe(binned=TRUE) to be vector not 1-row matrix.
 
 1.8.6
--Implemented calcualtion of Lebesgue measure of level sets of contours,
+-Implemented calculation of Lebesgue measure of level sets of contours,
  contourSizes().
 -Implemented probability contour plot for 1-d KDE plot, i.e. analogue
  to existing 2-d, 3-d contour plot(,disp="slice").
 -Added recursive computations kfe(,Sdr.flag=FALSE) which don't compute
- symmetriser matices explicitly. These are then called in
+ symmetriser matrices explicitly. These are then called in
  Hpi(,Sdr.flag=TRUE) and Hscv(,Sdr.flag=FALSE).
 -Changed pilot="dunconstr" to direct computation rather than indirect
  eta form. This means that Hpi(,pilot="dunconstr", deriv.order=0) and
@@ -241,7 +260,7 @@ faults.
 -Fixed bug for exact estimation in kfe().
 -Added plotting colours as function of z-value in plot.kde(,
  disp="persp").
--Added decoupled calculcation for Hlscv().
+-Added decoupled calculation for Hlscv().
 -Added optim.fun option to select optimiser function in Hpi, Hpi.diag,
  Hlscv, Hlscv.diag, Hscv, Hscv.diag().
 
@@ -258,7 +277,7 @@ faults.
 -Added verbose option to b/w selectors (in double sum) for tracking
  progress.
 -Changed LSCV, SCV selectors optimisation from Nelder-Mead to BFGS.
--Changed Fortran linear bining code to C (and fixed bugs in Fortran
+-Changed Fortran linear binning code to C (and fixed bugs in Fortran
  code).
 -Added modification to linear binning for boundary points.
 -Removed explicit derivatives in BCV selector optimisation.
@@ -284,7 +303,7 @@ faults.
 -Modified output of plotmixt().
 -Added "double.loop" option to kfe() for large samples - increases
  running time, reduces memory.
--Modified dmvnorm.deriv.sum() gto improve memory memory management for
+-Modified dmvnorm.deriv.sum() to improve memory memory management for
  large samples.
 -Cleaned up code for plug-in bandwidth selectors and kernel functional
  estimators.
@@ -320,7 +339,7 @@ faults.
 -Streamlined code sharing with feature package (all binning code now
  contained only in ks).
 -Reorganised and renamed internal bandwidth selection functions,
- mstly double sums of normal densities .
+ mostly double sums of normal densities .
 
 1.5.11
 -Fixed small bugs in drvkde, vech, Hpi(, pilot="unconstr")
@@ -331,7 +350,7 @@ faults.
 
 1.5.x
 -Added normal mixture (A)MISE-optimal selectors: hamise.mixt,
- hmise.mixt, Hamise.mixt, Hmise.mxt.
+ hmise.mixt, Hamise.mixt, Hmise.mixt.
 -Added distribution functions for 1-d KDEs: dkde, pdke, qkde, rkde.
 -Added plug-in selectors for 1-d data (exactly the code for dpik from
  KernSmooth). For KDE, this is hpi, for KDA, this is hkda(,
@@ -341,7 +360,7 @@ faults.
  plot.kda.kde.
 -Added plot3d() capabilities from rgl to 3-d plot - removing own axes
  drawing functions.
--New functions to compute pilot functinal estimators
+-New functions to compute pilot functional estimators
  hat{psi}_r(g). These are exact, and are more efficient than binned
  estimators for small samples (~100), and are available in d > 4.
 

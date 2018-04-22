@@ -33,7 +33,7 @@ kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
     }
 
     if (d==2) fhat <- kde.balloon.2d(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, compute.cont=compute.cont, approx.cont=approx.cont, verbose=verbose)
-    else stop("d!=2 not yet implemented.")
+    else stop("d!=1 not yet implemented.")
 
     if (compute.cont)
         fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
@@ -48,13 +48,11 @@ kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
 
 kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
-    d <- 2
+    d <- ncol(x)
     n <- nrow(x)
     fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, compute.cont=compute.cont, approx.cont=approx.cont)
     fhat.ep <- expand.grid(fhat$eval.points)
    
-    ##H0 <- Hns(x)
-    ##H2 <- Hns(x, deriv.order=2)
     fhat.pilot <- fhat
     fhat2.pilot <- kdde(x=x, deriv.order=2, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w)
 

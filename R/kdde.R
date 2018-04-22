@@ -8,9 +8,9 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   r <- deriv.order
   ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
   d <- ksd$d; n <- ksd$n; w <- ksd$w
-  if (missing(binned)) binned <- ksd$binned
-  if (missing(gridsize)) gridsize <- ksd$gridsize
-  if (missing(bgridsize)) bgridsize <- gridsize ##ksd$bgridsize
+  binned <- ksd$binned
+  gridsize <- ksd$gridsize
+  bgridsize <- ksd$bgridsize
     
   if (d==1 & missing(h) & !positive) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
   if (d>1 & missing(H) & !positive)
@@ -611,6 +611,8 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, col
 
 plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, ...)
 {
+    if (!requireNamespace("OceanView", quietly=TRUE)) stop("Install the OceanView package as it is required.", call.=FALSE)
+
     ev <- fhat$eval.points
     est <- fhat$estimate
 

@@ -16,9 +16,9 @@ kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
   tail.flag="lower.tail")
 Hpi.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
-  verbose=FALSE, optim.fun="nlm")
+  verbose=FALSE, optim.fun="optim")
 Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
-  verbose=FALSE, optim.fun="nlm")
+  verbose=FALSE, optim.fun="optim")
 hpi.kcde(x, nstage=2, binned, amise=FALSE)
 
 \method{predict}{kcde}(object, ..., x)
@@ -84,10 +84,13 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   If the bandwidth \code{H} is missing in \code{kcde}, then
   the default bandwidth is the plug-in selector
   \code{Hpi.kcde}. Likewise for missing \code{h}.
-  No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not invariant to translation/dilation.
+  No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not
+  invariant to translation/dilation.
+
+  From \pkg{ks} 1.11.1 onwards, the default optimisation function is \code{optim.fun="optim"}.
 
   The effective support, binning, grid size, grid range, positive
-  parameters are the same as \code{\link{kde}}. 
+  parameters are the same as \code{\link{kde}}.
 }
 
 \references{

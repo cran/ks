@@ -9,9 +9,9 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     ## default values 
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    if (missing(gridsize)) gridsize <- ksd$gridsize
+    binned <- ksd$binned
+    bgridsize <- ksd$bgridsize
+    gridsize <- ksd$gridsize
     
     if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
     if (missing(H) & d>1) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=r, verbose=verbose)

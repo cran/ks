@@ -7,9 +7,9 @@ kr <- function(x, y, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points
     ## default values 
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    if (missing(gridsize)) gridsize <- ksd$gridsize
+    binned <- ksd$binned
+    bgridsize <- ksd$bgridsize
+    gridsize <- ksd$gridsize
 
     if (is.data.frame(x)) x <- as.matrix(x)
     p <- reg.order
@@ -167,6 +167,8 @@ plot.kr <- function(x, display="rgl", col, col.fun, xlab, ylab, ...)
     if (display!="rgl") plot.kdde(x=x, col=col, col.fun=col.fun, display=display, xlab=xlab, ylab=ylab, ...)
     else
     {
+        if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+        
         if (missing(col.fun)) col.fun <- terrain.colors
         if (missing(col)) col <- terrain.colors(5)[2]
         col.table <- col.fun(round(diff(range(x$estimate, na.rm=TRUE)) + 1,0))

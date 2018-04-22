@@ -7,11 +7,11 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     ## default values 
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    if (missing(gridsize)) gridsize <- ksd$gridsize
+    binned <- ksd$binned
+    gridsize <- ksd$gridsize
+    bgridsize <- ksd$bgridsize
 
-  tail.flag1 <- match.arg(tail.flag, c("lower.tail", "upper.tail")) 
+    tail.flag1 <- match.arg(tail.flag, c("lower.tail", "upper.tail")) 
 
   ## KCDE is computed as cumulative Riemann sum of KDE on a grid
   if (d==1)
@@ -272,29 +272,31 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
   
 
 plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
-
 {
-  hts <- sort(cont/100)
-  nc <- length(hts)
-  
-  if (missing(colors)) colors <- rev(heat.colors(nc))
-  if (missing(xlab)) xlab <- Fhat$names[1]
-  if (missing(ylab)) ylab <- Fhat$names[2]
-  if (missing(zlab)) zlab <- Fhat$names[3]
-  if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
-
-  if (drawpoints)
-    rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  else
-    rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  rgl::bg3d(col="white")
-  
-  for (i in 1:nc)
+    if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+    if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
+    
+    hts <- sort(cont/100)
+    nc <- length(hts)
+    
+    if (missing(colors)) colors <- rev(heat.colors(nc))
+    if (missing(xlab)) xlab <- Fhat$names[1]
+    if (missing(ylab)) ylab <- Fhat$names[2]
+    if (missing(zlab)) zlab <- Fhat$names[3]
+    if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
+    
+    if (drawpoints)
+        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    else
+        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    rgl::bg3d(col="white")
+    
+    for (i in 1:nc)
     if (hts[nc-i+1] < max(Fhat$estimate))
-      misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
-
-  if (box) rgl::box3d()
-  if (axes) rgl::axes3d()
+        misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+    
+    if (box) rgl::box3d()
+    if (axes) rgl::axes3d()
 }
 
 
@@ -370,7 +372,7 @@ hpi.kcde <- function(x, nstage=2, binned, amise=FALSE)
 }
 
 
-Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -456,7 +458,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
   else return(list(H=H, PI=amise.star))
 }
 
-Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="nlm")
+Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)

@@ -49,8 +49,7 @@
   --For truncated kernel density estimation, the main function is
   \code{\link{kde.truncate}}
   \deqn{\hat{f} (\bold{x}) \bold{1}\{\bold{x} \in \Omega\} /
-  \int_{\Omega}\hat{f} (\bold{x}) \, d\bold{x}}{\{hat(f)(x) 1\{x in
-  Omega\}/int  hat(f) 1\{x in Omega\}}
+  \int_{\Omega}\hat{f} (\bold{x}) \, d\bold{x}}{hat(f)(x) 1\{x in Omega\}/int hat(f) 1\{x in Omega\}}
   for a bounded data support \eqn{\Omega}{Omega}. The standard density
   estimate \eqn{\hat{f}}{hat(f)} is truncated and rescaled to give
   unit integral over \eqn{\Omega}{Omega}. Its \code{plot} method calls \code{\link{plot.kde}}.
@@ -89,8 +88,7 @@
   --For kernel summary curvature estimation, the main function is
   \code{\link{kcurv}}
   \deqn{\hat{s}(\bold{x})= - \bold{1}\{{\sf D}^2 \hat{f}(\bold{x}) <
-    0\} \mathrm{abs}(|{\sf D}^2 \hat{f}(\bold{x})|)}{hat(s)(x) = -1(D^2
-    hat(f)(x) <0)*abs(det(D^2 hat(f)(x)))} where \eqn{{\sf D}^2
+    0\} \mathrm{abs}(|{\sf D}^2 \hat{f}(\bold{x})|)}{hat(s)(x) = -1\{D^2 hat(f)(x) <0)*abs(det(D^2 hat(f)(x)))\}} where \eqn{{\sf D}^2
     \hat{f}(\bold{x})}{D^2 hat(f)(x)} is the kernel Hessian matrix estimate.
   It has the same structure as a kernel density estimate so its \code{plot}
   method calls \code{\link{plot.kde}}. 
@@ -125,16 +123,15 @@
   --For kernel-based local 2-sample testing, the main function is
    \code{\link{kde.local.test}} which computes the squared distance
    between the two density estimates as the test  
-   statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}) - \hat{f}_2(\bold{x})]^2}{hat(U)(x) =
-   [hat(f)_1(x) - hat(f)_2(x)]^2} and the corresponding local
+   statistic \deqn{\hat{U}(\bold{x}) = [\hat{f}_1(\bold{x}) -
+     \hat{f}_2(\bold{x})]^2}{hat(U)(x) = [hat(f)_1(x) - hat(f)_2(x)]^2} and the corresponding local
    p-values.  The bandwidth selectors are those used with \code{\link{kde}},
    e.g. \code{\link{hpi}, \link{Hpi}}.  
 
   --For kernel cumulative distribution function estimation, the main
   function is \code{\link{kcde}}
   \deqn{\hat{F}(\bold{x}) = n^{-1} \sum_{i=1}^n
-  \mathcal{K}_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i)}{hat(F)(x) =
-  n^(-1) sum_i intK_H (x - X_i)}
+    \mathcal{K}_{\bold{{\rm H}}} (\bold{x} - \bold{X}_i)}{hat(F)(x) = n^(-1) sum_i intK_H (x - X_i)}
   where \eqn{\mathcal{K}}{intK} is the integrated kernel.  
   The bandwidth selectors are \code{\link{hpi.kcde}},
   \code{\link{Hpi.kcde}}.  Its \code{plot} method is
@@ -144,8 +141,8 @@
   --For kernel estimation of a ROC (receiver operating characteristic)
   curve to compare two samples from \eqn{\hat{F}_1,
   \hat{F}_2}{hat(F)_1, hat(F)_2}, the main function is \code{\link{kroc}}
-  \deqn{(\hat{F}_{\hat{Y}_1}(z),
-  \hat{F}_{\hat{Y}_2}(z))}{(hat(F)_hat(Y1))(z), hat(F_hat(Y2))(z))} based on the cumulative distribution functions of
+  \deqn{\{\hat{F}_{\hat{Y}_1}(z),
+  \hat{F}_{\hat{Y}_2}(z)\}}{\{hat(F)_hat(Y1))(z), hat(F_hat(Y2))(z)\}} based on the cumulative distribution functions of
   \eqn{\hat{Y}_j = \hat{\bar{F}}_1(\bold{X}_j), j=1,2}{hat(Yj)=hat(bar(F))_1(X_j), j=1,2}.
     
   The bandwidth selectors are those used with \code{\link{kcde}},
@@ -175,17 +172,32 @@
   %\eqn{\hat{c}}{hat(c)} and \code{\link{kcde}} for \eqn{\hat{F}_j}{hat(F)_j}.
   %Its \code{plot} method is \code{\link{plot.kde}}.
 
-  --For kernel mean shift clustering, the main function is \code{\link{kms}}. The mean shift recurrence relation of the
-  candidate point \eqn{{\bold x}}{x}
+  --For kernel mean shift clustering, the main function is
+  \code{\link{kms}}. The mean shift recurrence relation of the candidate
+  point \eqn{{\bold x}}{x}   
   \deqn{{\bold x}_{j+1} = {\bold x}_j + \bold{{\rm H}} {\sf D} \hat{f}({\bold
       x}_j)/\hat{f}({\bold x}_j),}{x_j+1 = x_j + H D hat(f)(x_j)/hat(f)(x_j),}
   where \eqn{j\geq 0}{j>=0} and \eqn{{\bold x}_0 = {\bold x}}{x_0 = x},
   is iterated until \eqn{{\bold x}}{x} converges to its
   local mode in the density estimate \eqn{\hat{f}}{hat(f)} by following
   the density gradient ascent paths. This mode determines the cluster
-  label for \eqn{\bold{x}}{x}. 
-  The bandwidth selectors are those used with \code{\link{kdde}(,deriv.order=1)}. 
+  label for \eqn{\bold{x}}{x}.  The bandwidth selectors are those used with
+  \code{\link{kdde}(,deriv.order=1)}.  
 
+  --For kernel density ridge estimtation, the main function is
+    \code{\link{kdr}}. The kernel density ridge recurrence relation of
+    the candidate point \eqn{{\bold x}}{x} 
+    \deqn{{\bold x}_{j+1} = {\bold x}_j + \bold{{\rm U}}_{(d-1)}({\bold
+    x}_j)\bold{{\rm U}}_{(d-1)}({\bold x}_j)^T \bold{{\rm H}} {\sf D}
+    \hat{f}({\bold x}_j)/\hat{f}({\bold x}_j),}{x_j+1 = x_j +
+    U_(d-1)(x_j) U_(d-1)(x_j)^T H D hat(f)(x_j)/hat(f)(x_j),}
+    where \eqn{j\geq 0}{j>=0}, \eqn{{\bold x}_0 = {\bold x}}{x_0 =
+    x} and \eqn{\bold{{\rm U}}_{(d-1)}}{U_(d-1)} is the 1-dimensional projected
+    density gradient, 
+    is iterated until \eqn{{\bold x}}{x} converges to the ridge in the
+    density estimate. The bandwidth selectors are those used with 
+    \code{\link{kdde}(,deriv.order=2)}. 
+  
   -- For kernel feature significance, the main function
      \code{\link{kfs}}.  The hypothesis test at a point \eqn{\bold{x}}{x} is
   \eqn{H_0(\bold{x}): \mathsf{H} f(\bold{x}) < 0}{H0(x): H f(x) < 0},
@@ -203,16 +215,36 @@
   If \eqn{H_0(\bold{x})}{H0(x)} is rejected, then \eqn{\bold{x}}{x}
   belongs to a significant modal region.
   The bandwidth selectors are those used with
-     \code{\link{kdde}(,deriv.order=2)}. Its \code{plot} method is
-     \code{\link{plot.kfs}}.
+  \code{\link{kdde}(,deriv.order=2)}. Its \code{plot} method is
+  \code{\link{plot.kfs}}.
+     
+  --For deconvolution density estimation, the main function is
+  \code{\link{kdcde}}. A weighted kernel density
+  estimation with the contaminated data \eqn{{\bold W}_1, \dots, {\bold
+  W}_n}{W_1, ..., W_n}, 
+  \deqn{\hat{f}_w({\bold x}) = n^{-1} \sum_{i=1}^n
+    \alpha_i K_{\bold{{\rm H}}}({\bold x} - {\bold W}_i),}{hat(f)(x) = n^(-1) sum_i alpha_i K_H (x - W_i),}
+  is utilised, where the weights \eqn{\alpha_1, \dots,
+  \alpha_n}{alpha_1, ..., alpha_n} are chosen via a
+  quadratic optimisation involving the error variance and the
+  regularisation parameter.  The bandwidth selectors are those used with
+  \code{\link{kde}}.
      
   --Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. 
   
   --For an overview of this package with 2-d density estimation, see 
-  \code{vignette("kde")}. 
+  \code{vignette("kde")}.
+
+  --For \pkg{ks} \eqn{\geq}{>=} 1.11.1, the \pkg{misc3d} and and
+  \pkg{rgl} (3-d plot), \pkg{OceanView} (quiver plot),
+  \pkg{oz} (Australian map) packages have been moved from
+  Depends to Suggests. This was done to allow \pkg{ks} to be installed
+  on systems where these latter graphical-based packages can't be
+  installed.  
 }
+
 \author{
   Tarn Duong for most of the package. 
   M.P. Wand for the binned estimation, univariate plug-in selector
@@ -229,7 +261,7 @@
     for Data Analysis}. Oxford University Press, Oxford.
 
   Chacon, J.E. & Duong, T. (2018) \emph{Multivariate Kernel Smoothing
-  and Its Applications}. To appear. 
+  and Its Applications}. Chapman & Hall/CRC. To appear. 
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis, University of Western Australia. 

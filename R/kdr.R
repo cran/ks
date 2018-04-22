@@ -7,9 +7,9 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
     ## default values 
     ksd <- ks.defaults(x=x, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    if (missing(gridsize)) gridsize <- ksd$gridsize
+    binned <- ksd$binned
+    bgridsize <- ksd$bgridsize
+    gridsize <- ksd$gridsize
 
     if (missing(tol.iter)) tol.iter <- 1e-3*min(apply(x, 2, IQR))
     if (missing(tol.seg)) tol.seg <- 1e-2*max(apply(x, 2, IQR))

@@ -2,14 +2,19 @@
 ## Deconvolution KDE
 ######################################################################
 
-dckde <- function(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, verbose=FALSE, ...)
+dckde <- function(...) {return (kdcde(...)) }
+
+kdcde <- function(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, verbose=FALSE, ...)
 {
     ## default values 
     ksd <- ks.defaults(x=x, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n 
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    if (missing(gridsize)) gridsize <- ksd$gridsize
+    ##if (missing(binned)) binned <- ksd$binned
+    ##if (missing(bgridsize)) bgridsize <- ksd$bgridsize
+    ##if (missing(gridsize)) gridsize <- ksd$gridsize
+    binned <- ksd$binned
+    gridsize <- ksd$gridsize
+    bgridsize <- ksd$bgridsize
 
     x <- as.matrix(x)
     if (d==1 & missing(h)) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)

@@ -9,18 +9,14 @@
 \usage{
 kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned, bgridsize, w, verbose=FALSE, marginal="kernel")
-kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
+kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7,
   eval.points, binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE,
-  approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
+  approx.cont=TRUE, marginal="kernel", boundary.supp, boundary.kernel="beta")
 }
 
 \arguments{
   \item{x}{matrix of data values}
-  \item{H,hs}{bandwidth matrix. If these are missing, \code{Hpi.kcde} or
-  \code{hpi.kcde} or \code{hpi} is called by default.}
-  \item{Hfun}{bandwidth matrix function. If missing, \code{Hpi} is the
-    default. This is called only when \code{H} is missing.}
-  \item{Hfun.pilot}{pilot bandwidth matrix - see \code{\link{Hpi}}}
+  \item{H,hs}{bandwidth matrix. If these are missing, \code{Hpi.kcde}/\code{Hpi} or \code{hpi.kcde}/\code{hpi} is called by default.}
   \item{gridsize}{vector of number of grid points}
   \item{gridtype}{not yet implemented}
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
@@ -35,8 +31,9 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
-  \item{boundary.supp}{scaled boundary region is [0, boundary.supp*h]
-  or [1-boundary.supp*h,1] on [0,1]. Default is 1.}
+  \item{boundary.supp}{effective support for boundary region}
+  \item{boundary.kernel}{"beta" = 2nd form of
+  beta boundary kernel, "linear" = linear boundary kernel}
   
 }
   
@@ -64,9 +61,9 @@ kcopula.de(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   the interior region, the usual kernel density estimator
   (\code{\link{kde}}) is used. For those points in the boundary region,
   a product beta kernel based on the boundary corrected univariate beta
-  kernel of Chen (1999) is used. If \code{H} is missing, the default
-  is \code{Hpi.kcde}; if \code{hs} are missing, the default is
-  \code{hpi}.
+  kernel of Chen (1999) is used (\code{\link{kde.boundary}}). If \code{H}
+  is missing, the default is \code{Hpi.kcde}; if \code{hs} are missing,
+  the default is \code{hpi}.
   
   The effective support, binning, grid size, grid range parameters are
   the same  as for \code{\link{kde}}.  

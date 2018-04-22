@@ -143,7 +143,12 @@ grid.interp <- function(x, gridx, f)
 {
   if (!is.list(gridx))
   {
-      fx <- grid.interp.1d(x=as.vector(x), gridx=gridx, f=f)
+      ## uniform grid
+      if (isTRUE(all.equal(diff(gridx), rep(diff(gridx)[1], length(gridx)-1))))
+          fx <- grid.interp.1d(x=as.vector(x), gridx=gridx, f=f)
+      ## non-uniform grid
+      else
+          fx <- varying.grid.interp.1d(x=as.vector(x), gridx=gridx, f=f)
       return(fx)
   }
   else
@@ -151,10 +156,15 @@ grid.interp <- function(x, gridx, f)
     if (is.vector(x)) x <- as.matrix(t(x))
     d <- ncol(x)
     n <- nrow(x)
-
-    if (d==2) fx <- grid.interp.2d(x=x, gridx=gridx, f=f)
-    else if (d==3) fx <- grid.interp.3d(x=x, gridx=gridx, f=f)
-    else
+   
+    gridx.diff <- lapply(lapply(gridx,diff), getElement, 1)
+    for (i in 1:length(gridx.diff)) gridx.diff[[i]] <- rep(gridx.diff[[i]], sapply(gridx, length)[i]-1)
+    uniform.grid.flag <- isTRUE(all.equal(lapply(gridx,diff), gridx.diff))
+    
+    ## uniform grid
+    if (d==2 & uniform.grid.flag) fx <- grid.interp.2d(x=x, gridx=gridx, f=f)
+    else if (d==3 & uniform.grid.flag) fx <- grid.interp.3d(x=x, gridx=gridx, f=f)
+    else ## d >=4 or non-uniform grid
     {    
         gridsize <- sapply(gridx,length)
         gind <- matrix(0, nrow=n, ncol=d)
@@ -192,7 +202,6 @@ grid.interp <- function(x, gridx, f)
             ##w[w>1e5] <- 1e5
             w <- w/sum(w)
             ##fx[i] <- sum(w*f[gind.list[[i]]])
-            ###browser()
             fx[i] <- sum(w*f[gind.list[[i]][2^d:1,]])
         }
     }
@@ -262,6 +271,95 @@ kde.approx <- function(fhat, x)
   return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
 
+
+
+##############################################################################
+## Find the nearest grid points surrounding point x for non-uniform grids 
+##############################################################################
+
+varying.grid.interp <- function(x, gridx, f)
+{
+  if (!is.list(gridx))
+    return(varying.grid.interp.1d(x=x, gridx=gridx, f=f))
+  else
+  {  
+    if (is.vector(x)) x <- as.matrix(t(x))
+    d <- ncol(x)
+    n <- nrow(x)
+    gridsize <- sapply(gridx,length)
+    gind <- matrix(0, nrow=n, ncol=d)
+    
+    for (i in 1:n)
+      for (j in 1:d)
+      {
+        tsum <- sum(x[i,j] >= gridx[[j]])
+        if (tsum==0) gind[i,j] <- 1
+        else gind[i,j] <- tsum
+      }
+  }
+
+  bperm <- list()
+  for (j in 1:d) bperm[[j]] <- elem(1,2)
+  binary.perm <- as.matrix(expand.grid(bperm))
+  colnames(binary.perm) <- NULL
+
+  gind.list <- list()
+  fx <- rep(0, length=n)
+  for (i in 1:n)
+  {
+    gind.list[[i]] <- matrix(gind[i,], nrow=2^d, ncol=d, byrow=TRUE) + binary.perm
+    w <- matrix(0, nrow=2^d, ncol=d)
+    gridw <- matrix(0, nrow=2^d, ncol=d)
+    for (j in 1:d)
+    {
+      gind.list[[i]][,j][gind.list[[i]][,j]>=gridsize[j]] <- gridsize[j]
+      gridw[,j] <- gridx[[j]][gind.list[[i]][,j]]
+    }
+    w <- 1/apply((matrix(as.numeric(x[i,]), nrow=2^d, ncol=d, byrow=TRUE) - gridw)^2, 1, sum)
+    w[w>1e5] <- 1e5
+    w <- w/sum(w)
+    fx[i] <- sum(w*f[gind.list[[i]]])
+  }
+
+  return(fx)
+}
+
+
+varying.grid.interp.1d <- function(x, gridx, f)
+{
+  n <- length(x)
+  gind <- rep(0, length=n)
+
+  for (i in 1:length(x))
+  {
+    tsum <- sum(x[i] >= gridx)
+    if (tsum==0)
+      gind[i] <- 1
+    else
+      gind[i] <- tsum
+  }
+ 
+  gind2 <- gind+1
+  gind2[gind2>length(gridx)] <- length(gridx)
+  gind2[x<=gridx[1]] <- gind[x<=gridx[1]]
+  gind <- cbind(gind, gind2)
+  colnames(gind) <- NULL
+
+  fx <- rep(0, n)
+  for (i in 1:n)
+  {
+    w <- 1/(x[i] - gridx[gind[i,]])^2
+    w[w>1e5] <- 1e5
+    w <- w/sum(w)
+   
+    fx[i] <- sum(w*f[gind[i,]])
+  }
+
+  return(fx)
+}
+
+
+
 predict.kde <- function(object, ..., x, zero.flag=TRUE)
 {
   fhat <- grid.interp(x=x, gridx=object$eval.points, f=object$estimate)
@@ -313,10 +411,10 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     ## default values 
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
-    if (missing(binned)) binned <- ksd$binned
-    if (missing(gridsize)) gridsize <- ksd$gridsize
-    if (missing(bgridsize)) bgridsize <- gridsize ##ksd$bgridsize
-    
+    binned <- ksd$binned
+    gridsize <- ksd$gridsize
+    bgridsize <- ksd$bgridsize
+
     if (d==1 & missing(h) & !positive) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
     if (d>1 & missing(H) & !positive) H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
  
@@ -327,11 +425,11 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
         {
             if (d==1)
             {
-                fhat <- kde.positive.1d(x=x, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
+                fhat <- kde.positive.1d(x=x, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
             }
             else if (d==2)
             {
-                fhat <- kde.positive.2d(x=x, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
+                fhat <- kde.positive.2d(x=x, H=H, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
             }
             ##warning("Using binned estimation for positive data may not be reliable.") 
         }
@@ -362,7 +460,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
                 if (unit.interval)
                     fhat <- kde.unit.interval.1d(x=x, h=h, binned=FALSE)
                 else if (positive)
-                    fhat <- kde.positive.1d(x=x, xmin=xmin, xmax=xmax, w=w, binned=FALSE, adj.positive=adj.positive)
+                    fhat <- kde.positive.1d(x=x, h=h, xmin=xmin, xmax=xmax, w=w, binned=FALSE, adj.positive=adj.positive)
                 else
                     fhat <- kde.grid.1d(x=x, h=h, gridsize=gridsize, supp=supp, positive=positive, xmin=xmin, xmax=xmax, adj.positive=adj.positive, gridtype=gridtype, w=w)
             }
@@ -379,7 +477,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
                 if (d==2)
                 {
                     if (positive)
-                        fhat <- kde.positive.2d(x=x, gridsize=gridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
+                        fhat <- kde.positive.2d(x=x, H=H, gridsize=gridsize, xmin=xmin, xmax=xmax, w=w, binned=binned, adj.positive=adj.positive)
                     else
                         fhat <- kde.grid.2d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose)
                 }
@@ -996,10 +1094,9 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     }
     else
     {
-        ##if (tail(hts, n=1) < max(fhat$estimate)) hts <- c(hts,  max(fhat$estimate))
         if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
-        .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate,  levels=clev, col=col)
-        
+        ##if (col[1]!="transparent") 
+        .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
     }
       
       if (!missing(lwd))
@@ -1030,53 +1127,55 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 
 
 plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col.fun, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
-
 {
-  ## compute contours
-  if (missing(abs.cont))
-  {
-    if (!is.null(fhat$cont))
-      {
-        cont.ind <- rep(FALSE, length(fhat$cont))
-          for (j in 1:length(cont))
-            cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-          
-        if (all(!cont.ind))
-          hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-        else
-          hts <- fhat$cont[cont.ind]
-      }
-    else
-      hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-  }  
-  else
-    hts <- abs.cont
-  
-  nc <- length(hts)
-  
-  if (missing(colors)) colors <- rev(heat.colors(nc))
-  if (!missing(col.fun)) colors <- col.fun(nc)
-  if (missing(xlab)) xlab <- fhat$names[1]
-  if (missing(ylab)) ylab <- fhat$names[2]
-  if (missing(zlab)) zlab <- fhat$names[3]
-  if (missing(alphavec))
-  {
-    if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
-    else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
-  }
- 
-  fhat.eval.mean <- sapply(fhat$eval.points, mean)
-  if (drawpoints)
-    rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-  else
-    rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)  
+    if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+    if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
     
-  for (i in 1:nc)
-    if (hts[nc-i+1] < max(fhat$estimate))
-      misc3d::contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+    ## compute contours
+    if (missing(abs.cont))
+    {
+        if (!is.null(fhat$cont))
+        {
+            cont.ind <- rep(FALSE, length(fhat$cont))
+            for (j in 1:length(cont))
+                cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+            
+            if (all(!cont.ind))
+                hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+            else
+                hts <- fhat$cont[cont.ind]
+        }
+        else
+            hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+    }  
+    else
+        hts <- abs.cont
+    
+    nc <- length(hts)
+    
+    if (missing(colors)) colors <- rev(heat.colors(nc))
+    if (!missing(col.fun)) colors <- col.fun(nc)
+    if (missing(xlab)) xlab <- fhat$names[1]
+    if (missing(ylab)) ylab <- fhat$names[2]
+    if (missing(zlab)) zlab <- fhat$names[3]
+    if (missing(alphavec))
+    {
+        if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
+        else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
+    }
+    
+    fhat.eval.mean <- sapply(fhat$eval.points, mean)
+    if (drawpoints)
+        rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    else
+        rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
 
-  if (axes) rgl::axes3d()
-  if (box) rgl::box3d()
+    for (i in 1:nc)
+        if (hts[nc-i+1] < max(fhat$estimate))
+            misc3d::contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+    
+    if (axes) rgl::axes3d()
+    if (box) rgl::box3d()
 }
 
 

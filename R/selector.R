@@ -141,7 +141,7 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
     {
         psi2r6.ns <- psins(r=2*r+6, Sigma=S)
         ##B3 <- sum(psi2r6.ns^2)  ## approx to reduce memory usage
-        B3 <- norm(Matrix(psi2r6.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+4))) %*% Matrix(psi2r6.ns, ncol=1), "2")
+        B3 <- norm(Matrix(psi2r6.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+4))) %*% Matrix(psi2r6.ns, ncol=1), type="1")
         ##B3 <- B3@x
         if (!scv)
         {
@@ -160,7 +160,7 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
     {
         psi2r8.ns <- psins(r=2*r+8, Sigma=S)
         ##B3 <- sum(psi2r8.ns^2)
-        B3 <- norm(Matrix(psi2r8.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+6))) %*% Matrix(psi2r8.ns, ncol=1), "2")
+        B3 <- norm(Matrix(psi2r8.ns, nrow=1) %*% (Matrix(vec(diag(d)), ncol=1) %*% Matrix(vec(diag(d)), nrow=1) %x% Diagonal(d^(2*r+6))) %*% Matrix(psi2r8.ns, ncol=1), type="1")
         ##B3 <- B3@x
         if (!scv)
         {
@@ -194,7 +194,7 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
 ## Generalisation of Gunconstr for r>0
 ##############################################################################
 
-Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, optim.fun="nlm")
+Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, optim.fun="optim")
 {
   if (scv) cf <- c(2^(-d/2), 2)
   else cf <- c(1,1)
@@ -436,7 +436,7 @@ psifun1.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE)
 ## estimated psi functionals
 ############################################################################
 
-psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -544,7 +544,7 @@ hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
   return(h)
 }
 
-Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -681,7 +681,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, ami
 ## Plug-in diagonal bandwidth matrix
 ###############################################################################
 
-Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -891,7 +891,7 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
 }
 
 
-Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc)
+Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim", trunc)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -948,7 +948,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
 ## H_LSCV,diag
 ###############################################################################
 
-Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm", trunc)
+Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim", trunc)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -1213,7 +1213,7 @@ gamse.scv <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par, b
 ## G_AMSE pilot bandwidth
 ###############################################################################
 
-Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, optim.fun="nlm")
+Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, optim.fun="optim")
 {
   d <- ncol(x)
   n <- nrow(x)
@@ -1386,7 +1386,7 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
 
 
-Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -1501,7 +1501,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
 }
 
 
-Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
   d <- ncol(x)

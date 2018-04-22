@@ -120,11 +120,17 @@ plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density f
             if (fhat$estimate[i,j]>=breaks[2])
             {
                 rect(fhat$eval.points[[1]][i], fhat$eval.points[[2]][j], fhat$eval.points[[1]][i+1], fhat$eval.points[[2]][j+1], col=col[findInterval(fhat$estimate[i,j], breaks)], lty=lty.rect, border=border, lwd=lwd.rect)
-                ##if (add.counts & fhat$estimate[i,j]>0) text((fhat$eval.points[[1]][i]+fhat$eval.points[[1]][i+1])/2, (fhat$eval.points[[2]][j]+fhat$eval.points[[2]][j+1])/2, fhat$estimate[i,j], cex=cex.text)
             }
         }
     if (add.grid)
-        abline(v=fhat$eval.points[[1]], h=fhat$eval.points[[2]], col=border, ...)
+    {
+        for (i in 1:length(fhat$eval.points[[1]]))
+            lines(rep(fhat$eval.points[[1]][i],2), range(fhat$eval.points[[2]]), col=border, ...)
+        for (j in 1:length(fhat$eval.points[[2]]))
+            lines(range(fhat$eval.points[[1]]), rep(fhat$eval.points[[2]][j],2), col=border, ...)
+        ##abline(v=ev1, h=ev2, col=border, ...)
+    }
+    
     if (drawpoints) 
         points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
 }

@@ -106,6 +106,6 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
 \seealso{\code{\link{kdde}}, \code{\link{plot.kfs}}}
 
 \examples{
-## see example is ? plot.fks
+## see example is ? plot.kfs
 }
 \keyword{smooth}

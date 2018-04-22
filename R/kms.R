@@ -231,6 +231,7 @@ plot.kms <- function(x, splom=TRUE, col, add=FALSE, ...)
     }
     else if (d==3 & !splom)
     {
+        if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
         if (!add) rgl::plot3d(fhat$x, col=col[fhat$label], ...)
         else rgl::points3d(fhat$x, col=col[fhat$label], ...) 
     }
@@ -270,7 +271,14 @@ kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
     return(fhat)
 }
 
-plot.kde.part <- function(x, display="filled.contour", ...)
+plot.kde.part <- function(x, display="filled.contour", col, add=FALSE, ...)
 {
-    plot.kde(x, abs.cont=sort(unique(as.vector(x$estimate)))-0.5, display=display, ...) 
+    clev <- sort(unique(as.vector(x$estimate)))
+    if (missing(col)) col <- rainbow(length(clev))
+    for (i in 1:length(clev))
+    {
+        xtemp <- x
+        xtemp$estimate <- x$estimate==clev[i]
+        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, ...)
+    }
 }

@@ -47,11 +47,10 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 {
   ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
   d <- ksd$d; n <- ksd$n; w <- ksd$w
-  if (missing(binned)) binned <- ksd$binned
-  if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-  if (missing(gridsize)) gridsize <- ksd$gridsize
+  binned <- ksd$binned
+  gridsize <- ksd$gridsize
+  bgridsize <- ksd$bgridsize
   
-
   if (missing(H)) H <- Hpi.kcde(x=x, binned=default.bflag(d=d,n=n))
   Fhat <- kcde(x=x, H=H, gridsize=gridsize, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, w=w, verbose=verbose, tail.flag="lower.tail")
 
@@ -165,9 +164,9 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 ## Kernel copula density estimator
 #############################################################################
 
-kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE, approx.cont=TRUE, boundary.supp, marginal="kernel", Hfun.pilot="dscalar")
+kcopula.de <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE, approx.cont=TRUE, marginal="kernel", boundary.supp, boundary.kernel="beta")
 {
-  warning("Use kcopula.de with care as it can be less accurate than kdecop in the kdecopula package.")
+  ##warning("Use kcopula.de with care as it can be less accurate than kdecop in the kdecopula package.")
 
   ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
   d <- ksd$d; n <- ksd$n; w <- ksd$w
@@ -175,20 +174,9 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (missing(bgridsize)) bgridsize <- ksd$bgridsize
   if (missing(gridsize)) gridsize <- ksd$gridsize
   
-  if (missing(hs))
-  {
-    hs <- rep(0, d)
-    for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
-  }
-  if (missing(Hfun)) Hfun <- Hpi
-  if (missing(H))
-  {  
-    ##if (d==2)
-      H <- do.call(Hfun, list(x=y, binned=default.bflag(d=d, n=nrow(y)), bgridsize=bgridsize, pilot=Hfun.pilot, verbose=verbose))
-    ##else if (d==3)
-    ##  H <- do.call(Hfun, list(x=y, binned=default.bflag(d=d, n=nrow(y)), bgridsize=bgridsize, pilot=Hfun.pilot, verbose=verbose)) 
-  }
-
+  hs <- rep(0, d)
+  for (i in 1:d) hs[i] <- hpi.kcde(x=x[,i], binned=TRUE)
+  
   ## generate pseudo-uniform values
   marginal1 <- match.arg(marginal, c("kernel", "empirical")) 
   if (marginal1=="kernel")
@@ -201,18 +189,16 @@ kcopula.de <- function(x, H, Hfun, hs, gridsize, gridtype, xmin, xmax, supp=3.7,
     ## empirical pseudo-uniform
     y <- pseudo.unif.empirical(x=x, y=x)  
   }
-  
-  #######################################################################
-  ## Need to calibrate boundary.supp value for d=3
-  #######################################################################
-  if (missing(boundary.supp)) { if (d==2) boundary.supp <- 1; if (d==3) boundary.supp <- 0.5 }
-
-  ## kernel copula density is boundary kernel estimator 
+  colnames(y) <- colnames(x)
+  if (missing(H)) H <- Hns(y)
+  ##    H <- do.call(Hfun, list(x=y, binned=default.bflag(d=d, n=nrow(y)), bgridsize=bgridsize, pilot=Hfun.pilot, verbose=verbose))
+ 
+  ## kernel copula density is boundary kernel estimator
   if (d==2 | d==3) 
-    chat <- kde.boundary(x=y, H=H, gridsize=gridsize, supp=supp, xmin=rep(0,d), xmax=rep(1,d), gridtype=gridtype, w=w, boundary.supp=boundary.supp, binned=binned, verbose=verbose, bgridsize=bgridsize)
+    chat <- kde.boundary(x=y, H=H, gridsize=gridsize, supp=supp, xmin=rep(0,d), xmax=rep(1,d), gridtype=gridtype, w=w, boundary.supp=boundary.supp, binned=FALSE, verbose=verbose, boundary.kernel=boundary.kernel)
  else
    stop("kcopula.de requires 2-d or 3-d data.")
-   
+
   ## normalise KDE to integrate to 1 
   chat$estimate <- chat$estimate/sum(chat$estimate*apply(sapply(chat$eval.points, diff), 1, prod)[1])
   chat$names <- parse.name(x) 

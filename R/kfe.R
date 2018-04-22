@@ -79,7 +79,7 @@ hpi.kfe <- function(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.ord
 }
 
 
-Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   if (deriv.order!=0) stop("Currently only deriv.order=0 is implemented")
    
@@ -208,7 +208,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
 
 
  
-Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE,  deriv.order=0, verbose=FALSE, optim.fun="nlm")
+Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE,  deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   if (deriv.order!=0) stop("Currently only dervi.order=0 is implemented")
 

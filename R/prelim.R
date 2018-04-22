@@ -827,14 +827,6 @@ ks.defaults <- function(x, w, binned, bgridsize, gridsize)
 {
     ## dimensions of x
     if (is.vector(x)) {d <- 1; n <- length(x)}
-    ##{
-    ##    if (missing(H)) {d <- 1; n <- length(x)}
-    ##    else
-    ##    {
-    ##        if (is.vector(H)) { d <- 1; n <- length(x)}
-    ##        else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-    ##    }
-    ##}
     else {d <- ncol(x); n <- nrow(x)}
 
     ## default uniform weights
@@ -849,10 +841,16 @@ ks.defaults <- function(x, w, binned, bgridsize, gridsize)
     ## default binning flag
     if (missing(binned)) binned <- default.bflag(d=d, n=n)
 
-    ## defsault grid sizes
+    ## default grid sizes
+    if (missing(bgridsize))
+    {
+        if (missing(gridsize)) bgridsize <- default.bgridsize(d)
+        else bgridsize <- gridsize
+    }
     if (missing(gridsize)) gridsize <- default.gridsize(d)
-    if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
-
+    if (length(gridsize)==1) gridsize <- rep(gridsize, d)
+    if (length(bgridsize)==1) bgridsize <- rep(bgridsize, d)
+ 
     return(list(d=d, n=n, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize))
 }
 

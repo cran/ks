@@ -13,9 +13,9 @@
 kfe(x, G, deriv.order, inc=1, binned, bin.par, bgridsize, deriv.vec=TRUE,
     add.index=TRUE, verbose=FALSE)
 Hpi.kfe(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, 
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 Hpi.diag.kfe(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE,
-    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+    bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
 }
 

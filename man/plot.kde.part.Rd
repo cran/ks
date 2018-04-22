@@ -13,7 +13,7 @@ mvnorm.mixt.part(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100,
    verbose=FALSE)
 kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 
-\method{plot}{kde.part}(x, display="filled.contour", ...)
+\method{plot}{kde.part}(x, display="filled.contour", col, add=FALSE, ...)
 }
 
 \arguments{
@@ -30,6 +30,8 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
   \item{display}{type of display, "slice" for contour plot,
     "persp" for perspective plot, "image" for image plot, "filled.contour"
     for filled contour plot (1st form), "filled.contour2" (2nd form)}
+  \item{col}{vector of plotting colours}
+  \item{add}{flag to add to current plot. Default is FALSE.}
   \item{...}{other parameters}
 }
   

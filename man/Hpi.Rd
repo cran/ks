@@ -12,9 +12,9 @@
 
 \usage{
 Hpi(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize,
-   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 Hpi.diag(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize,
-   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="nlm")
+   amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 }
 
@@ -62,6 +62,10 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   estimates are computed over a binning grid defined 
   by \code{bgridsize}. Otherwise it's computed exactly.  
   If \code{Hstart} is not given then it defaults to \code{Hns(x)}.
+
+  From \pkg{ks} 1.11.1 onwards, the default optimisation function is
+  \code{optim.fun="optim"}. To reinstate the previous functionality, use
+  \code{optim.fun="nlm"}.  
 }
 
 \references{
@@ -76,7 +80,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   method for kernel density estimation. \emph{Journal of the Royal
     Statistical Society Series B}, \bold{53}, 683-690.
   
-  Wand, M.P. & Jones, M.C. (1994) Multivariate plugin bandwidth
+  Wand, M.P. & Jones, M.C. (1994) Multivariate plug-in bandwidth
   selection. \emph{Computational Statistics}, \bold{9}, 97-116.
 }
 
