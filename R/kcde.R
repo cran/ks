@@ -273,6 +273,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
 
 plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
 {
+    ## suggestions from Viktor Petukhov 08/03/2018
     if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
     if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
     

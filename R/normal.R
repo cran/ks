@@ -71,8 +71,9 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 
 
 ###############################################################################
-## Partial derivatives of the univariate normal (mean 0) 
-## 
+## Derivatives of the univariate normal 
+## (code: J.E.Chacon 08/06/2018)
+##
 ## Parameters
 ## x - points to evaluate at
 ## sigma - std deviation
@@ -82,40 +83,29 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 ## r-th derivative at x
 ###############################################################################
 
-dnorm.deriv <- function(x, mu=0, sigma=1, deriv.order=0)
+dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
 {
-  r <- deriv.order
-  phi <- dnorm(x, mean=mu, sd=sigma) 
-  x <- (x - mu)
-  
-  if (r==0)
-    return(phi)
-  else if (r==1)
-    derivt <- -x/sigma^2*phi
-  else if (r==2)
-    derivt <- (x^2-sigma^2)/sigma^4*phi
-  else if (r==3)
-    derivt <- -(x^3 - 3*x*sigma^2)/sigma^6*phi
-  else if (r==4)
-    derivt <- (x^4 - 6*x^2*sigma^2 + 3*sigma^4)/sigma^8*phi
-  else if (r==5)
-    derivt <- -(x^5 - 10*x^3*sigma^2 + 15*x*sigma^4)/sigma^10*phi
-  else if (r==6)
-    derivt <- (x^6 - 15*x^4*sigma^2 + 45*x^2*sigma^4 - 15*sigma^6)/sigma^12*phi
-  else if (r==7)
-    derivt <- -(x^7 - 21*x^5*sigma^2 + 105*x^3*sigma^4 - 105*x*sigma^6)/sigma^14*phi
-  else if (r==8)
-    derivt <- (x^8 - 28*x^6*sigma^2 + 210*x^4*sigma^4 - 420*x^2*sigma^6 + 105*sigma^8)/sigma^16*phi
-  else if (r==9)
-    derivt <- -(x^9 - 36*x^7*sigma^2 + 378*x^5*sigma^4 - 1260*x^3*sigma^6 + 945*x*sigma^8)/sigma^18*phi
-  else if (r==10)
-    derivt <- (x^10 - 45*x^8*sigma^2 + 630*x^6*sigma^4 - 3150*x^4*sigma^6 + 4725*x^2*sigma^8 - 945*sigma^10)/sigma^20*phi
-  
-  if (r > 10)
-    stop ("Up to 10th order derivatives only")
-    
-  return(derivt)
+    r <- deriv.order
+    phi <- dnorm(x, mean=mu, sd=sigma)
+    x <- (x - mu)
+    arg <- x / sigma
+    hmold0 <- 1
+    hmold1 <- arg
+    hmnew <- 1
+    if (r == 1)
+        hmnew <- hmold1
+    if (r >= 2) 
+        for (i in (2:r)) {
+            hmnew <- arg * hmold1 - (i - 1) * hmold0
+            hmold0 <- hmold1
+            hmold1 <- hmnew
+        }
+    derivt <- (-1)^r * phi * hmnew / sigma^r
+
+    return(derivt)
 }
+  
+
 
 ###############################################################################
 ## Double sum  of K(X_i - X_j) used in density derivative estimation

@@ -184,7 +184,7 @@
   label for \eqn{\bold{x}}{x}.  The bandwidth selectors are those used with
   \code{\link{kdde}(,deriv.order=1)}.  
 
-  --For kernel density ridge estimtation, the main function is
+  --For kernel density ridge estimation, the main function is
     \code{\link{kdr}}. The kernel density ridge recurrence relation of
     the candidate point \eqn{{\bold x}}{x} 
     \deqn{{\bold x}_{j+1} = {\bold x}_j + \bold{{\rm U}}_{(d-1)}({\bold

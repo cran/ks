@@ -214,7 +214,7 @@ summary.kms <- function(object, ...)
     cat("Number of clusters =", object$nclust, "\n")
     cat("Cluster label table =", object$nclust.table, "\n")
     cat("Cluster modes =\n")
-    print(object$mode, ...)
+    print(as.data.frame(object$mode), ...)
 }
 
 
@@ -231,6 +231,7 @@ plot.kms <- function(x, splom=TRUE, col, add=FALSE, ...)
     }
     else if (d==3 & !splom)
     {
+        ## suggestions from Viktor Petukhov 08/03/2018
         if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
         if (!add) rgl::plot3d(fhat$x, col=col[fhat$label], ...)
         else rgl::points3d(fhat$x, col=col[fhat$label], ...) 

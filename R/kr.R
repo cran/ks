@@ -167,6 +167,7 @@ plot.kr <- function(x, display="rgl", col, col.fun, xlab, ylab, ...)
     if (display!="rgl") plot.kdde(x=x, col=col, col.fun=col.fun, display=display, xlab=xlab, ylab=ylab, ...)
     else
     {
+        ## suggestions from Viktor Petukhov 08/03/2018
         if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
         
         if (missing(col.fun)) col.fun <- terrain.colors

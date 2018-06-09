@@ -1,5 +1,9 @@
 Change log file for ks
 
+1.11.2
+-Fixed error in predict.kda() incorrectly assigning class labels.
+-Replaced dnorm.deriv() by version from J.E.C to compute arbitrary derivatives.
+
 1.11.1
 -Fixed missing passing of h, H parameter in kde.positive.1d() and
  kde.positive.2d().

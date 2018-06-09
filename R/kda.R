@@ -316,8 +316,8 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
   if (missing(eval.points)) eval.points <- x
-  if (is.factor(x.group)) gr <- levels(x.group)
-  else gr <- sort(unique(x.group))
+  ##if (is.factor(x.group)) gr <- levels(x.group)
+  gr <- sort(unique(x.group))
   
   m <- length(gr)
 
@@ -358,8 +358,9 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
     fhat.wt[,j] <- fhat$estimate[[j]]* fhat$prior.prob[j]
     
   ## Assign y according largest weighted density value 
-  disc.gr.temp <- apply(fhat.wt, 1, which.max) 
-  disc.gr <- factor(disc.gr.temp, levels=gr)
+  disc.gr.temp <- apply(fhat.wt, 1, which.max)
+  ##disc.gr <- factor(disc.gr.temp, levels=gr[order(unique(x.group))])
+  disc.gr <- as.factor(gr[disc.gr.temp])
   if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
   
   if (kde.flag) fhat.list$x.group.estimate <- disc.gr
@@ -526,8 +527,8 @@ predict.kda <- function(object, ..., x)
       fhat.temp[,j] <- fhat$prior.prob[j]*grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate[[j]])
   }
   est.group <- apply(fhat.temp, 1, which.max)
-  est.group <- unique(fhat$x.group)[est.group]
-
+  ##est.group <- unique(fhat$x.group)[est.group]
+  est.group <- as.factor(sort(unique(fhat$x.group))[est.group])
   return(est.group)
 }
 
@@ -772,6 +773,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
 
 plotkda.3d <- function(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, alpha=0.5, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, col.pt="blue", add=FALSE, ...)
 {
+    ## suggestions from Viktor Petukhov 08/03/2018
     if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
     if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
 
