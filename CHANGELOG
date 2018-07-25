@@ -1,11 +1,17 @@
 Change log file for ks
 
+1.11.3
+-Fixed bug to kda() which set prior.prob values to default sample proportion
+ even when set explicitly differently.
+-Fixed bug in partition plot for 2D plot.kda().
+
 1.11.2
 -Fixed error in predict.kda() incorrectly assigning class labels.
 -Replaced dnorm.deriv() by version from J.E.C to compute arbitrary derivatives.
+-Added verbose option to kde.points().
 
 1.11.1
--Fixed missing passing of h, H parameter in kde.positive.1d() and
+-Fixed missing passing of h, H parameters in kde.positive.1d() and
  kde.positive.2d().
 -Fixed bug in kdecopula.de().
 -Fixed bug in partition colours in 2D plot.kda().

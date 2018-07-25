@@ -408,7 +408,7 @@ predict.kde <- function(object, ..., x, zero.flag=TRUE)
 
 kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
 {
-    ## default values 
+    ## default values
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
     binned <- ksd$binned
@@ -417,7 +417,8 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
 
     if (d==1 & missing(h) & !positive) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
     if (d>1 & missing(H) & !positive) H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
- 
+
+    if (binned & d>4) stop("Binned estimation for d>4 not implemented. Set binned=TRUE for exact estimation.")
     ## compute binned estimator
     if (binned)
     {
@@ -488,7 +489,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
                 ##stop("Need to specify eval.points for more than 3 dimensions")
             }
             else
-                fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w)     
+                fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose)     
         }
     }
     
@@ -789,7 +790,7 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 {
     ## initialise grid 
     n <- nrow(x)
-   
+
     if (is.null(gridx))
         gridx <- make.grid.ks(x, matrix.sqrt(H), tol=supp, gridsize=gridsize, xmin=xmin, xmax=xmax, gridtype=gridtype) 
     ##suppx <- make.supp(x, matrix.sqrt(H), tol=supp)
@@ -827,17 +828,28 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ## H - bandwidth matrix 
 ###############################################################################
 
-kde.points <- function(x, H, eval.points, w) 
+kde.points <- function(x, H, eval.points, w, verbose) 
 {
-  n <- nrow(x)
-  ##Hs <- numeric(0)
-  ##for (i in 1:n)
-  ##  Hs <- rbind(Hs, H)
-  Hs <- replicate(n, H, simplify=FALSE) 
-  Hs <- do.call(rbind, Hs)
-  fhat <- dmvnorm.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n)
+    n <- nrow(x)
+    d <- ncol(x)
+    ne <- nrow(eval.points)
+    Hs <- replicate(n, H, simplify=FALSE) 
+    Hs <- do.call(rbind, Hs)
+    fhat <- dmvnorm.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, verbose=verbose)
 
-  return(list(x=x, eval.points=eval.points, estimate=fhat, H=H, gridded=FALSE))
+    ##if (verbose) pb <- txtProgressBar()
+    ##n.seq <- block.indices(ny=ne, nx=n, d=d, r=0)
+    ##fhat <- numeric()
+    ##for (i in 1:(length(n.seq)-1))
+    ##{  
+    ##    difs <- differences(x=x, y=eval.points[n.seq[i]:(n.seq[i+1]-1),])
+    ##    dens <- dmvnorm(x=-difs, mean=rep(0,d), sigma=H)
+    ##    fhat <- c(fhat, aggregate(w[n.seq[i]:(n.seq[i+1]-1)]*dens, by=list(rep(n.seq[i]:(n.seq[i+1]-1), each=n)), FUN=mean)$x)
+    ##    if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1)) 
+    ##}
+    ##if (verbose) close(pb)
+    
+    return(list(x=x, eval.points=eval.points, estimate=fhat, H=H, gridded=FALSE))
 }
 
 kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w) 

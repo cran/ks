@@ -280,6 +280,6 @@ plot.kde.part <- function(x, display="filled.contour", col, add=FALSE, ...)
     {
         xtemp <- x
         xtemp$estimate <- x$estimate==clev[i]
-        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, ...)
+        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, ...)
     }
 }

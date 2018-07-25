@@ -328,6 +328,10 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
   bgridsize <- ksd$bgridsize
   gridsize <- ksd$gridsize
 
+  if (!is.null(prior.prob))
+      if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
+          stop("Sum of weights not equal to 1")
+  
   if (d==1)
   {
       if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=default.bflag(d=d,n=n))
@@ -415,8 +419,7 @@ kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binn
   if (is.null(prior.prob))
   {
     pr <- rep(0, length(gr))
-    for (j in 1:length(gr))
-      pr[j] <- length(which(x.group==gr[j]))
+    for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
     pr <- pr/length(x)
     fhat.list$prior.prob <- pr
   }
@@ -461,7 +464,7 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
     
     ## compute individual density estimate
     if (binned)
-      fhat.temp <- kdde.binned(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax, w=ww, deriv.order=0)
+      fhat.temp <- kdde(x=xx, bgridsize=bgridsize, H=H, xmin=xmin, xmax=xmax, w=ww, deriv.order=0, binned=TRUE)
     else if (missing(eval.points))
       fhat.temp <- kde(x=xx, H=H, supp=supp, xmin=xmin, xmax=xmax, gridsize=gridsize, w=ww)
     else
@@ -483,10 +486,21 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
 
   fhat.list$binned <- binned
   fhat.list$gridded <- fhat.temp$gridded
-  pr <- rep(0, length(gr))
-  for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
-  pr <- pr/nrow(x)
-  fhat.list$prior.prob <- pr
+
+  if (is.null(prior.prob))
+  {
+    pr <- rep(0, length(gr))
+    for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
+    pr <- pr/nrow(x)
+    fhat.list$prior.prob <- pr
+  }
+  else
+    fhat.list$prior.prob <- prior.prob
+
+  ##pr <- rep(0, length(gr))
+  ##for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
+  ##pr <- pr/nrow(x)
+  ##fhat.list$prior.prob <- pr
   fhat.list$x.group <- x.group
   
   class(fhat.list) <- "kda"
@@ -714,7 +728,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   fhat.part$w <- fhat$w[[1]]
   fhat.part$cont <- fhat$cont[[1]]
   class(fhat.part) <- "kde.part"
-  
+
   plot(fhat.part, col=col.part, add=TRUE, display=display.part, drawlabels=drawlabels, ...)
   
   ## common contour levels removed from >= v1.5.3 

@@ -6,8 +6,8 @@ default.gridsize <- function(d)
   if (d==1)      gridsize <- 401
   else if (d==2) gridsize <- rep(151,d)
   else if (d==3) gridsize <- rep(51, d)
-  else if (d==4) gridsize <- rep(21, d)
-  else gridsize <- NA
+  else if (d>=4) gridsize <- rep(21, d)
+  ##else gridsize <- NA
   
   return(gridsize)
 }

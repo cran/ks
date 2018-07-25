@@ -252,32 +252,37 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
 ## Density values from the normal mixture (at x)
 ###############################################################################
 
-dmvnorm.mixt <- function(x, mus, Sigmas, props=1)
+dmvnorm.mixt <- function(x, mus, Sigmas, props=1, verbose=FALSE)
 {  
-  if (!(identical(all.equal(sum(props), 1), TRUE)))
-    stop("Proportions don't sum to one")
-
-  if (is.vector(x)) d <- length(x)
-  else d <- ncol(x)
-  
-  if (missing(mus)) mus <- rep(0,d)
-  if (missing(Sigmas)) Sigmas <- diag(d)
-     
-  ## single component mixture
-  if (identical(all.equal(props[1], 1), TRUE))
-  {
-    if (is.matrix(mus)) mus <- mus[1,]
-    dens <- dmvnorm(x=x, mean=mus, sigma=Sigmas[1:d,])
-  }
-  ## multiple component mixture
-  else   
-  {   
-    k <- length(props)
-    dens <- 0
-    ## sum of each normal density value from each component at x  
-    for (i in 1:k)
-      dens <- dens + props[i]*dmvnorm(x=x, mean=mus[i,], sigma=Sigmas[((i-1)*d+1):(i*d),])
-  }
+    if (!(identical(all.equal(sum(props), 1), TRUE)))
+        stop("Proportions don't sum to one")
+    
+    if (is.vector(x)) {d <- length(x); n <- 1} 
+    else {d <- ncol(x); n <- nrow(x)}
+    
+    if (missing(mus)) mus <- rep(0,d)
+    if (missing(Sigmas)) Sigmas <- diag(d)
+    
+    ## single component mixture
+    if (identical(all.equal(props[1], 1), TRUE))
+    {
+        if (is.matrix(mus)) mus <- mus[1,]
+        dens <- dmvnorm(x=x, mean=mus, sigma=Sigmas[1:d,])
+    }
+    ## multiple component mixture
+    else   
+    {
+        if (verbose) pb <- txtProgressBar()
+        k <- length(props)
+        dens <- 0
+        ## sum of each normal density value from each component at x
+        for (i in 1:k)
+        {
+            dens <- dens + props[i]*dmvnorm(x=x, mean=mus[i,], sigma=Sigmas[((i-1)*d+1):(i*d),])
+            if (verbose) setTxtProgressBar(pb, i/k)
+        }
+        if (verbose) close(pb)
+    }
   
   return(dens)
 }   
@@ -496,7 +501,7 @@ dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
 }
 
 
-dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE)
+dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, verbose=FALSE)
 {
   if (!(identical(all.equal(sum(props), 1), TRUE)))
     stop("Proportions don't sum to one")
@@ -525,16 +530,21 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRU
   ## multiple component mixture
   else   
   {   
-    k <- length(props)
-    dens <- 0
-    ## sum of each normal density value from each component at x  
-    for (i in 1:k)
-      dens <- dens + props[i]*dmvnorm.deriv(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr)  
+      k <- length(props)
+      if (verbose) pb <- txtProgressBar()
+      dens <- 0
+      ## sum of each normal density value from each component at x  
+      for (i in 1:k)
+      {
+          dens <- dens + props[i]*dmvnorm.deriv(x=x, mu=mus[i,], Sigma=Sigmas[((i-1)*d+1):(i*d),], deriv.order=sumr)
+          if (verbose) setTxtProgressBar(pb, i/k)
+      }
+      if (verbose) close(pb)   
   }
-
+  
   if (!deriv.vec)
   { 
-    dens <- dens[,!duplicated(ind.mat)]
+      dens <- dens[,!duplicated(ind.mat)]
     ind.mat <- unique(ind.mat)
   }
  
