@@ -157,12 +157,12 @@ plot.kcde <- function(x, ...)
 }
 
 
-plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col.pt="blue", jitter=FALSE, ...) 
+plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col=1, col.pt="blue", jitter=FALSE, ...) 
 {
   if (missing(xlab)) xlab <- Fhat$names
   if (Fhat$tail=="upper.tail") zlab <- "Survival function"
-  if (add) lines(Fhat$eval.points, Fhat$estimate, xlab=xlab, ylab=ylab, ...)
-  else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, ...) 
+  if (add) lines(Fhat$eval.points, Fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
+  else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
 
   if (drawpoints)
     if (jitter) rug(jitter(Fhat$x), col=col.pt)

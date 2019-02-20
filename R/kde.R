@@ -418,7 +418,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     if (d==1 & missing(h) & !positive) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
     if (d>1 & missing(H) & !positive) H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
 
-    if (binned & d>4) stop("Binned estimation for d>4 not implemented. Set binned=TRUE for exact estimation.")
+    if (binned & d>4) stop("Binned estimation for d>4 not implemented. Set binned=FALSE for exact estimation.")
     ## compute binned estimator
     if (binned)
     {
@@ -488,7 +488,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
                     fhat <- kde.grid.nd(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, verbose=verbose)
                 ##stop("Need to specify eval.points for more than 3 dimensions")
             }
-            else
+            else 
                 fhat <- kde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose)     
         }
     }
@@ -800,7 +800,7 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     gridx1$stepsize <- NULL
     gridx1$gridtype <- NULL
     eval.points <- do.call(expand.grid, gridx1)
-    est <- kde.points(x=x, H=H, eval.points=eval.points, w=w)$estimate 
+    est <- kde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose)$estimate 
     fhat.grid <- array(est, dim=gridsize)
     
     
@@ -835,6 +835,7 @@ kde.points <- function(x, H, eval.points, w, verbose)
     ne <- nrow(eval.points)
     Hs <- replicate(n, H, simplify=FALSE) 
     Hs <- do.call(rbind, Hs)
+
     fhat <- dmvnorm.mixt(x=eval.points, mus=x, Sigmas=Hs, props=w/n, verbose=verbose)
 
     ##if (verbose) pb <- txtProgressBar()

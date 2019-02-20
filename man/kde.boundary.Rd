@@ -4,7 +4,7 @@
 \title{Kernel density estimate for bounded data}
 
 \description{
-  Kernel density estimate for bounded 2-dimensional data.
+  Kernel density estimate for bounded 1- to 3-dimensional data.
 }
 \usage{
 kde.boundary(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 

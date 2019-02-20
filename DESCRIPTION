@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.11.3
-Date: 2018-07-24
+Version: 1.11.4
+Date: 2019-02-20
 Title: Kernel Smoothing
 Author: Tarn Duong <tarn.duong@gmail.com>
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
@@ -8,10 +8,10 @@ Depends: R (>= 2.10.0)
 Imports: FNN (>= 1.1), kernlab, KernSmooth (>= 2.22), Matrix, mclust,
         mgcv, multicool, mvtnorm (>= 1.0-0)
 Suggests: maps, MASS, misc3d (>= 0.4-0), OceanView, oz, rgl (>= 0.66)
-Description: Kernel smoothers for univariate and multivariate data, including densities, density derivatives, cumulative distributions, clustering, classification, density ridges, significant modal regions, and two-sample hypothesis tests. Duong (2017) <doi:10.18637/jss.v021.i07>.   
+Description: Kernel smoothers for univariate and multivariate data, including densities, density derivatives, cumulative distributions, clustering, classification, density ridges, significant modal regions, and two-sample hypothesis tests. Chacon & Duong (2018) <doi:10.1201/9780429485572>.   
 License: GPL-2 | GPL-3
 URL: http://www.mvstat.net/mvksa
 NeedsCompilation: yes
-Packaged: 2018-07-25 22:00:24 UTC; tduong
+Packaged: 2019-02-20 20:27:12 UTC; tduong
 Repository: CRAN
-Date/Publication: 2018-07-25 22:40:03 UTC
+Date/Publication: 2019-02-20 22:20:07 UTC
