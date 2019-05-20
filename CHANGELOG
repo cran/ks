@@ -1,10 +1,14 @@
 Change log file for ks
 
+1.11.5
+-Fixed bugs in kde.1d() passing eval.points parameter and which didn't allow
+ unequal class proportions.
+
 1.11.4
 -Fixed error report in kde() incorrectly asserting to set "binned=TRUE" for
 exact estimation.
 -Fixed bug in line colour in plot.kcde().
--Fixed bug in kde.grid.nd() not passing verbose argument. 
+-Fixed bug in kde.grid.nd() not passing verbose argument.
 
 1.11.3
 -Fixed bug to kda() which set prior.prob values to default sample proportion

@@ -247,7 +247,7 @@
 
 \author{
   Tarn Duong for most of the package. 
-  M.P. Wand for the binned estimation, univariate plug-in selector
+  M. P. Wand for the binned estimation, univariate plug-in selector
   and univariate density derivative estimator code.
   J. E. Chacon for the unconstrained pilot
   functional estimation and fast implementation of derivative-based

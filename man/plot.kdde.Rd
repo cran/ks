@@ -50,6 +50,7 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
+library(OceanView)
 ## univariate example
 data(tempb)
 fhat1 <- kdde(x=tempb[,"tmin"], deriv.order=1)   ## gradient [df/dx, df/dy]

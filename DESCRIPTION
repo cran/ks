@@ -1,8 +1,11 @@
 Package: ks
-Version: 1.11.4
-Date: 2019-02-20
+Version: 1.11.5
+Date: 2019-05-20
 Title: Kernel Smoothing
-Author: Tarn Duong <tarn.duong@gmail.com>
+Authors@R: c(person("Tarn", "Duong", role=c("aut","cre"), email="tarn.duong@gmail.com"),
+             person("Matt", "Wand", role="ctb", email="Matt.Wand@uts.edu.au"),
+             person("Jose", "Chacon", role="ctb", email="jechacon@unex.es"),
+             person("Artur", "Gramacki", role="ctb", email="a.gramacki@issi.uz.zgora.pl"))
 Maintainer: Tarn Duong <tarn.duong@gmail.com>
 Depends: R (>= 2.10.0)
 Imports: FNN (>= 1.1), kernlab, KernSmooth (>= 2.22), Matrix, mclust,
@@ -12,6 +15,10 @@ Description: Kernel smoothers for univariate and multivariate data, including de
 License: GPL-2 | GPL-3
 URL: http://www.mvstat.net/mvksa
 NeedsCompilation: yes
-Packaged: 2019-02-20 20:27:12 UTC; tduong
+Packaged: 2019-05-20 21:45:40 UTC; tduong
+Author: Tarn Duong [aut, cre],
+  Matt Wand [ctb],
+  Jose Chacon [ctb],
+  Artur Gramacki [ctb]
 Repository: CRAN
-Date/Publication: 2019-02-20 22:20:07 UTC
+Date/Publication: 2019-05-20 22:50:04 UTC

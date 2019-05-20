@@ -315,121 +315,118 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 
 kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
-  if (missing(eval.points)) eval.points <- x
-  ##if (is.factor(x.group)) gr <- levels(x.group)
-  gr <- sort(unique(x.group))
-  
-  m <- length(gr)
-
-  ## default values 
-  ksd <- ks.defaults(x=x, w=w, bgridsize=bgridsize, gridsize=gridsize)
-  d <- ksd$d; n <- ksd$n; w <- ksd$w
-  binned <- ksd$binned
-  bgridsize <- ksd$bgridsize
-  gridsize <- ksd$gridsize
-
-  if (!is.null(prior.prob))
-      if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
-          stop("Sum of weights not equal to 1")
-  
-  if (d==1)
-  {
-      if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=default.bflag(d=d,n=n))
-
-    ## Compute KDA on grid
-    if (kde.flag)
-      fhat.list <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
-      
-    ## Compute KDA at eval.points
-    fhat <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
-    fhat.wt <- matrix(0, ncol=m, nrow=length(eval.points)) 
-  }
-  else
-  {
-    if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", binned=default.bflag(d=d, n=n))
+    if (missing(eval.points)) eval.points <- x
+    ##if (is.factor(x.group)) gr <- levels(x.group)
+    gr <- sort(unique(x.group))
     
-    ## Compute KDA on grid
-    if (d>3) kde.flag <- FALSE
-    if (kde.flag)
-      fhat.list <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
+    m <- length(gr)
     
-    ## Compute KDA at eval.points
-    fhat <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=FALSE, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
-    fhat.wt <- matrix(0, ncol=m, nrow=nrow(eval.points))  
-  }
-  
-  for (j in 1:m)
-    fhat.wt[,j] <- fhat$estimate[[j]]* fhat$prior.prob[j]
+    ## default values 
+    ksd <- ks.defaults(x=x, w=w, bgridsize=bgridsize, gridsize=gridsize)
+    d <- ksd$d; n <- ksd$n; w <- ksd$w
+    binned <- ksd$binned
+    bgridsize <- ksd$bgridsize
+    gridsize <- ksd$gridsize
     
-  ## Assign y according largest weighted density value 
-  disc.gr.temp <- apply(fhat.wt, 1, which.max)
-  ##disc.gr <- factor(disc.gr.temp, levels=gr[order(unique(x.group))])
-  disc.gr <- as.factor(gr[disc.gr.temp])
-  if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
-  
-  if (kde.flag) fhat.list$x.group.estimate <- disc.gr
-  else fhat.list <- disc.gr
-  
-  return(fhat.list)
+    if (!is.null(prior.prob))
+        if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
+            stop("Sum of weights not equal to 1")
+    
+    if (d==1)
+    {
+        if (missing(hs)) hs <- hkda(x=x, x.group=x.group, bw="plugin", nstage=2, binned=default.bflag(d=d,n=n))
+        
+        ## Compute KDA on grid
+        if (kde.flag)
+            fhat.list <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
+        
+        ## Compute KDA at eval.points
+        fhat <- kda.1d(x=x, x.group=x.group, hs=hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont, w=w)
+        fhat.wt <- matrix(0, ncol=m, nrow=length(eval.points)) 
+    }
+    else
+    {
+        if (missing(Hs)) Hs <- Hkda(x=x, x.group=x.group, bw="plugin", binned=default.bflag(d=d, n=n))
+        
+        ## Compute KDA on grid
+        if (d>3) kde.flag <- FALSE
+        if (kde.flag)
+            fhat.list <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=binned, bgridsize=bgridsize, xmin=xmin, xmax=xmax, compute.cont=compute.cont, approx.cont=approx.cont)
+        
+        ## Compute KDA at eval.points
+        fhat <- kda.nd(x=x, x.group=x.group, Hs=Hs, prior.prob=prior.prob, gridsize=gridsize, supp=supp, binned=FALSE, bgridsize=bgridsize, xmin=xmin, xmax=xmax, eval.points=eval.points, compute.cont=compute.cont, approx.cont=approx.cont)
+        fhat.wt <- matrix(0, ncol=m, nrow=nrow(eval.points))  
+    }
+
+    for (j in 1:m)
+      fhat.wt[,j] <- fhat$estimate[[j]]* fhat$prior.prob[j]
+    
+    ## Assign y according largest weighted density value 
+    disc.gr.temp <- apply(fhat.wt, 1, which.max)
+    ##disc.gr <- factor(disc.gr.temp, levels=gr[order(unique(x.group))])
+    disc.gr <- as.factor(gr[disc.gr.temp])
+    if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
+    
+    if (kde.flag) fhat.list$x.group.estimate <- disc.gr
+    else fhat.list <- disc.gr
+    
+    return(fhat.list)
 }
 
 kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax, w, compute.cont, approx.cont)
 {
-  gr <- sort(unique(x.group))
-  m <- length(gr)
-  d <- 1
-  hmax <- max(hs)
-  if (missing(xmin)) xmin <- min(x) - supp*hmax
-  if (missing(xmax)) xmax <- max(x) + supp*hmax
-  fhat.list <- list()
-
-  for (j in 1:m)
-  {
-    xx <- x[x.group==gr[j]]
-    ww <- w[x.group==gr[j]]
-    h <- hs[j]
-
-    ## compute individual density estimate
-    if (missing(eval.points))
-        fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, bgridsize=bgridsize, gridsize=gridsize, w=ww, binned=binned)
-    else
-    {
-        fhat.temp <- kde(x=xx, h=h, w=ww, binned=binned, bgridsize=bgridsize, gridsize=gridsize, eval.points=xx)
-        ##fhat.temp <- predict(fhat.temp, x=xx)
-    }
-     
-    fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
-    fhat.list$eval.points <- fhat.temp$eval.points
-    fhat.list$x <- c(fhat.list$x, list(xx))
-    fhat.list$h <- c(fhat.list$h, h)
-    fhat.list$H <- c(fhat.list$H, h^2)
-    fhat.list$w <- c(fhat.list$w, list(ww))
+    gr <- sort(unique(x.group))
+    m <- length(gr)
+    d <- 1
+    hmax <- max(hs)
+    if (missing(xmin)) xmin <- min(x) - supp*hmax
+    if (missing(xmax)) xmax <- max(x) + supp*hmax
+    fhat.list <- list()
     
-    ## compute prob contour levels
-    if (compute.cont & missing(eval.points))
+    for (j in 1:m)
     {
-      contlev <- contourLevels(fhat.temp, cont=1:99, approx.cont=approx.cont)
-      fhat.list$cont <- c(fhat.list$cont, list(contlev))
+        xx <- x[x.group==gr[j]]
+        ww <- w[x.group==gr[j]]
+        h <- hs[j]
+        
+        ## compute individual density estimate
+        if (missing(eval.points))
+            fhat.temp <- kde(x=xx, h=h, supp=supp, xmin=xmin, xmax=xmax, bgridsize=bgridsize, gridsize=gridsize, w=ww, binned=binned)
+        else
+            fhat.temp <- kde(x=xx, h=h, w=ww, binned=binned, bgridsize=bgridsize, gridsize=gridsize, eval.points=eval.points)
+    
+        fhat.list$estimate <- c(fhat.list$estimate, list(fhat.temp$estimate))
+        fhat.list$eval.points <- fhat.temp$eval.points
+        fhat.list$x <- c(fhat.list$x, list(xx))
+        fhat.list$h <- c(fhat.list$h, h)
+        fhat.list$H <- c(fhat.list$H, h^2)
+        fhat.list$w <- c(fhat.list$w, list(ww))
+        
+        ## compute prob contour levels
+        if (compute.cont & missing(eval.points))
+        {
+            contlev <- contourLevels(fhat.temp, cont=1:99, approx.cont=approx.cont)
+            fhat.list$cont <- c(fhat.list$cont, list(contlev))
+        }
     }
-  }
-
-  fhat.list$binned <- binned
-  fhat.list$gridded <- fhat.temp$gridded
-  
-  if (is.null(prior.prob))
-  {
-    pr <- rep(0, length(gr))
-    for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
-    pr <- pr/length(x)
-    fhat.list$prior.prob <- pr
-  }
-  else
-    fhat.list$prior.prob <- prior.prob
-
-  fhat.list$x.group <- x.group
-  class(fhat.list) <- "kda"
-  
-  return(fhat.list) 
+    
+    fhat.list$binned <- binned
+    fhat.list$gridded <- fhat.temp$gridded
+    
+    if (is.null(prior.prob))
+    {
+        pr <- rep(0, length(gr))
+        for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
+        pr <- pr/length(x)
+        fhat.list$prior.prob <- pr
+    }
+    else
+        fhat.list$prior.prob <- prior.prob
+    
+    fhat.list$x.group <- x.group
+    class(fhat.list) <- "kda"
+    
+    return(fhat.list) 
 }
 
 
