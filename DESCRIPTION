@@ -1,6 +1,6 @@
 Package: ks
-Version: 1.11.5
-Date: 2019-05-20
+Version: 1.11.6
+Date: 2019-11-03
 Title: Kernel Smoothing
 Authors@R: c(person("Tarn", "Duong", role=c("aut","cre"), email="tarn.duong@gmail.com"),
              person("Matt", "Wand", role="ctb", email="Matt.Wand@uts.edu.au"),
@@ -15,10 +15,10 @@ Description: Kernel smoothers for univariate and multivariate data, including de
 License: GPL-2 | GPL-3
 URL: http://www.mvstat.net/mvksa
 NeedsCompilation: yes
-Packaged: 2019-05-20 21:45:40 UTC; tduong
+Packaged: 2019-11-03 22:46:06 UTC; tduong
 Author: Tarn Duong [aut, cre],
   Matt Wand [ctb],
   Jose Chacon [ctb],
   Artur Gramacki [ctb]
 Repository: CRAN
-Date/Publication: 2019-05-20 22:50:04 UTC
+Date/Publication: 2019-11-04 06:00:02 UTC

@@ -17,7 +17,7 @@ default.bgridsize <- function(d)
   if (d==1)      gridsize <- 401
   else if (d==2) gridsize <- rep(151,d)
   else if (d==3) gridsize <- rep(31, d)
-  else if (d==4) gridsize <- rep(11, d)
+  else if (d==4) gridsize <- rep(15, d)
   else gridsize <- NA
   
   return(gridsize)

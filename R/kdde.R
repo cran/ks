@@ -69,7 +69,7 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
           fhat <- kdde.grid.3d(x=x, H=H, gridsize=gridsize, supp=supp, xmin=xmin, xmax=xmax, gridtype=gridtype, w=w, deriv.order=r, deriv.vec=deriv.vec, verbose=verbose) 
         else 
           stop("Need to specify eval.points for more than 3 dimensions")
-      }
+     }
       else
         fhat <- kdde.points(x=x, H=H, eval.points=eval.points, w=w, deriv.order=r, deriv.vec=deriv.vec)
     }
@@ -180,10 +180,10 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
   M <- sapply(bin.par$eval.points, length)
   L <- pmin(ceiling((4+r)*max(sqrt(abs(diag(H))))*(M-1)/(b-a)), M-1)
   delta <- (b-a)/(M-1)
-  N <- 2*L-1 
-  
-  if (min(L)==0) warning("Binning grid too coarse for current (small) bandwidth: consider increasing gridsize")
-
+    
+  if (min(L)<=0) warning(paste("Binning grid too coarse for current (small) bandwidth: consider increasing grid size for dimensions", toString(which(pmin(L)<=1))))
+  ##if (all(L==1)) L[head(which(L==1),n=1)] <- 2 
+  N <- 2*L-1
   if(d==2)
   {
       grid1 <- seq(-(L[1]-1), L[1]-1)
@@ -205,7 +205,6 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
      grid4 <- seq(-(L[4]-1), L[4]-1)
      xgrid <- expand.grid(delta[1]*grid1, delta[2]*grid2, delta[3]*grid3, delta[4]*grid4)
   }
-
   deriv.index <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=TRUE) 
   deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=FALSE)
 
@@ -218,7 +217,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
       est.list[[1]] <- array(0, dim=dim(bin.par$counts))
   }
   else if (r>0)
-  {
+  {      
       n.deriv <- nrow(deriv.index)
       n.deriv.minimal <- nrow(deriv.index.minimal)
       if (deriv.vec) n.est.list <- n.deriv else n.est.list <- n.deriv.minimal
@@ -230,11 +229,12 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
   }
  
   for (i in 1:(length(n.seq)-1))
-  {  
+  {
       if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
-      
       keval <- dmvnorm.deriv(x=xgrid[n.seq[i]:(n.seq[i+1]-1),], mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, deriv.vec=FALSE)$deriv/n
+     
       if (r==0) keval <- as.matrix(keval, ncol=1)
+      else if (is.vector(keval)) keval <- as.matrix(t(keval), nrow=1)
       est <- list()
       
       ## loop over only unique partial derivative indices
@@ -245,22 +245,23 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
               if (deriv.vec) deriv.rep.index <- which.mat(deriv.index.minimal[s,], deriv.index)
               else deriv.rep.index <- s
               kevals <- array(keval[,s], dim=N)
-              if (r==0) sf <- rep(1,d)
-              else sf <- (-1)^deriv.index.minimal[s,]
+              ##if (r==0) sf <- rep(1,d)
+              ##else sf <- (-1)^deriv.index.minimal[s,]
               est.temp <- symconv.nd(kevals, bin.par$counts, d=d)
               for (s2 in 1:length(deriv.rep.index)) est[[deriv.rep.index[s2]]] <- est.temp
           }
       else
       {
-          for (s in 1:ncol(keval))
-          {  
-              kevals <- array(keval[,s], dim=N)
-              if (r==0) sf <- rep(1,d)
-              else sf <- (-1)^deriv.index[s,]
-              est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-          }
+          ##for (s in 1:ncol(keval))
+          ##{  
+          ##    kevals <- array(keval[,s], dim=N)
+          ##    if (r==0) sf <- rep(1,d)
+          ##     else sf <- (-1)^deriv.index[s,]
+          ##    est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
+          ##}
+          kevals <- lapply(as.data.frame(keval), function(x){array(x, dim=N)})
+          est <- lapply(kevals, function(x){symconv.nd(x, bin.par$counts, d=d)})
       }
-
       if (r==0) est.list[[1]] <- est.list[[1]] + est[[1]]
       else if (r>0) for (j in 1:n.est.list) est.list[[j]] <- est.list[[j]] + est[[j]]  
   }

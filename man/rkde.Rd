@@ -32,16 +32,17 @@
    For the 1-d kernel density estimate \code{fhat},
    \code{pkde} computes the cumulative probability for the quantile
    \code{q}, \code{qkde} computes the quantile corresponding to the probability
-   \code{p}, \code{dkde} computes the density value at
-   \code{x}.
+   \code{p}.
 
-   For any kernel density estimate, \code{rkde} computes a random sample of size \code{n}.  
+   For any kernel density estimate, \code{dkde} computes the density value at
+   \code{x} (it is an alias for \code{predict.kde}), \code{rkde}
+   computes a random sample of size \code{n}.   
 }
 
 \details{ 
   \code{pkde} uses Simpson's rule for the numerical
   integration. \code{rkde} uses
-  Silverman (1986)'s method to generate a random sample from a KDE.
+  Silverman (1986)'s method to generate a random sample from a KDE. 
 }
 
 \references{ Silverman, B. (1986) \emph{Density Estimation for Statistics and

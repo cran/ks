@@ -57,7 +57,7 @@ pkde <- function(q, fhat)
 
 dkde <- function(x, fhat)
 {
-  return(kde(x=fhat$x, h=fhat$h, eval.points=x)$estimate)
+  return(predict(fhat, x=x))
 }
 
 qkde <- function(p, fhat)

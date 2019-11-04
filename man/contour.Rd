@@ -48,10 +48,10 @@ contourSizes(x, abs.cont, cont=c(25,50,75), approx=TRUE)
   If both \code{prob} and \code{cont} are missing then a pretty set of
   \code{nlevels} contours are computed.
  
-  --For \code{contourSizes}, the approximate Lebesgue measures are
+  --For \code{contourSizes}, the length, area, volume etc. are
   approximated by Riemann sums. These are rough approximations and
   depend highly on the estimation grid, and so should 
-  be interpreted carefully.
+  be interpreted carefully. 
 
   If \code{approx=FALSE}, then the exact KDE is computed. Otherwise
   it is interpolated from an existing KDE grid. This can dramatically

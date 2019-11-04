@@ -50,7 +50,6 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-library(OceanView)
 ## univariate example
 data(tempb)
 fhat1 <- kdde(x=tempb[,"tmin"], deriv.order=1)   ## gradient [df/dx, df/dy]
@@ -59,10 +58,9 @@ points(20,predict(fhat1, x=20))
 
 ## bivariate example
 fhat1 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=1)
-plot(fhat1, display="quiver")
+\donttest{plot(fhat1, display="quiver")
   ## gradient [df/dx, df/dy]
 
-\donttest{
 fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
 plot(fhat2, which.deriv.ind=2, display="persp", phi=15)
 plot(fhat2, which.deriv.ind=2, display="filled.contour", col.fun=topo.colors)

@@ -156,11 +156,12 @@ grid.interp <- function(x, gridx, f)
     if (is.vector(x)) x <- as.matrix(t(x))
     d <- ncol(x)
     n <- nrow(x)
-   
+
+    if (d<2) stop("x should be a vector") 
     gridx.diff <- lapply(lapply(gridx,diff), getElement, 1)
     for (i in 1:length(gridx.diff)) gridx.diff[[i]] <- rep(gridx.diff[[i]], sapply(gridx, length)[i]-1)
     uniform.grid.flag <- isTRUE(all.equal(lapply(gridx,diff), gridx.diff))
-    
+
     ## uniform grid
     if (d==2 & uniform.grid.flag) fx <- grid.interp.2d(x=x, gridx=gridx, f=f)
     else if (d==3 & uniform.grid.flag) fx <- grid.interp.3d(x=x, gridx=gridx, f=f)
@@ -440,7 +441,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
         }
         else 
         {
-            fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0)
+            fhat <- kdde.binned(x=x, H=H, h=h, bgridsize=bgridsize, xmin=xmin, xmax=xmax, w=w, deriv.order=0, verbose=verbose)
         }
         
         if (!missing(eval.points))
@@ -802,8 +803,7 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     eval.points <- do.call(expand.grid, gridx1)
     est <- kde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose)$estimate 
     fhat.grid <- array(est, dim=gridsize)
-    
-    
+        
     fhat.list <- list(x=x, eval.points=gridx1, estimate=fhat.grid, H=H, gridtype=gridx$gridtype, gridded=TRUE)
 
     return(fhat.list)

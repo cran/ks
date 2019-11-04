@@ -1,5 +1,11 @@
 Change log file for ks
 
+1.11.6
+-Changed dkde() to be an alias for predict.kde().
+-Updated default.bgridsize() for d=4 to rep(15,4).
+-Fixed bug in kdde.binned.nd() to force when keval is a vector to be 1-row
+ matrix.
+
 1.11.5
 -Fixed bugs in kde.1d() passing eval.points parameter and which didn't allow
  unequal class proportions.
