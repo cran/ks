@@ -1,6 +1,6 @@
-c57651dd3fce957017c89cb03e1ada3e *CHANGELOG
-dc47e57582feed343c52017b568a7cb1 *DESCRIPTION
-d6ea06e9b192a896eeb326a664149205 *NAMESPACE
+d7b4faae76ddb1c7354a3a327be254e3 *CHANGELOG
+4db2838d73a1af56de5098991e2a67c7 *DESCRIPTION
+67c5c3127482ba7ea1770068d5d428c7 *NAMESPACE
 5904c0a7cfda51bf48f8361632d388b9 *R/binning.R
 81a135908c91c83359ca16de9cddeec8 *R/deconv-kde.R
 79c64502c06e449e90c07d6d7d56fb60 *R/hist.R
@@ -21,9 +21,9 @@ ae2db321d6d430d0507b697a895b3b88 *R/kr.R
 f032b244be84390facacd2ee529476c6 *R/mise.R
 b6f77557a7ab726a47d446d242d99259 *R/normal.R
 72e2b397bf8f42aee0ea303ed49b9cc0 *R/prelim.R
-721823b58cd20b30e1aa1e059ff533cd *R/selector.R
+8451fd37a7a64cbfa765a8ee7b04ffba *R/selector.R
 e68a52fb96cbce55833a0fd7766152d4 *R/vkde.R
-df63463f367ee7bb4c413163fee1367f *build/vignette.rds
+6c70c99d2b88d82a74ef52b332f72122 *build/vignette.rds
 3c7be27cb3c3505cb05a32dbdc3429ce *data/air.RData
 421d741ffd92ca967c18a8f69a4824dc *data/cardio.RData
 0b36987e874b237b5f47264783c15d56 *data/grevillea.RData
@@ -35,10 +35,10 @@ cfd66d7c906e51e34dcc3138079b5aa2 *data/tempb.RData
 9bbcbfd4701d3cf7b336d8d4a2d15226 *data/worldbank.RData
 98233c320602e02860adfb695a903cea *inst/doc/kde.R
 67b2ecacaa219eb280291a7e3fef063a *inst/doc/kde.Rnw
-5b8783635c4eec90d9e187d3052edb8c *inst/doc/kde.pdf
+a193b8913bb4e228e2275cc51e2d56ff *inst/doc/kde.pdf
 a552ddadac60a9371838f1232332e9c0 *man/Hbcv.Rd
 46c0e4015819caebcddf6ab57916b208 *man/Hlscv.Rd
-764736d77e8c08bc2cae9ea1f4a43526 *man/Hnm.Rd
+0de7cc39a26a1a4f31958ca079054f4e *man/Hnm.Rd
 8d20eb3c1df93c5f50020b5b9bb01523 *man/Hns.Rd
 2344c2c97f86c7935e8af10e05f92048 *man/Hpi.Rd
 06dc834c8a5cd08173db5dbd12fe6da3 *man/Hscv.Rd
@@ -59,8 +59,8 @@ fa7ef8f70f0a5bf2dee8ca8d3520d327 *man/kdde.Rd
 0b10a538029d44150de8cf680efd268d *man/kde.boundary.Rd
 537626554e3a3b9f815bbb1c96e1ce9d *man/kde.local.test.Rd
 85c9f9603f286266378a0756a060ef72 *man/kde.test.Rd
-cbfbfd5d11a4462b583e1d54c615f00e *man/kde.truncate.Rd
-6f15363be750db6edd1d002b906c28d1 *man/kdr.Rd
+23cd3433759f50c19355f7ce2c764dd4 *man/kde.truncate.Rd
+15e0ae5f09312d43911ab030775d389d *man/kdr.Rd
 c917f82a0091d96b0b55ec5abfd14e5c *man/kfe.Rd
 f7987b21dc246a0c292aed0685b8dc3f *man/kfs.Rd
 420e71c0b7a4510b5d8d1a20d9397332 *man/kms.Rd

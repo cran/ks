@@ -50,9 +50,9 @@ hnm(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose, ... )
 }
 
 \examples{
-\donttest{library(MASS)
+library(MASS)
 data(forbes)
-Hnm(forbes)}
+Hnm(forbes)
 }
 
 \keyword{smooth}

@@ -38,7 +38,6 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
   \code{contourLevels(fhat, cont=99)}.}
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
-  \item{...}{other parameters to \code{\link{kde}}}
 }
   
 

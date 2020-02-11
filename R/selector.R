@@ -1648,6 +1648,7 @@ Gns <- function(r,n,Sigma)
 
 Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {
+    if (!requireNamespace("mclust", quietly=TRUE)) stop("Install the mclust package as it is required.", call.=FALSE)
     if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
     else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
 
@@ -1664,6 +1665,7 @@ Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FA
 
 Hnm.diag <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {
+    if (!requireNamespace("mclust", quietly=TRUE)) stop("Install the mclust package as it is required.", call.=FALSE)
     if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
     else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
 

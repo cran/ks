@@ -1,5 +1,8 @@
 Change log file for ks
 
+1.11.7
+-Fixed small bug in help files to comply with R 3.6.3 CMD check.
+
 1.11.6
 -Changed dkde() to be an alias for predict.kde().
 -Updated default.bgridsize() for d=4 to rep(15,4).

@@ -14,7 +14,6 @@ kdde.truncate(fhat, boundary)
 \arguments{
   \item{fhat}{object of class \code{kde} or \code{kdde}}
   \item{boundary}{two column matrix delimiting the boundary for truncation}
-  \item{...}{other parameters} 
 }
   
 
