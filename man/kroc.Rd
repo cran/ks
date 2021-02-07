@@ -45,7 +45,7 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names}
-  \item{w}{weights}
+  \item{w}{vector of weights}
   \item{tail}{"lower.tail"}
   \item{h1}{scalar bandwidth for first sample (1-d only)}
   \item{H1}{bandwidth matrix for first sample}

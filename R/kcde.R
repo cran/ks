@@ -173,7 +173,7 @@ plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, dra
 plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     xlab, ylab, zlab="Distribution function", cex=1, pch=1,   
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    col.pt="blue", col, col.fun, lwd=1, border=NA, thin=1, ...) 
+    col.pt="blue", col, col.fun, lwd=1, border=NA, thin=1, lwd.fc=5, ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   
@@ -236,6 +236,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
   {
     hts <- cont/100
     if (!missing(col.fun)) col <- col.fun(length(hts)+1)
+   
     if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
     clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
     
@@ -262,8 +263,20 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     }
     else
     {
-      if (tail(hts, n=1) < max(Fhat$estimate)) hts <- c(hts, max(Fhat$estimate))
-      filled.contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, levels=hts, ...)
+      if (!add) plot(Fhat$eval.points[[1]], Fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...) 
+      if (tail(hts, n=1) < max(Fhat$estimate)) hts2 <- c(hts, max(Fhat$estimate))
+      .filled.contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, levels=hts2, col=col)
+      
+      if (!missing(lwd))
+      {
+        for (i in 1:length(hts)) 
+        {
+          if (missing(abs.cont)) scale <- (100-cont[i])/hts[i]
+          else scale <- 1
+          
+          if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
+        }
+      }
     }
   }
   if (disp1=="persp")  invisible(plotret)
@@ -271,8 +284,10 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
 }
   
 
-plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
+plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
 {
+    disp1 <- match.arg(display, c("plot3D", "rgl"))
+    
     ## suggestions from Viktor Petukhov 08/03/2018
     if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
     if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
@@ -280,25 +295,39 @@ plotkcde.3d <- function(Fhat, cont=c(25,50,75), colors, alphavec, size=3, col.pt
     hts <- sort(cont/100)
     nc <- length(hts)
     
-    if (missing(colors)) colors <- rev(heat.colors(nc))
+    if (missing(col)) col <- rev(heat.colors(nc))
+    colors <- col
     if (missing(xlab)) xlab <- Fhat$names[1]
     if (missing(ylab)) ylab <- Fhat$names[2]
     if (missing(zlab)) zlab <- Fhat$names[3]
     if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
+    if (!missing(alpha)) {alphavec <- rep(alpha,nc)}
     
-    if (drawpoints)
-        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-    else
-        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-    rgl::bg3d(col="white")
+    disp1 <- match.arg(display, c("plot3D", "rgl")) 
+	if (disp1 %in% "plot3D")
+	{
+		for (i in 1:nc)
+    	    if (hts[nc-i+1] < max(Fhat$estimate))
+    	        plot3D::isosurf3D(x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], colvar=Fhat$estimate, level=hts[nc-i+1], add=add | (i>1), col=colors[nc-i+1], alpha=alphavec[i], phi=phi, theta=theta, xlab=xlab, ylab=ylab, zlab=zlab, d=d, ticktype=ticktype, bty=bty, ...)
+    	        
+    	if (drawpoints) plot3D::points3D(x=Fhat$x[,1], y=Fhat$x[,2], z=Fhat$x[,3], cex=cex, col=col.pt, add=TRUE, pch=pch, d=d)    
+	}
+	else if (disp1 %in% "rgl")
+	{
+    	if (drawpoints)
+	        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    	else
+    	    rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    	rgl::bg3d(col="white")
     
-    for (i in 1:nc)
-    if (hts[nc-i+1] < max(Fhat$estimate))
-        misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+    	for (i in 1:nc)
+    		if (hts[nc-i+1] < max(Fhat$estimate))
+        		misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[nc-i+1], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
     
-    if (box) rgl::box3d()
-    if (axes) rgl::axes3d()
-}
+    	if (box) rgl::box3d()
+    	if (axes) rgl::axes3d()
+	}
+}	
 
 
 

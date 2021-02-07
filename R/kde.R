@@ -927,11 +927,14 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
     {
       if (!is.null(fhat$cont))
       {
-        cont.ind <- rep(FALSE, length(fhat$cont))
-        for (j in 1:length(cont))
-          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-
-        if (all(!cont.ind))
+          cont.ind <- rep(FALSE, length(cont))
+          for (j in 1:length(cont))
+          {
+              ci <- which(cont[j]==(100-as.numeric(unlist(strsplit(names(fhat$cont),"%")))))
+              if (length(ci)==0) cont.ind[j] <- NA else cont.ind[j] = ci
+          }
+          
+        if (any(is.na(cont.ind)))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
         else
           hts <- fhat$cont[cont.ind]
@@ -941,7 +944,6 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
     }
     else
       hts <- abs.cont 
-
     ##
     
     if (is.null(fhat$deriv.order))
@@ -981,7 +983,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, kdde.flag=FALSE, ...) 
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, kdde.flag=FALSE, ticktype="detailed", ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   if (!is.list(fhat$eval.points)) stop("Need a grid of density estimates")
@@ -1006,7 +1008,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
     facetcol <- cut(zfacet, length(col)+1)
     
-    plotret <- persp(fhat$eval.points[[1]][plot.ind[[1]]], fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
+    plotret <- persp(fhat$eval.points[[1]][plot.ind[[1]]], fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ticktype=ticktype, ...)
   }
   else if (disp1=="slice") 
   {
@@ -1015,11 +1017,14 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     {
       if (!is.null(fhat$cont))
       {
-        cont.ind <- rep(FALSE, length(fhat$cont))
-        for (j in 1:length(cont))
-          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-        
-        if (all(!cont.ind))
+          cont.ind <- rep(FALSE, length(cont))
+          for (j in 1:length(cont))
+          {
+              ci <- which(cont[j]==(100-as.numeric(unlist(strsplit(names(fhat$cont),"%")))))
+              if (length(ci)==0) cont.ind[j] <- NA else cont.ind[j] = ci
+          }
+          
+        if (any(is.na(cont.ind)))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
         else
           hts <- fhat$cont[cont.ind]
@@ -1067,18 +1072,21 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     {
       if (!is.null(fhat$cont))
       {
-        cont.ind <- rep(FALSE, length(fhat$cont))
-        for (j in 1:length(cont))
-          cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-        
-        if (all(!cont.ind))
+          cont.ind <- rep(FALSE, length(cont))
+          for (j in 1:length(cont))
+          {
+              ci <- which(cont[j]==(100-as.numeric(unlist(strsplit(names(fhat$cont),"%")))))
+              if (length(ci)==0) cont.ind[j] <- NA else cont.ind[j] = ci
+          }
+          
+        if (any(is.na(cont.ind)))
           hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
         else
           hts <- fhat$cont[cont.ind]
       }
       else
         hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-    }  
+    }
     else
       hts <- abs.cont 
     hts <- sort(hts)
@@ -1108,7 +1116,6 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
     {
         if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
-        ##if (col[1]!="transparent") 
         .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
     }
       
@@ -1139,35 +1146,31 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 ###############################################################################
 
 
-plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col.fun, alphavec, size=3, col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha=1, box=TRUE, axes=TRUE, ...)
+plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
 {
-    ## suggestions from Viktor Petukhov 08/03/2018
-    if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
-    if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
-    
     ## compute contours
     if (missing(abs.cont))
     {
-        if (!is.null(fhat$cont))
-        {
-            cont.ind <- rep(FALSE, length(fhat$cont))
-            for (j in 1:length(cont))
-                cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
-            
-            if (all(!cont.ind))
-                hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
-            else
-                hts <- fhat$cont[cont.ind]
-        }
-        else
-            hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+       	if (!is.null(fhat$cont))
+       	{
+           	cont.ind <- rep(FALSE, length(fhat$cont))
+           	for (j in 1:length(cont))
+           	    cont.ind[which(cont[j] == 100-as.numeric(unlist(strsplit(names(fhat$cont),"%"))))] <- TRUE
+           
+	        if (all(!cont.ind))
+	            hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
+	        else
+	            hts <- fhat$cont[cont.ind]
+	     }
+	     else
+ 	        hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
     }  
     else
         hts <- abs.cont
-    
+	    
     nc <- length(hts)
-    
-    if (missing(colors)) colors <- rev(heat.colors(nc))
+	    
+    if (missing(col)) col <- rev(heat.colors(nc));  colors <- col
     if (!missing(col.fun)) colors <- col.fun(nc)
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
@@ -1177,19 +1180,36 @@ plotkde.3d <- function(fhat, cont=c(25,50,75), abs.cont, approx.cont=TRUE, color
         if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
         else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
     }
+    if (!missing(alpha)) {alphavec <- rep(alpha,nc)}
+    	    
+ 	disp1 <- match.arg(display, c("plot3D", "rgl")) 
+	if (disp1 %in% "plot3D")
+	{
+		for (i in 1:nc)
+    	    if (hts[nc-i+1] < max(fhat$estimate))
+    	        plot3D::isosurf3D(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], colvar=fhat$estimate, level=hts[nc-i+1], add=add | (i>1), col=colors[i], alpha=alphavec[i], phi=phi, theta=theta, xlab=xlab, ylab=ylab, zlab=zlab, d=d, ticktype=ticktype, bty=bty, ...)
+    	        
+    	if (drawpoints) plot3D::points3D(x=fhat$x[,1], y=fhat$x[,2], z=fhat$x[,3], cex=cex, col=col.pt, add=TRUE, pch=pch, d=d)    
+	}
+	else if (disp1 %in% "rgl")
+	{	
+    	## suggestions from Viktor Petukhov 08/03/2018
+    	if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+    	if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
     
-    fhat.eval.mean <- sapply(fhat$eval.points, mean)
-    if (drawpoints)
-        rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
-    else
-        rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    	fhat.eval.mean <- sapply(fhat$eval.points, mean)
+	    if (drawpoints)
+	        rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
+    	else
+    	    rgl::plot3d(fhat$x[,1],fhat$x[,2],fhat$x[,3], size=0, col="transparent", alpha=0, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
 
-    for (i in 1:nc)
-        if (hts[nc-i+1] < max(fhat$estimate))
-            misc3d::contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
+    	for (i in 1:nc)
+    	    if (hts[nc-i+1] < max(fhat$estimate))
+    	        misc3d::contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
     
-    if (axes) rgl::axes3d()
-    if (box) rgl::box3d()
+    	if (axes) rgl::axes3d()
+    	if (box) rgl::box3d()
+    }
 }
 
 
@@ -1252,22 +1272,48 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
 
 contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 {
-  num.int <- vector()
-  if (missing(abs.cont))
-    abs.cont <- contourLevels(x, cont=cont, approx=approx)
-
-  num.int <- rep(0, length(abs.cont))
-  if (!is.null(names(abs.cont))) names(num.int) <- names(abs.cont) 
-  ##abs.cont <- sort(abs.cont)
-  if (!is.list(x$eval.points))
-    delta.int <- head(diff(x$eval.points), n=1)
-  else
-    delta.int <- prod(sapply(x$eval.points, diff)[1,]) 
-  
-  for (j in 1:length(abs.cont)) 
-    num.int[j] <- sum(x$estimate>abs.cont[j])
-  
-  return(num.int*delta.int)
+    if (missing(abs.cont))
+        abs.cont <- contourLevels(x, cont=cont, approx=approx)
+    num.int <- rep(0, length(abs.cont))
+    if (!is.null(names(abs.cont))) names(num.int) <- names(abs.cont) 
+    
+    if (!is.list(x$eval.points))
+        delta.int <- head(diff(x$eval.points), n=1)
+    else
+        delta.int <- prod(sapply(x$eval.points, diff)[1,]) 
+    
+    for (j in 1:length(abs.cont)) 
+        num.int[j] <- sum(x$estimate>abs.cont[j])
+    
+    return(num.int*delta.int)
 }
 
 
+###############################################################################
+## Riemann sums to compute approximate probability of contour set
+###############################################################################
+
+contourProbs <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
+{
+    if (missing(abs.cont)) 
+        abs.cont <- contourLevels(x, cont=cont, approx=approx)
+    num.int <- rep(0, length(abs.cont))
+    if (!is.null(names(abs.cont))) 
+        names(num.int) <- names(abs.cont)
+    if (!is.list(x$eval.points)) 
+    {
+        delta.int <- head(diff(x$eval.points), n=1)
+        eval.points.midpoint <- (head(x$eval.points,n=-1)+tail(x$eval.points,n=-1))/2
+    }
+    else
+    {
+        delta.int <- prod(sapply(x$eval.points, diff)[1, ])
+        eval.points.midpoint <- expand.grid(lapply(x$eval.points, function(y){(head(y,n=-1)+tail(y,n=-1))/2}))
+    }
+    
+    x.evmp <- predict(x, x=eval.points.midpoint)
+    for (i in 1:length(num.int)) num.int[i] <- sum(x.evmp*(x.evmp>=abs.cont[i])*delta.int)
+    
+    return(num.int)
+}
+ 

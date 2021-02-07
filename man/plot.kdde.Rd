@@ -11,7 +11,7 @@
 }
 
 \arguments{
-  \item{x}{an object of class \code{kdde} (output from \code{\link{kdde}})}
+  \item{x}{object of class \code{kdde} (output from \code{\link{kdde}})}
   \item{...}{other graphics parameters:
     \describe{
       \item{\code{which.deriv.ind}}{index of the partial derivative to
@@ -24,7 +24,7 @@
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window.
+  graphics/RGL window.
 
   In addition to the display options inherited from \code{plot.kde}, the
   first derivative has \code{display="quiver"}. This is a quiver plot
@@ -43,7 +43,10 @@
   ## bivariate
   plot(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", 
      zlab="Density derivative function", ...)
-  }
+  
+  ## trivariate 
+  plot(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, 
+       colors, col, col.fun=cm.colors, ...)}
 }
  
 
@@ -68,7 +71,11 @@ plot(fhat2, which.deriv.ind=2, display="filled.contour", col.fun=topo.colors)
 s2 <- kcurv(fhat2)
 plot(s2, display="filled.contour")
   ## summary curvature 
-}}
+
+## trivariate example  
+data(iris)
+fhat1 <- kdde(iris[,2:4], deriv.order=1)
+plot(fhat1)}}
 
 
 \keyword{hplot}

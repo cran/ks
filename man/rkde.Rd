@@ -40,7 +40,7 @@
 }
 
 \details{ 
-  \code{pkde} uses Simpson's rule for the numerical
+  \code{pkde} uses the trapezoidal rule for the numerical
   integration. \code{rkde} uses
   Silverman (1986)'s method to generate a random sample from a KDE. 
 }
@@ -51,15 +51,15 @@
 \examples{
 set.seed(8192)
 x <- rnorm.mixt(n=10000, mus=0, sigmas=1, props=1)
-fhat <- kde(x=x, binned=TRUE)
+fhat <- kde(x=x)
 p1 <- pkde(fhat=fhat, q=c(-1, 0, 0.5))
 qkde(fhat=fhat, p=p1)    
 y <- rkde(fhat=fhat, n=100)
 
 x <- rmvnorm.mixt(n=10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
-fhat <- kde(x=x, binned=TRUE)
+fhat <- kde(x=x)
 y <- rkde(fhat=fhat, n=1000)
-fhaty <- kde(x=y, binned=TRUE)
+fhaty <- kde(x=y)
 plot(fhat)
 plot(fhaty, add=TRUE, col=2)
 }

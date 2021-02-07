@@ -12,16 +12,18 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     binned <- ksd$binned
     bgridsize <- ksd$bgridsize
     gridsize <- ksd$gridsize
-    
-    if (missing(h) & d==1) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
-    if (missing(H) & d>1) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=r, verbose=verbose)
-    
+       
     if (d==1)
     {
+        if (missing(h)) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
+
+        ## KDDE for r=2
         fhatr <- kdde(x=x, h=h, deriv.order=r, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, deriv.vec=FALSE, verbose=verbose)
 
+        ## KDE
         fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=min(fhatr$eval.points), xmax=max(fhatr$eval.points), binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
-        
+
+     
         fhat.est <- as.vector(fhat$estimate)
         fhatr.est <- as.vector(fhatr$estimate)
 
@@ -31,18 +33,20 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         fhatr.est <- fhatr.est/fhatr.Sigma12
 
         local.mode <- fhatr.est <= 0
-        fhatr.wald <- fhatr.est^2
-
+        fhatr.wald <- fhatr.est^2/abs(fhat.est)
+        fhatr.wald[is.infinite(fhatr.wald)] <- max(fhatr.wald[!is.infinite(fhatr.wald)])
         gs <- length(fhat$estimate)        
     }
     else if (d>1)
     {
-        ## KDE
-        fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
-        
+        if (missing(H)) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=r, verbose=verbose)
+    
         ## KDDE for r=2
         fhatr <- kdde(x=x, H=H, deriv.order=r, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, deriv.vec=FALSE, verbose=verbose)
-        
+
+        ## KDE
+        fhat <- kde(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, verbose=verbose)
+                
         fhat.est <- as.vector(fhat$estimate)
         fhatr.est <- sapply(fhatr$estimate, as.vector)
     
@@ -67,33 +71,45 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         gs <- dim(fhat$estimate)
     }
 
-    ## Hochberg adjustment for sequential tests 
+    ## Hochberg adjustment for sequential tests
+    
     pval.wald <- 1 - pchisq(fhatr.wald, d*(d+1)/2)
-    pval.wald[fhat.est<=contourLevels(fhat, cont=100)] <- NA
-    pval.wald.ord <- pval.wald[order(pval.wald)]
+    pval.wald[fhat.est<=contourLevels(fhat, cont=99) | !local.mode] <- NA
+    pval.wald.ord.index <- order(pval.wald)
+    pval.wald.ord <- pval.wald[pval.wald.ord.index]
     num.test <- sum(!is.na(pval.wald.ord))
     
     if (num.test>=1) num.test.seq <- c(1:num.test, rep(NA, prod(gs) - num.test))
     else num.test.seq <- rep(NA, prod(gs))
-    reject.nonzero <- ((pval.wald.ord <= signif.level/(num.test + 1 - num.test.seq)) &(pval.wald.ord > 0))  
+
+    reject.nonzero <- (pval.wald.ord <= signif.level/(num.test + 1 - num.test.seq))
     reject.nonzero.ind <- which(reject.nonzero)
     
-    signif.wald <- array(FALSE, dim=gs)
+    ## reject null hypotheses indicated in reject.nonzero.ind
+    if (d==1)
+    {
+        signif.wald <- array(0L, dim=gs)
+        signif.wald[pval.wald.ord.index[reject.nonzero.ind]] <- 1L
+    }
+    else
+    {
+        signif.wald <- array(0L, dim=gs)
+        signif.wald.index <- expand.grid(lapply(gs, seq_len))
+        signif.wald[as.matrix(signif.wald.index[pval.wald.ord.index[reject.nonzero.ind],])] <- 1L
+
+        ## p-value == 0 => reject null hypotheses automatically
+        ##signif.wald[which(pval.wald==0, arr.ind=TRUE)] <- TRUE
+        
+        ## p-value > 0 then reject null hypotheses indicated in reject.nonzero.ind
+        ##for (i in reject.nonzero.ind)
+        ##     signif.wald[which(pval.wald==pval.wald.ord[i], arr.ind=TRUE)] <- TRUE 
+    }
     
-    ## p-value == 0 => reject null hypotheses automatically
-    signif.wald[which(pval.wald==0, arr.ind=TRUE)] <- TRUE
-  
-    ## p-value > 0 then reject null hypotheses indicated in reject.nonzero.ind
-    for (i in reject.nonzero.ind)
-        signif.wald[which(pval.wald==pval.wald.ord[i], arr.ind=TRUE)] <- TRUE 
-
     ## ESS = effective sample size
-    ##ess <- n*fhat$estimate*dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=H, props=1)
-    ##signif.ess <- ess >= 5
+    ## ess <- n*fhat$estimate*dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=H, props=1)
+    ## signif.ess <- ess >= 5
 
-    signif.wald <- signif.wald & array(local.mode, dim=gs) & array(fhat.est>contourLevels(fhat, cont=99), dim=gs)
-    fhatr$estimate <- signif.wald+0
-    ##fhatr$dens.estimate <- fhat.est
+    fhatr$estimate <- signif.wald 
     class(fhatr) <- "kfs"
     
     return(fhatr)
@@ -109,32 +125,20 @@ plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange",
     if (is.vector(fhatr$H)) d <- 1 else d <- ncol(fhatr$H)
     if (d==1)
     {
-        fhat <- kde(x=fhatr$x)
+        fhat <- kde(x=fhatr$x, xmin=min(fhatr$eval.points), xmax=max(fhatr$eval.points), gridsize=length(fhatr$eval.points))
         plot(fhat, col="grey", add=add, ...)
         gridsize <- length(fhatr$estimate)
-        sc.ind <- which(fhatr$estimate==1)
-        sc.len <- length(sc.ind)
-        sc.ind.diff <- diff(sc.ind)
-        jump.ind <- which(sc.ind.diff!=1)
-        jump.num <- length(jump.ind)
-        
-        if (jump.num==0) lines(fhat$eval.points[sc.ind], fhat$estimate[sc.ind],col=col, ...)
-        
-        if (jump.num > 0)
+
+        estimate.rle <- rle(as.vector(fhatr$estimate))
+        estimate.rle.cumsum <- rbind(cumsum(estimate.rle$lengths), estimate.rle$lengths, estimate.rle$values)
+       
+        for (i in which(estimate.rle$values==1))
         {
-            curr.ind <- sc.ind[1:jump.ind[1]]
-            lines(fhat$eval.points[curr.ind], fhat$estimate[curr.ind], col=col, ...)
-            if (jump.num > 1) 
-            { 
-                for (j in 2:length(jump.num))
-                {
-                    curr.ind <- sc.ind[(jump.ind[j-1]+1):jump.ind[j]]
-                    lines(fhat$eval.points[curr.ind], fhat$estimate[curr.ind], col=col, ...)
-                }
-            }
-            curr.ind <- sc.ind[(max(jump.ind)+1):sc.len]
-            lines(fhat$eval.points[curr.ind], fhat$estimate[curr.ind], col=col, ...)
-        }  
+            seg.ind <- 1:estimate.rle.cumsum[2,i]   
+            if (i>1)
+                seg.ind <- seg.ind + estimate.rle.cumsum[1,i-1] 
+            lines(fhat$eval.points[seg.ind], fhat$estimate[seg.ind], col=col, ...)
+        }
     }
     else if (d==2)
     {
@@ -143,7 +147,7 @@ plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange",
         if (disp1=="filled.contour2") col <- c("transparent", col)
         if (disp1=="filled.contour")
         {
-            col.fun <- function(n){return(c("transparent", rep("orange",n)))}
+            col.fun <- function(n){return(c("transparent", rep(col,n)))}
             plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col.fun=col.fun, add=add, display=display, ...)
         }
         else
@@ -152,7 +156,10 @@ plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange",
     else if (d==3)
     {
         if (missing(abs.cont)) abs.cont <- 0.25
-        plot(fhatr, abs.cont=abs.cont, colors=colors, alphavec=alphavec, add=add, ...)
+        e1 <- try(match.arg(display, c("plot3D", "rgl")), silent=TRUE)
+        if (class(e1) %in% "try-error") display <- "plot3D"
+             
+        plot(fhatr, abs.cont=abs.cont, colors=colors, alphavec=alphavec, add=add, display=display, ...)
     }
     invisible()
 }

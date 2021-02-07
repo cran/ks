@@ -30,9 +30,9 @@ invvech(x)
   }
   
 
-\references{ Magnus, J.R. & Neudecker H.M. (1999) \emph{Matrix
+\references{ Magnus, J.R. & Neudecker H.M. (2007) \emph{Matrix
   Differential Calculus with Applications in Statistics and
-  Econometrics (revised edition)}, Wiley & Sons. Chichester.
+  Econometrics (3rd edition)}, Wiley & Sons. Chichester.
 }
 
 

@@ -47,8 +47,8 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names} 
-  \item{w}{weights}
-  \item{cont}{probability contour levels (if \code{compute.cont=TRUE})}   
+  \item{w}{vector of weights}
+  \item{cont}{vector of probability contour levels}   
   \item{end.points}{matrix of final iterates starting from \code{x}}
   \item{label}{vector of cluster labels}
   \item{mode}{matrix of cluster modes}
@@ -62,7 +62,7 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 
 
 \details{
-  For 2-d data, \code{kms.part} and \code{mvnorm.mixt.part} produces a
+  For 2-d data, \code{kms.part} and \code{mvnorm.mixt.part} produce a
   \code{kde.part} object whose 
   values are the class labels, rather than probability density values.   
 }
@@ -76,15 +76,16 @@ mus <- rbind(c(-1,0), c(1, 2/sqrt(3)), c(1,-2/sqrt(3)))
 Sigmas <- 1/25*rbind(invvech(c(9, 63/10, 49/4)), invvech(c(9,0,49/4)), invvech(c(9,0,49/4)))
 props <- c(3,3,1)/7
 nmixt.part <- mvnorm.mixt.part(mus=mus, Sigmas=Sigmas, props=props)
-plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))
-}
-\dontrun{
+plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}
+
 ## kernel mean shift partition
+if (interactive()) {
 set.seed(81928192)
 x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
 msize <- round(151^2*0.05)
 kms.nmixt.part <- kms.part(x=x, min.clust.size=msize)
-plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}}
+plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}
+}
 
 
 \keyword{hplot}

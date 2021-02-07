@@ -28,7 +28,7 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 }
 
 \details{
-  As of \pkg{ks} 1.10.0, binning is available for unconstrained
+  For \pkg{ks} \eqn{\geq}{>=} 1.10.0, binning is available for unconstrained
   (non-diagonal) bandwidth matrices. Code is used courtesy of A. &
   J. Gramacki, and M.P. Wand. Default \code{bgridsize} are 
   d=1: 401; d=2: rep(151, 2); d=3: rep(51, 3); d=4: rep(21, 4). 

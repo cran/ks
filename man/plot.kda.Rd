@@ -28,7 +28,7 @@
   
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window. 
+  graphics/RGL window. 
 }
 
 
@@ -48,8 +48,7 @@
   ## trivariate
   plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, 
      approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
-     drawpoints=FALSE, size=3, col.pt="blue", ...)
-  }
+     drawpoints=FALSE, size=3, col.pt="blue", ...)}
 }
  
 
@@ -70,14 +69,12 @@ ir <- iris[,1:2]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
 plot(kda.fhat)
-\donttest{
+
 ## trivariate example
 ir <- iris[,1:3]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
-plot(kda.fhat, drawpoints=TRUE, col.pt=c(2,3,4))
+plot(kda.fhat, alpha=0.05) 
    ## colour=species, transparency=density heights}
-}
-
 
 \keyword{hplot}

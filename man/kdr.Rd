@@ -52,14 +52,14 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
     same as input}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names} 
-  \item{w}{weights}
+  \item{w}{vector of weights}
   \item{path}{list of density gradient ascent paths where \code{path[[i]]} is
     the path of \code{y[i,]} (only if \code{keep.path=TRUE})}
 }
 
 \details{ 
   Kernel density ridge estimation is based on reduced dimension kernel
-  mean shift. *** To do. *** See Ozertem & Erdogmus (2011). 
+  mean shift. See Ozertem & Erdogmus (2011). 
 
   If \code{y} is missing, then it defaults to the grid of size
   \code{gridsize} spanning from \code{xmin} to \code{xmax}.
@@ -79,7 +79,7 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
 \seealso{\code{\link{kde}}}
 
 \examples{
-\donttest{
+if(interactive()){
 library(maps)
 data(quake) 
 quake <- quake[quake$prof==1,]  ## Pacific Ring of Fire 
@@ -91,7 +91,7 @@ plate$long[plate$long<0 & !is.na(plate$long)] <- plate$long[plate$long<0
 & !is.na(plate$long)] + 360
 
 dr.quake <- kdr(x=quake, xmin=c(70,-70), xmax=c(310, 80))
-map("world2", xlim=c(85, 305), ylim=c(-70, 70), mar=c(0,0,0,0), interior=FALSE, lty=2)
+map("world2", xlim=c(85, 305), ylim=c(-70, 70), lty=2)
 lines(plate[,1:2], col=3, lwd=2)
 points(dr.quake$end.points, cex=0.5, pch=16, col=2)}
 }

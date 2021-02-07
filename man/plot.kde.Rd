@@ -11,12 +11,13 @@
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde} (output from \code{\link{kde}})}
+  \item{x}{object of class \code{kde} (output from \code{\link{kde}})}
   \item{...}{other graphics parameters:
     \describe{
       \item{\code{display}}{type of display, "slice" for contour plot,
 	"persp" for perspective plot, "image" for image plot, "filled.contour"
-	for filled contour plot (1st form), "filled.contour2" (2nd form) (2-d)}
+	for filled contour plot (1st form), "filled.contour2" (2nd form) (2-d), 
+	"plot3D" (3-d), "rgl" (3-d)}
       \item{\code{cont}}{vector of percentages for contour level curves}
       \item{\code{abs.cont}}{vector of absolute density estimate heights for contour level curves}
       \item{\code{approx.cont}}{flag to compute approximate contour levels. Default is FALSE.}
@@ -43,7 +44,7 @@
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window. 
+  graphics/RGL window. 
 }
 
 
@@ -57,22 +58,22 @@
   
   ## bivariate
   plot(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
-  xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE,
-  drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", 
-  col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...)
+     xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE,
+  	 drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", 
+  	 col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...)
 
   ## trivariate
-  plot(fhat, cont=c(25,50,75), abs.cont, approx.cont=FALSE, colors,
-    add=FALSE, drawpoints=FALSE, alpha, alphavec, xlab, ylab, zlab, 
-    size=3, col.pt="blue", ...)   
-  }
+  plot(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
+  	 colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, 
+  	 d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, 
+  	 zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)}
 
-  The 1-d plot is a standard plot of a 1-d curve. If
+  For 1-dimensional data, the plot is a standard plot of a 1-d curve. If
   \code{drawpoints=TRUE} then a rug plot is added. If \code{cont} is specified,
   the horizontal line on the x-axis indicates the \code{cont}\% highest 
   density level set.  
   
-  There are different types of plotting displays for 2-d data available,
+  For 2-dimensional data, the different types of plotting displays are 
   controlled by the \code{display} parameter.
   (a) If \code{display="slice"} then a slice/contour plot
   is generated using \code{contour}.  
@@ -88,11 +89,12 @@
   is generated. Default colours are the default from the usual
   \code{image} command.
 
-  For 3-dimensional data, the interactive plot is a series of nested
-  3-d contours. 
-  The default contours are \code{cont=c(25,50,75)}.  The
+  For 3-dimensional data, the plot is a series of nested
+  3-d contours. The default contours are \code{cont=c(25,50,75)}.  The
   default \code{colors} are \code{heat.colors} and the
-  default opacity \code{alphavec} ranges from 0.1 to 0.5.
+  default opacity \code{alphavec} ranges from 0.1 to 0.5. 
+  For \pkg{ks} >= 1.12.0, base R graphics becomes the default plotting engine: 
+  to create an \pkg{rgl} plot like in previous versions, set \code{display="rgl"}. 
 
   To specify contours, either one of \code{cont} or \code{abs.cont}
   is required. \code{cont} specifies upper percentages which
@@ -102,7 +104,7 @@
   multiple density estimates with common contour levels. See
   \code{\link{contourLevels}} for details on computing contour levels.   
   If \code{approx=FALSE}, then the exact KDE is computed. Otherwise
-  it is interpolated from an existing KDE grid. This can dramatically
+  it is interpolated from an existing KDE grid, which can dramatically
   reduce computation time for large data sets. 
 }
  
@@ -117,12 +119,13 @@ plot(fhat, cont=50, col.cont="blue", cont.lwd=2, xlab="Sepal length")
 ## bivariate example
 fhat <- kde(x=iris[,2:3])
 plot(fhat, display="filled.contour", cont=seq(10,90,by=10))
-plot(fhat, display="persp", thin=3, border=1, col="white")
-\donttest{
+plot(fhat, display="persp", thin=3, border=1, col="white", ticktype="detailed")
+
 ## trivariate example
 fhat <- kde(x=iris[,2:4])
-plot(fhat, drawpoints=TRUE)
-}}
+plot(fhat)
+if (interactive()) plot(fhat, display="rgl")
+}
 
 
 \keyword{hplot}

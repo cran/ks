@@ -19,7 +19,7 @@ histde(x, binw, xmin, xmax, adj=0)
   \item{xmin,xmax}{vector of minimum/maximum values for grid}
   \item{adj}{displacement of default anchor point, in percentage of 1
     bin}
-  \item{object}{an object of class \code{histde}}
+  \item{object}{object of class \code{histde}}
   \item{...}{other parameters}
 }
   

@@ -54,9 +54,9 @@ kcurv(fhat, compute.cont=TRUE)
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names}
-  \item{w}{weights}
+  \item{w}{vector of weights}
   \item{deriv.order}{derivative order (scalar)}
-  \item{deriv.ind}{each row is a vector of partial derivative indices}
+  \item{deriv.ind}{martix where each row is a vector of partial derivative indices}
 }
 
 \details{ 
@@ -64,7 +64,7 @@ kcurv(fhat, compute.cont=TRUE)
   list whose elements  
   correspond to the partial derivative indices in the rows of \code{deriv.ind}. 
   For points estimation, the estimate is a matrix whose columns correspond to 
-  rows of \code{deriv.ind}.
+  the rows of \code{deriv.ind}.
 
   If the bandwidth \code{H} is missing from \code{kdde}, then
   the default bandwidth is the  plug-in selector

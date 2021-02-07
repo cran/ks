@@ -37,8 +37,8 @@ dckde(...)
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names} 
-  \item{w}{weights}
-  \item{cont}{probability contour levels (if \code{compute.cont=TRUE})}   
+  \item{w}{vector of weights}
+  \item{cont}{vector of probability contour levels}   
 }
 
 \details{ 

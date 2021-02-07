@@ -63,7 +63,7 @@ If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
   by \code{bgridsize}. Otherwise it's computed exactly.  
   If \code{Hstart} is not given then it defaults to \code{Hns(x)}.
 
-  From \pkg{ks} 1.11.1 onwards, the default optimisation function is
+  For \pkg{ks} \eqn{\geq}{>=} 1.11.1, the default optimisation function is
   \code{optim.fun="optim"}. To reinstate the previous functionality, use
   \code{optim.fun="nlm"}.  
 }

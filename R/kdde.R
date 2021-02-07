@@ -527,7 +527,6 @@ plot.kdde <- function(x, ...)
       }
       else if (d==3)
       {
-        ##stop("plot.kdde not yet implemented for 3-d data")
         plotkdde.3d(fhat, ...)
         invisible()
       }
@@ -550,7 +549,7 @@ plotkdde.1d <- function(fhat, ylab="Density derivative function", cont=50, abs.c
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col.fun=topo.colors, kdde.flag=TRUE, thin=5, transf=1/4, neg.grad=FALSE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col, col.fun=topo.colors, kdde.flag=TRUE, thin=5, transf=1/4, neg.grad=FALSE, ...)
 {
   disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2", "quiver"))
   
@@ -558,7 +557,7 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
   {
     if (missing(abs.cont))
     {
-      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
+      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
       abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
     }
   } 
@@ -566,7 +565,7 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
   if (disp1=="quiver")
   {
       if (fhat$deriv.order==1)
-          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, ...)
+          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, col=col, ...)
       else warning("Quiver plot requires gradient estimate.")
   }
   else
@@ -577,16 +576,16 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
       fhat <- fhat.temp
       class(fhat) <- "kde"
       
-      plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, ...) 
+      plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
   }
 }
 
 
-plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, colors, col.fun=cm.colors, ...)
+plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun=cm.colors, ...)
 {
   if (missing(abs.cont))
   {
-      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol=length(cont))
+      abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
       abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
   }
   
@@ -596,13 +595,14 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, col
   fhat <- fhat.temp
   class(fhat) <- "kde"
 
-  if (missing(colors))
+  if (missing(col))
   {
-      colors <- rev(col.fun(length(abs.cont)))
-      nc <- length(colors)
-      colors[1: (nc/2)] <- rev(colors[1:(nc/2)])
+      col <- rev(col.fun(length(abs.cont)))
+      nc <- length(col)
+      col[1: (nc/2)] <- rev(col[1:(nc/2)])
   }
-  plot(fhat, abs.cont=abs.cont, colors=colors, ...) 
+  colors <- col
+  plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col, ...) 
 }
 
 
@@ -610,11 +610,11 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, col
 ## Quiver plot
 ######################################################################
 
-plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, ...)
+plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col, ...)
 {
     ## suggestions from Viktor Petukhov 08/03/2018
     if (!requireNamespace("OceanView", quietly=TRUE)) stop("Install the OceanView package as it is required.", call.=FALSE)
-
+    if (missing(col)) col <- 1
     ev <- fhat$eval.points
     est <- fhat$estimate
 
@@ -632,7 +632,7 @@ plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, ...
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
     
-    OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, ...)
+    OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
 }
 
   

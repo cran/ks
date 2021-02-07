@@ -238,8 +238,9 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
     RK <- (4*pi)^(-d/2)
    
     xrange <- apply(rbind(x1,x2), 2, range)
-    if (missing(xmin)) xmin <- xrange[1,] - supp*sqrt(det(H1)*det(H2))
-    if (missing(xmax)) xmax <- xrange[2,] + supp*sqrt(det(H1)*det(H2))
+    tol.H <- sqrt(prod(diag(matrix.sqrt(H1) %*% matrix.sqrt(H2)))^(1/d))
+    if (missing(xmin)) xmin <- xrange[1,] - supp*tol.H ##sqrt(det(H1)*det(H2))
+    if (missing(xmax)) xmax <- xrange[2,] + supp*tol.H ##sqrt(det(H1)*det(H2))
   }
   else
   {
@@ -348,10 +349,17 @@ plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="t
 }
 
 
-plotkde.loctest.3d <- function(x, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), ...)
+plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), add.legend=TRUE, ...)
 {
   if (length(alphavec)==1) alphavec <- rep(alphavec,2)
-  if (missing(color)) color <- c("purple", "darkgreen")
-  plot(x$fhat.diff.pos, color=color[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1], ...)
-  plot(x$fhat.diff.neg, color=color[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
+  if (missing(col)) col <- c("purple", "darkgreen")
+  plot(x$fhat.diff.pos, color=col[1], col=col[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1],  ...)
+  plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
+  
+  if (add.legend) 
+  	plot3D::colkey(clim=c(1,2), col=col, at=c(1.25, 1.75), add=TRUE, side=1, addlines=TRUE, length=0.2, dist=-0.1, shift=0.1, labels=c(expression(f[1]>f[2]), expression(f[1]<f[2])))
 }
+
+
+
+

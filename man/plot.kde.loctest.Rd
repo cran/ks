@@ -11,7 +11,7 @@
 }
 
 \arguments{
-  \item{x}{an object of class \code{kde.loctest} (output from \code{\link{kde.local.test}})}
+  \item{x}{object of class \code{kde.loctest} (output from \code{\link{kde.local.test}})}
   \item{...}{other graphics parameters:
     \describe{
       \item{\code{lcol}}{colour for KDE curve (1-d)}
@@ -20,9 +20,10 @@
 	sample 1<sample2.}
       \item{\code{add}}{flag to add to current plot. Default is FALSE.}
       \item{\code{rugsize}}{height of rug-like plot (1-d)}
-      \item{\code{add.legend}}{flag to add legend. Default is FALSE (1-d, 2-d).}
+      \item{\code{add.legend}}{flag to add legend. Default is FALSE.}
       \item{\code{pos.legend}}{position label for legend (1-d, 2-d)}
-      \item{\code{add.contour}}{flag to add contour lines. Default is FALSE (2-d).}     
+      \item{\code{add.contour}}{flag to add contour lines. Default is FALSE (2-d).} 
+      \item{\code{alphavec}}{vector of transparency values for contour (3-d)}    
     }
     
     and those used in \code{\link{plot.kde}}
@@ -33,9 +34,8 @@
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is
-  sent to RGL window. 
+  sent to graphics/RGL window. 
 }
-
 
 
 \details{
@@ -51,20 +51,26 @@
 
    ## trivariate 
    plot(x, col, add=FALSE, xlab="x", ylab="y", zlab="z", box=TRUE, axes=TRUE,
-     alphavec=c(0.5, 0.5), ...)
-   }
+     alphavec=c(0.5, 0.5), ...)}
 }
  
 
 \seealso{\code{\link{kde.local.test}}}
 
 \examples{
-library(MASS)
-data(crabs)
-x1 <- crabs[crabs$sp=="B", c(4,6)]
-x2 <- crabs[crabs$sp=="O", c(4,6)]
-loct <- kde.local.test(x1=x1, x2=x2)
+data(air)
+air.var <- c("co2","pm10","no")
+air <- air[, c("date","time",air.var)]
+air2 <- reshape(air, idvar="date", timevar="time", direction="wide")
+a1 <- as.matrix(na.omit(air2[, paste0(air.var, ".08:00")]))
+a2 <- as.matrix(na.omit(air2[, paste0(air.var, ".20:00")]))
+colnames(a1) <- air.var
+colnames(a2) <- air.var
+loct <- kde.local.test(x1=a1[,c("co2","pm10")], x2=a2[,c("co2","pm10")])
 plot(loct)
+
+\donttest{loct <- kde.local.test(x1=a1, x2=a2)
+plot(loct, xlim=c(0,800), ylim=c(0,300), zlim=c(0,300))}
 }
 
 

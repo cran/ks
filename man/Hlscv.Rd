@@ -67,10 +67,7 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   \code{abs(LSCV(H)) > trunc*abs(LSCV0)} then the \code{LSCV(H)} is reset to \code{LSCV0} where 
   \code{H0=Hns(x)} and \code{LSCV0=LSCV(H0)}.
 
-  From \pkg{ks} 1.11.1 onwards, the default optimisation function is
-  \code{optim.fun="optim"}.
-  
-  For details about the advanced options for \code{binned,Hstart}, 
+  For details about the advanced options for \code{binned,Hstart,optim.fun}, 
   see \code{\link{Hpi}}. 
 }
 

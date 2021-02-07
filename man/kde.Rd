@@ -37,8 +37,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kde}}
-  \item{zero.flag}{interpolated values \code{object$estimate} of when \code{x}
-  outside of \code{object$eval.points}=0 (if \code{TRUE}), = nearest
+  \item{zero.flag}{interpolated values of \code{object$estimate} when \code{x}
+  \eqn{\not\in}{is outside of} \code{object$eval.points} = 0 (if \code{TRUE}), = nearest
   \code{object$estimate} (if \code{FALSE})}
   \item{...}{other parameters}
 }
@@ -56,8 +56,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names} 
-  \item{w}{weights}
-  \item{cont}{probability contour levels (if \code{compute.cont=TRUE})}    
+  \item{w}{vector of weights}
+  \item{cont}{vector of probability contour levels}    
 }
 
 \details{
@@ -78,7 +78,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   For d=4, 5, 6,  and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid defined by \code{gridsize}. 
   
-  --If \code{eval.points} is specified, as a vector (d=1) or 
+  If \code{eval.points} is specified, as a vector (d=1) or 
   as a matrix (d=2, 3, 4), then the density estimate is computed at
   \code{eval.points}. This form is suitable for numerical summaries
   (e.g. maximum likelihood), and is not compatible with the \code{plot}
@@ -89,17 +89,13 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned grid estimate is not required, then set \code{binned=FALSE} to
   compute directly the exact density estimate at \code{eval.points}.   
 
-  %--For d>4, computing the kernel
-  %density estimate over a grid is not feasible, and so it is computed exactly
-  %and \code{eval.points} (as a matrix) must be specified.
-
   Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. The default value of the
   binning flag \code{binned} is n>1 (d=1), n>500 (d=2), n>1000 (d>=3). 
   
-  The default \code{bgridsize,gridsize} are 401 (d=1), rep(151, 2) (d=2),
-  rep(51, 3) (d=3), rep(21,4) (d=4).
+  The default \code{bgridsize,gridsize} are d=1: 401; d=2: rep(151, 2); d=3: 
+  rep(51, 3); d=4: rep(21, 4). 
   
   The effective support for a normal kernel is where  
   all values outside \code{[-supp,supp]^d} are zero. 

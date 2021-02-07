@@ -46,9 +46,9 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names}
-  \item{w}{weights}
+  \item{w}{vector of weights}
   \item{deriv.order}{derivative order (scalar)}
-  \item{deriv.ind}{each row is a vector of partial derivative indices.}
+  \item{deriv.ind}{martix where each row is a vector of partial derivative indices.}
 
   This is the same structure as a \code{kdde} object, except that
   \code{estimate} is a binary matrix rather than real-valued. 
@@ -106,6 +106,11 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
 \seealso{\code{\link{kdde}}, \code{\link{plot.kfs}}}
 
 \examples{
-## see example is ? plot.kfs
+library(MASS)
+data(geyser)
+geyser.fs <- kfs(geyser$duration, binned=TRUE)
+plot(geyser.fs, xlab="duration")
+
+## see example in ? plot.kfs
 }
 \keyword{smooth}

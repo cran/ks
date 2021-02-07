@@ -32,7 +32,7 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned,
   \code{kde.loctest} which is a list with fields:
   \item{fhat1,fhat2}{kernel density estimates, objects of class \code{kde}}
   \item{chisq}{chi squared test statistic}
-  \item{pvalue}{matrix of local p-values at each grid point}
+  \item{pvalue}{matrix of local \eqn{p}{p}-values at each grid point}
   \item{fhat.diff}{difference of KDEs}
   \item{mean.fhat.diff}{mean of the test statistic}  
   \item{var.fhat.diff}{variance of the test statistic}
@@ -54,7 +54,7 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned,
   The required input is either \code{x1,x2} and \code{H1,H2}, or
   \code{fhat1,fhat2}, i.e. the data values and bandwidths or objects of class
   \code{kde}. In the former case, the \code{kde} objects are created.
-  If the \code{H1,H2} are missing then the default are the plugin
+  If the \code{H1,H2} are missing then the default are the plug-in
   selectors \code{Hpi}.  Likewise for missing \code{h1,h2}. 
 
   The \code{mean.adj} flag determines whether the

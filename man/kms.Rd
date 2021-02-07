@@ -94,9 +94,13 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
 \examples{
 library(MASS)
 data(crabs)
-kms.crabs <- kms(x=crabs[,c("FL", "CW")])
-plot(kms.crabs$x, col=kms.crabs$label)
+kms.crabs <- kms(x=crabs[,c("FL","CW")])
+plot(kms.crabs)
 summary(kms.crabs)
+
+kms.crabs <- kms(x=crabs[,c("FL","CW","RW")])
+plot(kms.crabs)
+plot(kms.crabs, display="plot3D") 
 }
 
 \keyword{cluster}

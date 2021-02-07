@@ -73,8 +73,9 @@ fhat <- kde(x=wb, xmin=xmin, xmax=xmax)
 fhat.sp <- kde.sp(x=wb, xmin=xmin, xmax=xmax)
 plot(fhat, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))
 plot(fhat.sp, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
-\dontrun{
+if (interactive()){
 fhat.ball <- kde.balloon(x=wb, xmin=xmin, xmax=xmax)
-plot(fhat.ball, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}}
+plot(fhat.ball, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
+}
 
 \keyword{smooth}

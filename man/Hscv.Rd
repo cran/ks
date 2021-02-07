@@ -57,10 +57,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
 
-  From \pkg{ks} 1.11.1 onwards, the default optimisation function is
-  \code{optim.fun="optim"}.
-  
-  For details about the advanced options for \code{binned, Hstart}, 
+  For details about the advanced options for \code{binned, Hstart, optim.fun}, 
   see \code{\link{Hpi}}.
 }
 
@@ -73,7 +70,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
   matrices for multivariate kernel density
   estimation. \emph{Scandinavian Journal of Statistics}, \bold{32}, 485-506.
    
-  Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root n
+  Jones, M.C., Marron, J.S. & Park, B.U. (1991) A simple root \eqn{n}{n}
   bandwidth selector. \emph{Annals of Statistics}, \bold{19}, 1919-1932.
 } 
 

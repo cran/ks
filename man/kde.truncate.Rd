@@ -26,10 +26,7 @@ kdde.truncate(fhat, boundary)
   A simple truncation is performed on the kernel estimator. All the
   points in the estimation grid which are outside of the regions
   delimited by \code{boundary} are set to 0, and their probability
-  mass is distributed proportionally to the density (derivative) value.
-  %The \code{boundary} is typically obtained as the output from
-  %\code{polypath} from the \pkg{mgcv} package which determines
-  %automatically the interior/exterior of a set of polygon paths.
+  mass is distributed proportionally to the remaining density (derivative) values.
 }
 
 \seealso{\code{\link{kde}}, \code{\link{kdde}}}
@@ -41,7 +38,7 @@ wa.coast <- ozRegion(section=1)
 wa.polygon <- cbind(wa.coast$lines[[1]]$x, wa.coast$lines[[1]]$y)
 fhat <- kde(x=grevillea)
 fhat <- kde.truncate(fhat, wa.polygon)
-oz(section=1, xlim=c(114.75, 121.5),  ylim=c(-33, -31.5))
+oz(section=1)
 plot(fhat, add=TRUE, cont=seq(10,90,by=10), col=2, drawlabels=FALSE, drawpoints=TRUE)
 }
 

@@ -70,10 +70,10 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{H}{stacked matrix of bandwidth matrices or vector of bandwidths}
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
-  \item{w}{weights}
-  \item{prior.prob}{prior probabilities}
-  \item{x.group}{group labels - same as input}
-  \item{x.group.estimate}{estimated group labels. If the test data
+  \item{w}{vector of weights}
+  \item{prior.prob}{vector of prior probabilities}
+  \item{x.group}{vector of group labels - same as input}
+  \item{x.group.estimate}{vector of estimated group labels. If the test data
     \code{eval.points} are given then these are classified. Otherwise
     the training data \code{x} are classified.}
   For \code{kde.flag=FALSE}, which is always the case for \eqn{d>3}{d>3},
@@ -90,7 +90,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
     indicating the true group and the columns the estimated group}
   \item{error}{misclassification rate (MR)}
     
-  In the case where the test data is independent of the
+  In the case where the test data are independent of the
   training data, \code{compare} computes MR = (number of points wrongly
   classified)/(total number of points). In the case where the test data
   are not independent e.g. 
@@ -124,7 +124,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   Otherwise \code{prior.prob=NULL} uses the sample
   proportions as estimates of the prior probabilities.
   
-  As of \pkg{ks} 1.8.11, \code{kda.kde} has been subsumed
+  For \pkg{ks} \eqn{\geq}{>=} 1.8.11, \code{kda.kde} has been subsumed
   into \code{kda}, so all prior calls to \code{kda.kde} can be replaced
   by \code{kda}. To reproduce the previous behaviour of \code{kda}, the
   command is \code{kda(, kde.flag=FALSE)}.

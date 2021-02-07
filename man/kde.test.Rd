@@ -26,7 +26,7 @@ kde.test(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2,
 A kernel two-sample global significance test is a list with fields:
   \item{Tstat}{T statistic}
   \item{zstat}{z statistic - normalised version of Tstat}
-  \item{pvalue}{p-value of the double sided test}
+  \item{pvalue}{\eqn{p}{p}-value of the double sided test}
   \item{mean,var}{mean and variance of null distribution}
   \item{var.fhat1,var.fhat2}{sample variances of KDE values evaluated at data points}
   \item{n1,n2}{sample sizes}
@@ -44,16 +44,16 @@ A kernel two-sample global significance test is a list with fields:
   where \eqn{\psi_{0,uv} = \int f_u (\bold{x}) f_v (\bold{x})  \, d \bold{x}}{psi_0,uv = int f_u(x) f_v(x) dx},
   then we can use kernel functional estimators. This test statistic has a null 
   distribution which is asymptotically normal, so no bootstrap
-  resampling is required to compute an approximate p-value.     
+  resampling is required to compute an approximate \eqn{p}{p}-value.     
   
   If \code{H1,H2} are missing then the  plug-in selector \code{\link{Hpi.kfe}}
   is automatically called by \code{kde.test} to estimate the
   functionals with \code{kfe(, deriv.order=0)}. Likewise for missing
   \code{h1,h2}. 
 
-  As of \pkg{ks} 1.8.8, \code{kde.test(,binned=TRUE)} invokes binned
+  For \pkg{ks} \eqn{\geq}{>=} 1.8.8, \code{kde.test(,binned=TRUE)} invokes binned
   estimation for the computation of the bandwidth selectors, and not the
-  test statistic and p-value.  
+  test statistic and \eqn{p}{p}-value.  
 }
 
 \references{

@@ -237,12 +237,15 @@
   --For an overview of this package with 2-d density estimation, see 
   \code{vignette("kde")}.
 
-  --For \pkg{ks} \eqn{\geq}{>=} 1.11.1, the \pkg{misc3d} and and
+  --For \pkg{ks} \eqn{\geq}{>=} 1.11.1, the \pkg{misc3d} and
   \pkg{rgl} (3-d plot), \pkg{OceanView} (quiver plot),
   \pkg{oz} (Australian map) packages have been moved from
   Depends to Suggests. This was done to allow \pkg{ks} to be installed
   on systems where these latter graphical-based packages can't be
-  installed.  
+  installed. Furthermore, since the future of OpenGL in R is not certain, 
+  \pkg{plot3D} becomes the default for 3D plotting for \pkg{ks} \eqn{\geq}{>=} 1.12.0. 
+  RGL plots are still supported though these may be deprecated in the 
+  future.  
 }
 
 \author{
@@ -261,7 +264,7 @@
     for Data Analysis}. Oxford University Press, Oxford.
 
   Chacon, J.E. & Duong, T. (2018) \emph{Multivariate Kernel Smoothing
-  and Its Applications}. Chapman & Hall/CRC. To appear. 
+  and Its Applications}. Chapman & Hall/CRC, Boca Raton. 
   
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis, University of Western Australia. 
@@ -281,6 +284,6 @@
 
 \keyword{package}
 
-\seealso{\pkg{feature}, \pkg{sm}, \pkg{KernSmooth}
-}
+\seealso{\pkg{feature}, \pkg{sm}, \pkg{KernSmooth}}
+
 

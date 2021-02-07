@@ -19,10 +19,10 @@ Each row corresponds to an hourly measurement.
 The first column is the date (yyyy-mm-dd),
 the second is the time (hh:mm),
 the third is the nitric oxide NO concentration (g/m3),
-the fourth is the nitrogen dioxide NO2 concentration (g/m3),
+the fourth is the nitrogen dioxide NO\eqn{_2}{2} concentration (g/m3),
 the fifth is the concentration of particulate matter less than 10
 microns PM10 (ppm),
-the sixth is the carbon dioxide concentration CO2 (g/m3),
+the sixth is the carbon dioxide concentration CO\eqn{_2}{2} (g/m3),
 the seventh is the temperature (degrees Celsius),
 the eighth is the relative humidity (percentage). }
 

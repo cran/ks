@@ -11,14 +11,14 @@
 }
 
 \arguments{
-  \item{x}{an object of class \code{kcde} (output from \code{\link{kcde}})}
+  \item{x}{object of class \code{kcde} (output from \code{\link{kcde}})}
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}}
 }
   
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window (not yet implemented). 
+  graphics/RGL window.
 }
 
 \details{
@@ -32,8 +32,13 @@
   plot(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont, xlab, ylab, 
        zlab="Distribution function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, 
        drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, 
-       lwd=1, border=NA, thin=1, ...) 
-  }
+       lwd=1, border=NA, thin=1, lwd.fc=5, ...) 
+  
+  ## trivariate     
+  plot(Fhat, display="plot3D", cont=c(25,50,75), colors, col, alphavec, size=3, 
+      cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", 
+      col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, 
+      box=TRUE, axes=TRUE, ...)}
 }
   
 \seealso{\code{\link{plot.kde}}}
@@ -45,6 +50,8 @@ Fhat <- kcde(x=iris[,1])
 plot(Fhat, xlab="Sepal.Length")
 Fhat <- kcde(x=iris[,1:2])
 plot(Fhat, thin=3)
+Fhat <- kcde(x=iris[,1:3])
+plot(Fhat, alpha=0.3)
 }
 
 

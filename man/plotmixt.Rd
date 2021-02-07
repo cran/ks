@@ -27,14 +27,10 @@ plotmixt(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE,
   }
 
 \value{
-  If \code{draw=TRUE}, the 1-d, 2-d plot is sent to graphics window, 3-d plot to RGL window.
-  If \code{draw=FALSE}, then a \code{kdde}-like object is returned.
+  If \code{draw=TRUE}, the 1-d, 2-d plot is sent to graphics window, 3-d plot to 
+  graphics/RGL window. If \code{draw=FALSE}, then a \code{kdde}-like object is returned.
 }
 
-
-%\details{
-%  See the graphics parameter options in \code{?plot.kde}.
-%}
  
 
 \examples{
@@ -44,13 +40,13 @@ Sigma <- matrix(c(1, 0.7, 0.7, 1), nr=2, nc=2)
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus=mus, Sigmas=Sigmas, props=props, display="filled.contour")
-\donttest{  
+
 ## trivariate 
 mus <- rbind(c(0,0,0), c(-1,0.5,1.5))
 Sigma <- matrix(c(1, 0.7, 0.7, 0.7, 1, 0.7, 0.7, 0.7, 1), nr=3, nc=3) 
 Sigmas <- rbind(Sigma, Sigma)
 props <- c(1/2, 1/2)
 plotmixt(mus=mus, Sigmas=Sigmas, props=props, dfs=c(11,8), dist="t")
-}}
+}
 
 \keyword{ hplot}

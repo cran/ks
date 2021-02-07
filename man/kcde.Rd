@@ -70,7 +70,7 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   \item{gridded}{flag for estimation on a grid}
   \item{binned}{flag for binned estimation}
   \item{names}{variable names}
-  \item{w}{weights}
+  \item{w}{vector of weights}
   \item{tail}{"lower.tail"=cumulative distribution, "upper.tail"=survival function}
 }
 
@@ -78,7 +78,7 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   If \code{tail.flag="lower.tail"} then the cumulative distribution
   function \eqn{\mathrm{Pr}(\bold{X}\leq\bold{x})}{Pr(X<=x)} is estimated, otherwise
   if \code{tail.flag="upper.tail"}, it is the survival function
-  \eqn{\mathrm{Pr}(\bold{X}>\bold{x})}{P(X>x)}. For d>1,
+  \eqn{\mathrm{Pr}(\bold{X}>\bold{x})}{P(X>x)}. For \eqn{d>1}{d>1},
   \eqn{\mathrm{Pr}(\bold{X}\leq\bold{x}) \neq 1 - \mathrm{Pr}(\bold{X}>\bold{x})}{Pr(X<=x) != 1-Pr(X>x)}.
   
   If the bandwidth \code{H} is missing in \code{kcde}, then
@@ -87,9 +87,7 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   No pre-scaling/pre-sphering is used since the \code{Hpi.kcde} is not
   invariant to translation/dilation.
 
-  From \pkg{ks} 1.11.1 onwards, the default optimisation function is \code{optim.fun="optim"}.
-
-  The effective support, binning, grid size, grid range, positive
+  The effective support, binning, grid size, grid range, positive, optimisation function
   parameters are the same as \code{\link{kde}}.
 }
 

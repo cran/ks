@@ -13,7 +13,7 @@
 }
 
 \arguments{
-  \item{x}{an object of class \code{kroc} (output from \code{\link{kroc}})}
+  \item{x}{object of class \code{kroc} (output from \code{\link{kroc}})}
   \item{add}{flag to add to current plot. Default is FALSE.}
   \item{add.roc.ref}{flag to add reference ROC curve. Default is FALSE.} 
   \item{xlab}{x-axis label. Default is "False positive rate
@@ -25,7 +25,7 @@
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
-  RGL window. 
+  graphics/RGL window. 
 }
 
 

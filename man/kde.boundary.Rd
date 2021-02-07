@@ -27,8 +27,7 @@ kde.boundary(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{boundary.supp}{effective support for boundary region}
-  \item{boundary.kernel}{"beta" = 2nd form of
-  beta boundary kernel, "linear" = linear boundary kernel}
+  \item{boundary.kernel}{"beta" = beta boundary kernel, "linear" = linear boundary kernel}
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
 }

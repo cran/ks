@@ -218,27 +218,24 @@ summary.kms <- function(object, ...)
 }
 
 
-plot.kms <- function(x, splom=TRUE, col, add=FALSE, ...)
+plot.kms <- function(x, display="splom", col, add=FALSE, ...)
 {
-    fhat <- x
-    if (is.vector(fhat$H)) d <- 1 else d <- ncol(fhat$H)
-    if (missing(col)) col <- rainbow(length(unique(fhat$label)))
+ 	disp1 <- match.arg(display, c("splom", "plot3D"))
+    if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
+    if (missing(col)) col <- rainbow(length(unique(x$label)))
     if (d==1) stop("kms plot not yet implemented")
     else if (d==2)
     {
-        if (!add) plot(fhat$x, col=col[fhat$label], ...)
-        else points(fhat$x, col=col[fhat$label], ...)
+        if (!add) plot(x$x, col=col[x$label], ...)
+        else points(x$x, col=col[x$label], ...)
     }
-    else if (d==3 & !splom)
+    else if (d==3 & disp1=="plot3D")
     {
-        ## suggestions from Viktor Petukhov 08/03/2018
-        if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
-        if (!add) rgl::plot3d(fhat$x, col=col[fhat$label], ...)
-        else rgl::points3d(fhat$x, col=col[fhat$label], ...) 
+    	plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=col[x$label], add=add, theta=-30, phi=40, d=4, colkey=FALSE, xlab=x$names[1], ylab=x$names[2], zlab=x$names[3], ticktype="detailed", bty="f", ...)
     }
     else if (d>=3)
     {
-        pairs(fhat$x, col=col[fhat$label], ...)
+        pairs(x$x, col=col[x$label], ...)
     }    
 }
 

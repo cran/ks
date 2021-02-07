@@ -102,7 +102,7 @@ rkde <- function(n, fhat, positive=FALSE)
   if (is.vector(fhat$H)) {d <- 1; nsamp <- length(x)}
   else {d <- ncol(fhat$H); nsamp <- nrow(x)} 
   
-  x.ind <- sample(1:nsamp, size=n, replace=TRUE)
+  x.ind <- sample(1:nsamp, size=n, replace=TRUE, prob=fhat$w)
  
   if (d==1)
   {

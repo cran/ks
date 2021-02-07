@@ -32,8 +32,7 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7,
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
   \item{boundary.supp}{effective support for boundary region}
-  \item{boundary.kernel}{"beta" = 2nd form of
-  beta boundary kernel, "linear" = linear boundary kernel}
+  \item{boundary.kernel}{"beta" = beta boundary kernel, "linear" = linear boundary kernel}
   
 }
   

@@ -12,7 +12,7 @@
   2015.  
 }
 
-\usage{data(hsct)}
+\usage{data(tempb)}
 
 \format{A matrix with  21908 rows and 5 columns.
   Each row corresponds to a daily measurement. 
@@ -27,7 +27,7 @@
 Menne, M. J., Durre, I., Vose, R. S., Gleason, B. E. & Houston,
 T. (2012) An overview of the global historical climatology network-daily
 database, \emph{Journal of Atmospheric and Oceanic Technology}
-\bold{429}, 897 - 910. https://climexp.knmi.nl/selectdailyseries.cgi. Accessed 2016-10-20.
+\bold{429}, 897 - 910. \url{https://climexp.knmi.nl/selectdailyseries.cgi}. Accessed 2016-10-20.
 }
 
 

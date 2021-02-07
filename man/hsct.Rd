@@ -8,7 +8,7 @@
 
 \description{
   This data set contains the haematopoietic stem cell transplant (HSCT)
-  measurements obtained a flow cytometer from mouse subjects. A flow
+  measurements obtained by a flow cytometer from mouse subjects. A flow
   cytometer measures the spectra of fluorescent signals from biological
   cell samples to study their properties.    
 }
