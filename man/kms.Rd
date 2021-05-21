@@ -1,6 +1,7 @@
 \name{kms}
 \alias{kms}
 \alias{summary.kms}
+\alias{plot.kms}
 
 \title{Kernel mean shift clustering}
 \description{
@@ -10,11 +11,12 @@
 kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
     keep.path=FALSE, verbose=FALSE)
 
+\method{plot}{kms}(x, display="splom", col, col.fun, add=FALSE, ...)
 \method{summary}{kms}(object, ...)
 }
 
 \arguments{
-  \item{x}{matrix of data values}
+  \item{x}{matrix of data values or object of class \code{kms}}
   \item{y}{matrix of candidate data values for which the mean shift will
     estimate their cluster labels. If missing, \code{y=x}.}
   \item{H}{bandwidth matrix/scalar bandwidth. If missing,
@@ -31,7 +33,10 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kms}}
-  \item{...}{other parameters}
+  \item{display}{type of display, "splom" (>=2-d) or "plot3D" (3-d)}
+  \item{col,col.fun}{vector or colours (one for each group) or colour function}
+  \item{add}{flag to add to current plot. Default is FALSE.}
+  \item{...}{other (graphics) parameters}
 }
   
 
@@ -99,8 +104,8 @@ plot(kms.crabs)
 summary(kms.crabs)
 
 kms.crabs <- kms(x=crabs[,c("FL","CW","RW")])
-plot(kms.crabs)
-plot(kms.crabs, display="plot3D") 
+plot(kms.crabs, pch=16)
+plot(kms.crabs, display="plot3D", pch=16) 
 }
 
 \keyword{cluster}

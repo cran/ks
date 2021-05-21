@@ -50,7 +50,7 @@ histde(x, binw, xmin, xmax, adj=0)
 set.seed(8192)
 x <- 2^rnorm(100)
 fhat <- histde(x=x)
-plot(fhat, col=3)
+plot(fhat, border=6)
 points(c(0.5, 1), predict(fhat, x=c(0.5, 1)))
 
 ## large data example on a non-default grid

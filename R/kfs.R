@@ -72,9 +72,8 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     }
 
     ## Hochberg adjustment for sequential tests
-    
     pval.wald <- 1 - pchisq(fhatr.wald, d*(d+1)/2)
-    pval.wald[fhat.est<=contourLevels(fhat, cont=99) | !local.mode] <- NA
+    pval.wald[fhat.est<=contourLevels(fhat, cont=99) | !local.mode] <- NA    
     pval.wald.ord.index <- order(pval.wald)
     pval.wald.ord <- pval.wald[pval.wald.ord.index]
     num.test <- sum(!is.na(pval.wald.ord))
@@ -96,13 +95,6 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         signif.wald <- array(0L, dim=gs)
         signif.wald.index <- expand.grid(lapply(gs, seq_len))
         signif.wald[as.matrix(signif.wald.index[pval.wald.ord.index[reject.nonzero.ind],])] <- 1L
-
-        ## p-value == 0 => reject null hypotheses automatically
-        ##signif.wald[which(pval.wald==0, arr.ind=TRUE)] <- TRUE
-        
-        ## p-value > 0 then reject null hypotheses indicated in reject.nonzero.ind
-        ##for (i in reject.nonzero.ind)
-        ##     signif.wald[which(pval.wald==pval.wald.ord[i], arr.ind=TRUE)] <- TRUE 
     }
     
     ## ESS = effective sample size
@@ -115,8 +107,10 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     return(fhatr)
 }
 
-
-plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange", abs.cont, alphavec=0.4, add=FALSE, ...)
+#############################################################################
+## plot method
+#############################################################################
+plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alphavec=0.4, add=FALSE, ...)
 {
     fhatr <- x
     fhatr$deriv.order <- NULL
@@ -144,22 +138,30 @@ plot.kfs <- function(x, display="filled.contour", col="orange", colors="orange",
     {
         if (missing(abs.cont)) abs.cont <- 0.5
         disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
-        if (disp1=="filled.contour2") col <- c("transparent", col)
-        if (disp1=="filled.contour")
-        {
-            col.fun <- function(n){return(c("transparent", rep(col,n)))}
-            plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col.fun=col.fun, add=add, display=display, ...)
-        }
-        else
-            plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col=col, add=add, display=display, ...)
+        if (disp1=="filled.contour2") disp1 <- "filled.contour"
+        #disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour"))
+        col <- c("transparent",col)
+        plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col=col, add=add, display=display, ...)
     }
     else if (d==3)
     {
         if (missing(abs.cont)) abs.cont <- 0.25
         e1 <- try(match.arg(display, c("plot3D", "rgl")), silent=TRUE)
         if (class(e1) %in% "try-error") display <- "plot3D"
-             
-        plot(fhatr, abs.cont=abs.cont, colors=colors, alphavec=alphavec, add=add, display=display, ...)
+        if (!missing(colors)) col <- colors     
+        plot(fhatr, abs.cont=abs.cont, col=col, colors=colors, alphavec=alphavec, add=add, display=display, ...)
     }
     invisible()
+}
+
+
+#############################################################################
+## predict method
+#############################################################################
+predict.kfs <- function(object, ..., x)
+{
+    fhat <- predict.kde(object=object, ..., x=x, zero.flag=FALSE)
+    fhat <- as.integer(fhat>=0.5)
+   
+    return(fhat)
 }

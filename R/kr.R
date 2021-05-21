@@ -170,8 +170,9 @@ plot.kr <- function(x, display="rgl", col, col.fun, xlab, ylab, ...)
         ## suggestions from Viktor Petukhov 08/03/2018
         if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
         
-        if (missing(col.fun)) col.fun <- terrain.colors
-        if (missing(col)) col <- terrain.colors(5)[2]
+        if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="viridis")}
+        if (missing(col)) col <- col.fun(5)[2]
+       
         col.table <- col.fun(round(diff(range(x$estimate, na.rm=TRUE)) + 1,0))
         col <- col.table[x$estimate - min(x$estimate, na.rm=TRUE) + 1]
         if (missing(xlab)) xlab <- x$names[1]

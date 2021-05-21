@@ -13,7 +13,7 @@ mvnorm.mixt.part(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100,
    verbose=FALSE)
 kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 
-\method{plot}{kde.part}(x, display="filled.contour", col, add=FALSE, ...)
+\method{plot}{kde.part}(x, display="filled.contour", col, col.fun, add=FALSE, ...)
 }
 
 \arguments{
@@ -27,10 +27,8 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
   \item{x}{matrix of data values or an object of class \code{kde.part}}
   \item{H}{bandwidth matrix. If missing,
     \code{Hpi(x,deriv,order=1)} is called by default.}
-  \item{display}{type of display, "slice" for contour plot,
-    "persp" for perspective plot, "image" for image plot, "filled.contour"
-    for filled contour plot (1st form), "filled.contour2" (2nd form)}
-  \item{col}{vector of plotting colours}
+  \item{display}{type of display, "filled.contour" for filled contour plot} 
+  \item{col,col.fun}{vector of plotting colours or colour function}
   \item{add}{flag to add to current plot. Default is FALSE.}
   \item{...}{other parameters}
 }
@@ -79,7 +77,7 @@ nmixt.part <- mvnorm.mixt.part(mus=mus, Sigmas=Sigmas, props=props)
 plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}
 
 ## kernel mean shift partition
-if (interactive()) {
+\donttest{
 set.seed(81928192)
 x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
 msize <- round(151^2*0.05)

@@ -2,23 +2,36 @@
 ## Kernel density ridge estimation for 2D/3D data
 #####################################################################
 
-kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat, density.cutoff, verbose=FALSE)
+kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat, density.cutoff, pre=TRUE, verbose=FALSE)
 {
     ## default values 
+    xnames <- parse.name(x)
+    x <- as.matrix(x)
+    x.orig <- x
+    if (pre) 
+    { 
+        S12 <- diag(apply(x.orig, 2, sd))  
+        Sinv12 <- matrix.pow(S12,-1)
+        x <- pre.scale(x)
+        if (!missing(xmin)) xmin <- xmin %*% Sinv12
+        if (!missing(xmax)) xmax <- xmax %*% Sinv12
+        rescale <- function(x) { as.matrix(x) %*% S12 }   
+    }
+    
     ksd <- ks.defaults(x=x, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n; w <- ksd$w
     binned <- ksd$binned
     bgridsize <- ksd$bgridsize
     gridsize <- ksd$gridsize
-
-    if (missing(tol.iter)) tol.iter <- 1e-3*min(apply(x, 2, IQR))
-    if (missing(tol.seg)) tol.seg <- 1e-2*max(apply(x, 2, IQR))
-    if (missing(H)) H <- Hpi(x=x, nstage=2-(d>2), binned=default.bflag(d=d, n=n), deriv.order=2, verbose=verbose)
+    if (missing(H)) H <- Hpi(x=x, nstage=2-(d>2), binned=binned, deriv.order=2, verbose=verbose)
     Hinv <- chol2inv(chol(H))
     tol <- 3.7
     tol.H <-  tol * diag(H)
-    if (missing(xmin)) xmin <- apply(x, 2, min) - tol.H
+
+    if (missing(xmin)) xmin <- apply(x, 2, min) - tol.H 
     if (missing(xmax)) xmax <- apply(x, 2, max) + tol.H
+    if (missing(tol.iter)) tol.iter <- 1e-3*min(apply(x, 2, IQR))
+    if (missing(tol.seg)) tol.seg <- 1e-2*max(apply(x.orig, 2, IQR))
     if (missing(y))
     {    
         xx <- seq(xmin[1], xmax[1], length = gridsize[1])
@@ -31,6 +44,8 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
             y <- expand.grid(xx, yy, zz)
         }
     }
+    else { y <- as.matrix(y); y <- y %*% Sinv12 }
+   
     if (is.vector(y)) y <- matrix(y, nrow=1)
     if (missing(min.seg.size)) min.seg.size <- round(1e-3*nrow(y), 0)
     
@@ -41,13 +56,21 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
     y <- y[y.ind,]
    
     fhat2 <- kdde(x=x, H=H, deriv.order=2, xmin=xmin, xmax=xmax, binned=binned, bgridsize=bgridsize, gridsize=gridsize, w=w, verbose=verbose) 
+    
     ## projected gradient mean shift iterations
-    n.seq <- block.indices(n, nrow(y), d=d, r=0, diff=FALSE, block.limit=3e6)
+    n.seq <- block.indices(n, nrow(y), d=d, r=0, diff=FALSE)#, block.limit=1e6)
     if (verbose) pb <- txtProgressBar() 
     pc <- list()
+    
     i <- 1
     if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
     pc <- kdr.base(x=x, fhat2=fhat2, y=y[n.seq[i]:(n.seq[i+1]-1),], H=H, tol.iter=tol.iter, Hinv=Hinv, verbose=verbose, max.iter=max.iter, p=p)
+    
+    if (pre)
+    {
+        pc[c("x","y","end.points")] <- lapply(pc[c("x","y","end.points")], rescale)
+        pc[["path"]] <- lapply(pc[["path"]], rescale)
+    }
     
     if (length(n.seq)>2)
     {
@@ -56,6 +79,11 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
             if (verbose) setTxtProgressBar(pb, i/(length(n.seq)-1))
             pc.temp <- kdr.base(x=x, fhat2=fhat2, y=y[n.seq[i]:(n.seq[i+1]-1),], H=H, tol.iter=tol.iter, Hinv=Hinv, verbose=verbose, max.iter=max.iter, p=p)
 
+            if (pre)
+            {
+                pc.temp[c("y","end.points")] <- lapply(pc.temp[c("y","end.points")], rescale)
+                pc.temp[["path"]] <- lapply(pc.temp[["path"]], rescale)
+            }
             pc$y <- rbind(pc$y, pc.temp$y)
             pc$end.points <- rbind(pc$end.points, pc.temp$end.points)
             pc$path <- c(pc$path, pc.temp$path)
@@ -77,7 +105,8 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
         levels(pc$label) <- 1:length(levels(pc$label))
         pc$label <- as.numeric(pc$label)
     }
-    
+    if (pre) pc$H <- S12 %*% pc$H %*% S12
+     
     ## put paths as last element in list
     path.temp <- pc$path
     pc$path <- NULL
@@ -85,7 +114,7 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size, kee
     pc$tol.seg <- tol.seg
     pc$min.seg.size <- min.seg.size
     pc$binned <- binned
-    pc$names <- parse.name(x)
+    pc$names <- xnames
     pc$w <- w
     if (keep.path) pc$path <- path.temp
     
@@ -113,7 +142,7 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
 
     while (eps > tol.iter & i < max.iter)
     {
-	y.curr <- y.update
+        y.curr <- y.update
         yHinvy <- t(rowSums(y.curr%*%Hinv *y.curr))
         Mah <- apply(yHinvy, 2, "+", xHinvx) - 2*xHinv %*% t(y.curr)
         w <- exp(-Mah/2)
@@ -122,6 +151,7 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
         mean.shift.H <- num/denom - y.curr
 
         fhat2.y.curr <- predict(fhat2, x=y.curr)
+        ##if (ny==1) fhat2.y.curr <- matrix(fhat2.y.curr, nrow=1) 
         for (j in 1:ny)
         {
             Hessian <- invvec(fhat2.y.curr[j,])
@@ -133,7 +163,7 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
         y.update.list <- split(y.update, row(y.update), drop=FALSE)
         y.path <- mapply(rbind, y.path, y.update.list, SIMPLIFY=FALSE)
         eps <- max(sqrt(rowSums((y.curr-y.update)^2)))
-
+    
         if (verbose>1)
         {
             if (d==2) plot(y.update[disp.ind,], col=1, xlab="x", ylab="y")
@@ -141,11 +171,18 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
         }
         i <- i+1
     }
+    
     pc.endpt <- t(sapply(y.path, tail, n=1, SIMPLIFY=FALSE))
 
     pc <- list(x=x, y=y, end.points=pc.endpt, path=y.path)
     class(pc) <- "kdr"
     
     return(pc)
+}
+
+plot.kdr <- function(x, add=FALSE, ...)
+{
+    if (add) points(x$end.points, ...)
+    else plot(x$end.points, ...)
 }
 

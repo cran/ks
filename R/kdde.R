@@ -252,13 +252,6 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
           }
       else
       {
-          ##for (s in 1:ncol(keval))
-          ##{  
-          ##    kevals <- array(keval[,s], dim=N)
-          ##    if (r==0) sf <- rep(1,d)
-          ##     else sf <- (-1)^deriv.index[s,]
-          ##    est[[s]] <- symconv.nd(kevals, bin.par$counts, d=d)
-          ##}
           kevals <- lapply(as.data.frame(keval), function(x){array(x, dim=N)})
           est <- lapply(kevals, function(x){symconv.nd(x, bin.par$counts, d=d)})
       }
@@ -549,16 +542,27 @@ plotkdde.1d <- function(fhat, ylab="Density derivative function", cont=50, abs.c
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col, col.fun=topo.colors, kdde.flag=TRUE, thin=5, transf=1/4, neg.grad=FALSE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, thin=3, transf=1/4, neg.grad=FALSE, ...)
 {
-  disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "filled.contour2", "quiver"))
-  
-  if (disp1=="slice" | disp1=="filled.contour" | disp1=="filled.contour2")
+  disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2", "quiver"))
+  if (disp1=="filled.contour2") disp1 <- "filled.contour"
+  #disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "quiver"))
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red")}
+  if (disp1=="slice" | disp1=="filled.contour")
   {
     if (missing(abs.cont))
     {
       abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
       abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
+    }
+    if (missing(col))
+    {
+        if (disp1=="slice") col <- col.fun(n=length(abs.cont)) 
+        else if (disp1=="filled.contour") 
+        {
+            col <- col.fun(n=length(abs.cont)+1)
+            col[median(1:length(col))] <- "transparent"
+        }
     }
   } 
  
@@ -576,13 +580,15 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
       fhat <- fhat.temp
       class(fhat) <- "kde"
       
-      plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
+      if (disp1=="persp") plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, thin=thin, ...) 
+      else plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
   }
 }
 
 
-plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun=cm.colors, ...)
+plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun, ...)
 {
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red")}
   if (missing(abs.cont))
   {
       abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
@@ -597,12 +603,13 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
 
   if (missing(col))
   {
-      col <- rev(col.fun(length(abs.cont)))
-      nc <- length(col)
-      col[1: (nc/2)] <- rev(col[1:(nc/2)])
-  }
+        col <- col.fun(n=length(abs.cont)+1)
+        nc <- length(col)
+        col <- col[-median(1:nc)] 
+   }
+
   colors <- col
-  plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col, ...) 
+  plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col,, ...) 
 }
 
 
@@ -721,7 +728,6 @@ predict.kdde <- function(object, ..., x)
     if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
     else
     {
-     
       nd <- nrow(fhat$deriv.ind)
       pk.mat <- matrix(0, ncol=nd, nrow=n)
       for (i in 1:nd)

@@ -36,19 +36,21 @@
   For \code{kda} objects, the function headers for the different dimensional data are 
   \preformatted{
   ## univariate
-  plot(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab="x",
-     ylab="Weighted density function", drawpoints=FALSE, col, col.part,
-     col.pt, lty, jitter=TRUE, rugsize, ...)
+  plot(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, 
+       ylab="Weighted density function", drawpoints=FALSE, col, col.fun, 
+       col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, ...)
 
   ## bivariate
-  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, 
-     approx.cont=FALSE, xlim, ylim, xlab, ylab, drawpoints=FALSE, 
-     drawlabels=TRUE, col, col.part, col.pt, ...)
+  plot(x, y, y.group, prior.prob=NULL, display.part="filled.contour",
+       cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
+       drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, part=TRUE, col, 
+       col.fun, col.part, col.pt, lwd=1, lwd.part=0, add=FALSE, ...)
 
   ## trivariate
-  plot(x, y, y.group, prior.prob=NULL, cont=c(25,50,75), abs.cont, 
-     approx.cont=FALSE, colors, alphavec, xlab, ylab, zlab, 
-     drawpoints=FALSE, size=3, col.pt="blue", ...)}
+  plot(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(25,50,75), 
+       abs.cont, approx.cont=TRUE, colors, col, col.fun, col.pt, alpha=0.5, 
+       alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, cex=1, pch, 
+       theta=-30, phi=40, d=4, ticktype="detailed", bty="f", add=FALSE, ...)}
 }
  
 
@@ -74,7 +76,7 @@ plot(kda.fhat)
 ir <- iris[,1:3]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
-plot(kda.fhat, alpha=0.05) 
+plot(kda.fhat) 
    ## colour=species, transparency=density heights}
 
 \keyword{hplot}

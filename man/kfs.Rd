@@ -74,7 +74,7 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
 
   The computations are based on \code{kdde(x, deriv.order=2)} so
   \code{kfs} inherits its behaviour from \code{\link{kdde}}.
-  If the bandwidth \code{H} is missing from \code{kfs}, then
+  If the bandwidth \code{H} is missing, then
   the default bandwidth is the plug-in selector
   \code{Hpi(,deriv.order=2)}. Likewise for missing \code{h}.
   The effective support, binning, grid size, grid range, positive

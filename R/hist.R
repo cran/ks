@@ -84,7 +84,6 @@ hist.2d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 
 ## plot histograms
 
-
 plot.histde <- function(x, ...)
 {
     if (is.vector(x$x)) plot.histde.1d(fhat=x, ...)
@@ -92,18 +91,18 @@ plot.histde <- function(x, ...)
     invisible()
 }
 
-plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col.pt="blue", jitter=FALSE, border=1, ...)
+plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col="transparent", col.pt=4, jitter=FALSE, border=1, ...)
 {
     if (missing(xlab)) xlab <- fhat$names
     if (!add) plot(fhat$eval.points, c(fhat$estimate,0), type="n",  xlab=xlab, ylab=ylab, ...)
-    rect(fhat$eval.points[-length(fhat$eval.points)], 0, fhat$eval.points[-1], fhat$estimate, border=border, ...)
+    rect(fhat$eval.points[-length(fhat$eval.points)], 0, fhat$eval.points[-1], fhat$estimate, border=border, col=col, ...)
     if (drawpoints)
         if (jitter) rug(jitter(fhat$x), col=col.pt)
         else rug(fhat$x, col=col.pt)
 
 }
 
-plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, col.pt="blue", lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
+plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, col.pt=4, lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
 {
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
@@ -111,7 +110,7 @@ plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density f
     if (missing(border)) border <- grey(0.5)
     if (!add) plot(fhat$x, col=col.pt, type="n", xlab=xlab, ylab=ylab, ...)
     if (missing(breaks)) breaks <- seq(min(fhat$estimate,0), max(fhat$estimate)+0.1*diff(range(fhat$estimate)), length=nbreaks)
-    if (missing(col.fun)) col.fun <- function(n){rev(heat.colors(n))}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat", rev=TRUE)} ##function(n){rev(heat.colors(n))}
     if (missing(col)) col <- col.fun(n=length(breaks))
     
     for (i in 1:(nrow(fhat$estimate)))

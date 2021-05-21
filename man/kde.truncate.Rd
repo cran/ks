@@ -39,7 +39,7 @@ wa.polygon <- cbind(wa.coast$lines[[1]]$x, wa.coast$lines[[1]]$y)
 fhat <- kde(x=grevillea)
 fhat <- kde.truncate(fhat, wa.polygon)
 oz(section=1)
-plot(fhat, add=TRUE, cont=seq(10,90,by=10), col=2, drawlabels=FALSE, drawpoints=TRUE)
+plot(fhat, add=TRUE, cont=seq(10,90,by=10), col=2, drawlabels=FALSE)
 }
 
 \keyword{smooth}

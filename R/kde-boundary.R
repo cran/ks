@@ -258,7 +258,6 @@ kde.beta.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7,
   if (d==1) { if (missing(h)) h <- hpi(x=x, binned=default.bflag(d=d,n=n), bgridsize=bgridsize) }
   if (missing(H) & d>1)  H <- Hpi(x=x, binned=default.bflag(d=d,n=n), bgridsize=bgridsize)
       
-  
   ## compute exact (non-binned) estimator
   if (missing(gridsize)) gridsize <- default.gridsize(d)
 

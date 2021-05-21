@@ -16,7 +16,7 @@ Hlscv(x, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0,
       verbose=FALSE, optim.fun="optim", trunc)
 Hlscv.diag(x, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, 
       verbose=FALSE, optim.fun="optim", trunc)
-hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
+hlscv(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0, bw.ucv=TRUE)
 Hucv(...)
 Hucv.diag(...)
 hucv(...)
@@ -36,6 +36,7 @@ hucv(...)
   \item{trunc}{parameter to control truncation for numerical
   optimisation. Default is 4 for density.deriv>0, otherwise no
   truncation. For details see below.}
+  \item{bw.ucv}{flag to use \code{stats::bw.ucv} as minimiser function. Default is TRUE.}
   \item{...}{parameters as above}
 }
 
@@ -59,6 +60,9 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
   bandwidth matrices and \code{Hlscv.diag} for diagonal bandwidth matrices. 
   \code{Hucv}, \code{Hucv.diag} and \code{hucv} are aliases with UCV
   (unbiased cross validation) instead of LSCV. 
+  
+  For \pkg{ks} \eqn{\geq}{>=} 1.13.0, the default minimiser in \code{hlscv} is based on the UCV minimiser 
+  \code{stats::bw.ucv}. To reproduce prior behaviour, set \code{bw.ucv=FALSE}. 
   
   Truncation of the parameter space is usually required for the LSCV selector,
   for r > 0, to find a reasonable solution to the numerical optimisation. 

@@ -38,38 +38,39 @@
   For \code{kdde} objects, the function headers for the different dimensional data are  
   \preformatted{
   ## univariate
-  plot(fhat, ylab="Density derivative function", ...)
+  plot(fhat, ylab="Density derivative function", cont=50, abs.cont, ...)
 
   ## bivariate
   plot(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", 
-     zlab="Density derivative function", ...)
+       zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, 
+       thin=3, transf=1/4, neg.grad=FALSE, ...)
   
   ## trivariate 
   plot(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, 
-       colors, col, col.fun=cm.colors, ...)}
+       colors, col, col.fun, ...)}
 }
  
-
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
 ## univariate example
 data(tempb)
 fhat1 <- kdde(x=tempb[,"tmin"], deriv.order=1)   ## gradient [df/dx, df/dy]
-plot(fhat1, xlab="Min. temp.")                   ## df/dx
+plot(fhat1, xlab="Min. temp.", col.cont=4)       ## df/dx
 points(20,predict(fhat1, x=20))
 
 ## bivariate example
 fhat1 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=1)
-\donttest{plot(fhat1, display="quiver")
+plot(fhat1, display="quiver", thin=5)
   ## gradient [df/dx, df/dy]
 
-fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
-plot(fhat2, which.deriv.ind=2, display="persp", phi=15)
-plot(fhat2, which.deriv.ind=2, display="filled.contour", col.fun=topo.colors)
-  ## d^2 f/(dx dy): purple=-ve, green=zero, beige=+ve
+\donttest{fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
+plot(fhat2, which.deriv.ind=2, display="persp", phi=10)
+plot(fhat2, which.deriv.ind=2, display="filled.contour")
+  ## d^2 f/(dx dy): blue=-ve, red=+ve
 s2 <- kcurv(fhat2)
-plot(s2, display="filled.contour")
+s2.col <- function(n){hcl.colors(palette="Oranges", n=n, rev=TRUE)}
+plot(s2, display="filled.contour", col.fun=s2.col, lwd=1)
   ## summary curvature 
 
 ## trivariate example  

@@ -8,10 +8,9 @@
   Kernel density estimate for 1- to 6-dimensional data.
 }
 \usage{
-kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
-    binned, bgridsize, positive=FALSE, adj.positive, w,
-    compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE,
-    verbose=FALSE)
+kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, 
+    bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, 
+    approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
 
 \method{predict}{kde}(object, ..., x, zero.flag=TRUE)
 }
@@ -115,7 +114,7 @@ wb <- as.matrix(na.omit(worldbank[,2:3]))
 wb[,2] <- wb[,2]/1000
 fhat <- kde(x=wb)
 fhat.trans <- kde(x=wb, adj.positive=c(0,0), positive=TRUE)
-plot(fhat, xlim=c(0,20), ylim=c(0,80))
+plot(fhat, col=1, xlim=c(0,20), ylim=c(0,80))
 plot(fhat.trans, add=TRUE, col=2)
 rect(0,0,100,100, lty=2)
 

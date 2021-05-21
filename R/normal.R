@@ -1513,7 +1513,7 @@ plotmixt.1d <- function(mus, sigmas, props, dfs, dist="normal", xlim, ylim, grid
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, gridsize, nrand=1e4, draw=TRUE, binned, deriv.order, which.deriv.ind, display="slice", ...)
 {
   dist1 <- match.arg(dist, c("normal", "t"))
-  disp1 <- match.arg(display, c("slice", "image", "persp", "filled.contour", "filled.contour2"))  
+  ##disp1 <- match.arg(display, c("slice", "image", "persp", "filled.contour"))  
   maxSigmas <- 4*max(Sigmas)
 
   if (is.vector(mus)) mus <- as.matrix(t(mus))
@@ -1572,11 +1572,7 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, grid
   }
   else
   {
-    if (draw)
-    {
-      if (disp1=="persp") plot(fhat, display=display, ...)
-      else plot(fhat, xlim=xlim, ylim=ylim, display=display, ...)
-    }
+    if (draw) plot(fhat, xlim=xlim, ylim=ylim, display=display, ...)
   }
   invisible(fhat)
 }

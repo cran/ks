@@ -7,7 +7,7 @@
 }
 
 \usage{
-\method{plot}{kfs}(x, display="filled.contour", col="orange", colors="orange", abs.cont,
+\method{plot}{kfs}(x, display="filled.contour", col=7, colors, abs.cont,
    alphavec=0.4, add=FALSE, ...)
 }
 
@@ -16,8 +16,7 @@
     \code{\link{kfs}})}
   \item{display}{type of display, "slice" for contour plot,
     "persp" for perspective plot, "image" for image plot, "filled.contour"
-    for filled contour plot (1st form), "filled.contour2" (2nd form) (2-d), 
-    "plot3D" (3-d), "rgl" (3-d)}
+    for filled contour plot (2-d); "plot3D", "rgl" (3-d)}
   \item{col,colors}{colour for contour region}
   \item{abs.cont}{absolute contour height. Default is 0.5.}
   \item{alphavec}{vector of transparency values for contour (3-d)}

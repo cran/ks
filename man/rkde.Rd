@@ -60,7 +60,7 @@ x <- rmvnorm.mixt(n=10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
 fhat <- kde(x=x)
 y <- rkde(fhat=fhat, n=1000)
 fhaty <- kde(x=y)
-plot(fhat)
+plot(fhat, col=1)
 plot(fhaty, add=TRUE, col=2)
 }
 

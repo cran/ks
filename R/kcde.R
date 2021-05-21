@@ -157,150 +157,124 @@ plot.kcde <- function(x, ...)
 }
 
 
-plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col=1, col.pt="blue", jitter=FALSE, ...) 
+plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col=1, col.pt=4, jitter=FALSE, ...) 
 {
-  if (missing(xlab)) xlab <- Fhat$names
-  if (Fhat$tail=="upper.tail") zlab <- "Survival function"
-  if (add) lines(Fhat$eval.points, Fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
-  else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
+    if (missing(xlab)) xlab <- Fhat$names
+    if (Fhat$tail=="upper.tail") zlab <- "Survival function"
+    if (add) lines(Fhat$eval.points, Fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
+    else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
 
-  if (drawpoints)
-    if (jitter) rug(jitter(Fhat$x), col=col.pt)
-    else rug(Fhat$x, col=col.pt)
+    if (drawpoints)
+        if (jitter) rug(jitter(Fhat$x), col=col.pt)
+        else rug(Fhat$x, col=col.pt)
 }
 
 
 plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     xlab, ylab, zlab="Distribution function", cex=1, pch=1,   
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    col.pt="blue", col, col.fun, lwd=1, border=NA, thin=1, lwd.fc=5, ...) 
+    col.pt=4, col, col.fun, lwd=1, border=NA, thin=3, labcex=1, ticktype="detailed", ...) 
 {
-  disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
+    disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
+    if (disp1=="filled.contour2") disp1 <- "filled.contour"
   
-  if (!is.list(Fhat$eval.points)) stop("Needs a grid of density estimates")
+    if (!is.list(Fhat$eval.points)) stop("Needs a grid of density estimates")
 
-  if (missing(xlab)) xlab <- Fhat$names[1]
-  if (missing(ylab)) ylab <- Fhat$names[2]
-  if (Fhat$tail=="upper.tail") zlab <- "Survival function"
+    if (missing(xlab)) xlab <- Fhat$names[1]
+    if (missing(ylab)) ylab <- Fhat$names[2]
+    if (Fhat$tail=="upper.tail") zlab <- "Survival function"
   
-  ## perspective/wireframe plot
-  if (disp1=="persp")
-  {
-    hts <- seq(0, 1.1*max(Fhat$estimate), length=500)
-    if (missing(col)) col <- grey(seq(0,0.9, length=length(hts)+1)) ## rev(heat.colors(length(hts)+1)) #
-    #if (length(col)<100) col <- rep(col, length=100) if (missing(col)) col <- topo.colors(length(hts)+1)
-    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
-    if (length(col)<length(hts)) col <- rep(col, length=length(hts))
-
-    ## thinning indices
-    plot.ind <- list(seq(1, length(Fhat$eval.points[[1]]), by=thin), seq(1, length(Fhat$eval.points[[2]]), by=thin))
-
-    z <- Fhat$estimate[plot.ind[[1]], plot.ind[[2]]]
-    nrz <- nrow(z)
-    ncz <- ncol(z)
-    zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
-    facetcol <- cut(zfacet, length(hts)+1)
-    
-    plotret <- persp(Fhat$eval.points[[1]][plot.ind[[1]]], Fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ...)
-  }
-  else if (disp1=="slice") 
-  {
-    if (!add)
-      plot(Fhat$x[,1], Fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
- 
-    if (missing(abs.cont)) hts <- cont/100
-    else hts <- abs.cont
-    
-    if (missing(col)) col <- 1 
-    if (length(col)<length(hts)) col <- rep(col, times=length(hts))
-    
-    ## draw contours         
-    for (i in 1:length(hts)) 
-    {
-      if (missing(abs.cont)) scale <- cont[i]/hts[i]
-      else scale <- 1
-      if (hts[i]>0)
-        contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=col[i], lwd=lwd, ...)
-    }
-    ## add points 
-    if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=col.pt, cex=cex, pch=pch)
-  }
-  ## image plot
-  else if (disp1=="image")
-  {
-    if (missing(col)) col <- rev(heat.colors(100))
-    image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
-    box()
-  }
-  else if (disp1=="filled.contour" | disp1=="filled.contour2") 
-  {
-    hts <- cont/100
-    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
+    ## perspective/wireframe plot
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="viridis")}
    
-    if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
-    clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
-    
-    if (disp1=="filled.contour2")
+    if (disp1=="persp")
     {
-    
-      image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
+        hts <- seq(0, 1.1*max(Fhat$estimate), length=500)
+        if (missing(col)) col <- col.fun(n=length(hts)+1)
+        if (length(col)<(length(hts)+1)) col <- rep(col, length=length(hts)+1)
 
-      ## draw contours         
-      for (i in 1:length(hts)) 
-        contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=7)
-      if (!missing(lwd))
-      {
-        for (i in 1:length(hts)) 
-        {
-          if (missing(abs.cont)) scale <- cont[i]/hts[i]
-          else scale <- 1
-          
-          if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
-        }
-      }
-      ## add points 
-      if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=col.pt, cex=cex, pch=pch)
+        ## thinning indices
+        plot.ind <- list(seq(1, length(Fhat$eval.points[[1]]), by=thin), seq(1, length(Fhat$eval.points[[2]]), by=thin))
+
+        z <- Fhat$estimate[plot.ind[[1]], plot.ind[[2]]]
+        nrz <- nrow(z)
+        ncz <- ncol(z)
+        zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+        facetcol <- cut(zfacet, length(hts)+1, labels=FALSE)
+        plotret <- persp(Fhat$eval.points[[1]][plot.ind[[1]]], Fhat$eval.points[[2]][plot.ind[[2]]], z, theta=theta, phi=phi, d=d, xlab=xlab, ylab=ylab, zlab=zlab, col=col[facetcol], border=border, ticktype=ticktype, ...)
     }
-    else
+    else if (disp1=="slice") 
     {
-      if (!add) plot(Fhat$eval.points[[1]], Fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...) 
-      if (tail(hts, n=1) < max(Fhat$estimate)) hts2 <- c(hts, max(Fhat$estimate))
-      .filled.contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, levels=hts2, col=col)
-      
-      if (!missing(lwd))
-      {
+        if (!add) plot(Fhat$x[,1], Fhat$x[,2], type="n", xlab=xlab, ylab=ylab, ...)
+ 
+        if (missing(abs.cont)) hts <- cont/100
+        else hts <- abs.cont
+    
+        if (missing(col)) col <- col.fun(n=length(hts))
+        if (length(col)<length(hts)) col <- rep(col, times=length(hts))
+    
+        ## draw contours         
         for (i in 1:length(hts)) 
         {
-          if (missing(abs.cont)) scale <- (100-cont[i])/hts[i]
-          else scale <- 1
-          
-          if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
+            if (missing(abs.cont)) scale <- cont[i]/hts[i]
+            else scale <- 1
+            if (hts[i]>0)
+                contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=col[i], lwd=lwd, labcex=labcex, ...)
         }
-      }
+        ## add points 
+        if (drawpoints) points(Fhat$x[,1], Fhat$x[,2], col=col.pt, cex=cex, pch=pch)
     }
-  }
-  if (disp1=="persp")  invisible(plotret)
-  else invisible()
+    ## image plot
+    else if (disp1=="image")
+    {
+        if (missing(col)) col <- col.fun(100)
+        image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
+        box()
+    }
+    else if (disp1=="filled.contour") 
+    {
+        hts <- cont/100
+        clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
+        if (missing(col)) col <- col.fun(length(hts))
+       
+        if (!add) plot(Fhat$eval.points[[1]], Fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...) 
+        if (tail(hts, n=1) < max(Fhat$estimate)) hts2 <- c(hts, max(Fhat$estimate))
+       
+        .filled.contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, levels=hts2, col=col)
+      
+        if (!missing(lwd))
+        {
+            for (i in 1:length(hts)) 
+            {
+                if (missing(abs.cont)) scale <- (100-cont[i])/hts[i]
+                else scale <- 1
+          
+                if (lwd >=1) contour(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, labcex=labcex, ...)
+            }
+        }
+    }
+    if (disp1=="persp")  invisible(plotret)
+    else invisible()
 }
   
 
-plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
+plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt=4, add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
 {
     disp1 <- match.arg(display, c("plot3D", "rgl"))
-    
-    ## suggestions from Viktor Petukhov 08/03/2018
-    if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
-    if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
-    
     hts <- sort(cont/100)
     nc <- length(hts)
     
-    if (missing(col)) col <- rev(heat.colors(nc))
+    if (missing(col)) 
+    { 
+        col.fun <- function(n) {hcl.colors(n, palette="viridis")}
+        col <- col.fun(n=length(hts))
+    }
     colors <- col
     if (missing(xlab)) xlab <- Fhat$names[1]
     if (missing(ylab)) ylab <- Fhat$names[2]
     if (missing(zlab)) zlab <- Fhat$names[3]
     if (missing(alphavec)) alphavec <- seq(0.5,0.1,length=nc)
+    if (missing(alpha)) alpha <- 0.5 
     if (!missing(alpha)) {alphavec <- rep(alpha,nc)}
     
     disp1 <- match.arg(display, c("plot3D", "rgl")) 
@@ -314,6 +288,10 @@ plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, a
 	}
 	else if (disp1 %in% "rgl")
 	{
+        ## suggestions from Viktor Petukhov 08/03/2018
+        if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+        if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
+    
     	if (drawpoints)
 	        rgl::plot3d(Fhat$x[,1],Fhat$x[,2],Fhat$x[,3], size=size, col=col.pt, alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add, box=FALSE, axes=FALSE, ...)
     	else
@@ -402,7 +380,7 @@ hpi.kcde <- function(x, nstage=2, binned, amise=FALSE)
 }
 
 
-Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim")
+Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim", pre=TRUE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -414,8 +392,8 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
   if (missing(pilot)) pilot <- "dunconstr"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
  
-  if (pilot1=="dscalar") stop("Use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
-  
+  #if (pilot1=="dscalar") stop("Use dunconstr pilot for Hpi.kcde since pre-scaling approaches are not valid")
+  if (pre) { S12 <- diag(sqrt(diag(var(x)))); x <- pre.scale(x) }
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
 
   if (nstage==2)
@@ -464,6 +442,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
     H <- invvech(vechH) %*% invvech(vechH)
     H12 <- matrix.sqrt(H)
     amise.val <- -2*n^(-1)*m1*tr(H12) - 1/4*t(vec(H %*% H)) %*% psi2.hat
+    ##amise.val <- -2*n^(-1)*m1*rep(1,d) %*% H12 %*% rep(1,d) - 1/4*t(vec(H %*% H)) %*% psi2.hat
     ##amise.val <- -2*n^(-1)*m1*sum(vech(H12)) - 1/4*t(vec(H %*% H)) %*% psi2.hat
     return(drop(amise.val)) 
   }
@@ -484,11 +463,13 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
     amise.star <- result$value
   }
 
+  if (pre) H <- S12 %*% H %*% S12
+  
   if (!amise) return(H)
   else return(list(H=H, PI=amise.star))
 }
 
-Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim")
+Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, amise=FALSE, verbose=FALSE, optim.fun="optim", pre=TRUE)
 {
   n <- nrow(x)
   d <- ncol(x)
@@ -499,8 +480,9 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
   if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) pilot <- "dscalar"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))
-  if (pilot1=="dunconstr") stop("Use dscalar pilot for Hpi.diag.kcde since pre-sphering approaches are not valid")
-
+  ##if (pilot1=="dunconstr") stop("Use dscalar pilot for Hpi.diag.kcde since pre-sphering approaches are not valid")
+  if (pre) { S12 <- diag(sqrt(diag(var(x)))); x <- pre.scale(x) }
+  
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   if (nstage==2)
   {  
@@ -561,7 +543,8 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
     H <- diag(result$par) %*% diag(result$par)
     amise.star <- result$value
   }
-
+  if (pre) H <- S12 %*% H %*% S12
+  
   if (!amise) return(H)
   else return(list(H=H, PI=amise.star))
 }
@@ -688,3 +671,13 @@ predict.kroc <- function(object, ..., x)
     return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
 }
 
+
+contourLevels.kcde <- function(x, prob, cont, nlevels=5,  ...)
+{
+    fhat <- x
+    if (missing(prob) & missing(cont)) hts <- pretty(fhat$estimate, n=nlevels) 
+    if (!missing(prob) & missing(cont)) { hts <- prob/100; names(hts) <- paste0(prob, "%") }     
+    if (missing(prob) & !missing(cont)) { prob <- 100-cont; hts <- prob/100; names(hts) <-  paste0(prob, "%") }
+    
+    return(hts)
+}

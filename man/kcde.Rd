@@ -12,13 +12,13 @@
 
 
 \usage{
-kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-  binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE,
+kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, 
+  bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, 
   tail.flag="lower.tail")
-Hpi.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
-  verbose=FALSE, optim.fun="optim")
+Hpi.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE, 
+  verbose=FALSE, optim.fun="optim", pre=TRUE)
 Hpi.diag.kcde(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
-  verbose=FALSE, optim.fun="optim")
+  verbose=FALSE, optim.fun="optim", pre=TRUE)
 hpi.kcde(x, nstage=2, binned, amise=FALSE)
 
 \method{predict}{kcde}(object, ..., x)
@@ -52,6 +52,7 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   \item{amise}{flag to return the minimal scaled PI value}
   \item{optim.fun}{optimiser function: one of \code{nlm} or
     \code{optim}}
+  \item{pre}{flag for pre-scaling data. Default is TRUE.}
   \item{object}{object of class \code{kcde}}
   \item{...}{other parameters} 
 }

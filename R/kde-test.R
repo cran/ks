@@ -208,7 +208,7 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
     fhat.diff.neg$estimate <- fhat.diff.neg$estimate*ESS
   }
 
-  result <- list(fhat1=fhat1, fhat2=fhat2, chisq=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=h2D2fhat, var.fhat.diff=var.fhat.diff, n1=n1, n2=n2, h1=h1, h2=h2, H1=h1^2, H2=h2^2, fhat.diff=fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg)
+  result <- list(fhat1=fhat1, fhat2=fhat2, chisq=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=h2D2fhat, var.fhat.diff=var.fhat.diff, n1=n1, n2=n2, h1=h1, h2=h2, H1=h1^2, H2=h2^2, fhat.diff=fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, names=parse.name(x1))
 
   class(result) <- "kde.loctest"
   return(result)
@@ -276,7 +276,7 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
   pvalue <- 1 - pchisq(X2, 1)
   pvalue[is.na(pvalue)] <- 0
 
-  ## Apply Hochberg multiple test adjustment
+  ## apply Hochberg multiple test adjustment
   
   gridsize <- sapply(fhat1$eval.points, length)
   fhat.diff.signif <- hochberg.mult.test(pvalue=pvalue, gridsize=gridsize, signif.level=signif.level)    
@@ -295,7 +295,7 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
     fhat.diff.neg$estimate <- fhat.diff.neg$estimate*ESS
   }
 
-  result <- list(fhat1=fhat1, fhat2=fhat2, X2=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=HD2fhat, var.fhat.diff=var.fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, n1=n1, n2=n2, H1=H1, H2=H2)
+  result <- list(fhat1=fhat1, fhat2=fhat2, X2=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=HD2fhat, var.fhat.diff=var.fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, n1=n1, n2=n2, H1=H1, H2=H2, names=parse.name(x1))
 
   class(result) <- "kde.loctest"
   return(result)
@@ -324,7 +324,7 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
 {
   if (missing(xlab)) xlab <- x$fhat.diff.pos$names[1]
   if (missing(ylab)) ylab <- expression("Density difference  "*f[1]-f[2])
-  if (missing(col)) col <- c("purple", "darkgreen")
+  if (missing(col)) col <- hcl.colors(palette="Purple-Green",6)[c(2,5)] ##col <- c("purple", "darkgreen")
   if (missing(lcol)) lcol <- 1
   if (!add) plot(x$fhat1$eval.points, x$fhat.diff, type="l", ylab=ylab, xlab=xlab, col=lcol, ...)
    else lines(x$fhat1$eval.points, x$fhat.diff, col=lcol, ...)
@@ -341,7 +341,7 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
 
 plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", ...)
 { 
-    if (missing(col)) col <- c("purple", "darkgreen")
+    if (missing(col)) col <- hcl.colors(palette="Purple-Green",6)[c(2,5)] 
     plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=add, ...)
     plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=TRUE, ...)
      
@@ -352,7 +352,7 @@ plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="t
 plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), add.legend=TRUE, ...)
 {
   if (length(alphavec)==1) alphavec <- rep(alphavec,2)
-  if (missing(col)) col <- c("purple", "darkgreen")
+  if (missing(col))  col <- hcl.colors(palette="Purple-Green",6)[c(2,5)]
   plot(x$fhat.diff.pos, color=col[1], col=col[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1],  ...)
   plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
   

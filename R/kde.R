@@ -913,7 +913,7 @@ plot.kde <- function(x, ...)
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, col=1, col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
+  drawpoints=FALSE, col=1, col.pt=4, col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
   
@@ -965,10 +965,8 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
   }
   
   if (drawpoints)
-    if (jitter)
-      rug(jitter(fhat$x), col=col.pt)
-    else
-      rug(fhat$x, col=col.pt)
+    if (jitter) rug(jitter(fhat$x), col=col.pt)
+    else rug(fhat$x, col=col.pt)
 }
 
 
@@ -983,20 +981,23 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, kdde.flag=FALSE, ticktype="detailed", ...) 
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, col, col.fun, lwd=1, border=1, thin=3, kdde.flag=FALSE, ticktype="detailed", ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
+  if (disp1=="filled.contour2") disp1 <- "filled.contour"
+  ## disp=="filled.contour2" is deprecated but is still used in simukde package
   if (!is.list(fhat$eval.points)) stop("Need a grid of density estimates")
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
-
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE)}
+   
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
-    hts <- seq(0, 1.1*max(fhat$estimate,na.rm=TRUE), length=500)
-    if (missing(col)) col <- topo.colors(length(hts)+1, alpha=0.5)
-    if (!missing(col.fun)) col <- col.fun(length(hts)+1)
+    hts <- seq(0, 1.1*max(fhat$estimate,na.rm=TRUE), length=100)
+    ##if (missing(col)) col <- topo.colors(length(hts)+1, alpha=0.5)
+    if (missing(col)) col <- col.fun(length(hts)+1)
     if (length(col)<length(hts)) col <- rep(col, length=length(hts))
     
     ## thinning indices
@@ -1035,20 +1036,22 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
       hts <- abs.cont 
     
-    if (missing(col)) col <- 1 #rev(heat.colors(length(hts)))
+    hts <- sort(hts)
+    if (missing(col)) col <- col.fun(length(hts))
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
 
     ## draw contours
     j <- 0
     for (i in 1:length(hts)) 
     {
-      if (missing(abs.cont)) scale <- cont[i]/hts[i]
-      else scale <- 1
-
+      if (missing(abs.cont)) { ni <- length(hts)-i+1; scale <- (100-cont[i])/hts[i]; scale2 <- cont[ni]/hts[ni] }
+      else { ni <- i; scale <- 1; scale2 <-1 }
+    
+      
       if (hts[i]>0 | !is.null(fhat$deriv.order))
       {
           j<-j+1;
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=j>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, xlab=xlab, ylab=ylab, ...)
+          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, label=signif(hts[ni]*scale2), add=j>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, labcex=labcex, ...)
       }
     }
  
@@ -1058,14 +1061,14 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   ## image plot
   else if (disp1=="image")
   {
-    if (missing(col)) col <- rev(heat.colors(100))  
+    if (missing(col)) col <- col.fun(100) 
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
 
     ## add points 
     if (drawpoints) points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
     box()
   }
-  else if (disp1=="filled.contour" | disp1=="filled.contour2")
+  else if (disp1=="filled.contour")
   {
     ## compute contours
     if (missing(abs.cont))
@@ -1090,49 +1093,27 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     else
       hts <- abs.cont 
     hts <- sort(hts)
-
-    if (missing(col)) col <- c("transparent", rev(heat.colors(length(hts))))
-    if (!missing(col.fun)) col <- c(col.fun(length(hts)+1))
+    
+    if (missing(col)) col <- c("transparent", col.fun(length(hts)))
     clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
+
+    if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
+    .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
       
-    if (disp1=="filled.contour2")
+    if (!missing(lwd))
     {
-        image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col[1:(length(hts)+1)], breaks=clev, ...)
-
-      ## draw contours         
-     
-      for (i in 1:length(hts))
-      {      
-          if (!kdde.flag) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
-          else
-          {
-              if (i <= length(hts)%/%2)
-                  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i], lwd=lwd.fc)
-              else
-                  contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, level=hts[i], add=TRUE, drawlabels=FALSE, col=col[i+1], lwd=lwd.fc)
-          }
-      }
+        for (i in 1:length(hts)) 
+        {
+            if (missing(abs.cont)) { ni <- length(hts)-i+1; scale <- (100-cont[i])/hts[i]; scale2 <- cont[ni]/hts[ni] }
+            else { ni <- i; scale <- 1; scale2 <-1 }
+    
+            if (lwd >=1) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, label=signif(hts[ni]*scale2,3), add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, labcex=labcex, ...)
+        }
     }
-    else
-    {
-        if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
-        .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
-    }
-      
-      if (!missing(lwd))
-      {
-          for (i in 1:length(hts)) 
-          {
-              if (missing(abs.cont)) scale <- cont[i]/hts[i]
-              else scale <- 1
 
-              if (lwd >=1) contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, add=TRUE, drawlabels=drawlabels, col=1, lwd=lwd, ...)
-          }
-      }
-
-      ## add points 
-      if (drawpoints) points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
-      box()
+    ## add points 
+    if (drawpoints) points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
+    box()
   }
   
   if (disp1=="persp")  invisible(plotret)
@@ -1145,8 +1126,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 ## Display trivariate kernel density estimate
 ###############################################################################
 
-
-plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
+plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt=4, add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
 {
     ## compute contours
     if (missing(abs.cont))
@@ -1169,9 +1149,12 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
         hts <- abs.cont
 	    
     nc <- length(hts)
-	    
-    if (missing(col)) col <- rev(heat.colors(nc));  colors <- col
-    if (!missing(col.fun)) colors <- col.fun(nc)
+	if (missing(col)) 
+    { 
+        if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE)}
+        col <- col.fun(n=length(hts))
+    }    
+    colors <- col
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
     if (missing(zlab)) zlab <- fhat$names[3]
@@ -1180,11 +1163,13 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
         if (is.null(fhat$deriv.order)) alphavec <- seq(0.1,0.5,length=nc)
         else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
     }
-    if (!missing(alpha)) {alphavec <- rep(alpha,nc)}
+    if (missing(alpha)) alpha <- 0.1 
+    else if (!missing(alpha)) {alphavec <- rep(alpha,nc)}
     	    
  	disp1 <- match.arg(display, c("plot3D", "rgl")) 
 	if (disp1 %in% "plot3D")
 	{
+		 
 		for (i in 1:nc)
     	    if (hts[nc-i+1] < max(fhat$estimate))
     	        plot3D::isosurf3D(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], colvar=fhat$estimate, level=hts[nc-i+1], add=add | (i>1), col=colors[i], alpha=alphavec[i], phi=phi, theta=theta, xlab=xlab, ylab=ylab, zlab=zlab, d=d, ticktype=ticktype, bty=bty, ...)

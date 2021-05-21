@@ -9,9 +9,9 @@
 \usage{
 kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   binned, bgridsize, w, verbose=FALSE, marginal="kernel")
-kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7,
-  eval.points, binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE,
-  approx.cont=TRUE, marginal="kernel", boundary.supp, boundary.kernel="beta")
+kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
+  binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE, approx.cont=TRUE,
+  marginal="kernel", boundary.supp, boundary.kernel="beta")
 }
 
 \arguments{
@@ -86,7 +86,8 @@ library(MASS)
 data(fgl)
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
-plot(Chat, disp="persp", thin=3, col="white", border=1)
+plot(Chat, disp="persp", border=1)
+plot(Chat, disp="filled.contour", lwd=1)
 }
 
 \keyword{smooth}

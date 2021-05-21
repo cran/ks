@@ -853,8 +853,9 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
 ## H_LSCV
 ###############################################################################
 
-hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
+hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0, bw.ucv=TRUE)
 {
+  ## adapted from versions supplied by J.E. Chacon 19/02/2021
   if (any(duplicated(x)))
     warning("Data contain duplicated values: LSCV is not well-behaved in this case")
   n <- length(x)
@@ -862,30 +863,45 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0)
   r <- deriv.order
   hnorm <- sqrt((4/(n*(d + 2)))^(2/(d + 4)) * var(x))
   if (missing(binned)) binned <- default.bflag(d=d,n=n)
-  if (missing(bgridsize)) bgridsize <- default.bgridsize(d)
+  if (missing(bgridsize)) if (bw.ucv) bgridsize <- 10000 else bgridsize <- 10001 #default.bgridsize(d)
   
-  if (binned)
+  ## use stats::bw.ucv function
+  if (bw.ucv)
   {
-    bin.par <- binning(x, bgridsize=bgridsize, h=hnorm)
-    lscv.1d.temp <- function(h) { return(lscv.1d(x=x, h=h, binned=binned, bin.par=bin.par, deriv.order=r)) }
+    difs <- dist(x)
+    lower <- min(difs[difs>0])
+    opt <- list()
+    opt$minimum <- stats::bw.ucv(x=x, nb=bgridsize, lower=lower)
+    opt$objective <- NA
   }
-  else
+  else 
   {
-    if (r>0) stop("Unbinned hlscv not yet implemented for deriv.order>0") 
     difs <- x%*%t(rep(1,n))-rep(1,n)%*%t(x)
     difs <- difs[lower.tri(difs)]  
-    edifs <- exp(-difs^2/2)
-    RK <- 1/(2*sqrt(pi))
 
-    lscv.1d.temp <- function(h)
+    if (binned)
     {
-      lscv1 <- (1-1/n)*sum(edifs^(1/(2*h^2)))/(h*sqrt(2)*sqrt(2*pi))
-      lscv2 <- 2*sum(edifs^(1/h^2))/(h*sqrt(2*pi))
-      return(RK/(n*h)+2*(lscv1-lscv2)/(n^2-n))
-    }    
-  }
-  opt <- optimise(f=lscv.1d.temp, interval=c(0.2*hnorm, 5*hnorm, tol=.Machine$double.eps))
+        bin.par <- binning(x, bgridsize=bgridsize, h=hnorm)
+        lscv.1d.temp <- function(h) { return(lscv.1d(x=x, h=h, binned=binned, bin.par=bin.par, deriv.order=r)) }
+    }
+    else
+    {
+        if (r>0) stop("Unbinned hlscv not yet implemented for deriv.order>0") 
+        edifs <- exp(-difs^2/2)
+        RK <- 1/(2*sqrt(pi))
 
+        lscv.1d.temp <- function(h)
+        {
+            lscv1 <- (1-1/n)*sum(edifs^(1/(2*h^2)))/(h*sqrt(2)*sqrt(2*pi))
+            lscv2 <- 2*sum(edifs^(1/h^2))/(h*sqrt(2*pi))
+            return(RK/(n*h)+2*(lscv1-lscv2)/(n^2-n))
+        }   
+    }
+    lower <- min(difs[difs>0]) 
+    opt <- optimise(lscv.1d.temp, interval=c(lower, 2*hnorm), tol=.Machine$double.eps)
+    # opt <- optimise(f=lscv.1d.temp, interval=c(0.2*hnorm, 5*hnorm), tol=.Machine$double.eps)
+  }
+  
   if (!amise) return(opt$minimum)
   else return(list(h=opt$minimum, LSCV=opt$objective))
 }

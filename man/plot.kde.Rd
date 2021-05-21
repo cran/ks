@@ -16,8 +16,7 @@
     \describe{
       \item{\code{display}}{type of display, "slice" for contour plot,
 	"persp" for perspective plot, "image" for image plot, "filled.contour"
-	for filled contour plot (1st form), "filled.contour2" (2nd form) (2-d), 
-	"plot3D" (3-d), "rgl" (3-d)}
+	for filled contour plot (2-d); "plot3D", "rgl" (3-d)}
       \item{\code{cont}}{vector of percentages for contour level curves}
       \item{\code{abs.cont}}{vector of absolute density estimate heights for contour level curves}
       \item{\code{approx.cont}}{flag to compute approximate contour levels. Default is FALSE.}
@@ -52,21 +51,22 @@
   For \code{kde} objects, the function headers for the different dimensional data are  
   \preformatted{
   ## univariate
-  plot(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE,
-     col.pt="blue", col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, 
-     approx.cont=TRUE, ...) 
+  plot(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col=1,
+       col.pt=4, col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, 
+       approx.cont=TRUE, ...)
   
   ## bivariate
   plot(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
-     xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE,
-  	 drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt="blue", 
-  	 col, col.fun, lwd=1, border=1, thin=3, lwd.fc=5, ...)
+       xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, 
+       drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, 
+       col, col.fun, lwd=1, border=1, thin=3, kdde.flag=FALSE, 
+       ticktype="detailed", ...) 
 
   ## trivariate
   plot(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
-  	 colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, 
-  	 d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, xlab, ylab, 
-  	 zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)}
+       colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, 
+       d=4, ticktype="detailed", bty="f", col.pt=4, add=FALSE, xlab, ylab, 
+       zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)}
 
   For 1-dimensional data, the plot is a standard plot of a 1-d curve. If
   \code{drawpoints=TRUE} then a rug plot is added. If \code{cont} is specified,
@@ -77,7 +77,7 @@
   controlled by the \code{display} parameter.
   (a) If \code{display="slice"} then a slice/contour plot
   is generated using \code{contour}.  
-  (b) If \code{display} is \code{"filled.contour"} or \code{"filled.contour2"} 
+  (b) If \code{display} is \code{"filled.contour"} 
   then a filled contour plot is generated.
   The default contours are at 25\%, 50\%, 75\% or
   \code{cont=c(25,50,75)} which are upper percentages of
@@ -93,7 +93,7 @@
   3-d contours. The default contours are \code{cont=c(25,50,75)}.  The
   default \code{colors} are \code{heat.colors} and the
   default opacity \code{alphavec} ranges from 0.1 to 0.5. 
-  For \pkg{ks} >= 1.12.0, base R graphics becomes the default plotting engine: 
+  For \pkg{ks} \eqn{\geq}{>=} 1.12.0, base R graphics becomes the default plotting engine: 
   to create an \pkg{rgl} plot like in previous versions, set \code{display="rgl"}. 
 
   To specify contours, either one of \code{cont} or \code{abs.cont}
@@ -114,12 +114,12 @@ data(iris)
 
 ## univariate example
 fhat <- kde(x=iris[,2])
-plot(fhat, cont=50, col.cont="blue", cont.lwd=2, xlab="Sepal length")
+plot(fhat, cont=50, col.cont=4, cont.lwd=2, xlab="Sepal length")
 
 ## bivariate example
 fhat <- kde(x=iris[,2:3])
-plot(fhat, display="filled.contour", cont=seq(10,90,by=10))
-plot(fhat, display="persp", thin=3, border=1, col="white", ticktype="detailed")
+plot(fhat, display="filled.contour", cont=seq(10,90,by=10), lwd=1)
+plot(fhat, display="persp", border=1)
 
 ## trivariate example
 fhat <- kde(x=iris[,2:4])

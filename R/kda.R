@@ -497,10 +497,6 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
   else
     fhat.list$prior.prob <- prior.prob
 
-  ##pr <- rep(0, length(gr))
-  ##for (j in 1:length(gr)) pr[j] <- length(which(x.group==gr[j]))
-  ##pr <- pr/nrow(x)
-  ##fhat.list$prior.prob <- pr
   fhat.list$x.group <- x.group
   
   class(fhat.list) <- "kda"
@@ -584,7 +580,7 @@ plot.kda <- function(x, y, y.group, ...)
 }
 
 
-plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="Weighted density function", drawpoints=FALSE, col, col.part, col.pt, lty, jitter=TRUE, rugsize, ...)
+plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="Weighted density function", drawpoints=FALSE, col, col.fun, col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, ...)
 { 
   fhat <- x
   m <- length(fhat$x)
@@ -604,19 +600,18 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
   if (missing(ylim)) ylim <- range(weighted.fhat)
   if (missing(lty)) lty <- rep(1, m)
   if (length(lty) < m) lty <- rep(lty, m)
-  if (missing(col)) col <- 1:m
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+  if (missing(col)) col <- col.fun(m)
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.pt)) col.pt <- col
-  if (length(col.pt) < m) col.pt <- rep(col.pt, m)
-  if (missing(col.part)) col.part <- col
-  if (length(col.part) < m) col.part <- rep(col.part, m)
+  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=1) 
+  if (missing(col.pt)) col.pt <- col.fun(m)
+  if (length(col.pt)==1) col.pt <- rep(col.pt, m)
   
   ## plot each training group's KDE in separate colour and line type 
-  plot(fhat$eval.points, weighted.fhat[,1], type="l", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, lty=lty[1], col=col[1], ...)
+  if (!add) plot(fhat$eval.points, weighted.fhat[,1], type="l", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, lty=lty[1], col=col[1], ...)
   
   if (m > 1)
-    for (j in 2:m)
-      lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
+    for (j in 2:m) lines(fhat$eval.points, weighted.fhat[,j], lty=lty[j], col=col[j], ...)
 
   ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
   x.gr <- 1:m
@@ -626,10 +621,8 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
   ## draw partition class as rug-like plot
   plot.lim <- par()$usr
   if (missing(rugsize)) rugsize <- abs(plot.lim[4]-plot.lim[3])/50
-  for (j in 1:m)
-  {
-    image(ydata, c(plot.lim[3], plot.lim[3]+rugsize), cbind(as.numeric(ydata.gr), as.numeric(ydata.gr)), level=0.5+(0:m), add=TRUE, col=col.part, ...)
-  } 
+
+  image(ydata, c(plot.lim[3], plot.lim[3]+rugsize), cbind(as.numeric(ydata.gr), as.numeric(ydata.gr)), breaks=0.5+(0:m), add=TRUE, col=col.part, ...)  
   
   for (j in 1:m)
   {  
@@ -659,13 +652,12 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
 }
 
 
-plotkda.2d <- function(x, y, y.group, prior.prob=NULL, 
+plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.contour",
     cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
-    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, col, col.part, col.pt, display.part="filled.contour", ...)
+    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, part=TRUE, col, col.fun, col.part, col.pt, lwd=1, lwd.part=0, labcex=1, add=FALSE, ...)
 { 
   fhat <- x
   m <- length(fhat$x)
-  
   xtemp <- numeric()
   for (j in 1:m) xtemp <- rbind(xtemp, fhat$x[[j]]) 
   if (missing(xlim)) xlim <- range(xtemp[,1])
@@ -673,17 +665,13 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   if (missing(pch)) pch <- 1:m
   if (missing(lty)) lty <- rep(1, m)
   if (length(lty) < m) lty <- rep(lty, m)
-  if (missing(col)) col <- 1:m
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+  if (missing(col)) col <- col.fun(m)
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.part))
-      if (display.part=="slice") col.part <- 1:3
-      else col.part <- grey.colors(m, start=0.7, end=1, alpha=0.5)
- 
-  if (missing(col.pt))
-    if (missing(y.group)) col.pt <- rep("blue", m)
-    else col.pt <- 1:m
+  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=0.2) 
+  if (missing(col.pt)) col.pt <- col.fun(m)
   if (length(col.pt)==1) col.pt <- rep(col.pt, m)
-              
+  
   x.names <- fhat$names ##x.names <- colnames(fhat$x[[1]]) 
   if (!is.null(x.names))
   {
@@ -695,7 +683,6 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
     xlab="x"
     ylab="y"
   }
-
   if (is.null(prior.prob)) prior.prob <- fhat$prior.prob
 
   if (m != length(prior.prob))
@@ -704,11 +691,13 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
     stop("Sum of weights not equal to 1")
 
   ## set up plot
-  if (missing(y)) 
-    plot(fhat$x[[1]], type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
-  else
-    plot(y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
-  
+  if (!add)
+  {
+  	if (missing(y)) 
+   		plot(fhat$x[[1]], type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
+  	else
+    	plot(y, type="n", xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, ...)
+  }
 
   ## set up common grid for all densities 
   class.grid <- array(0, dim=dim(fhat$estimate[[1]]))
@@ -721,7 +710,6 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   }
 
   ## draw partition
-
   fhat.part <- fhat
   fhat.part$estimate <- class.grid  
   fhat.part$H <- fhat$H[[1]]
@@ -729,11 +717,10 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   fhat.part$w <- fhat$w[[1]]
   fhat.part$cont <- fhat$cont[[1]]
   class(fhat.part) <- "kde.part"
-
-  plot(fhat.part, col=col.part, add=TRUE, display=display.part, drawlabels=drawlabels, ...)
+  
+  if (part) plot(fhat.part, col=col.part, add=TRUE, display=display.part, lwd=lwd.part, ...)
   
   ## common contour levels removed from >= v1.5.3 
-
   if (missing(abs.cont))
   {
     hts <- contourLevels(fhat, prob=(100-cont)/100, approx=approx.cont)
@@ -755,14 +742,14 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
         scale <- cont[i]/hts[[j]][i]
         contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
                 fhat$estimate[[j]]*scale, level=hts[[j]][i]*scale, add=TRUE, 
-                drawlabels=drawlabels, lty=lty[j], col=col[j],
+                drawlabels=drawlabels, lty=lty[j], col=col[j], lwd=lwd, labcex=labcex, 
                 ...)
       }
       else
       {
         contour(fhat$eval.points[[1]], fhat$eval.points[[2]], 
                 fhat$estimate[[j]], level=hts[i], add=TRUE, 
-                drawlabels=drawlabels, lty=lty[j], col=col[j],
+                drawlabels=drawlabels, lty=lty[j], col=col[j], lwd=lwd, labcex=labcex, 
                 ...)
       }
     }
@@ -774,11 +761,14 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
     if (drawpoints)
     {
       if (missing(y))
-        points(fhat$x[[j]], pch=pch[j], col=col.pt[1], cex=cex)
+        points(fhat$x[[j]], pch=pch[j], col=col.pt[j], cex=cex)
       else 
       {
         if (missing(y.group))
-          points(y, col=col.pt[1], cex=cex)
+        {  
+        	points(y, col=col.pt[1], cex=cex)
+        	j <- m+1
+        }
         else
           points(y[y.group==levels(y.group)[j],], pch=pch[j], col=col.pt[j], cex=cex) 
       }
@@ -786,7 +776,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL,
   }   
 }
 
-plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, alpha=0.5, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt="blue", add=FALSE, ...)
+plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, col.fun, col.pt, alpha=0.5, alphavec, xlab, ylab, zlab, drawpoints=FALSE, size=3, cex=1, pch, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", add=FALSE, ...)
 {
     fhat <- x
     
@@ -797,8 +787,15 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
         stop("Sum of prior weights not equal to 1")
     
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col)) col <- col.fun(m)
+    if (length(col) < m) col <- rep(col, m)
+    if (missing(col.pt)) col.pt <- col.fun(m)
+    if (length(col.pt)==1) col.pt <- rep(col.pt, m)
+    if (missing(pch)) pch <- 1:m
+    if (length(pch)==1) pch <- rep(pch, m)
+   
     x.names <- colnames(fhat$x[[1]])
-    
     if (missing(xlab)) if (is.null(x.names)) xlab <- "x" else xlab <- x.names[1]
     if (missing(ylab)) if (is.null(x.names)) ylab <- "y" else ylab <- x.names[2]
     if (missing(zlab)) if (is.null(x.names)) zlab <- "z" else zlab <- x.names[3]
@@ -818,18 +815,13 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
         nhts <- length(hts)
     }
     
-    if (missing(alphavec)) alphavec <- seq(0.1,0.3,length=nhts)
-    if (missing(col)) col <- rainbow(m);  colors <- col
-   	if (missing(col.pt))
-        if (missing(y.group)) col.pt <- rep("blue", m)
-        else col.pt <- 1:m
-    if (length(col.pt)==1) col.pt <- rep(col.pt, m)
+    if (missing(alphavec)) alphavec <- seq(0.05,0.2,length=nhts)
     if (!missing(alpha)) {alphavec <- rep(alpha,nhts)}
     
     disp1 <- match.arg(display, c("plot3D", "rgl")) 
 	if (disp1 %in% "plot3D")
 	{
-		for (j in 1:m)
+        for (j in 1:m)
     	{
         	for (i in 1:nhts)
         	{ 
@@ -845,16 +837,16 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
           	for (j in 1:m)
     		{
             	if (missing(y))
-            	    plot3D::points3D(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3], col=col.pt[j], cex=cex, alpha=1, add=TRUE)
+            	    plot3D::points3D(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3], col=col.pt[j], cex=cex, alpha=1, add=TRUE, pch=pch[j])
             	else
             	{
                 	if (missing(y.group))
-                    	plot3D::points3D(y[,1], y[,2], y[,3], col=col.pt, cex=cex, alpha=1, add=TRUE)
+                    	plot3D::points3D(y[,1], y[,2], y[,3], col=col.pt, cex=cex, alpha=alpha, add=TRUE, pch=pch[j])
                 	else
                 	{
                     	y.temp <- y[y.group==levels(y.group)[j],]
                     	if (nrow(y.temp)>0)
-                        	plot3D::points3D(y.temp[,1], y.temp[,2], y.temp[,3], col=col.pt[j], cex=cex, alpha=1, add=TRUE)
+                        	plot3D::points3D(y.temp[,1], y.temp[,2], y.temp[,3], col=col.pt[j], cex=cex, alpha=alpha, add=TRUE, pch=pch[j])
                 	}
             	}
         	}
@@ -867,7 +859,9 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     	if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
     	if (!requireNamespace("misc3d", quietly=TRUE)) stop("Install the misc3d package as it is required.", call.=FALSE)
 
-    	xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
+    	if (missing(colors)) colors <- col
+		
+		xtemp <- numeric(); for (i in 1:length(fhat$x)) xtemp <- rbind(xtemp, fhat$x[[i]])
     	rgl::plot3d(x=xtemp[,1], y=xtemp[,2], z=xtemp[,3], type="n", xlab=xlab, ylab=ylab, zlab=zlab, ...)
 
     	for (j in 1:m)
@@ -881,7 +875,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
         	if (drawpoints)   ## plot points
         	{
             	if (missing(y))
-            	    rgl::points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3], color=col.pt[j], size=size, alpha=1)
+            	    rgl::points3d(fhat$x[[j]][,1], fhat$x[[j]][,2], fhat$x[[j]][,3], color=col.pt[j], size=size, alpha=alpha)
             	else
             	{
                 	if (missing(y.group))
@@ -890,7 +884,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
                 	{
                     	y.temp <- y[y.group==levels(y.group)[j],]
                     	if (nrow(y.temp)>0)
-                        	rgl::points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=1)
+                        	rgl::points3d(y.temp[,1], y.temp[,2], y.temp[,3], color=col.pt[j], size=size, alpha=alpha)
                 	}
             	}
         	}

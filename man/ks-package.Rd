@@ -269,8 +269,8 @@
   Duong, T. (2004) \emph{Bandwidth Matrices for Multivariate Kernel Density 
     Estimation.} Ph.D. Thesis, University of Western Australia. 
 
-  Scott, D.W. (1992) \emph{Multivariate Density Estimation: Theory,
-    Practice, and Visualization}. John Wiley & Sons, New York.
+  Scott, D.W. (2015) \emph{Multivariate Density Estimation: Theory,
+    Practice, and Visualization (2nd edn)}. John Wiley & Sons, New York.
 
   Silverman, B. (1986) \emph{Density Estimation for Statistics and
   Data Analysis}. Chapman & Hall/CRC, London.

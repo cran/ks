@@ -1,5 +1,6 @@
 \name{kdr}
 \alias{kdr}
+\alias{plot.kdr}
 
 \title{Kernel density ridge estimation}
 \description{
@@ -8,11 +9,13 @@
 \usage{
 kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
     keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat,
-    density.cutoff, verbose=FALSE) 
+    density.cutoff, pre=TRUE, verbose=FALSE) 
+    
+\method{plot}{kdr}(x, add=FALSE, ...)
 }
 
 \arguments{
-  \item{x}{matrix of data values}
+  \item{x}{matrix of data values or an object of class \code{kdr}}
   \item{y}{matrix of initial values}
   \item{p}{dimension of density ridge}
   \item{H}{bandwidth matrix/scalar bandwidth. If missing,
@@ -36,8 +39,11 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
   \item{density.cutoff}{density threshold under which the \code{y} are
     excluded from the density ridge estimation. Default is
   \code{contourLevels(fhat, cont=99)}.}
+  \item{pre}{flag for pre-scaling data. Default is TRUE.}
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
+  \item{add}{flag to add to current plot. Default is FALSE.}
+  \item{...}{other graphics parameters}
 }
   
 
@@ -79,8 +85,7 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
 \seealso{\code{\link{kde}}}
 
 \examples{
-if(interactive()){
-library(maps)
+\donttest{library(maps)
 data(quake) 
 quake <- quake[quake$prof==1,]  ## Pacific Ring of Fire 
 quake$long[quake$long<0] <- quake$long[quake$long<0] + 360
@@ -91,9 +96,9 @@ plate$long[plate$long<0 & !is.na(plate$long)] <- plate$long[plate$long<0
 & !is.na(plate$long)] + 360
 
 dr.quake <- kdr(x=quake, xmin=c(70,-70), xmax=c(310, 80))
-map("world2", xlim=c(85, 305), ylim=c(-70, 70), lty=2)
-lines(plate[,1:2], col=3, lwd=2)
-points(dr.quake$end.points, cex=0.5, pch=16, col=2)}
+map(wrap=c(0,360), lty=2)
+lines(plate[,1:2], col=4, lwd=2)
+plot(dr.quake, cex=0.5, pch=16, col=6, add=TRUE)}
 }
 
 \keyword{cluster}

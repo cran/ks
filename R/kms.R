@@ -218,11 +218,12 @@ summary.kms <- function(object, ...)
 }
 
 
-plot.kms <- function(x, display="splom", col, add=FALSE, ...)
+plot.kms <- function(x, display="splom", col, col.fun, add=FALSE, ...)
 {
  	disp1 <- match.arg(display, c("splom", "plot3D"))
     if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
-    if (missing(col)) col <- rainbow(length(unique(x$label)))
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col)) col <- col.fun(length(unique(x$label)))
     if (d==1) stop("kms plot not yet implemented")
     else if (d==2)
     {
@@ -269,14 +270,16 @@ kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
     return(fhat)
 }
 
-plot.kde.part <- function(x, display="filled.contour", col, add=FALSE, ...)
+plot.kde.part <- function(x, display="filled.contour", col, col.fun, add=FALSE, ...)
 {
     clev <- sort(unique(as.vector(x$estimate)))
-    if (missing(col)) col <- rainbow(length(clev))
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col)) col <- col.fun(length(clev))
+   
     for (i in 1:length(clev))
     {
         xtemp <- x
         xtemp$estimate <- x$estimate==clev[i]
-        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, ...)
+        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, drawlabels=FALSE, ...)
     }
 }

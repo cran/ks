@@ -1,5 +1,21 @@
 Change log file for ks
 
+1.13.0
+-Changed default colour schemes to be based on hcl.colors().
+-Fixed bug in hlscv() in calling optimise(). 
+-Fixed bugs in plotkda.1d() and plotkda.2d().
+-Fixed bug in calculation of Abramsom bandwidth in kde.sp().
+-Fixed bug in kde.balloon.2d() in re-normalising density estimate.
+-Added pre-scaling option in kde.sp(), kdr(), Hpi.kcde().
+-Fixed bug in contour labels in plotkd(d)e.2d(,display="filled.contour").
+-Generated datasets quakesf, platesf as sf versions of quake, plate. 
+-Added variable names in output to kde.local.test().
+-Added S3 contourLevels method for kcde objects.
+-Added S3 predict method for kfs objects. 
+-Fixed bug in names field in output in kdr().
+-In hlscv(), changed default minimiser function to stats::bw.ucv(), and default
+ interval search limits. 
+
 1.12.0
 -Fixed bug in rkde() to take into account weighted KDE.
 -Fixed bug in contour level calcuations in plot.kde().

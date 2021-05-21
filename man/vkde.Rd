@@ -55,7 +55,7 @@ kde.sp(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
 \references{
   Abramson, I. S. (1982) On bandwidth variation in kernel estimates - a
-  square root law.  \emph{Annals of Statistics}, \bold{10}, 1217-1223.
+  square root law. \emph{Annals of Statistics}, \bold{10}, 1217-1223.
 
   Loftsgaarden, D. O. & Quesenberry, C. P. (1965) A nonparametric
   estimate of a multivariate density function. \emph{Annals of
@@ -68,12 +68,12 @@ kde.sp(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 \examples{
 \donttest{data(worldbank)
 wb <- as.matrix(na.omit(worldbank[,4:5]))
-xmin <- c(-70,-25); xmax <- c(25,70)
+xmin <- c(-70,-25); xmax <- c(35,70)
 fhat <- kde(x=wb, xmin=xmin, xmax=xmax)
 fhat.sp <- kde.sp(x=wb, xmin=xmin, xmax=xmax)
 plot(fhat, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))
 plot(fhat.sp, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
-if (interactive()){
+\dontrun{
 fhat.ball <- kde.balloon(x=wb, xmin=xmin, xmax=xmax)
 plot(fhat.ball, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
 }
