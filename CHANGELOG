@@ -1,5 +1,13 @@
 Change log file for ks
 
+1.13.1
+-Added contourProbs to approximate probabilities of level set of KDE.
+-Changed from OceanView::quiver2D() to pracma::quiver() for quiver plot in plot(,
+ display="quiver"). 
+-Added pracma to Imports. Removed OceanView from Suggests.  
+-Fixed bug for certain missing axis labels in plot.kdde().
+-Reduced number of considered mixture models in Hmn(), Hnm.diag(). 
+ 
 1.13.0
 -Changed default colour schemes to be based on hcl.colors().
 -Fixed bug in hlscv() in calling optimise(). 
@@ -13,7 +21,7 @@ Change log file for ks
 -Added S3 contourLevels method for kcde objects.
 -Added S3 predict method for kfs objects. 
 -Fixed bug in names field in output in kdr().
--In hlscv(), changed default minimiser function to stats::bw.ucv(), and default
+-Changed in hlscv() the default minimiser function to stats::bw.ucv(), and default
  interval search limits. 
 
 1.12.0

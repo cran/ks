@@ -29,8 +29,8 @@
   In addition to the display options inherited from \code{plot.kde}, the
   first derivative has \code{display="quiver"}. This is a quiver plot
   where the size and direction of the arrow indicates the
-  magnitude/direction of the density gradient. See \code{quiver2D} from
-  the \pkg{OceanView} package for more details. 
+  magnitude/direction of the density gradient. See \code{quiver} from
+  the \pkg{pracma} package for more details. 
 }
 
 

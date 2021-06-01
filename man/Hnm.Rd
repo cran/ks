@@ -50,9 +50,8 @@ hnm(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose, ... )
 }
 
 \examples{
-library(MASS)
-data(forbes)
-if(.Platform$OS.type=="unix") Hnm(forbes) 
+data(unicef)
+Hnm(unicef) 
 }
 
 \keyword{smooth}

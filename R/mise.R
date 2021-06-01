@@ -60,7 +60,7 @@ gamma.r <- function(mu, Sigma, r)
 gamma.r2 <- function(mu, Sigma, d, r, H)
 {
   Sigmainv <- chol2inv(chol(Sigma))
-
+ 
   if (d==1)
     w <- vec(Kpow(Sigmainv %*% Sigmainv, r)) %x% vec(Kpow(Sigmainv %*% H %*% Sigmainv, 2))
   else
@@ -70,7 +70,7 @@ gamma.r2 <- function(mu, Sigma, d, r, H)
   for(j in 0:(r+2))
     v <- v+((-1)^j*OF(2*j)*choose(2*r+4, 2*j))*(Kpow(mu,2*r-2*j+4)%x%Kpow(vec(Sigma),j))
   
-  gamr<-(-1)^r*dmvnorm(mu,mean=rep(0,d),sigma=Sigma)*sum(w %*% v)
+  gamr <- (-1)^r*mvtnorm::dmvnorm(mu,mean=rep(0,d),sigma=Sigma)*sum(w %*% v)
 
   return(gamr)
 }
@@ -252,13 +252,13 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
       {
         Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
         muj <- mus[j,]    
-        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, H=H)
+        omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma=Sigmai + Sigmaj, d=d, r=r, H=H)
       }
     }
   }
 
   Hinv <- chol2inv(chol(H)) 
-  if (k == 1)amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
+  if (k == 1) amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + omega.mat/4
   else amise <- 2^(-r)*nu(r,Hinv)/(samp * (4 * pi)^(d/2) * sqrt(det(H))) + (props %*% omega.mat %*% props)/4
  
   return(drop(amise))

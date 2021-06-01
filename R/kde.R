@@ -1051,7 +1051,10 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
       if (hts[i]>0 | !is.null(fhat$deriv.order))
       {
           j<-j+1;
-          contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, label=signif(hts[ni]*scale2), add=j>1 | add, drawlabels=drawlabels, col=col[i], lwd=lwd, labcex=labcex, ...)
+          if (j==1) 
+          	contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, label=signif(hts[ni]*scale2), add=add, drawlabels=drawlabels, col=col[i], lwd=lwd, labcex=labcex, xlab=xlab, ylab=ylab, ...)
+          else 
+          	contour(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate*scale, level=hts[i]*scale, label=signif(hts[ni]*scale2), add=TRUE, drawlabels=drawlabels, col=col[i], lwd=lwd, labcex=labcex, ...)
       }
     }
  

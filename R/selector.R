@@ -1665,11 +1665,12 @@ Gns <- function(r,n,Sigma)
 Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {
     if (!requireNamespace("mclust", quietly=TRUE)) stop("Install the mclust package as it is required.", call.=FALSE)
-    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
-    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
+    modelNames <- "VVV" ##grep("^V", mclust.options("emModelNames"), value=TRUE)
+    
+    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, modelNames=modelNames, ...)
+    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, modelNames=modelNames, ...)
 
     if (is.vector(x)) {d <- length(x); n <- 1} else {d <- ncol(x); n <- nrow(x)} 
-
     mus <- t(nmixt.fit$parameters$mean)
     Sigmas <- matrix(nmixt.fit$parameters$variance$sigma, byrow=TRUE, ncol=d)
     props <- nmixt.fit$parameters$pro
@@ -1682,8 +1683,9 @@ Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FA
 Hnm.diag <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {
     if (!requireNamespace("mclust", quietly=TRUE)) stop("Install the mclust package as it is required.", call.=FALSE)
-    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, ...)
-    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, ...)
+    modelNames <- "VVI" ##grep("^V", mclust.options("emModelNames"), value=TRUE)
+    if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, modelNames=modelNames, ...)
+    else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, modelNames=modelNames, ...)
 
     if (is.vector(x)) {d <- length(x); n <- 1} else {d <- ncol(x); n <- nrow(x)} 
     mus <- t(nmixt.fit$parameters$mean)

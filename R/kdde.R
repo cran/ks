@@ -529,25 +529,29 @@ plot.kdde <- function(x, ...)
   }
 }
 
-plotkdde.1d <- function(fhat, ylab="Density derivative function", cont=50, abs.cont, ...)
+plotkdde.1d <- function(fhat, xlab, ylab="Density derivative function", cont=50, abs.cont, ...)
 {
-  if (missing(abs.cont))
-  {
-    abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol = length(cont))
-    abs.cont <- c(abs.cont[1, ], rev(abs.cont[2, ]))
-  }
-  class(fhat) <- "kde"
+  	if (missing(xlab)) xlab <- fhat$names[1]
+    
+  	if (missing(abs.cont))
+  	{
+    	abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont), ncol = length(cont))
+    	abs.cont <- c(abs.cont[1, ], rev(abs.cont[2, ]))
+  	}
+  	class(fhat) <- "kde"
 
-  plot(fhat, ylab=ylab, abs.cont=abs.cont, ...)
+  	plot(fhat, xlab=xlab, ylab=ylab, abs.cont=abs.cont, ...)
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, thin=3, transf=1/4, neg.grad=FALSE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", xlab, ylab, zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, thin=3, transf=1/4, neg.grad=FALSE, ...)
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2", "quiver"))
   if (disp1=="filled.contour2") disp1 <- "filled.contour"
   #disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "quiver"))
   if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red")}
+  if (missing(xlab)) xlab <- fhat$names[1]
+  if (missing(ylab)) ylab <- fhat$names[2]
   if (disp1=="slice" | disp1=="filled.contour")
   {
     if (missing(abs.cont))
@@ -569,7 +573,7 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
   if (disp1=="quiver")
   {
       if (fhat$deriv.order==1)
-          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, col=col, ...)
+          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, col=col, xlab=xlab, ylab=ylab, ...)
       else warning("Quiver plot requires gradient estimate.")
   }
   else
@@ -580,15 +584,20 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
       fhat <- fhat.temp
       class(fhat) <- "kde"
       
-      if (disp1=="persp") plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, thin=thin, ...) 
-      else plot(fhat, display=display, abs.cont=abs.cont, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
+
+      if (disp1=="persp") plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, thin=thin, ...) 
+      else plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
   }
 }
 
 
-plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun, ...)
+plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun, xlab, ylab, zlab, ...)
 {
   if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red")}
+  if (missing(xlab)) xlab <- fhat$names[1]
+  if (missing(ylab)) ylab <- fhat$names[2]
+  if (missing(zlab)) ylab <- fhat$names[3]
+  
   if (missing(abs.cont))
   {
       abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
@@ -609,7 +618,7 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
    }
 
   colors <- col
-  plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col,, ...) 
+  plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col, xlab=xlab, ylab=ylab, zlab=zlab, ...) 
 }
 
 
@@ -617,10 +626,9 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
 ## Quiver plot
 ######################################################################
 
-plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col, ...)
+plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, ...)
 {
-    ## suggestions from Viktor Petukhov 08/03/2018
-    if (!requireNamespace("OceanView", quietly=TRUE)) stop("Install the OceanView package as it is required.", call.=FALSE)
+    if (!requireNamespace("pracma", quietly=TRUE)) stop("Install the pracma package as it is required.", call.=FALSE)
     if (missing(col)) col <- 1
     ev <- fhat$eval.points
     est <- fhat$estimate
@@ -638,8 +646,29 @@ plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col
     if (neg.grad) { fx <- -fx; fy <- -fy }
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
+   
+    if (!add) plot(fhat, abs.cont=c(0,0), col="transparent", xlab=xlab, ylab=ylab)
+    grid.xy <- pracma::meshgrid(ev[[1]][thin1.ind], ev[[2]][thin2.ind])
     
-    OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
+    ## default scale factor
+	arrow.len <- sqrt(fx^2 + fy^2) 
+	bin.diag <- sqrt(diff(ev[[1]][thin1.ind])^2 + diff(ev[[2]][thin2.ind])^2)[1] 
+	if (missing(scale)) scale <- bin.diag/max(arrow.len)
+	
+	## remove `zero-length' arrows i.e. length < 1e-3 inches
+	## adapted from https://stackoverflow.com/questions/52689959/how-small-is-a-zero-length-arrow/52690054
+	units <- par(c('usr', 'pin'))
+	x2in <- with(units, pin[1L]/diff(usr[1:2]))
+	y2in <- with(units, pin[2L]/diff(usr[3:4]))
+    nsmall.f <- sqrt((x2in*scale*fx)^2 + (y2in*scale*fy)^2) > 1e-3
+    
+    x0 <- grid.xy$X[nsmall.f]
+    y0 <- grid.xy$Y[nsmall.f]
+    fx <- fx[nsmall.f]
+    fy <- fy[nsmall.f]
+    
+    pracma::quiver(x=x0, y=y0, u=fx, v=fy, col=col, scale=scale, ...)
+    #OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
 }
 
   
