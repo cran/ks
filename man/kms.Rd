@@ -11,7 +11,8 @@
 kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
     keep.path=FALSE, verbose=FALSE)
 
-\method{plot}{kms}(x, display="splom", col, col.fun, add=FALSE, ...)
+\method{plot}{kms}(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, 
+    phi=40, add=FALSE, ...)
 \method{summary}{kms}(object, ...)
 }
 
@@ -35,6 +36,9 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{object}{object of class \code{kms}}
   \item{display}{type of display, "splom" (>=2-d) or "plot3D" (3-d)}
   \item{col,col.fun}{vector or colours (one for each group) or colour function}
+  \item{alpha}{colour transparency. Default is 1.}
+  \item{xlab,ylab,zlab}{axes labels}
+  \item{theta,phi}{graphics parameters for perspective plots (3-d)}
   \item{add}{flag to add to current plot. Default is FALSE.}
   \item{...}{other (graphics) parameters}
 }

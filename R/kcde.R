@@ -169,11 +169,10 @@ plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, dra
         else rug(Fhat$x, col=col.pt)
 }
 
-
 plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     xlab, ylab, zlab="Distribution function", cex=1, pch=1,   
     add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4,
-    col.pt=4, col, col.fun, lwd=1, border=NA, thin=3, labcex=1, ticktype="detailed", ...) 
+    col.pt=4, col, col.fun, alpha=1, lwd=1, border=NA, thin=3, labcex=1, ticktype="detailed", ...) 
 {
     disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
     if (disp1=="filled.contour2") disp1 <- "filled.contour"
@@ -185,7 +184,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     if (Fhat$tail=="upper.tail") zlab <- "Survival function"
   
     ## perspective/wireframe plot
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="viridis")}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="viridis", alpha=alpha)}
    
     if (disp1=="persp")
     {

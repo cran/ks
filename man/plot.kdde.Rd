@@ -43,7 +43,7 @@
   ## bivariate
   plot(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", 
        zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, 
-       thin=3, transf=1/4, neg.grad=FALSE, ...)
+       thin=3, transf=1, neg.grad=FALSE, ...)
   
   ## trivariate 
   plot(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, 
@@ -61,7 +61,7 @@ points(20,predict(fhat1, x=20))
 
 ## bivariate example
 fhat1 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=1)
-plot(fhat1, display="quiver", thin=5)
+plot(fhat1, display="quiver")
   ## gradient [df/dx, df/dy]
 
 \donttest{fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
@@ -69,7 +69,7 @@ plot(fhat2, which.deriv.ind=2, display="persp", phi=10)
 plot(fhat2, which.deriv.ind=2, display="filled.contour")
   ## d^2 f/(dx dy): blue=-ve, red=+ve
 s2 <- kcurv(fhat2)
-s2.col <- function(n){hcl.colors(palette="Oranges", n=n, rev=TRUE)}
+s2.col <- function(n){hcl.colors(palette="Oranges", n=n, rev=TRUE, alpha=0.5)}
 plot(s2, display="filled.contour", col.fun=s2.col, lwd=1)
   ## summary curvature 
 

@@ -85,7 +85,16 @@ kdr(x, y, H, p=1, max.iter=400, tol.iter, tol.seg, min.seg.size,
 \seealso{\code{\link{kde}}}
 
 \examples{
-\donttest{library(maps)
+\donttest{data(cardio)
+set.seed(8192)
+cardio <- cardio[,c(8,18)]
+cardio.train.ind <- sample(1:nrow(cardio), round(nrow(cardio)/4,0))
+cardio.train <- cardio[cardio.train.ind,]
+cardio.dr <- kdr(x=cardio.train)
+plot(cardio, pch=16, col=3)
+plot(cardio.dr, cex=0.5, pch=16, col=6, add=TRUE)}
+
+\dontrun{library(maps)
 data(quake) 
 quake <- quake[quake$prof==1,]  ## Pacific Ring of Fire 
 quake$long[quake$long<0] <- quake$long[quake$long<0] + 360
@@ -95,10 +104,10 @@ plate <- plate[plate$long < -20 | plate$long > 20,]
 plate$long[plate$long<0 & !is.na(plate$long)] <- plate$long[plate$long<0
 & !is.na(plate$long)] + 360
 
-dr.quake <- kdr(x=quake, xmin=c(70,-70), xmax=c(310, 80))
+quake.dr <- kdr(x=quake, xmin=c(70,-70), xmax=c(310, 80))
 map(wrap=c(0,360), lty=2)
 lines(plate[,1:2], col=4, lwd=2)
-plot(dr.quake, cex=0.5, pch=16, col=6, add=TRUE)}
+plot(quake.dr, cex=0.5, pch=16, col=6, add=TRUE)}
 }
 
 \keyword{cluster}

@@ -1,5 +1,17 @@
 Change log file for ks
 
+1.13.2
+-Fixed bug in ploting group colours in plot.kms(, display="plot3D").
+-Reinstated display="rgl" option for 3D KDEs in plot.kms().
+-Fixed bug with transposed coordinates in pracma::quiver in plot.kdde(, 
+ display="quiver")
+-Fixed bugs in kde.truncate(), kdde.truncate() for normalisation and for 
+ contour levels calculation. 
+-Fixed bugs in contourSizes(), contourProbs() which didn't allow for different
+ grid sizes. 
+-Added colour transparency parameter alpha for colour function in plot methods
+ for histde, kcde, kda, kdde, kde, kde.part, kms objects. 
+
 1.13.1
 -Added contourProbs to approximate probabilities of level set of KDE.
 -Changed from OceanView::quiver2D() to pracma::quiver() for quiver plot in plot(,

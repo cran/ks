@@ -59,7 +59,7 @@
   plot(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
        xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, 
        drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, 
-       col, col.fun, lwd=1, border=1, thin=3, kdde.flag=FALSE, 
+       col, col.fun, alpha=1, lwd=1, border=1, thin=3, kdde.flag=FALSE, 
        ticktype="detailed", ...) 
 
   ## trivariate
@@ -81,7 +81,7 @@
   then a filled contour plot is generated.
   The default contours are at 25\%, 50\%, 75\% or
   \code{cont=c(25,50,75)} which are upper percentages of
-  highest density regions.
+  highest density regions. 
   (c) If \code{display="persp"} then a perspective/wire-frame plot
   is generated.  The default z-axis limits \code{zlim} are the default
   from the usual \code{persp} command.
@@ -90,8 +90,7 @@
   \code{image} command.
 
   For 3-dimensional data, the plot is a series of nested
-  3-d contours. The default contours are \code{cont=c(25,50,75)}.  The
-  default \code{colors} are \code{heat.colors} and the
+  3-d contours. The default contours are \code{cont=c(25,50,75)}. The
   default opacity \code{alphavec} ranges from 0.1 to 0.5. 
   For \pkg{ks} \eqn{\geq}{>=} 1.12.0, base R graphics becomes the default plotting engine: 
   to create an \pkg{rgl} plot like in previous versions, set \code{display="rgl"}. 
@@ -106,6 +105,8 @@
   If \code{approx=FALSE}, then the exact KDE is computed. Otherwise
   it is interpolated from an existing KDE grid, which can dramatically
   reduce computation time for large data sets. 
+  
+  If a colour function is specified in \code{col.fun}, it should have the number of colours as a single argument, e.g. \code{function(n)\{hcl.colors(n, alpha=1, ...)\}}. The transparent background colour is automatically concatenated before this colour function. If \code{col} is specified, it overrides \code{col.fun}. There should be one more colour than the number of contours, i.e. background colour plus one for each contour. 
 }
  
 \examples{

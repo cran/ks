@@ -13,7 +13,7 @@ mvnorm.mixt.part(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100,
    verbose=FALSE)
 kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 
-\method{plot}{kde.part}(x, display="filled.contour", col, col.fun, add=FALSE, ...)
+\method{plot}{kde.part}(x, display="filled.contour", col, col.fun, alpha=1, add=FALSE, ...)
 }
 
 \arguments{
@@ -29,6 +29,7 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
     \code{Hpi(x,deriv,order=1)} is called by default.}
   \item{display}{type of display, "filled.contour" for filled contour plot} 
   \item{col,col.fun}{vector of plotting colours or colour function}
+  \item{alpha}{colour transparency. Default is 1.}
   \item{add}{flag to add to current plot. Default is FALSE.}
   \item{...}{other parameters}
 }
@@ -68,22 +69,20 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 \seealso{\code{\link{plot.kde}}, \code{\link{kms}}}
 
 \examples{
-\donttest{
 ## normal mixture partition
 mus <- rbind(c(-1,0), c(1, 2/sqrt(3)), c(1,-2/sqrt(3)))
 Sigmas <- 1/25*rbind(invvech(c(9, 63/10, 49/4)), invvech(c(9,0,49/4)), invvech(c(9,0,49/4)))
 props <- c(3,3,1)/7
-nmixt.part <- mvnorm.mixt.part(mus=mus, Sigmas=Sigmas, props=props)
-plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}
+gridsize <- c(11,11) ## small gridsize illustrative purposes only 
+nmixt.part <- mvnorm.mixt.part(mus=mus, Sigmas=Sigmas, props=props, gridsize=gridsize)
+plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))
 
 ## kernel mean shift partition
-\donttest{
-set.seed(81928192)
-x <- rmvnorm.mixt(n=1000, mus=mus, Sigmas=Sigmas, props=props)
-msize <- round(151^2*0.05)
-kms.nmixt.part <- kms.part(x=x, min.clust.size=msize)
-plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}
-}
+\donttest{set.seed(81928192)
+x <- rmvnorm.mixt(n=10000, mus=mus, Sigmas=Sigmas, props=props)
+msize <- round(prod(gridsize)*0.1)
+kms.nmixt.part <- kms.part(x=x, min.clust.size=msize, gridsize=gridsize)
+plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}}
 
 
 \keyword{hplot}

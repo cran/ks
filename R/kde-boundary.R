@@ -708,19 +708,19 @@ dmvbeta.prod.kernel2.2d <- function(x, hs, xmin=c(0,0), xmax=c(1,1), ...)
 
 kde.truncate <- function(fhat, boundary)
 {
-    ##if (class(x) %in% "kde") fhat <- x
-    ##else fhat <- kde(x=x, ...)
-
     ## reallocate any probability mass outside of map boundary regions
     ## to interior regions
     truncate.ind <- array(mgcv::in.out(boundary, as.matrix(expand.grid(fhat$eval.points[[1]], fhat$eval.points[[2]]))), dim=dim(fhat$estimate))
     fhat.trunc <- fhat
     fhat.trunc$estimate <- fhat.trunc$estimate*truncate.ind
-    fhat.sum <- sum(fhat$estimate*head(apply(sapply(fhat$eval.points, diff), 1, prod), n=1))
-    fhat.trunc.sum <- sum(fhat.trunc$estimate*head(apply(sapply(fhat.trunc$eval.points, diff), 1, prod), n=1))
+    fhat.sum <- contourProbs(fhat, abs.cont=0)
+    fhat.trunc.sum <- contourProbs(fhat.trunc, abs.cont=0)
     fhat.trunc$estimate <- fhat.trunc$estimate*fhat.sum/fhat.trunc.sum
-    if (length(fhat.trunc$cont)>0) fhat.trunc$cont <- contourLevels(fhat.trunc, cont=1:99, approx=TRUE)
-
+    
+    fhat.trunc.temp <- fhat.trunc
+    fhat.trunc.temp$x <- fhat.trunc.temp$x[mgcv::in.out(boundary, fhat.trunc$x),]
+    fhat.trunc$cont <- contourLevels(fhat.trunc.temp, cont=1:99, approx=TRUE)
+    
     return(fhat.trunc)
 }
 
@@ -730,22 +730,25 @@ kde.truncate <- function(fhat, boundary)
 
 kdde.truncate <- function(fhat, boundary)
 {
-    ##if (class(x) %in% "kdde") fhat <- x
-    ##else fhat <- kdde(x=x, ...)
-
     ## reallocate any probability mass outside of map boundary regions
     ## to interior regions
     fhat.trunc <- fhat
+    
+    fhat0 <- kde(x=fhat$x, H=fhat$H)
+    fhat0.sum <- contourProbs(fhat0, abs.cont=0)
+    fhat0.trunc <- kde.truncate(fhat=fhat0, boundary=boundary)
+    fhat0.trunc.sum <- contourProbs(fhat0.trunc, abs.cont=0)
+    
     for (i in 1:length(fhat$estimate))
     {    
         truncate.ind <- array(mgcv::in.out(boundary, as.matrix(expand.grid(fhat$eval.points[[1]], fhat$eval.points[[2]]))), dim=dim(fhat$estimate[[i]]))
         fhat.trunc$estimate[[i]] <- fhat.trunc$estimate[[i]]*truncate.ind
-        fhat.sum <- abs(sum(fhat$estimate[[i]]*head(apply(sapply(fhat$eval.points, diff), 1, prod), n=1)))
-        fhat.trunc.sum <- abs(sum(fhat.trunc$estimate[[i]]*head(apply(sapply(fhat.trunc$eval.points, diff), 1, prod), n=1)))
-        fhat.trunc$estimate[[i]] <- fhat.trunc$estimate[[i]]*fhat.sum/fhat.trunc.sum
+        fhat.trunc$estimate[[i]] <- fhat.trunc$estimate[[i]]*fhat0.sum/fhat0.trunc.sum
     }
-    if (length(fhat.trunc$cont)>0) fhat.trunc$cont <- contourLevels(fhat.trunc, cont=1:99, approx=TRUE)
-
+    fhat.trunc.temp <- fhat.trunc
+    fhat.trunc.temp$x <- fhat.trunc.temp$x[mgcv::in.out(boundary, fhat.trunc$x),]
+    fhat.trunc$cont <- contourLevels(fhat.trunc.temp, cont=1:99, approx=TRUE)
+    
     return(fhat.trunc)
 }
 

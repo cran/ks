@@ -651,10 +651,9 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
   }   
 }
 
-
 plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.contour",
     cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
-    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, part=TRUE, col, col.fun, col.part, col.pt, lwd=1, lwd.part=0, labcex=1, add=FALSE, ...)
+    drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, part=TRUE, col, col.fun, col.part, col.pt, alpha=1, lwd=1, lwd.part=0, labcex=1, add=FALSE, ...)
 { 
   fhat <- x
   m <- length(fhat$x)
@@ -665,7 +664,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.cont
   if (missing(pch)) pch <- 1:m
   if (missing(lty)) lty <- rep(1, m)
   if (length(lty) < m) lty <- rep(lty, m)
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
   if (missing(col)) col <- col.fun(m)
   if (length(col) < m) col <- rep(col, m)
   if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=0.2) 
@@ -816,7 +815,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     }
     
     if (missing(alphavec)) alphavec <- seq(0.05,0.2,length=nhts)
-    if (!missing(alpha)) {alphavec <- rep(alpha,nhts)}
+    #if (!missing(alpha)) {alphavec <- rep(alpha,nhts)}
     
     disp1 <- match.arg(display, c("plot3D", "rgl")) 
 	if (disp1 %in% "plot3D")

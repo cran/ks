@@ -544,12 +544,12 @@ plotkdde.1d <- function(fhat, xlab, ylab="Density derivative function", cont=50,
 }
 
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", xlab, ylab, zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, thin=3, transf=1/4, neg.grad=FALSE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", xlab, ylab, zlab="Density derivative function", col, col.fun, alpha=1, kdde.flag=TRUE, thin=3, transf=1, neg.grad=FALSE, ...)
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2", "quiver"))
   if (disp1=="filled.contour2") disp1 <- "filled.contour"
   #disp1 <- match.arg(display, c("persp", "slice", "image", "filled.contour", "quiver"))
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red")}
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Blue-Red", alpha=alpha)}
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
   if (disp1=="slice" | disp1=="filled.contour")
@@ -626,7 +626,7 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
 ## Quiver plot
 ######################################################################
 
-plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, ...)
+plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, length=0.1, ...)
 {
     if (!requireNamespace("pracma", quietly=TRUE)) stop("Install the pracma package as it is required.", call.=FALSE)
     if (missing(col)) col <- 1
@@ -640,7 +640,8 @@ plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col
     
     thin1.ind <- seq(1, length(ev[[1]]), by=thin)
     thin2.ind <- seq(1, length(ev[[2]]), by=thin)
-
+    evx <- ev[[1]][thin1.ind]
+    evy <- ev[[2]][thin2.ind]
     fx <- est[[1]][thin1.ind, thin2.ind]
     fy <- est[[2]][thin1.ind, thin2.ind]
     if (neg.grad) { fx <- -fx; fy <- -fy }
@@ -648,11 +649,13 @@ plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col
     if (missing(ylab)) ylab <- fhat$names[2]
    
     if (!add) plot(fhat, abs.cont=c(0,0), col="transparent", xlab=xlab, ylab=ylab)
-    grid.xy <- pracma::meshgrid(ev[[1]][thin1.ind], ev[[2]][thin2.ind])
+    grid.xy <- pracma::meshgrid(evy, evx)
+    x0 <- grid.xy$Y
+    y0 <- grid.xy$X
     
-    ## default scale factor
+    ## default scale factor - arrows should exceed a bin
 	arrow.len <- sqrt(fx^2 + fy^2) 
-	bin.diag <- sqrt(diff(ev[[1]][thin1.ind])^2 + diff(ev[[2]][thin2.ind])^2)[1] 
+	bin.diag <- min(diff(evx), diff(evy)) 
 	if (missing(scale)) scale <- bin.diag/max(arrow.len)
 	
 	## remove `zero-length' arrows i.e. length < 1e-3 inches
@@ -660,15 +663,18 @@ plotquiver <- function(fhat, thin=5, transf=1/4, neg.grad=FALSE, xlab, ylab, col
 	units <- par(c('usr', 'pin'))
 	x2in <- with(units, pin[1L]/diff(usr[1:2]))
 	y2in <- with(units, pin[2L]/diff(usr[3:4]))
-    nsmall.f <- sqrt((x2in*scale*fx)^2 + (y2in*scale*fy)^2) > 1e-3
-    
-    x0 <- grid.xy$X[nsmall.f]
-    y0 <- grid.xy$Y[nsmall.f]
-    fx <- fx[nsmall.f]
-    fy <- fy[nsmall.f]
-    
-    pracma::quiver(x=x0, y=y0, u=fx, v=fy, col=col, scale=scale, ...)
-    #OceanView::quiver2D(x=ev[[1]][thin1.ind], y=ev[[2]][thin2.ind], u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
+	arrow2in <- sqrt((x2in*scale*fx)^2 + (y2in*scale*fy)^2)
+	
+	arrowint <- sort(c(min(arrow2in)-0.1*abs(max(arrow2in)), seq(1e-3, length, length=5), max(arrow2in)+0.1*abs(max(arrow2in))))
+	nsmall.f <- cut(arrow2in, arrowint, labels=FALSE)
+	nsf.lab <- unique(nsmall.f[nsmall.f>1])
+	
+	for (i in nsf.lab)
+	{
+        nsf <- which(nsmall.f==i)
+        if (length(nsf)>0) pracma::quiver(x=x0[nsf], y=y0[nsf], u=fx[nsf], v=fy[nsf], col=col, scale=scale, length=arrowint[i], ...)
+	}
+    #OceanView::quiver2D(x=evx, y=evy, u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
 }
 
   

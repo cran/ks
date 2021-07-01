@@ -218,21 +218,40 @@ summary.kms <- function(object, ...)
 }
 
 
-plot.kms <- function(x, display="splom", col, col.fun, add=FALSE, ...)
+plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, phi=40, add=FALSE, ...)
 {
- 	disp1 <- match.arg(display, c("splom", "plot3D"))
+ 	disp1 <- match.arg(display, c("splom", "plot3D", "rgl"))
     if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
     if (missing(col)) col <- col.fun(length(unique(x$label)))
     if (d==1) stop("kms plot not yet implemented")
     else if (d==2)
     {
-        if (!add) plot(x$x, col=col[x$label], ...)
+        if (missing(xlab)) xlab <- x$names[1]
+        if (missing(ylab)) ylab <- x$names[2]
+        if (!add) plot(x$x, col=col[x$label], xlab=xlab, ylab=ylab, ...)
         else points(x$x, col=col[x$label], ...)
     }
-    else if (d==3 & disp1=="plot3D")
+    else if (d==3 & disp1 %in% c("plot3D", "rgl"))
     {
-    	plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=col[x$label], add=add, theta=-30, phi=40, d=4, colkey=FALSE, xlab=x$names[1], ylab=x$names[2], zlab=x$names[3], ticktype="detailed", bty="f", ...)
+        if (missing(xlab)) xlab <- x$names[1]
+        if (missing(ylab)) ylab <- x$names[2]
+        if (missing(zlab)) zlab <- x$names[3]
+    
+        if (disp1=="plot3D")
+        {
+            if (!add) plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=1, cex=0, add=add, theta=theta, phi=phi, d=4, colkey=FALSE, xlab=xlab, ylab=ylab, zlab=zlab, ticktype="detailed", bty="f", ...)
+        
+            for (i in 1:length(col))
+                plot3D::points3D(x$x[x$label==i,1], x$x[x$label==i,2], x$x[x$label==i,3], col=col[i], add=TRUE, ...)
+        }
+        else if (disp1=="rgl")
+        {
+            ## suggestions from Viktor Petukhov 08/03/2018
+            if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+            if (!add) rgl::plot3d(x$x, col=col[x$label], ...)
+            else rgl::points3d(x$x, col=col[x$label], ...) 
+        }
     }
     else if (d>=3)
     {
@@ -270,10 +289,10 @@ kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
     return(fhat)
 }
 
-plot.kde.part <- function(x, display="filled.contour", col, col.fun, add=FALSE, ...)
+plot.kde.part <- function(x, display="filled.contour", col, col.fun, alpha=1, add=FALSE, ...)
 {
     clev <- sort(unique(as.vector(x$estimate)))
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
     if (missing(col)) col <- col.fun(length(clev))
    
     for (i in 1:length(clev))

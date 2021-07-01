@@ -102,7 +102,7 @@ plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawp
 
 }
 
-plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, col.pt=4, lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
+plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, alpha=1, col.pt=4, lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
 {
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
@@ -110,7 +110,7 @@ plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density f
     if (missing(border)) border <- grey(0.5)
     if (!add) plot(fhat$x, col=col.pt, type="n", xlab=xlab, ylab=ylab, ...)
     if (missing(breaks)) breaks <- seq(min(fhat$estimate,0), max(fhat$estimate)+0.1*diff(range(fhat$estimate)), length=nbreaks)
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat", rev=TRUE)} ##function(n){rev(heat.colors(n))}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat", rev=TRUE, alpha=alpha)} 
     if (missing(col)) col <- col.fun(n=length(breaks))
     
     for (i in 1:(nrow(fhat$estimate)))

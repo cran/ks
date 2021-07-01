@@ -981,7 +981,7 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
 ## cont - vector of contours to be plotted
 ###############################################################################
 
-plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, col, col.fun, lwd=1, border=1, thin=3, kdde.flag=FALSE, ticktype="detailed", ...) 
+plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, col, col.fun, alpha=1, lwd=1, border=1, thin=3, kdde.flag=FALSE, ticktype="detailed", ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
   if (disp1=="filled.contour2") disp1 <- "filled.contour"
@@ -990,13 +990,12 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE)}
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE, alpha=alpha)}
    
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
     hts <- seq(0, 1.1*max(fhat$estimate,na.rm=TRUE), length=100)
-    ##if (missing(col)) col <- topo.colors(length(hts)+1, alpha=0.5)
     if (missing(col)) col <- col.fun(length(hts)+1)
     if (length(col)<length(hts)) col <- rep(col, length=length(hts))
     
@@ -1268,7 +1267,7 @@ contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
     if (!is.list(x$eval.points))
         delta.int <- head(diff(x$eval.points), n=1)
     else
-        delta.int <- prod(sapply(x$eval.points, diff)[1,]) 
+        delta.int <- prod(sapply(lapply(x$eval.points, diff), head, n=1)) 
     
     for (j in 1:length(abs.cont)) 
         num.int[j] <- sum(x$estimate>abs.cont[j])
@@ -1295,7 +1294,7 @@ contourProbs <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
     }
     else
     {
-        delta.int <- prod(sapply(x$eval.points, diff)[1, ])
+        delta.int <- prod(sapply(lapply(x$eval.points, diff), head, n=1)) 
         eval.points.midpoint <- expand.grid(lapply(x$eval.points, function(y){(head(y,n=-1)+tail(y,n=-1))/2}))
     }
     

@@ -22,7 +22,7 @@ data(quakesf)
 data(platesf)
 }
 
-\format{--For \code{quake}, a matrix with 5871 rows and  5 columns.
+\format{--For \code{quake}, a matrix with 5871 rows and 5 columns.
   Each row corresponds to an earthquake.
   The first column is the year (negative years indicate B.C.E.),
   the second is the longitude (decimal degrees),
@@ -31,7 +31,7 @@ data(platesf)
   the fifth is a flag for the location inside the circum-Pacific belt
   (aka Pacific Ring of Fire). \code{quakesf} is a WGS84 \code{sf} version with a point geometry.
 
-  --For \code{plate}, a matrix with 3 columns and 6276 rows.
+  --For \code{plate}, a matrix with 6276 rows and 3 columns.
   Each row corresponds to an location of the tectonic plate boundaries.
   The first is the longitude,
   the second is the latitude,

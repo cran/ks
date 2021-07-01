@@ -32,14 +32,23 @@ kdde.truncate(fhat, boundary)
 \seealso{\code{\link{kde}}, \code{\link{kdde}}}
 
 \examples{
+data(worldbank)
+wb <- as.matrix(na.omit(worldbank[,c("internet", "ag.value")]))
+fhat <- kde(x=wb)
+rectb <- cbind(x=c(0,100,100,0,0), y=c(0,0,100,100,0))
+fhat.b <- kde.truncate(fhat, boundary=rectb)
+plot(fhat, col=1, xlim=c(0,100), ylim=c(0,100))
+plot(fhat.b, add=TRUE, col=4)
+rect(0,0,100,100, lty=2)
+
 library(oz)
 data(grevillea)
 wa.coast <- ozRegion(section=1)
 wa.polygon <- cbind(wa.coast$lines[[1]]$x, wa.coast$lines[[1]]$y)
-fhat <- kde(x=grevillea)
-fhat <- kde.truncate(fhat, wa.polygon)
-oz(section=1)
-plot(fhat, add=TRUE, cont=seq(10,90,by=10), col=2, drawlabels=FALSE)
+fhat1 <- kdde(x=grevillea, deriv.order=1)
+fhat1 <- kdde.truncate(fhat1, wa.polygon)
+oz(section=1, xlim=c(113,122), ylim=c(-36,-29))
+plot(fhat1, add=TRUE, display="filled.contour")
 }
 
 \keyword{smooth}
