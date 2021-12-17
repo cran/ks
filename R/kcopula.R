@@ -214,9 +214,11 @@ kcopula.de <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poin
   return(chat)
 }
 
+#############################################################################
+## S3 methods
+#############################################################################
 
-
-
+## plot methods
 plot.kcopula <- function(x, ...)
 {
   plot.kcde(x, ...)
@@ -227,10 +229,7 @@ plot.kcopula.de <- function(x, ...)
   plot.kde(x, ...)
 }
 
-
-#############################################################################
 ## predict methods
-#############################################################################
 
 predict.kcopula <- function(object, ..., x, u)
 {
@@ -245,6 +244,7 @@ predict.kcopula.de <- function(object, ..., x, u)
   return(predict.kde(object, ..., x=u))
 }
 
+## contourLevel method
 
 contourLevels.kcopula.de <- function(x, ...)
 {

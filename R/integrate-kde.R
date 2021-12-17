@@ -55,10 +55,15 @@ pkde <- function(q, fhat)
   return(integral.kde(q=q, fhat=fhat, density=TRUE))
 }
 
+## density value of KDE at x 
+## alias for predict.kde
+
 dkde <- function(x, fhat)
 {
   return(predict(fhat, x=x))
 }
+
+## p-quantile of KDE, i.e. solve for x where P(fhat < x) = p 
 
 qkde <- function(p, fhat)
 {
@@ -119,7 +124,6 @@ rkde <- function(n, fhat, positive=FALSE)
   return(rkde.val)
 }
 
-
 ### plot cumulative probability as shaded region on a KDE 
 
 plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
@@ -129,34 +133,4 @@ plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
   if (!add)
     plot(fhat)
   polygon(c(fhat$eval.points[qind],fhat$eval.points[n]), c(fhat$estimate[qind],0), col=col, ...)
- ##box()
-}
-
-
-
-
-## ISE of difference between two KDEs
-
-ise.diff <- function(fhat1, fhat2, xmin, xmax)
-{
-  if(!isTRUE(all.equal(fhat1$eval.points, fhat2$eval.points)))
-    stop("fhat1 and fhat2 need to de defined on the same grid")
-
-  fhat.sq <- fhat1
-  fhat.sq$estimate <- (fhat1$estimate - fhat2$estimate)^2
-  
-  if (missing(xmin) & missing(xmax))
-    int <- integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE)
-  
-  if (missing(xmin) & !missing(xmax))
-    int <- integral.kde(fhat=fhat.sq, q=xmax, density=FALSE)
-
-  if (!missing(xmin) & missing(xmax))
-    int <- integral.kde(fhat=fhat.sq, q=max(fhat.sq$eval.points)+0.1*abs(max(fhat.sq$eval.points)), density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
-
-
-  if (!missing(xmin) & !missing(xmax))
-    int <- integral.kde(fhat=fhat.sq, q=xmax, density=FALSE) - integral.kde(fhat=fhat.sq, q=xmin, density=FALSE)
-  
-  return(int)   
 }

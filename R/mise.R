@@ -1,6 +1,6 @@
 
 ###############################################################################
-# Exact MISE for normal mixtures
+## Exact MISE for normal mixtures
 ###############################################################################
 
 ## nu, gamma.r, gamma.r2 written by Jose Chacon 10/2008
@@ -43,6 +43,7 @@ nu.rs <- function(r, s, A, B)
 
 
 ## gamma functional for normal mixture MISE
+
 gamma.r <- function(mu, Sigma, r)
 {
   Sigmainv <- chol2inv(chol(Sigma))
@@ -55,8 +56,8 @@ gamma.r <- function(mu, Sigma, r)
   return(v)
 }
 
-
 ## gamma functional for normal mixture AMISE 
+
 gamma.r2 <- function(mu, Sigma, d, r, H)
 {
   Sigmainv <- chol2inv(chol(Sigma))
@@ -75,19 +76,18 @@ gamma.r2 <- function(mu, Sigma, d, r, H)
   return(gamr)
 }
 
-
 ###############################################################################
-# Omega matrices (for exact MISE for normal mixtures)
-#
-# Parameters 
-# mus - means
-# Sigmas - variances
-# k - number of mixture components
-# a - subscript of Omega matrix
-# H - bandwidth matrix
-#
-# Returns 
-# Omega matrix
+## Omega matrices (for exact MISE for normal mixtures)
+##
+## Parameters 
+## mus - means
+## Sigmas - variances
+## k - number of mixture components
+## a - subscript of Omega matrix
+## H - bandwidth matrix
+##
+## Returns 
+## Omega matrix
 ###############################################################################
 
 omega <- function(mus, Sigmas, k, a, H, r)
@@ -146,17 +146,17 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
 
 
 ##############################################################################
-# Exact MISE for normal mixtures
-#
-# Parameters
-# mus - means
-# Sigmas - variances
-# Props - vector of proportions of each mixture component 
-# H - bandwidth matrix
-# samp - sample size
-#
-# Returns
-# Exact MISE for normal mixtures
+## Exact MISE for normal mixtures
+##
+## Parameters
+## mus - means
+## Sigmas - variances
+## Props - vector of proportions of each mixture component 
+## H - bandwidth matrix
+## samp - sample size
+##
+## Returns
+## Exact MISE for normal mixtures
 ###############################################################################
 
 mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
@@ -209,21 +209,18 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   return(drop(mise)) 
 }
 
-
-
- 
 ###############################################################################
-# Exact AMISE for bivariate normal mixtures
-#
-# Parameters
-# mus - means
-# Sigmas - variances
-# props - mixing proportions 
-# H - bandwidth matrix
-# samp - sample size
-#
-# Returns   
-# Exact AMISE for normal mixtures
+## Exact AMISE for bivariate normal mixtures
+##
+## Parameters
+## mus - means
+## Sigmas - variances
+## props - mixing proportions 
+## H - bandwidth matrix
+## samp - sample size
+##
+## Returns   
+## Exact AMISE for normal mixtures
 ###############################################################################
 
 amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
@@ -297,19 +294,17 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
   return(drop(amise))
 }
 
-
-
 ###############################################################################
-# Lambda matrices (for exact AMISE for normal mixtures)
-#
-# Parameters 
-# mus - means
-# Sigmas - variances
-# k - number of mixture components
-# r - derivative (r1, r2)
-#
-# Returns 
-# Lambda matrix
+## Lambda matrices (for exact AMISE for normal mixtures)
+##
+## Parameters 
+## mus - means
+## Sigmas - variances
+## k - number of mixture components
+## r - derivative (r1, r2)
+##
+## Returns 
+## Lambda matrix
 ###############################################################################
 
 lambda <- function(mus, Sigmas, k, r)
@@ -373,21 +368,20 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
   return(drop(amise)) 
 }
 
-
 ###############################################################################
-# Finds the bandwidth matrix that minimises the MISE for normal mixtures
-#
-# Parameters
-# mus - means
-# Sigmas - variances
-# props - vector of proportions of each mixture component 
-# Hstart - initial bandwidth matrix
-# samp - sample size
-# full - 1 minimise over full bandwidth matrices
-#      - 0 minimise over diagonal bandwidth matrices
-# 
-# Returns
-# H_MISE
+## Finds the bandwidth matrix that minimises the MISE for normal mixtures
+##
+## Parameters
+## mus - means
+## Sigmas - variances
+## props - vector of proportions of each mixture component 
+## Hstart - initial bandwidth matrix
+## samp - sample size
+## full - 1 minimise over full bandwidth matrices
+##      - 0 minimise over diagonal bandwidth matrices
+## 
+## Returns
+## H_MISE
 ###############################################################################
 
 hmise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
@@ -500,7 +494,6 @@ hamise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
   return(hamise)
 }
 
-
 Hamise.mixt <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 {
   r <- deriv.order
@@ -559,25 +552,24 @@ Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
   return(Hamise)
 }   
   
-
-
 ###############################################################################
-# ISE for normal mixtures (fixed KDE)
-# 
-# Parameters
-# x - data values
-# H - bandwidth matrix
-# mus - matrix of means (each row is a vector of means from each component
-#       density)
-# Sigmas - matrix of covariance matrices (every d rows is a covariance matrix 
-#          from each component density) 
-# props - mixing proportions
-# lower - vector of lower end points of rectangle
-# upper - vector of upper end points of rectangle
-# gridsize - vector of number of grid points
-# stepsize - vector of step sizes
-# Returns
-# ISE 
+## ISE for normal mixtures (fixed KDE)
+## 
+## Parameters
+## x - data values
+## H - bandwidth matrix
+## mus - matrix of means (each row is a vector of means from each component
+##       density)
+## Sigmas - matrix of covariance matrices (every d rows is a covariance matrix 
+##          from each component density) 
+## props - mixing proportions
+## lower - vector of lower end points of rectangle
+## upper - vector of upper end points of rectangle
+## gridsize - vector of number of grid points
+## stepsize - vector of step sizes
+##
+## Returns
+## ISE 
 ###############################################################################
 
 ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, bgridsize)

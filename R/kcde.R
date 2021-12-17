@@ -100,6 +100,7 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     }
   }
   Fhat$tail <- tail.flag1
+  Fhat$type <- "kcde"
   class(Fhat) <- "kcde"
   return(Fhat) 
 }
@@ -157,10 +158,11 @@ plot.kcde <- function(x, ...)
 }
 
 
-plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col=1, col.pt=4, jitter=FALSE, ...) 
+plotkcde.1d <- function(Fhat, xlab, ylab="Distribution function", add=FALSE, drawpoints=FALSE, col=1, col.pt=4, jitter=FALSE, alpha=1, ...) 
 {
     if (missing(xlab)) xlab <- Fhat$names
     if (Fhat$tail=="upper.tail") zlab <- "Survival function"
+    col <- transparency.col(col, alpha=alpha)
     if (add) lines(Fhat$eval.points, Fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
     else plot(Fhat$eval.points, Fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
 
@@ -191,7 +193,8 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
         hts <- seq(0, 1.1*max(Fhat$estimate), length=500)
         if (missing(col)) col <- col.fun(n=length(hts)+1)
         if (length(col)<(length(hts)+1)) col <- rep(col, length=length(hts)+1)
-
+        col <- transparency.col(col, alpha=alpha)
+        
         ## thinning indices
         plot.ind <- list(seq(1, length(Fhat$eval.points[[1]]), by=thin), seq(1, length(Fhat$eval.points[[2]]), by=thin))
 
@@ -211,7 +214,8 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     
         if (missing(col)) col <- col.fun(n=length(hts))
         if (length(col)<length(hts)) col <- rep(col, times=length(hts))
-    
+        col <- transparency.col(col, alpha=alpha)
+         
         ## draw contours         
         for (i in 1:length(hts)) 
         {
@@ -227,6 +231,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
     else if (disp1=="image")
     {
         if (missing(col)) col <- col.fun(100)
+        col <- transparency.col(col, alpha=alpha)
         image(Fhat$eval.points[[1]], Fhat$eval.points[[2]], Fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
         box()
     }
@@ -235,6 +240,7 @@ plotkcde.2d <- function(Fhat, display="persp", cont=seq(10,90, by=10), abs.cont,
         hts <- cont/100
         clev <- c(-0.01*max(abs(Fhat$estimate)), hts, max(c(Fhat$estimate, hts)) + 0.01*max(abs(Fhat$estimate)))
         if (missing(col)) col <- col.fun(length(hts))
+        col <- transparency.col(col, alpha=alpha)
        
         if (!add) plot(Fhat$eval.points[[1]], Fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...) 
         if (tail(hts, n=1) < max(Fhat$estimate)) hts2 <- c(hts, max(Fhat$estimate))
@@ -302,7 +308,7 @@ plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, a
         		misc3d::contour3d(Fhat$estimate, level=hts[nc-i+1], x=Fhat$eval.points[[1]], y=Fhat$eval.points[[2]], z=Fhat$eval.points[[3]], add=TRUE, color=colors[nc-i+1], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
     
     	if (box) rgl::box3d()
-    	if (axes) rgl::axes3d()
+    	if (axes) rgl::axes3d(c("x","y","z"))
 	}
 }	
 
@@ -338,7 +344,6 @@ Hns.kcde <- function(x)
 
   return(Hns)
 }
-
 
 
 ## Plug-in bandwidth selector
@@ -419,7 +424,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
     }
     else
     {
-      result <- optim(vech(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+      result <- optim(vech(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
       H2 <- invvech(result$par) %*% invvech(result$par)
     }
  
@@ -457,7 +462,7 @@ Hpi.kcde <- function(x, nstage=2, pilot, Hstart, binned, bgridsize, amise=FALSE,
   }
   else
   {
-    result <- optim(vech(Hstart), amise.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Hstart), amise.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
@@ -507,7 +512,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
     }
     else
     {
-      result <- optim(diag(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+      result <- optim(diag(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
       H2 <- diag(result$par) %*% diag(result$par)
     }
  
@@ -538,7 +543,7 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
   }
   else
   {
-    result <- optim(diag(Hstart), amise.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(diag(Hstart), amise.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- diag(result$par) %*% diag(result$par)
     amise.star <- result$value
   }
@@ -601,13 +606,12 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
   Rhat$estimate[Rhat$estimate<0] <- 0
   Rhat$indices <- indices.kroc(Rhat)
   Rhat <- Rhat[-c(4,5)] 
+  Rhat$type <- "kroc"
   class(Rhat) <- "kroc"
   return(Rhat)
 }
 
-
-
-### summary measure of ROC curves
+## summary measure of ROC curves
 
 indices.kroc <- function(Rhat)
 {
@@ -625,15 +629,20 @@ indices.kroc <- function(Rhat)
   return(list(auc=auc, youden=max(youden.val), LR=LR))
 }  
 
-
+#############################################################################
+## S3 methods
+#############################################################################
 
 ## plot method
-plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, ylab="True positive rate (sensitivity)", xlab=
-  expression("False positive rate"~~group("(", list(bar(specificity)), ")")), ...)
+plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, xlab, ylab, alpha=1, col=1, ...)
 {
   Rhat <- x
+  col <- transparency.col(col, alpha=alpha)
+  if (missing(ylab)) ylab <- "True positive rate (sensitivity)"
+  if (missing(xlab)) xlab <- expression("False positive rate"~~group("(", list(bar(specificity)), ")"))
+  
   if (add) lines(Rhat$eval.points, Rhat$estimate, ...)
-  else plot(Rhat$eval.points, Rhat$estimate, type="l", ylab=ylab, xlab=xlab, ...)
+  else plot(Rhat$eval.points, Rhat$estimate, type="l", ylab=ylab, xlab=xlab, col=col, ...)
   
   if (is.vector(Rhat$x[[1]])) d <- 1 else d <- ncol(Rhat$x[[1]])
   if (add.roc.ref)
@@ -646,9 +655,7 @@ plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, ylab="True positive rate 
   }
 }
 
-#############################################################################
 ## summary method
-#############################################################################
 summary.kroc <- function(object, ...)
 {
   cat("Summary measures for ROC curve\nAUC =", signif(object$indices$auc, ...), "\n")
@@ -656,10 +663,7 @@ summary.kroc <- function(object, ...)
   cat(paste("(LR-, LR+) = (",  signif(object$indices$LR$minus, ...), ", ", signif(object$indices$LR$plus, ...),")\n\n",sep=""))
 }
 
-
-#############################################################################
 ## predict methods
-#############################################################################
 predict.kcde <- function(object, ..., x)
 {
     return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
@@ -670,7 +674,7 @@ predict.kroc <- function(object, ..., x)
     return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
 }
 
-
+## contourLevels method
 contourLevels.kcde <- function(x, prob, cont, nlevels=5,  ...)
 {
     fhat <- x

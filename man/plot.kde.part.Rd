@@ -75,14 +75,14 @@ Sigmas <- 1/25*rbind(invvech(c(9, 63/10, 49/4)), invvech(c(9,0,49/4)), invvech(c
 props <- c(3,3,1)/7
 gridsize <- c(11,11) ## small gridsize illustrative purposes only 
 nmixt.part <- mvnorm.mixt.part(mus=mus, Sigmas=Sigmas, props=props, gridsize=gridsize)
-plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))
+plot(nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3), alpha=0.5)
 
 ## kernel mean shift partition
 \donttest{set.seed(81928192)
 x <- rmvnorm.mixt(n=10000, mus=mus, Sigmas=Sigmas, props=props)
 msize <- round(prod(gridsize)*0.1)
 kms.nmixt.part <- kms.part(x=x, min.clust.size=msize, gridsize=gridsize)
-plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3))}}
+plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3), alpha=0.5)}}
 
 
 \keyword{hplot}

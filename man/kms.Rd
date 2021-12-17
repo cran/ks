@@ -104,7 +104,7 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
 library(MASS)
 data(crabs)
 kms.crabs <- kms(x=crabs[,c("FL","CW")])
-plot(kms.crabs)
+plot(kms.crabs, pch=16)
 summary(kms.crabs)
 
 kms.crabs <- kms(x=crabs[,c("FL","CW","RW")])

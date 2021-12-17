@@ -38,11 +38,11 @@
   For \code{kdde} objects, the function headers for the different dimensional data are  
   \preformatted{
   ## univariate
-  plot(fhat, ylab="Density derivative function", cont=50, abs.cont, ...)
+  plot(fhat, ylab="Density derivative function", cont=50, abs.cont, alpha=1, ...)
 
   ## bivariate
   plot(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", 
-       zlab="Density derivative function", col, col.fun, kdde.flag=TRUE, 
+       zlab="Density derivative function", col, col.fun, alpha=1, kdde.flag=TRUE, 
        thin=3, transf=1, neg.grad=FALSE, ...)
   
   ## trivariate 
@@ -69,8 +69,7 @@ plot(fhat2, which.deriv.ind=2, display="persp", phi=10)
 plot(fhat2, which.deriv.ind=2, display="filled.contour")
   ## d^2 f/(dx dy): blue=-ve, red=+ve
 s2 <- kcurv(fhat2)
-s2.col <- function(n){hcl.colors(palette="Oranges", n=n, rev=TRUE, alpha=0.5)}
-plot(s2, display="filled.contour", col.fun=s2.col, lwd=1)
+plot(s2, display="filled.contour", alpha=0.5, lwd=1)
   ## summary curvature 
 
 ## trivariate example  

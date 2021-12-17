@@ -36,9 +36,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kde}}
-  \item{zero.flag}{interpolated values of \code{object$estimate} when \code{x}
-  \eqn{\not\in}{is outside of} \code{object$eval.points} = 0 (if \code{TRUE}), = nearest
-  \code{object$estimate} (if \code{FALSE})}
+  \item{zero.flag}{deprecated (retained for backwards compatibilty)}
   \item{...}{other parameters}
 }
   

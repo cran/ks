@@ -38,13 +38,13 @@
   ## univariate
   plot(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, 
        ylab="Weighted density function", drawpoints=FALSE, col, col.fun, 
-       col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, ...)
+       col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, alpha=1, ...)
 
   ## bivariate
   plot(x, y, y.group, prior.prob=NULL, display.part="filled.contour",
        cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlim, ylim, xlab, ylab,
        drawpoints=FALSE, drawlabels=TRUE, cex=1, pch, lty, part=TRUE, col, 
-       col.fun, col.part, col.pt, lwd=1, lwd.part=0, add=FALSE, ...)
+       col.fun, col.part, col.pt, alpha=1, lwd=1, lwd.part=0, add=FALSE, ...)
 
   ## trivariate
   plot(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(25,50,75), 
@@ -70,7 +70,7 @@ plot(kda.fhat, xlab="Sepal length")
 ir <- iris[,1:2]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
-plot(kda.fhat)
+plot(kda.fhat, alpha=0.2, drawlabels=FALSE)
 
 ## trivariate example
 ir <- iris[,1:3]

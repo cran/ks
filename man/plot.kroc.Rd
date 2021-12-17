@@ -9,7 +9,8 @@
 }
 
 \usage{
-\method{plot}{kroc}(x, add=FALSE, add.roc.ref=FALSE, ylab, xlab, ...)
+\method{plot}{kroc}(x, add=FALSE, add.roc.ref=FALSE, xlab, ylab, 
+   alpha=1, col=1, ...)
 }
 
 \arguments{
@@ -19,6 +20,7 @@
   \item{xlab}{x-axis label. Default is "False positive rate
   (bar(specificity))".}
   \item{ylab}{y-axis label. Default is "True positive rate (sensitivity)".} 
+  \item{alpha,col}{transparency value and colour of line}
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}.} 
 }
   

@@ -2,11 +2,21 @@
 ## Kernel support estimate - contour-based or convex hull 
 ######################################################################
 
-ksupp <- function(fhat, cont=95, abs.cont, convex.hull=FALSE)
+ksupp <- function(fhat, cont=95, abs.cont, convex.hull=TRUE)
 {
     if (missing(abs.cont)) abs.cont <- contourLevels(fhat, cont=cont)
     supp <- expand.grid(fhat$eval.points)[as.vector(fhat$estimate > abs.cont),]
-    if (convex.hull) supp <- supp[chull(supp),]
+    d <- length(fhat$eval.points)
+    if (d==2) { if (convex.hull) supp <- supp[chull(supp),] }
+    else { 
+        if (convex.hull) 
+        { 
+            if (!requireNamespace("geometry", quietly=TRUE)) stop("Install the geometry package as it is required.", call.=FALSE)
+            supp <- as.matrix(supp[t(geometry::convhulln(supp)),]) 
+        }
+    }
+   
+    class(supp) <- c("ksupp", class(supp))
     return(supp)
 }
 
@@ -91,4 +101,23 @@ dwsupp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, binned, bg
   
   return(fhat)
 }
+
+######################################################################
+## S3 methods for KSUPP objects
+######################################################################
+
+## plot method
+plot.ksupp <- function(x, display="plot3D", ...)
+{
+    d <- ncol(x)
+    if (d==2) polygon(x, ...)
+    else if (d==3) 
+    {
+        disp1 <- match.arg(display, c("plot3D", "rgl"))
+        if (disp1=="plot3D") plot3D::triangle3D(x, ...)
+        else if (disp1=="rgl") rgl::triangles3d(x=x[,1], y=x[,2], z=x[,3], ...)
+    }
+}
+
+
 

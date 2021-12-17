@@ -1,5 +1,23 @@
 Change log file for ks
 
+1.13.3
+-Fixed matrix inverse calculation in Hns.diag().
+-Added density ridge segmentation in kdr() and kdr.segment().
+-Fixed bug in kdde.grid.3d() which computed the same values for all 
+ derivatives. 
+-Added consistent alpha transparency and default colour scale behaviour for 
+ plots. 
+-Added 3D kernel support estimate in ksupp() and in plot.ksupp().
+-Added pre-sphered optimisation for "unconstr" and "dunconstr" pilots in Hpi() 
+ and Hscv() to resolve numerical optimisation difficulties. 
+-Added REPORT=1 to print out progress reports for each iteration for calls to
+ optim().
+-Changed to use "BFGS" rather than "Nelder-Mead" in optim() in 
+ psifun2.unconstr().
+-Fixed bug in Gunconstr.scv() so that Hscv(pilot="unconstr") and    
+ Hscv(pilot="dunconstr", deriv.order=0) give same bandwidth. 
+-Added note on help page that zero.flag in predict.kde() is deprecated.
+ 
 1.13.2
 -Fixed bug in ploting group colours in plot.kms(, display="plot3D").
 -Reinstated display="rgl" option for 3D KDEs in plot.kms().
@@ -14,8 +32,8 @@ Change log file for ks
 
 1.13.1
 -Added contourProbs to approximate probabilities of level set of KDE.
--Changed from OceanView::quiver2D() to pracma::quiver() for quiver plot in plot(,
- display="quiver"). 
+-Changed from OceanView::quiver2D() to pracma::quiver() for quiver plot in 
+ plot(,display="quiver"). 
 -Added pracma to Imports. Removed OceanView from Suggests.  
 -Fixed bug for certain missing axis labels in plot.kdde().
 -Reduced number of considered mixture models in Hmn(), Hnm.diag(). 
@@ -33,8 +51,8 @@ Change log file for ks
 -Added S3 contourLevels method for kcde objects.
 -Added S3 predict method for kfs objects. 
 -Fixed bug in names field in output in kdr().
--Changed in hlscv() the default minimiser function to stats::bw.ucv(), and default
- interval search limits. 
+-Changed in hlscv() the default minimiser function to stats::bw.ucv(), and 
+ default interval search limits. 
 
 1.12.0
 -Fixed bug in rkde() to take into account weighted KDE.
@@ -124,7 +142,8 @@ exact estimation.
 
 1.10.7
 -Changed mvtnorm from `Depends' to `Imports' in DESCRIPTION.
--Implemented per-block calculation for large sample sizes in kdde(, binned=TRUE).
+-Implemented per-block calculation for large sample sizes in kdde(, 
+ binned=TRUE).
 -Fixed small bug in col.fun for plot.kcde(, display="filled.contour2")
 -Swapped order of computation of CDFs in kroc to prevent possible segmentation
  faults.

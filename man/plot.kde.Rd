@@ -33,7 +33,7 @@
       \item{\code{theta,phi,d,border}}{graphics parameters for perspective plots (2-d)}
       \item{\code{drawpoints}}{flag to draw data points on density estimate. Default is FALSE.}
       \item{\code{drawlabels}}{flag to draw contour labels (2-d). Default is TRUE.} 
-      \item{\code{alpha}}{transparency value of plotting symbol (3-d)}
+      \item{\code{alpha}}{transparency value of plotting symbol}
       \item{\code{alphavec}}{vector of transparency values for contours (3-d)}
       \item{\code{size}}{size of plotting symbol (3-d).}
     }
@@ -53,7 +53,7 @@
   ## univariate
   plot(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col=1,
        col.pt=4, col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, 
-       approx.cont=TRUE, ...)
+       approx.cont=TRUE, alpha=1, ...)
   
   ## bivariate
   plot(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, 
@@ -86,8 +86,7 @@
   is generated.  The default z-axis limits \code{zlim} are the default
   from the usual \code{persp} command.
   (d) If \code{display="image"} then an image plot
-  is generated. Default colours are the default from the usual
-  \code{image} command.
+  is generated. 
 
   For 3-dimensional data, the plot is a series of nested
   3-d contours. The default contours are \code{cont=c(25,50,75)}. The
@@ -106,7 +105,7 @@
   it is interpolated from an existing KDE grid, which can dramatically
   reduce computation time for large data sets. 
   
-  If a colour function is specified in \code{col.fun}, it should have the number of colours as a single argument, e.g. \code{function(n)\{hcl.colors(n, alpha=1, ...)\}}. The transparent background colour is automatically concatenated before this colour function. If \code{col} is specified, it overrides \code{col.fun}. There should be one more colour than the number of contours, i.e. background colour plus one for each contour. 
+  If a colour function is specified in \code{col.fun}, it should have the number of colours as a single argument, e.g. \code{function(n)\{hcl.colors(n, ...)\}}. The transparent background colour is automatically concatenated before this colour function. If \code{col} is specified, it overrides \code{col.fun}. There should be one more colour than the number of contours, i.e. background colour plus one for each contour. 
 }
  
 \examples{
@@ -119,8 +118,8 @@ plot(fhat, cont=50, col.cont=4, cont.lwd=2, xlab="Sepal length")
 
 ## bivariate example
 fhat <- kde(x=iris[,2:3])
-plot(fhat, display="filled.contour", cont=seq(10,90,by=10), lwd=1)
-plot(fhat, display="persp", border=1)
+plot(fhat, display="filled.contour", cont=seq(10,90,by=10), lwd=1, alpha=0.5)
+plot(fhat, display="persp", border=1, alpha=0.5)
 
 ## trivariate example
 fhat <- kde(x=iris[,2:4])

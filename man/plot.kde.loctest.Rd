@@ -42,11 +42,11 @@
   \preformatted{
    ## univariate
    plot(x, lcol, col, add=FALSE, xlab="x", ylab, rugsize, add.legend=TRUE, 
-        pos.legend="topright", ...)
+        pos.legend="topright", alpha=1, ...)
    
    ## bivariate
    plot(x, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, 
-        add.legend=TRUE, pos.legend="topright", ...)
+        add.legend=TRUE, pos.legend="topright", alpha=1, ...)
 
    ## trivariate 
    plot(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), 

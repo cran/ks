@@ -1,5 +1,5 @@
 ###############################################################################
-### Feature significance for ultivariate kernel density stimate 
+## Feature significance for ultivariate kernel density stimate 
 ###############################################################################
 
 kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, signif.level=0.05)
@@ -102,15 +102,18 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     ## signif.ess <- ess >= 5
 
     fhatr$estimate <- signif.wald 
+    fhatr$type <- "kfs"
     class(fhatr) <- "kfs"
     
     return(fhatr)
 }
 
 #############################################################################
-## plot method
+## S3 methodfor KFS objects
 #############################################################################
-plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alphavec=0.4, add=FALSE, ...)
+
+## plot method
+plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha=1, alphavec=0.4, add=FALSE, ...)
 {
     fhatr <- x
     fhatr$deriv.order <- NULL
@@ -125,7 +128,7 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
 
         estimate.rle <- rle(as.vector(fhatr$estimate))
         estimate.rle.cumsum <- rbind(cumsum(estimate.rle$lengths), estimate.rle$lengths, estimate.rle$values)
-       
+        col <- transparency.col(col, alpha=alpha)
         for (i in which(estimate.rle$values==1))
         {
             seg.ind <- 1:estimate.rle.cumsum[2,i]   
@@ -139,9 +142,9 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
         if (missing(abs.cont)) abs.cont <- 0.5
         disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
         if (disp1=="filled.contour2") disp1 <- "filled.contour"
-        #disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour"))
         col <- c("transparent",col)
-        plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col=col, add=add, display=display, ...)
+        
+        plot(fhatr, abs.cont=abs.cont, drawlabels=FALSE, col=col, add=add, display=display, alpha=alpha, ...)
     }
     else if (d==3)
     {
@@ -154,10 +157,8 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
     invisible()
 }
 
-
-#############################################################################
 ## predict method
-#############################################################################
+
 predict.kfs <- function(object, ..., x)
 {
     fhat <- predict.kde(object=object, ..., x=x, zero.flag=FALSE)

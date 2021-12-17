@@ -1,20 +1,20 @@
 ##############################################################################
-# Kernel discriminant analysis
+## Kernel discriminant analysis
 ###############################################################################
 
 ###############################################################################
-# Find bandwidths for each class in training set, for 2- to 6-dim 
-#
-# Parameters
-# x - data values
-# group - group variable
-# bw - type of bandwidth selector
-# nstage, pilot, pre - parameters for plugin bandwidths
-# diag - FALSE - use full b/w matrices
-#      - TRUE - use diag b/w matrices
-#
-# Returns
-# Matrix of bandwidths for each group in training set
+## Find bandwidths for each class in training set, for 2- to 6-dim 
+##
+## Parameters
+## x - data values
+## group - group variable
+## bw - type of bandwidth selector
+## nstage, pilot, pre - parameters for plugin bandwidths
+## diag - FALSE - use full b/w matrices
+##      - TRUE - use diag b/w matrices
+##
+## Returns
+## Matrix of bandwidths for each group in training set
 ###############################################################################
 
 hkda <- function(x, x.group, bw="plugin", ...)
@@ -89,17 +89,17 @@ Hkda.diag <- function(x, x.group, bw="plugin", ...)
 
 
 ###############################################################################
-# Compares true group classification with an estimated one
-#
-# Parameters
-# group - true group variable
-# est.group - estimated group variable
-#
-# Returns
-# List with components
-# comp - cross-classification table of groupings - true groups are the rows,
-#        estimated groups are the columns
-# error - total mis-classification rate
+## Compares true group classification with an estimated one
+##
+## Parameters
+## group - true group variable
+## est.group - estimated group variable
+##
+## Returns
+## List with components
+## comp - cross-classification table of groupings - true groups are the rows,
+##        estimated groups are the columns
+## error - total mis-classification rate
 ###############################################################################
 
 compare <- function(x.group, est.group, by.group=FALSE)
@@ -142,21 +142,21 @@ compare <- function(x.group, est.group, by.group=FALSE)
 }
 
 ###############################################################################
-# Computes cross-validated misclassification rates (for use when test data is
-# not independent of training data) for KDA
-#
-# Parameters
-# x - training data
-# x.group - group variable for x
-# y - data values to be classified
-# Hs - bandwidth matrices
-# prior.prob - prior probabilities
-#
-# Returns
-# List with components
-# comp - cross-classification table of groupings - true groups are the rows,
-#        estimated groups are the columns
-# error - total mis-classification rate
+## Computes cross-validated misclassification rates (for use when test data is
+## not independent of training data) for KDA
+##
+## Parameters
+## x - training data
+## x.group - group variable for x
+## y - data values to be classified
+## Hs - bandwidth matrices
+## prior.prob - prior probabilities
+##
+## Returns
+## List with components
+## comp - cross-classification table of groupings - true groups are the rows,
+##        estimated groups are the columns
+## error - total mis-classification rate
 ###############################################################################
 
 compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
@@ -193,7 +193,6 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
     if (verbose) close(pb)
     return(compare(x.group, kda.cv.gr, by.group=by.group)) 
   }
-
 
   ## multi-dimensional   
   n <- nrow(x)
@@ -251,7 +250,7 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
 }
 
 ###############################################################################
-### Same as compare.kda.cv except uses diagonal b/w matrices
+## Same as compare.kda.cv except uses diagonal b/w matrices
 ###############################################################################
 
 compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
@@ -295,22 +294,20 @@ compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL,
 }
 
 
-
-
 ###############################################################################
-# KDEs of individual densities for KDA - 1- to 3-dim
-#
-# Parameters
-# x - data values
-# group - group variable
-# Hs - bandwidth matrices
-#
-# Returns
-# List with components (class dade)
-# x - list of data values
-# eval.points - evaluation points of dnesity estimate
-# estimate - list of density estimate
-# H - list of bandwidth matrices
+## KDEs of individual densities for KDA - 1- to 3-dim
+##
+## Parameters
+## x - data values
+## group - group variable
+## Hs - bandwidth matrices
+##
+## Returns
+## List with components (class dade)
+## x - list of data values
+## eval.points - evaluation points of dnesity estimate
+## estimate - list of density estimate
+## H - list of bandwidth matrices
 ##############################################################################
 
 kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
@@ -363,19 +360,18 @@ kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=
     
     ## Assign y according largest weighted density value 
     disc.gr.temp <- apply(fhat.wt, 1, which.max)
-    ##disc.gr <- factor(disc.gr.temp, levels=gr[order(unique(x.group))])
     disc.gr <- as.factor(gr[disc.gr.temp])
     if (is.numeric(gr)) disc.gr <- as.numeric(levels(disc.gr))[disc.gr]
     
     if (kde.flag) fhat.list$x.group.estimate <- disc.gr
     else fhat.list <- disc.gr
+    fhat.list$type <- "kda"
     
     return(fhat.list)
 }
 
 kda.1d <- function(x, x.group, hs, prior.prob, gridsize, supp, eval.points, binned, bgridsize, xmin, xmax, w, compute.cont, approx.cont)
 {
-    ##gr <- sort(unique(x.group))
     gr <- levels(x.group)
     m <- length(gr)
     d <- 1
@@ -503,12 +499,12 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
   return (fhat.list)
 }
 
-
   
 ##############################################################################
-## Contour method for kda objects
+## S3 methods for kda objects
 ##############################################################################
 
+## contourLevel method
 contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=TRUE,...) 
 {
   fhat <- x
@@ -525,6 +521,7 @@ contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=TRUE,...)
   return(hts) 
 }
 
+## predict method
 
 predict.kda <- function(object, ..., x)
 {
@@ -542,21 +539,10 @@ predict.kda <- function(object, ..., x)
   return(est.group)
 }
 
-
-
-
-##############################################################################
-# Plot KDE of individual densities and partition - only for 2-dim
-#
-# Parameters
-# fhat - output from `kda.kde'
-# y - data points (separate from training data inside fhat)
-# y.group - data group labels
-# prior.prob - vector of prior probabilities
-# disp - "part" - plot partition
-#      - "" - don't plot partition
-##############################################################################
-
+## plot method
+## fhat - output from `kda.kde'
+## y - data points (separate from training data inside fhat)
+## y.group - data group labels
 
 plot.kda <- function(x, y, y.group, ...) 
 {
@@ -580,7 +566,7 @@ plot.kda <- function(x, y, y.group, ...)
 }
 
 
-plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="Weighted density function", drawpoints=FALSE, col, col.fun, col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, ...)
+plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="Weighted density function", drawpoints=FALSE, col, col.fun, col.part, col.pt, lty, jitter=TRUE, rugsize, add=FALSE, alpha=1, ...)
 { 
   fhat <- x
   m <- length(fhat$x)
@@ -600,10 +586,10 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
   if (missing(ylim)) ylim <- range(weighted.fhat)
   if (missing(lty)) lty <- rep(1, m)
   if (length(lty) < m) lty <- rep(lty, m)
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark2")}
   if (missing(col)) col <- col.fun(m)
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=1) 
+  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=alpha) 
   if (missing(col.pt)) col.pt <- col.fun(m)
   if (length(col.pt)==1) col.pt <- rep(col.pt, m)
   
@@ -615,7 +601,6 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
 
   ydata <- seq(min(fhat$eval.points), max(fhat$eval.points), length=401)
   x.gr <- 1:m
-  ##if (is.factor(fhat$x.group)) x.gr <- levels(fhat$x.group) else x.gr <- unique(fhat$x.group) 
   ydata.gr <- x.gr[apply(weighted.fhat,1, which.max)] 
 
   ## draw partition class as rug-like plot
@@ -664,10 +649,10 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.cont
   if (missing(pch)) pch <- 1:m
   if (missing(lty)) lty <- rep(1, m)
   if (length(lty) < m) lty <- rep(lty, m)
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
+  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark2", alpha=1)}
   if (missing(col)) col <- col.fun(m)
   if (length(col) < m) col <- rep(col, m)
-  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=0.2) 
+  if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=alpha) 
   if (missing(col.pt)) col.pt <- col.fun(m)
   if (length(col.pt)==1) col.pt <- rep(col.pt, m)
   
@@ -717,7 +702,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.cont
   fhat.part$cont <- fhat$cont[[1]]
   class(fhat.part) <- "kde.part"
   
-  if (part) plot(fhat.part, col=col.part, add=TRUE, display=display.part, lwd=lwd.part, ...)
+  if (part) plot(fhat.part, col=col.part, add=TRUE, display=display.part, lwd=lwd.part, alpha=alpha, ...)
   
   ## common contour levels removed from >= v1.5.3 
   if (missing(abs.cont))
@@ -786,7 +771,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     if (!(identical(all.equal(sum(prior.prob), 1), TRUE)))  
         stop("Sum of prior weights not equal to 1")
     
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3")}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark2")}
     if (missing(col)) col <- col.fun(m)
     if (length(col) < m) col <- rep(col, m)
     if (missing(col.pt)) col.pt <- col.fun(m)
@@ -815,7 +800,6 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     }
     
     if (missing(alphavec)) alphavec <- seq(0.05,0.2,length=nhts)
-    #if (!missing(alpha)) {alphavec <- rep(alpha,nhts)}
     
     disp1 <- match.arg(display, c("plot3D", "rgl")) 
 	if (disp1 %in% "plot3D")

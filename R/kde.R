@@ -263,16 +263,13 @@ grid.interp.3d <- function(x, gridx, f)
    return(out$est)
 }
 
-###############################################################################
 ## Linear intepolation based on kernel estimation grid
-###############################################################################
+## alias for predict.kde
 
 kde.approx <- function(fhat, x)
 {
   return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
-
-
 
 ##############################################################################
 ## Find the nearest grid points surrounding point x for non-uniform grids 
@@ -325,7 +322,6 @@ varying.grid.interp <- function(x, gridx, f)
   return(fx)
 }
 
-
 varying.grid.interp.1d <- function(x, gridx, f)
 {
   n <- length(x)
@@ -357,36 +353,6 @@ varying.grid.interp.1d <- function(x, gridx, f)
   }
 
   return(fx)
-}
-
-
-
-predict.kde <- function(object, ..., x, zero.flag=TRUE)
-{
-  fhat <- grid.interp(x=x, gridx=object$eval.points, f=object$estimate)
-  if (!zero.flag)
-  {    
-      if (!is.list(object$eval.points)) d <- 1 else d <- length(object$eval.points)
-      if (d==1)
-      {
-          gs <- length(object$eval.points)
-          x.ind <- findInterval(x, object$eval.points, all.inside=FALSE)
-          fhat[x.ind==0] <- object$estimate[1] 
-          fhat[x.ind==gs] <- object$estimate[gs]
-      }
-      else
-      {
-          x <- matrix(x, ncol=d)
-          gs <- sapply(object$eval.points, length)
-          x.ind <- matrix(0, nrow=nrow(x), ncol=d)
-          for (i in 1:d) x.ind[,i] <- findInterval(x[,i], object$eval.points[[i]], all.inside=FALSE)
-          x.ind[x.ind==0] <- 1
-          x.ind.flag <- x.ind==1
-          for (i in 1:d) x.ind.flag[,i] <- x.ind.flag[,i] | x.ind[,i]==gs[i] 
-          fhat[apply(x.ind.flag, 1, any)] <- object$estimate[x.ind[apply(x.ind.flag, 1, any),]]
-      }
-  }
-  return(fhat)
 }
 
 
@@ -497,6 +463,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     fhat$binned <- binned
     fhat$names <- parse.name(x)  ## add variable names
     fhat$w <- w
+    fhat$type <- "kde" 
     class(fhat) <- "kde"
   
     ## compute prob contour levels
@@ -877,13 +844,41 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
   return(fhat)
 }
 
+#############################################################################
+## S3 methods for KDE objects
+#############################################################################
 
-###############################################################################
-## Display kernel density estimate
-##
-## Parameters
-## fhat - output from call to `kde'
-###############################################################################
+## predict method for KDE objects
+
+predict.kde <- function(object, ..., x, zero.flag=TRUE)
+{
+  fhat <- grid.interp(x=x, gridx=object$eval.points, f=object$estimate)
+  if (!zero.flag) warning("zero.flag=FALSE has been deprecated and no longer has any effect")
+  #{    
+  #    if (!is.list(object$eval.points)) d <- 1 else d <- length(object$eval.points)
+  #    if (d==1)
+  #    {
+  #        gs <- length(object$eval.points)
+  #        x.ind <- findInterval(x, object$eval.points, all.inside=FALSE)
+  #        fhat[x.ind==0] <- object$estimate[1] 
+  #        fhat[x.ind==gs] <- object$estimate[gs]
+  #    }
+  #    else
+  #    {
+  #        x <- matrix(x, ncol=d)
+  #        gs <- sapply(object$eval.points, length)
+  #        x.ind <- matrix(0, nrow=nrow(x), ncol=d)
+  #        for (i in 1:d) x.ind[,i] <- findInterval(x[,i], object$eval.points[[i]], all.inside=FALSE)
+  #        x.ind[x.ind==0] <- 1
+  #        x.ind.flag <- x.ind==1
+  #        for (i in 1:d) x.ind.flag[,i] <- x.ind.flag[,i] | x.ind[,i]==gs[i] 
+  #        fhat[apply(x.ind.flag, 1, any)] <- object$estimate[x.ind[apply(x.ind.flag, 1, any),]]
+  #    }
+  #}
+  return(fhat)
+}
+
+## plot method
 
 plot.kde <- function(x, ...)
 { 
@@ -913,9 +908,10 @@ plot.kde <- function(x, ...)
 }
 
 plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
-  drawpoints=FALSE, col=1, col.pt=4, col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, ...) 
+  drawpoints=FALSE, col=1, col.pt=4, col.cont=1, cont.lwd=1, jitter=FALSE, cont, abs.cont, approx.cont=TRUE, alpha=1, ...) 
 {
   if (missing(xlab)) xlab <- fhat$names
+  col <- transparency.col(col, alpha=alpha)
   
   if (add) lines(fhat$eval.points, fhat$estimate, xlab=xlab, ylab=ylab, col=col, ...)
   else plot(fhat$eval.points, fhat$estimate, type="l", xlab=xlab, ylab=ylab, col=col, ...) 
@@ -969,18 +965,6 @@ plotkde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE,
     else rug(fhat$x, col=col.pt)
 }
 
-
-###############################################################################
-## Display bivariate kernel density estimate
-##
-## Parameters 
-## fhat - output from 'kde.grid'
-## display - "persp" - perspective plot
-##         - "slice" - contour plot
-##         - "image" image plot
-## cont - vector of contours to be plotted
-###############################################################################
-
 plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx.cont=TRUE, xlab, ylab, zlab="Density function", cex=1, pch=1, labcex=1, add=FALSE, drawpoints=FALSE, drawlabels=TRUE, theta=-30, phi=40, d=4, col.pt=4, col, col.fun, alpha=1, lwd=1, border=1, thin=3, kdde.flag=FALSE, ticktype="detailed", ...) 
 {
   disp1 <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2"))
@@ -990,14 +974,19 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
 
   if (missing(xlab)) xlab <- fhat$names[1]
   if (missing(ylab)) ylab <- fhat$names[2]
-  if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE, alpha=alpha)}
-   
+  if (missing(col.fun)) 
+  {
+    if (any(fhat$type=="kcurv")) col.fun <- function(n) {hcl.colors(n, palette="Oranges",rev=TRUE, alpha=alpha) }
+    else col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE, alpha=alpha)}
+  }
+  
   ## perspective/wireframe plot
   if (disp1=="persp")
   {
     hts <- seq(0, 1.1*max(fhat$estimate,na.rm=TRUE), length=100)
     if (missing(col)) col <- col.fun(length(hts)+1)
     if (length(col)<length(hts)) col <- rep(col, length=length(hts))
+    col <- transparency.col(col, alpha=alpha)
     
     ## thinning indices
     plot.ind <- list(seq(1, length(fhat$eval.points[[1]]), by=thin), seq(1, length(fhat$eval.points[[2]]), by=thin))
@@ -1038,7 +1027,8 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     hts <- sort(hts)
     if (missing(col)) col <- col.fun(length(hts))
     if (length(col)<length(hts)) col <- rep(col, times=length(hts))
-
+    col <- transparency.col(col, alpha=alpha)
+    
     ## draw contours
     j <- 0
     for (i in 1:length(hts)) 
@@ -1063,7 +1053,8 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   ## image plot
   else if (disp1=="image")
   {
-    if (missing(col)) col <- col.fun(100) 
+    if (missing(col)) col <- col.fun(100)
+    col <- transparency.col(col, alpha=alpha)
     image(fhat$eval.points[[1]], fhat$eval.points[[2]], fhat$estimate, xlab=xlab, ylab=ylab, add=add, col=col, ...)
 
     ## add points 
@@ -1097,6 +1088,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
     hts <- sort(hts)
     
     if (missing(col)) col <- c("transparent", col.fun(length(hts)))
+    col <- transparency.col(col, alpha=alpha)
     clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
 
     if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
@@ -1122,12 +1114,6 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
   else invisible()
 }
   
-
-
-###############################################################################
-## Display trivariate kernel density estimate
-###############################################################################
-
 plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, approx.cont=TRUE, colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", bty="f", col.pt=4, add=FALSE, xlab, ylab, zlab, drawpoints=FALSE, alpha, box=TRUE, axes=TRUE, ...)
 {
     ## compute contours
@@ -1153,7 +1139,11 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
     nc <- length(hts)
 	if (missing(col)) 
     { 
-        if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE)}
+        if (missing(col.fun)) 
+        {
+            if (any(fhat$type=="kcurv")) col.fun <- function(n) {hcl.colors(n, palette="Oranges",rev=TRUE) }
+            else col.fun <- function(n) {hcl.colors(n, palette="heat",rev=TRUE)}
+        }
         col <- col.fun(n=length(hts))
     }    
     colors <- col
@@ -1194,17 +1184,13 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
     	    if (hts[nc-i+1] < max(fhat$estimate))
     	        misc3d::contour3d(fhat$estimate, level=hts[nc-i+1], x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], add=TRUE, color=colors[i], alpha=alphavec[i], box=FALSE, axes=FALSE, ...)
     
-    	if (axes) rgl::axes3d()
+    	if (axes) rgl::axes3d(c("x","y","z"))
     	if (box) rgl::box3d()
     }
 }
 
 
-
-
-###############################################################################
-## Contour levels S3 method
-###############################################################################
+## contourLevels method
 
 ## create S3 generic 
 contourLevels <- function(x, ...){  

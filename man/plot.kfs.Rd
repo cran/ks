@@ -8,7 +8,7 @@
 
 \usage{
 \method{plot}{kfs}(x, display="filled.contour", col=7, colors, abs.cont,
-   alphavec=0.4, add=FALSE, ...)
+   alpha=1, alphavec=0.4, add=FALSE, ...)
 }
 
 \arguments{
@@ -19,6 +19,7 @@
     for filled contour plot (2-d); "plot3D", "rgl" (3-d)}
   \item{col,colors}{colour for contour region}
   \item{abs.cont}{absolute contour height. Default is 0.5.}
+  \item{alpha}{transparency value for contour (2-d)}
   \item{alphavec}{vector of transparency values for contour (3-d)}
   \item{add}{flag to add to current plot. Default is FALSE.}
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}}

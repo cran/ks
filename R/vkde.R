@@ -41,7 +41,6 @@ kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
     return(fhat)
 }
 
-    
 ######################################################################
 ## Bivariate balloon variable KDE
 ######################################################################
@@ -84,7 +83,6 @@ kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
     
     return(fhat)
 }
-
 
 ######################################################################
 ## Sample point variable KDE

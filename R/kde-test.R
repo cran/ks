@@ -112,14 +112,11 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
 }
 
 
-
-
 ###############################################################################
-### Local kde test
+## Local kde test
 ###############################################################################
 
-
-### Hochberg (1988) adjustment for multiple correlated tests
+## Hochberg (1988) adjustment for multiple correlated tests
 hochberg.mult.test <- function(pvalue, gridsize, signif.level)
 {
   pvalue.ord <- pvalue[order(pvalue)]
@@ -145,7 +142,7 @@ hochberg.mult.test <- function(pvalue, gridsize, signif.level)
 }
 
 
-### 1-d local test
+## 1-d local test
 
 kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
@@ -214,7 +211,7 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
   return(result)
 }
 
-### multivariate local test
+## multivariate local test
 
 kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
@@ -301,8 +298,11 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
   return(result)
 }
 
+#############################################################################
+## S3 method for kde.loctest objects
+#############################################################################
 
-### plot for kde.loctest objects 
+## plot method
  
 plot.kde.loctest <- function(x, ...)
 {
@@ -320,11 +320,12 @@ plot.kde.loctest <- function(x, ...)
 }
 
 
-plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add.legend=TRUE, pos.legend="topright", ...)
+plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add.legend=TRUE, pos.legend="topright", alpha=1, ...)
 {
   if (missing(xlab)) xlab <- x$fhat.diff.pos$names[1]
   if (missing(ylab)) ylab <- expression("Density difference  "*f[1]-f[2])
-  if (missing(col)) col <- hcl.colors(palette="Purple-Green",6)[c(2,5)] ##col <- c("purple", "darkgreen")
+  if (missing(col)) col <- hcl.colors(palette="Dark2",2) #hcl.colors(palette="Purple-Green",6)[c(2,5)] 
+  col <- transparency.col(col, alpha=alpha)
   if (missing(lcol)) lcol <- 1
   if (!add) plot(x$fhat1$eval.points, x$fhat.diff, type="l", ylab=ylab, xlab=xlab, col=lcol, ...)
    else lines(x$fhat1$eval.points, x$fhat.diff, col=lcol, ...)
@@ -338,21 +339,20 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
    if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n") 
 }
 
-
-plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", ...)
+plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", alpha=1, ...)
 { 
-    if (missing(col)) col <- hcl.colors(palette="Purple-Green",6)[c(2,5)] 
-    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=add, ...)
-    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", add=TRUE, ...)
+    if (missing(col)) col <- hcl.colors(palette="Dark2",2)  #hcl.colors(palette="Purple-Green",6)[c(2,5)] )
+    col <- transparency.col(col, alpha=alpha)
+    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=add, ...)
+    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=TRUE, ...)
      
     if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n")  
 }
 
-
 plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), add.legend=TRUE, ...)
 {
   if (length(alphavec)==1) alphavec <- rep(alphavec,2)
-  if (missing(col))  col <- hcl.colors(palette="Purple-Green",6)[c(2,5)]
+  if (missing(col)) col <- hcl.colors(palette="Dark2",2) #hcl.colors(palette="Purple-Green",6)[c(2,5)]
   plot(x$fhat.diff.pos, color=col[1], col=col[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1],  ...)
   plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
   

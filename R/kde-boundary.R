@@ -3,7 +3,6 @@
 ## Boundary KDE
 ######################################################################
 
-
 kde.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, boundary.supp, boundary.kernel="beta", verbose=FALSE)
 {
   bk <- match.arg(boundary.kernel, c("beta", "linear")) 
@@ -21,7 +20,6 @@ kde.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval
 
   return(fhat)
 }
-
 
 ######################################################################
 ## Linear boundary KDE
@@ -74,7 +72,6 @@ kde.linear.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.
     
     return(fhat)
 }
-
 
 ######################################################################
 ## Bivariate linear boundary KDE
@@ -226,11 +223,6 @@ dmvnorm.LB <- function(x, mu, Sigma, a0, a1)
 
    return(evalK.LB)
 }
-
-
-#############################################################################
-## Boundary KDE
-#############################################################################
 
 ## boundary kernel estimator using beta bounday kernels (2nd form)
 
@@ -604,7 +596,6 @@ boundary.ind <- function(x, h, xmin, xmax, boundary.supp=1)
   
   return(bound.ind)
 }
-
 
 
 ######################################################################

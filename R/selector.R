@@ -47,7 +47,6 @@ gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
   return(g.amse)
 }
 
-
 ###############################################################################
 ## Estimate g_SAMSE pilot bandwidth - 2- to 6-dim 
 ##
@@ -196,56 +195,61 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
 
 Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, optim.fun="optim")
 {
-  if (scv) cf <- c(2^(-d/2), 2)
-  else cf <- c(1,1)
-  S <- var(x)
-  
-  optim.fun1 <- match.arg(optim.fun, c("nlm", "optim")) 
-  if (nstage==1)
-  {
-    G2r4 <- Gns(r=2*r+4,n=n,Sigma=S)
-  }
-  else if (nstage==2)
-  {
-    G2r4.NR <- Gns(r=2*r+4,n=n,Sigma=S)
-    G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=S)
-    vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=binned, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)   
-    
-    dls <- (0:(d^2-1))*d^(2*r+4) 
-
-    AB2 <- function(vechG)
+    if (scv) cf <- c(2^(-(d/2+r+2)), 2)
+    else cf <- c(1,1)
+    S <- var(x) 
+    S12 <- matrix.sqrt(S)
+ 
+    optim.fun1 <- match.arg(optim.fun, c("nlm", "optim")) 
+    if (nstage==2)
     {
-      G <- invvech(vechG) %*% invvech(vechG)
-      Ginv <- chol2inv(chol(G))
+        #G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=S, scv=scv)
+        #vecPsi2r6 <- kfe(x=x, G=G2r6.NR, binned=binned, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)   
+        x.star <- pre.sphere(x)
+        G2r6.NR <- Gns(r=2*r+6,n=n,Sigma=var(x.star), scv=scv)
+        vecPsi2r6 <- kfe(x=x.star, G=G2r6.NR, binned=binned, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)   
+       
+        dls <- (0:(d^2-1))*d^(2*r+4) 
+
+        AB2 <- function(vechG)
+        {
+            G <- invvech(vechG) %*% invvech(vechG)
+            Ginv <- chol2inv(chol(G))
+            ## direct computation
+            ##v1 <- n^(-1)*det(Ginv12)*drop(Kpow(A=Ginv12,pow=2*r+4)%*%t(D2r4phi0))
+            v1 <- n^(-1)*det(G)^(-1/2)*(2*pi)^(-d/2)*(-1)^(r+2)*OF(2*r+4)* Sdrv(d=d,r=2*r+4,v=Kpow(vec(Ginv),r+2))
+      
+            ##v2 <- drop((t(vec(G))%x%diag(d^(2*r+4))) %*% vecPsi2r6)
+            v2 <- numeric(d^(2*r+4))
+                for(k in 1:d^(2*r+4)){v2[k]<-sum(vec(G)*vecPsi2r6[dls+k])}
+      
+            AB <- cf[1]*v1 + cf[2]*(1/2)*v2
+            AB2.val <- sum(AB^2)
+            return(AB2.val)
+        }
     
-      ## direct computation
-      ##v1 <- n^(-1)*det(Ginv12)*drop(Kpow(A=Ginv12,pow=2*r+4)%*%D2r4phi0) 
-      v1 <- n^(-1)*dmvnorm(rep(0,d),rep(0,d),sigma=G)*(-1)^(r+2)*OF(2*r+4)*Sdrv(d=d,r=2*r+4,v=Kpow(vec(Ginv),r+2))
-      
-      ##v2 <- (1/2)*drop((t(vec(G))%x%Id2r4) %*% vecPsi2r6)
-      v2 <- numeric(d^(2*r+4))
-        for(k in 1:d^(2*r+4)){v2[k]<-(1/2)*sum(vec(G)*vecPsi2r6[dls+k])}
-      
-      AB <- cf[1]*v1 + cf[2]*v2
-      AB2.val <- sum(AB^2)
-      return(AB2.val)
+        Gstart <- Gns(r=2*r+4, n=n, Sigma=var(x.star), scv=scv)
+        Gstart <- matrix.sqrt(Gstart)
+        
+        if (optim.fun1=="nlm")
+        {
+            result <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))
+            G2r4 <- result$estimate
+        } 
+        else if (optim.fun1=="optim")
+        { 
+            result <- optim(par=vech(Gstart), fn=AB2, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
+            G2r4 <- result$par
+        }
+        G2r4 <- invvech(G2r4) %*% invvech(G2r4)
+        G2r4 <- S12 %*% G2r4 %*% S12
+    }
+    else
+    {
+        G2r4 <- Gns(r=2*r+4, n=n, Sigma=S, scv=scv)
     }
     
-    Gstart <- matrix.sqrt(G2r4.NR)
-   
-    if (optim.fun1=="nlm")
-    {
-      result <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))
-      G2r4 <- result$estimate
-    } 
-    else if (optim.fun=="optim")
-    { 
-      result <- optim(vech(matrix.sqrt(Gstart)), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
-      G2r4 <- result$par
-    }   
-    G2r4 <- invvech(G2r4)%*%invvech(G2r4)
-  }
-  return(G2r4)
+    return(G2r4)
 }
 
 ##############################################################################
@@ -309,16 +313,15 @@ psifun1 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
   return(psihat.star)
 }
 
-
 ###############################################################################
-# Estimate psi functionals using 2-stage plug-in 
-#
-# Parameters
-# x - pre-transformed data points
-# pilot - "amse" - different AMSE pilot
-#       - "samse" - SAMSE pilot
-# Returns
-# estimated psi functionals
+## Estimate psi functionals using 2-stage plug-in 
+##
+## Parameters
+## x - pre-transformed data points
+## pilot - "amse" - different AMSE pilot
+##       - "samse" - SAMSE pilot
+## Returns
+## estimated psi functionals
 ###############################################################################
 
 psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
@@ -397,7 +400,6 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
   return(psihat.star)
 }
 
-
 #############################################################################
 ## Estimate psi functionals for 6-variate data using 1-stage plug-in 
 ## with unconstrained pilot
@@ -412,17 +414,15 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
 
 psifun1.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE)
 {
-  n <- nrow(x)
-  r <- deriv.order
-  S <- var(x)
+    n <- nrow(x)
+    r <- deriv.order
+    S <- var(x)
  
-  ## stage 1 of plug-in
-  G2r4 <- Gns(r=2*r+4,n=n,Sigma=S) 
-
-  vecPsi2r4 <- kfe(x=x, G=G2r4, deriv.order=2*r+4, binned=binned, bgridsize=bgridsize, deriv.vec=TRUE, add.index=FALSE, verbose=verbose) 
-  return (vecPsi2r4)
+    ## stage 1 of plug-in
+    G2r4 <- Gns(r=2*r+4,n=n,Sigma=S) 
+    vecPsi2r4 <- kfe(x=x, G=G2r4, deriv.order=2*r+4, binned=binned, bgridsize=bgridsize, deriv.vec=TRUE, add.index=FALSE, verbose=verbose) 
+    return (vecPsi2r4)
 }
-
 
 #############################################################################
 ## Estimate psi functionals for 6-variate data using 2-stage plug-in 
@@ -436,17 +436,19 @@ psifun1.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE)
 ## estimated psi functionals
 ############################################################################
 
-psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0, verbose=FALSE, optim.fun="optim")
+psifun2.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   d <- ncol(x)
   n <- nrow(x)
   S <- var(x)
+  S12 <- matrix.sqrt(S)
   r <- deriv.order
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
   ## stage 1 of plug-in
-  G2r6 <- Gns(r=2*r+6,n=n,Sigma=S) 
-  vecPsi2r6 <- kfe(x=x, G=G2r6, binned=binned, bgridsize=bgridsize, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
+  x.star <- pre.sphere(x)
+  G2r6 <- Gns(r=2*r+6,n=n,Sigma=var(x.star)) 
+  vecPsi2r6 <- kfe(x=x.star, G=G2r6, binned=binned, bgridsize=bgridsize, deriv.order=2*r+6, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
 
   ## asymptotic squared bias for r = 4 for MSE-optimal G
   D2r4phi0 <- DrL0(d=d, r=2*r+4)
@@ -458,12 +460,13 @@ psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0
     G12 <- matrix.sqrt(G)
     Ginv12 <- chol2inv(chol(G12))
     AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=rr)%*%D2r4phi0)+(1/2)*(t(vec(G))%x%Id2r4) %*% vecPsi2r6
-    return (sum(AB^2))
+    AB2.val <- sum(AB^2)
+    return (AB2.val)
   }
       
-  Gstart <- Gns(r=2*r+4,n=n,Sigma=S) 
+  Gstart <- Gns(r=2*r+4,n=n,Sigma=var(x.star))
   Gstart <- matrix.sqrt(Gstart)
-  
+    
   if (optim.fun1=="nlm")
   {
     res <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))    
@@ -471,10 +474,11 @@ psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0
   }
   else if (optim.fun1=="optim")
   {
-    res <- optim(vech(Gstart), AB2, control=list(reltol=rel.tol, trace=as.numeric(verbose)))
+    res <- optim(vech(Gstart), AB2, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     G2r4 <- res$par
   }
   G2r4 <- invvech(G2r4)%*%invvech(G2r4)
+  G2r4 <- S12 %*% G2r4 %*% S12
 
   ## stage 2 of plug-in
   vecPsi2r4 <- kfe(x=x, G=G2r4, binned=binned, bgridsize=bgridsize, deriv.order=2*r+4, deriv.vec=TRUE, add.index=FALSE, verbose=verbose)
@@ -483,11 +487,9 @@ psifun2.unconstr <- function(x, rel.tol=10^-10, binned, bgridsize, deriv.order=0
 }
 
 
-
 #############################################################################
-# Plug-in bandwidth selectors
+## Plug-in bandwidth selectors
 #############################################################################
-
     
 ############################################################################
 ## Computes plug-in full bandwidth matrix - 2 to 6 dim
@@ -656,7 +658,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, ami
   }
   else if (optim.fun1=="optim")
   {
-    result <- optim(vech(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
@@ -665,8 +667,6 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, ami
   if (!amise) return(H)
   else return(list(H = H, PI.star=amise.star))
 }     
-
-
 
 ###############################################################################
 ## Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
@@ -782,7 +782,7 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize,
     }
     else if (optim.fun1=="optim")
     {  
-      result <- optim(diag(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+      result <- optim(diag(Hstart), pi.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
       H <- diag(result$par) %*% diag(result$par)
       amise.star <- result$value
     }
@@ -840,8 +840,6 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
   return(lscv)  
 }
 
-
-   
 ###############################################################################
 ## Finds the bandwidth matrix that minimises LSCV for 2 to 6 dim
 ## 
@@ -906,7 +904,6 @@ hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0, bw.ucv=
   else return(list(h=opt$minimum, LSCV=opt$objective))
 }
 
-
 Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim", trunc)
 {
   if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
@@ -944,7 +941,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
   }
   else if (optim.fun1=="optim")
   {
-    result <- optim(vech(Hstart), lscv.mat.temp, control=list(trace=as.numeric(verbose)), method="Nelder-Mead")     
+    result <- optim(vech(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose), REPORT=1))     
     H <- invvech(result$par) %*% invvech(result$par)
     amise.opt <- result$value
   }
@@ -1007,7 +1004,7 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   }
   else if (optim.fun1=="optim")
   {
-    result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+    result <- optim(diag(Hstart), lscv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- diag(result$par^2)
     amise.opt <- result$value
   }
@@ -1015,6 +1012,8 @@ Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.or
   if (!amise) return(H)
   else return(list(H=H, LSCV=amise.opt))
 }
+
+## aliases using "UCV" instead of "LSCV"
 
 hucv <- function(...) { hlscv(...) }
 Hucv <- function(...) { Hlscv(...) }
@@ -1086,7 +1085,7 @@ Hbcv <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE
     return(bcv)  
   }
 
-  result <- optim(vech(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)), lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose)))
+  result <- optim(vech(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=vech(matrix.sqrt(up.bound)), lower=-vech(matrix.sqrt(up.bound)), control=list(trace=as.numeric(verbose), REPORT=1))
 
   H <- invvech(result$par) %*% invvech(result$par)
   amise.opt <- result$value
@@ -1127,7 +1126,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=
     return(bcv.mat(x, H, whichbcv*H, binned=binned)$bcv)
   } 
  
-  result <- optim(diag(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose)))
+  result <- optim(diag(Hstart), bcv.mat.temp, method="L-BFGS-B", upper=sqrt(up.bound), control=list(trace=as.numeric(verbose), REPORT=1))
   H <- diag(result$par) %*% diag(result$par)
   amise.opt <- result$value
   if (!amise) return(H)
@@ -1220,31 +1219,32 @@ gamse.scv <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par, b
   return(gamse)
 }
 
-
 ###############################################################################
 ## Estimate unconstrained G_AMSE pilot bandwidth for SCV for 2 to 6 dim
-## (J.E. Chacon)
+## Code by J.E. Chacon
 ##
 ## Returns
 ## G_AMSE pilot bandwidth
 ###############################################################################
 
-Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, verbose=FALSE, nstage=1, optim.fun="optim")
+Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, verbose=FALSE, nstage=1, optim.fun="optim")
 {
   d <- ncol(x)
   n <- nrow(x)
   S <- var(x)
+  S12 <- matrix.sqrt(S)
   optim.fun1 <- match.arg(optim.fun, c("nlm", "optim"))
   
   ## stage 1 of plug-in
+  x.star <- pre.sphere(x)
   if (nstage==1)
   {  
-    G6 <- Gns(r=6,n=n,Sigma=S)/2  #(2^(d/2+5)/((d+6)*n))^(2/(d+8))*S
-    psihat6 <- kfe(x=x, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
+    G6 <- Gns(r=6,n=n,Sigma=var(x.star), scv=TRUE) 
+    psihat6 <- kfe(x=x.star, deriv.order=6, G=G6, deriv.vec=TRUE, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
   }
   else if (nstage==0)
   {
-    psihat6 <- psins(r=6, Sigma=S, deriv.vec=TRUE) 
+    psihat6 <- psins(r=6, Sigma=var(x.star), deriv.vec=TRUE) 
   }
   
   ## constants for normal reference
@@ -1257,24 +1257,27 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, v
     G12 <- matrix.sqrt(G)
     Ginv12 <- chol2inv(chol(G12))
     AB <- n^(-1)*det(Ginv12)*(Kpow(A=Ginv12,pow=4)%*%D4phi0)*2^(-(d+4)/2) + (t(vec(G))%x%Id4)%*%psihat6
-    return (sum(AB^2))
+    AB2.val <- sum(AB^2)
+    return (AB2.val)
   }
 
-  Hstart <- matrix.sqrt(Hns(x=x, deriv.order=1))
+  Gstart <- Gns(r=4,n=n,Sigma=S,scv=TRUE)
+  Gstart <- matrix.sqrt(Gstart)
   if (optim.fun1=="nlm")
   {
-     result <- nlm(p=vech(Hstart), f=AB2, print.level=2*as.logical(verbose))    
+     result <- nlm(p=vech(Gstart), f=AB2, print.level=2*as.logical(verbose))    
      G4 <- result$estimate
   }
   else if (optim.fun1=="optim")    
   { 
-    result <- optim(vech(Hstart), AB2, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Gstart), AB2, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     G4 <- result$par
   }   
   G4 <- invvech(G4)%*%invvech(G4)
+  G4 <- S12 %*% G4 %*% S12
+  
   return(G4) 
 }
-
 
 ###############################################################################
 ## Computes the smoothed cross validation function for 2 to 6 dim
@@ -1287,7 +1290,6 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, rel.tol=10^-10, v
 ## Returns
 ## SCV(H)
 ###############################################################################
-
 
 scv.1d <- function(x, h, g, binned=TRUE, bin.par, inc=1, deriv.order=0)
 {
@@ -1334,18 +1336,17 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
   return (scvmat)
 }
 
-
 ###############################################################################
-# Find the bandwidth that minimises the SCV for 1 to 6 dim
-# 
-# Parameters
-# x - data values
-# pre - "scale" - pre-scaled data
-#     - "sphere"- pre-sphered data
-# Hstart - initial bandwidth matrix
-#
-# Returns
-# H_SCV
+## Find the bandwidth that minimises the SCV for 1 to 6 dim
+## 
+## Parameters
+## x - data values
+## pre - "scale" - pre-scaled data
+##     - "sphere"- pre-sphered data
+## Hstart - initial bandwidth matrix
+##
+## Returns
+## H_SCV
 ###############################################################################
 
 hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
@@ -1401,7 +1402,6 @@ hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
   return(opt)
 }
 
-
 Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   n <- nrow(x)
@@ -1454,7 +1454,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
   else if (pilot1=="dunconstr")
   {
     ## Gu pilot matrix is on data scale
-    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, binned=binned, scv=TRUE,  optim.fun=optim.fun)
+    Gu <- Gdunconstr(x=x, d=d, r=r, n=n, nstage=nstage, verbose=verbose, binned=binned, scv=TRUE, optim.fun=optim.fun)
   
     if (missing(Hstart)) Hstart <- Hns(x=x, deriv.order=r)
   }
@@ -1463,7 +1463,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
     ## Gs is on pre-transformed data scale
     g2r4 <- gdscalar(x=x.star, d=d, r=r, n=n, nstage=nstage, verbose=verbose, scv=TRUE, binned=binned)
     Gs <- g2r4^2*diag(d)
-    if (missing(Hstart)) Hstart <-Hns(x=x.star, deriv.order=r)
+    if (missing(Hstart)) Hstart <- Hns(x=x.star, deriv.order=r)
   }
   else
   {
@@ -1483,7 +1483,6 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
   }
 
   ## SCV is estimate of AMISE
-  
   scv.mat.temp <- function(vechH)
   {
     H <- invvech(vechH) %*% invvech(vechH)
@@ -1506,7 +1505,7 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
   }
   else if (optim.fun=="optim")
   {
-    result <- optim(vech(Hstart), scv.mat.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Hstart), scv.mat.temp, method="BFGS", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
@@ -1515,7 +1514,6 @@ Hscv <- function(x, nstage=2, pre="sphere", pilot, Hstart, binned, bgridsize, am
   if (!amise) return(H)
   else return(list(H = H, SCV.star=amise.star))
 }
-
 
 Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
@@ -1567,7 +1565,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize
   }
   else
   {
-    ## Gs is on transformed data scale
+      ## Gs is on transformed data scale
       Hamise <- Hpi(x=x.star, nstage=1, pilot=pilot, pre="sphere", binned=binned, bgridsize=bgridsize, verbose=verbose, optim.fun=optim.fun) 
       if (any(is.na(Hamise)))
       {
@@ -1600,7 +1598,7 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize
   }
   else if (optim.fun1=="optim")
   {  
-    result <- optim(diag(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose)))
+    result <- optim(diag(Hstart), scv.mat.temp, method="Nelder-Mead", control=list(trace=as.numeric(verbose), REPORT=1))
     H <- diag(result$par) %*% diag(result$par)
     amise.star <- result$value
   }
@@ -1630,12 +1628,13 @@ Hns.diag <- function(x)
     else { n <- nrow(x); d <- ncol(x)}
     S <- var(x)
     Delta <- chol2inv(chol(diag(diag(S))))%*%S
-    Deltainv <- chol2inv(chol(Delta))
-    H <- ((4*d*det(Delta)^(1/2))/(2*tr(Deltainv%*% Deltainv) + (tr(Deltainv))^2))^(2/(d+4))*diag(diag(S))*n^(-2/(d+4))
-    return(H)
+    svD <- svd(Delta)
+    Deltainv <- svD$v %*% diag(1/svD$d) %*% t(svD$u)
+    #Deltainv <- chol2inv(chol(Delta))
+    H <- ((4*d*det(Delta)^(1/2))/(2*tr(Deltainv%*%Deltainv) + (tr(Deltainv))^2))^(2/(d+4))*diag(diag(S))*n^(-2/(d+4))
     
+    return(H)
 }
-
 
 hns <- function(x, deriv.order=0)
 {
@@ -1643,20 +1642,37 @@ hns <- function(x, deriv.order=0)
   d <- 1
   r <- deriv.order
   h <- (4/(n*(d+2*r+2)))^(1/(d+2*r+4))*sd(x)
+  
   return(h)
 }
 
 #######################################################################
 ## Normal scale G_ns for kernel functional estimators
+## scv = flag for SCV bias annihiliation constant
 #######################################################################
 
-Gns <- function(r,n,Sigma)
+Gns <- function(r,n,Sigma,scv=FALSE)
 {
   d <- ncol(Sigma)
-  G <- (2/((n*(d+r))))^(2/(d+r+2))*2*Sigma
+  const <- ifelse(scv,1,2)
+  G <- (2/((n*(d+r))))^(2/(d+r+2))*const*Sigma
+  
   return(G)
 }
 
+Gns.search <- function(G, f, n=10)
+{
+    Gstart.vec <- numeric(n)
+    for (i in 1:length(Gstart.vec)) 
+    { 
+        Gstart <- matrix.sqrt(i/length(Gstart.vec)*G)
+        Gstart.vec[i] <- f(vech(Gstart))
+    }
+    i <- which.min(Gstart.vec)/length(Gstart.vec)
+    Gstart <- i*G
+    
+    return(Gstart)
+}
 
 ##############################################################################
 ## Normal mixture selector 
@@ -1696,7 +1712,6 @@ Hnm.diag <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbo
 
     return(H.nm)
 }
-
 
 hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {

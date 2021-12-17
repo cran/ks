@@ -51,7 +51,6 @@ kfe.scalar <- function(x, g, deriv.order, inc=1, binned=TRUE, bin.par, verbose=F
 ## Plug-in bandwidth
 ###############################################################################
 
-
 hpi.kfe <- function(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
 {
   n <- length(x)
@@ -87,7 +86,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
   d <- ncol(x)
   r <- deriv.order
   
- if (missing(pilot)) pilot <- "dscalar"
+  if (missing(pilot)) pilot <- "dscalar"
   if(!is.matrix(x)) x <- as.matrix(x)
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))  
   pre1 <- match.arg(pre, c("scale", "sphere"))
@@ -126,7 +125,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
 
       ## Special case from Chacon & Duong (2009): bias minimisation
       ##h2 <- ((4*d+8)*A1/(-d*A2 + sqrt(d^2*A2^2 + (8*d+16)*A1*A3)))^(1/(d+4))*n^(-1/(d+4))
-      ## Special from Chacon & Duong (2009): bias annihilation
+      ## Special case from Chacon & Duong (2009): bias annihilation
       h2 <- (-A1/(2*A2*n))^(1/(d+4))
       H2 <- h2^2*diag(d)   
       psi2.hat <- kfe(x=x.star, G=H2, deriv.order=r+2, add.index=FALSE, binned=binned, bgridsize=bgridsize, verbose=verbose)
@@ -154,7 +153,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
       }
       else if (optim.fun1=="optim")
       {
-         result <- optim(vech(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+         result <- optim(vech(Hstart2), amse2.temp, method="BFGS", control=list(trace=as.numeric(verbose),REPORT=1))
          H2 <- invvech(result$par) %*% invvech(result$par)
       }
  
@@ -187,7 +186,7 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
   }
   else if (optim.fun1=="optim")
   {
-    result <- optim(vech(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(vech(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose),REPORT=1))
     H <- invvech(result$par) %*% invvech(result$par)
     amise.star <- result$value
   }
@@ -206,8 +205,6 @@ Hpi.kfe <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned=FALSE, bgri
 ## Plug-in bandwidth
 ###############################################################################
 
-
- 
 Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, bgridsize, amise=FALSE,  deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
   if (deriv.order!=0) stop("Currently only dervi.order=0 is implemented")
@@ -218,6 +215,7 @@ Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
   D2K0 <- t(dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=2))
   K0 <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=diag(d), deriv.order=0)
 
+  if(!is.matrix(x)) x <- as.matrix(x)
   if (missing(pilot)) pilot <- "dscalar"
   pilot1 <- match.arg(pilot, c("dunconstr", "dscalar"))  
   pre1 <- match.arg(pre, c("scale", "sphere"))
@@ -271,7 +269,7 @@ Hpi.diag.kfe <- function(x, nstage=2, pilot, pre="scale", Hstart, binned=FALSE, 
   }
   else if (optim.fun1=="optim")
   {
-    result <- optim(diag(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose)))
+    result <- optim(diag(Hstart), amse.temp, method="BFGS", control=list(trace=as.numeric(verbose),REPORT=1))
     H <- diag(result$par) %*% diag(result$par)
     amise.star <- result$value
   }

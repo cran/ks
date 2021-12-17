@@ -69,7 +69,6 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
   return(dens)
 }   
 
-
 ###############################################################################
 ## Derivatives of the univariate normal 
 ## (code: J.E.Chacon 08/06/2018)
@@ -104,8 +103,6 @@ dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
 
     return(derivt)
 }
-  
-
 
 ###############################################################################
 ## Double sum  of K(X_i - X_j) used in density derivative estimation
@@ -119,7 +116,6 @@ dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
 ## Returns
 ## Double sum at x
 ###############################################################################
-
 
 dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par, kfe=FALSE)
 {
@@ -174,9 +170,8 @@ dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 }   
 
 ###############################################################################
-# Multivariate normal densities and derivatives
+## Multivariate normal densities and derivatives
 ###############################################################################
-
 
 ###############################################################################
 ## Multivariate normal mixture - random sample
@@ -204,9 +199,9 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
   ### single component mixture
   if (identical(all.equal(props[1], 1), TRUE))
    if (mixt.label)
-     rand <- cbind(rmvnorm(n=n, mean=mus, sigma=Sigmas), rep(1, n))
+     rand <- cbind(mvtnorm::rmvnorm(n=n, mean=mus, sigma=Sigmas), rep(1, n))
    else
-     rand <- cbind(rmvnorm(n=n, mean=mus, sigma=Sigmas))
+     rand <- cbind(mvtnorm::rmvnorm(n=n, mean=mus, sigma=Sigmas))
     
   ### multiple component mixture
   else
@@ -237,7 +232,6 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
 
   return(rand[sample(n),])
 }
-
 
 ###############################################################################
 ## Multivariate normal mixture - density values
@@ -351,11 +345,10 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index
   else return(dens)
 }
 
-
 ############################################################################
-### dmvnorm.deriv.direct computes the vector derivative of the Gaussian
-### density phi_Sigma(x) on the basis of Equation (1) and Algotihm 2, as
-### described in Chacon and Duong (2014)
+## dmvnorm.deriv.direct computes the vector derivative of the Gaussian
+## density phi_Sigma(x) on the basis of Equation (1) and Algotihm 2, as
+## described in Chacon and Duong (2014)
 ############################################################################
 
 dmvnorm.deriv.direct<-function(x,Sigma,deriv.order=0){ 
@@ -378,9 +371,9 @@ dmvnorm.deriv.direct<-function(x,Sigma,deriv.order=0){
 }
 
 ############################################################################
-### dmvnorm.deriv.recursive computes the vector derivative of the Gaussian
-### density phi_Sigma(x) on the basis of Equation (7) and Algorithm 2 as
-### described in Section 5 of Chacon and Duong (2014)
+## dmvnorm.deriv.recursive computes the vector derivative of the Gaussian
+## density phi_Sigma(x) on the basis of Equation (7) and Algorithm 2 as
+## described in Section 5 of Chacon and Duong (2014)
 ############################################################################
 
 dmvnorm.deriv.recursive<-function(x,Sigma,deriv.order=0){ 
@@ -412,9 +405,9 @@ dmvnorm.deriv.recursive<-function(x,Sigma,deriv.order=0){
 }
 
 ###############################################################################
-### dmvnorm.deriv.unique computes the whole vector derivative of the Gaussian
-### density phi_Sigma(x) from its unique coordinates, based on Algorithm 3 as
-### described in Section 5 of Chacon and Duong (2014)
+## dmvnorm.deriv.unique computes the whole vector derivative of the Gaussian
+## density phi_Sigma(x) from its unique coordinates, based on Algorithm 3 as
+## described in Section 5 of Chacon and Duong (2014)
 ###############################################################################
 
 dmvnorm.deriv.unique<-function(x,Sigma,deriv.order=0){
@@ -552,17 +545,15 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRU
   else return(deriv=dens)
 }
 
-
-
 ###############################################################################
 ## Double sum  of K(X_i - X_j) used in density derivative estimation
-#
+##
 ## Parameters
 ## x - points to evaluate
 ## Sigma - variance matrix
 ## inc - 0 - exclude diagonals
 ##     - 1 - include diagonals
-#
+##
 ## Returns
 ## Double sum at x
 ##############################################################################
@@ -759,7 +750,6 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
 ## Single partial derivative of the multivariate normal with scalar variance matrix sigma^2 I_d  
 ## Code by Jose  Chacon 04/09/2007
 
-
 dmvnorm.deriv.scalar <- function(x, mu, sigma, deriv.order, binned=FALSE)
 {
   r <- deriv.order
@@ -787,7 +777,6 @@ dmvnorm.deriv.scalar <- function(x, mu, sigma, deriv.order, binned=FALSE)
   val <- darg*(-1)^sderiv
   return(val)
 }
-
 
 dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, binned=FALSE, bin.par, verbose=FALSE)
 {
@@ -843,7 +832,6 @@ psins.1d <- function(r, sigma)
   return(psins)  
 }
 
-
 psins <- function(r, Sigma, deriv.vec=length(r)==1)
 {
   d <- ncol(Sigma)
@@ -868,7 +856,7 @@ psins <- function(r, Sigma, deriv.vec=length(r)==1)
 
 
 ##########################################################################
-### Vector moments of the normal distribution
+## Vector moments of the normal distribution
 ##########################################################################
 
 mur <- function(r, A, mu, Sigma, type="unique")
@@ -878,11 +866,10 @@ mur <- function(r, A, mu, Sigma, type="unique")
   return(mur.val)
 }
 
-
 #############################################################################
-### mur.direct computes the vector moment E[X^{\otimes r}] for a random
-### vector with N(mu,Sigma) distribution, on the basis of Equation (8) in
-### Section 6 of Chacon and Duong (2014)
+## mur.direct computes the vector moment E[X^{\otimes r}] for a random
+## vector with N(mu,Sigma) distribution, on the basis of Equation (8) in
+## Section 6 of Chacon and Duong (2014)
 #############################################################################
 
 mur.direct<-function(r,mu,Sigma){
@@ -901,13 +888,11 @@ mur.direct<-function(r,mu,Sigma){
     return(drop(Sdrv.recursive(d=d,r=r,v=result)))
 }
 
-
-
 #############################################################################
-### mur.recursive computes the vector moment E[X^{\otimes r}] for a random
-### vector with N(mu,Sigma) distribution, on the basis of Equation (9) in
-### Section 6 of Chacon and Duong (2014), using Equation (7) in Section 5
-### to obtain the Hermite polynomial
+## mur.recursive computes the vector moment E[X^{\otimes r}] for a random
+## vector with N(mu,Sigma) distribution, on the basis of Equation (9) in
+## Section 6 of Chacon and Duong (2014), using Equation (7) in Section 5
+## to obtain the Hermite polynomial
 #############################################################################
 
 mur.recursive<-function(r,mu,Sigma){ 
@@ -930,10 +915,10 @@ mur.recursive<-function(r,mu,Sigma){
 }
 
 ###############################################################################
-### mur.unique computes the vector moment E[X^{\otimes r}] for a random vector 
-### with N(mu,Sigma) distribution, on the basis of Equation (9) in Section 6
-### of Chacon and Duong (2014), using Algorithm 3 in Section 5, based on the
-### unique partial derivatives, to obtain the Hermite polynomial
+## mur.unique computes the vector moment E[X^{\otimes r}] for a random vector 
+## with N(mu,Sigma) distribution, on the basis of Equation (9) in Section 6
+## of Chacon and Duong (2014), using Algorithm 3 in Section 5, based on the
+## unique partial derivatives, to obtain the Hermite polynomial
 ###############################################################################
 
 mur.unique<-function(r,mu,Sigma){
@@ -1010,9 +995,8 @@ mur.unique<-function(r,mu,Sigma){
     return(drop(result*(-1)^r))
 }
 
-
 ##########################################################################
-### Moments of quadratic forms in normal variables
+## Moments of quadratic forms in normal variables
 ##########################################################################
 
 nur <- function(r, A, mu, Sigma, type="cumulant")
@@ -1031,10 +1015,10 @@ nurs <- function(r, s, A, B, mu, Sigma, type="cumulant")
 
 
 #############################################################################
-### nur.direct computes the moment E[(X^T AX)^r] of the quadratic form
-### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacon and Duong (2014), and the direct
-### implementation mur.direct of the normal moments
+## nur.direct computes the moment E[(X^T AX)^r] of the quadratic form
+## X^T AX where X is a random vector with N(mu,Sigma) distribution, using
+## Equation (10) in Section 6 of Chacon and Duong (2014), and the direct
+## implementation mur.direct of the normal moments
 #############################################################################
 
 nur.direct<-function(r,A,mu,Sigma){
@@ -1044,10 +1028,10 @@ nur.direct<-function(r,A,mu,Sigma){
 }
 
 #############################################################################
-### nur.recursive computes the moment E[(X^T AX)^r] of the quadratic form
-### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacon and Duong (2014), and the recursive
-### implementation mur.recursive of the normal moments
+## nur.recursive computes the moment E[(X^T AX)^r] of the quadratic form
+## X^T AX where X is a random vector with N(mu,Sigma) distribution, using
+## Equation (10) in Section 6 of Chacon and Duong (2014), and the recursive
+## implementation mur.recursive of the normal moments
 #############################################################################
 
 nur.recursive<-function(r,A,mu,Sigma){
@@ -1057,10 +1041,10 @@ nur.recursive<-function(r,A,mu,Sigma){
 }
 
 #############################################################################
-### nur.unique computes the moment E[(X^T AX)^r] of the quadratic form
-### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### Equation (10) in Section 6 of Chacon and Duong (2014), and the function
-### mur.unique to compute the normal moments from its unique coordinates
+## nur.unique computes the moment E[(X^T AX)^r] of the quadratic form
+## X^T AX where X is a random vector with N(mu,Sigma) distribution, using
+## Equation (10) in Section 6 of Chacon and Duong (2014), and the function
+## mur.unique to compute the normal moments from its unique coordinates
 #############################################################################
 
 nur.unique<-function(r,A,mu,Sigma){
@@ -1070,9 +1054,9 @@ nur.unique<-function(r,A,mu,Sigma){
 }
 
 #############################################################################
-### nur.cumulant computes the moment E[(X^T AX)^r] of the quadratic form
-### X^T AX where X is a random vector with N(mu,Sigma) distribution, using
-### the recursive formula relating moments and cumulants
+## nur.cumulant computes the moment E[(X^T AX)^r] of the quadratic form
+## X^T AX where X is a random vector with N(mu,Sigma) distribution, using
+## the recursive formula relating moments and cumulants
 #############################################################################
 
 nur.cumulant<-function(r,A,mu,Sigma){
@@ -1098,11 +1082,11 @@ nur.cumulant<-function(r,A,mu,Sigma){
 }
 
 #############################################################################
-### nurs.direct computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
-### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
-### Duong (2014), and the direct implementation mur.direct of the
-### normal moments
+## nurs.direct computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
+## quadratic forms X^T AX and X^T BX, where X is a random vector with
+## N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
+## Duong (2014), and the direct implementation mur.direct of the
+## normal moments
 #############################################################################
 
 nurs.direct<-function(r,s,A,B,mu,Sigma){
@@ -1113,11 +1097,11 @@ nurs.direct<-function(r,s,A,B,mu,Sigma){
 }
 
 #############################################################################
-### nurs.recursive computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
-### quadratic forms X^T AX and X^T BX, where X is a random vector with
+## nurs.recursive computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
+## quadratic forms X^T AX and X^T BX, where X is a random vector with
 ### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
-### Duong (2014), and the recursive implementation mur.recursive of the
-### normal moments
+## Duong (2014), and the recursive implementation mur.recursive of the
+## normal moments
 #############################################################################
 
 nurs.recursive<-function(r,s,A,B,mu,Sigma){
@@ -1128,11 +1112,11 @@ nurs.recursive<-function(r,s,A,B,mu,Sigma){
 }
 
 #############################################################################
-### nurs.unique computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
-### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
-### Duong (2014), and the function mur.unique to compute the normal moments
-### from its unique coordinates
+## nurs.unique computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
+## quadratic forms X^T AX and X^T BX, where X is a random vector with
+## N(mu,Sigma) distribution, using Equation (10) in Section 6 of Chacon and
+## Duong (2014), and the function mur.unique to compute the normal moments
+## from its unique coordinates
 #############################################################################
 
 nurs.unique<-function(r,s,A,B,mu,Sigma){
@@ -1143,11 +1127,11 @@ nurs.unique<-function(r,s,A,B,mu,Sigma){
 }
 
 #############################################################################
-### nurs.cumulant computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
-### quadratic forms X^T AX and X^T BX, where X is a random vector with
-### N(mu,Sigma) distribution, using the recursive formula (11) in Section 6
-### of Chacon and Duong (2014), relating moments and cumulants. The cumulants
-### are computed using the function kappars, which is based on Theorem 3
+## nurs.cumulant computes the joint moment E[(X^T AX)^r (X^T BX)^s] of the
+## quadratic forms X^T AX and X^T BX, where X is a random vector with
+## N(mu,Sigma) distribution, using the recursive formula (11) in Section 6
+## of Chacon and Duong (2014), relating moments and cumulants. The cumulants
+## are computed using the function kappars, which is based on Theorem 3
 #############################################################################
 
 kappars<-function(r,s,A,B,mu,Sigma){ 
@@ -1176,7 +1160,6 @@ kappars<-function(r,s,A,B,mu,Sigma){
     return(drop(result))
 }
 
-
 nurs.cumulant<-function(r,s,A,B,mu,Sigma){ 
     if(r==0 & s>0){nurs<-nur.cumulant(s,B,mu,Sigma)}
     if(r>0 & s==0){nurs<-nur.cumulant(r,A,mu,Sigma)}
@@ -1204,9 +1187,8 @@ nurs.cumulant<-function(r,s,A,B,mu,Sigma){
 return(nurs)
 }
 
-
 ##########################################################################
-### V-statistics with multivariate Gaussian derivatives kernel
+## V-statistics with multivariate Gaussian derivatives kernel
 ##########################################################################
 
 Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE)
@@ -1222,8 +1204,8 @@ Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE
 
 
 ############################################################################
-### Qr.direct computes the V-statistic using the direct approach, as
-### described in Section 6 of Chacon and Duong (2014)
+## Qr.direct computes the V-statistic using the direct approach, as
+## described in Section 6 of Chacon and Duong (2014)
 ############################################################################
 
 Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize, verbose=FALSE)
@@ -1240,8 +1222,8 @@ Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize,
 
 
 ############################################################################
-### Qr.cumulant computes the V-statistic using the relationship with nur
-### shown in Theorem 4 of Chacon and Duong (2014)
+## Qr.cumulant computes the V-statistic using the relationship with nur
+## shown in Theorem 4 of Chacon and Duong (2014)
 ############################################################################
 
 Qr.cumulant <- function(x, y, Sigma, r=0, inc=1, verbose=FALSE)
@@ -1439,11 +1421,9 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
 
 }
 
-
-
 ###############################################################################
 ## Creates plots of mixture density functions
-#
+##
 ## Parameters
 ## mus - means
 ## Sigmas - variances
@@ -1453,7 +1433,6 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
 ##      - "t" - t mixture
 ## ...
 ###############################################################################
-
 
 plotmixt <- function(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE, deriv.order=0, which.deriv.ind=1, binned=TRUE, ...)
 {
@@ -1507,8 +1486,6 @@ plotmixt.1d <- function(mus, sigmas, props, dfs, dist="normal", xlim, ylim, grid
   if (draw) plot(fhat, xlim=xlim, ...)
   invisible(fhat)
 }
-
-
 
 plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, gridsize, nrand=1e4, draw=TRUE, binned, deriv.order, which.deriv.ind, display="slice", ...)
 {
@@ -1576,7 +1553,6 @@ plotmixt.2d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, grid
   }
   invisible(fhat)
 }
-
 
 plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim, gridsize, nrand=1e4, draw=TRUE, binned, deriv.order, which.deriv.ind, ...)
 {
@@ -1669,11 +1645,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
 }
 
 
-
-
-
-
-
 ###############################################################################
 ## Multivariate t mixture - density values
 ##
@@ -1687,7 +1658,6 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
 ## Returns
 ## Value of multivariate t mixture density at x
 ###############################################################################
-
 
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 {
@@ -1713,7 +1683,6 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
   
   return(dens)
 }
-
 
 ###############################################################################
 ## Multivariate t mixture - random sample
@@ -1826,7 +1795,7 @@ mvnorm.mixt.mode <- function(mus, Sigmas, props=1, verbose=FALSE)
 }
 
 ######################################################################
-## Parition for 2-d normal mixture
+## Partition for 2-d normal mixture
 ######################################################################
 
 mvnorm.mixt.part <- function(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100, verbose=FALSE)

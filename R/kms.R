@@ -155,6 +155,7 @@ ms.merge.label <- function(ms, label, verbose=FALSE)
 }
    
 ## merge mean shift clusters based on distance threshold
+
 ms.merge.dist <- function(ms, tol, verbose)
 {   
     if (missing(tol)) tol <- 1e-1*min(apply(ms$x, 2, IQR))
@@ -171,6 +172,7 @@ ms.merge.dist <- function(ms, tol, verbose)
 
 
 ## merge mean shift clusters based on min cluster size
+
 ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 {
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(ms$y),0)
@@ -209,58 +211,6 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 }
 
 
-summary.kms <- function(object, ...)
-{
-    cat("Number of clusters =", object$nclust, "\n")
-    cat("Cluster label table =", object$nclust.table, "\n")
-    cat("Cluster modes =\n")
-    print(as.data.frame(object$mode), ...)
-}
-
-
-plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, phi=40, add=FALSE, ...)
-{
- 	disp1 <- match.arg(display, c("splom", "plot3D", "rgl"))
-    if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
-    if (missing(col)) col <- col.fun(length(unique(x$label)))
-    if (d==1) stop("kms plot not yet implemented")
-    else if (d==2)
-    {
-        if (missing(xlab)) xlab <- x$names[1]
-        if (missing(ylab)) ylab <- x$names[2]
-        if (!add) plot(x$x, col=col[x$label], xlab=xlab, ylab=ylab, ...)
-        else points(x$x, col=col[x$label], ...)
-    }
-    else if (d==3 & disp1 %in% c("plot3D", "rgl"))
-    {
-        if (missing(xlab)) xlab <- x$names[1]
-        if (missing(ylab)) ylab <- x$names[2]
-        if (missing(zlab)) zlab <- x$names[3]
-    
-        if (disp1=="plot3D")
-        {
-            if (!add) plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=1, cex=0, add=add, theta=theta, phi=phi, d=4, colkey=FALSE, xlab=xlab, ylab=ylab, zlab=zlab, ticktype="detailed", bty="f", ...)
-        
-            for (i in 1:length(col))
-                plot3D::points3D(x$x[x$label==i,1], x$x[x$label==i,2], x$x[x$label==i,3], col=col[i], add=TRUE, ...)
-        }
-        else if (disp1=="rgl")
-        {
-            ## suggestions from Viktor Petukhov 08/03/2018
-            if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
-            if (!add) rgl::plot3d(x$x, col=col[x$label], ...)
-            else rgl::points3d(x$x, col=col[x$label], ...) 
-        }
-    }
-    else if (d>=3)
-    {
-        pairs(x$x, col=col[x$label], ...)
-    }    
-}
-
-
-
 ######################################################################
 ## Cluster partition for 2D kernel mean shift
 #####################################################################
@@ -292,13 +242,71 @@ kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 plot.kde.part <- function(x, display="filled.contour", col, col.fun, alpha=1, add=FALSE, ...)
 {
     clev <- sort(unique(as.vector(x$estimate)))
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark3", alpha=alpha)}
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark2", alpha=alpha)}
     if (missing(col)) col <- col.fun(length(clev))
-   
+    
     for (i in 1:length(clev))
     {
         xtemp <- x
         xtemp$estimate <- x$estimate==clev[i]
-        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, drawlabels=FALSE, ...)
+        plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, drawlabels=FALSE, alpha=alpha, ...)
     }
+}
+#############################################################################
+## S3 methods for KMS objects
+#############################################################################
+
+## summary method
+
+summary.kms <- function(object, ...)
+{
+    cat("Number of clusters =", object$nclust, "\n")
+    cat("Cluster label table =", object$nclust.table, "\n")
+    cat("Cluster modes =\n")
+    print(as.data.frame(object$mode), ...)
+}
+
+## plot method
+
+plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, phi=40, add=FALSE, ...)
+{
+ 	disp1 <- match.arg(display, c("splom", "plot3D", "rgl"))
+    if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
+    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Set2", alpha=alpha)}
+    if (missing(col)) col <- col.fun(length(unique(x$label)))
+    col <- transparency.col(col, alpha=alpha)
+    if (d==1) stop("kms plot not yet implemented")
+    else if (d==2)
+    {
+        if (missing(xlab)) xlab <- x$names[1]
+        if (missing(ylab)) ylab <- x$names[2]
+        if (!add) plot(x$x, col=col[x$label], xlab=xlab, ylab=ylab, ...)
+        else points(x$x, col=col[x$label], ...)
+    }
+    else if (d==3 & disp1 %in% c("plot3D", "rgl"))
+    {
+        if (missing(xlab)) xlab <- x$names[1]
+        if (missing(ylab)) ylab <- x$names[2]
+        if (missing(zlab)) zlab <- x$names[3]
+    
+        if (disp1=="plot3D")
+        {
+            if (!add) plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=1, cex=0, add=add, theta=theta, phi=phi, d=4, colkey=FALSE, xlab=xlab, ylab=ylab, zlab=zlab, ticktype="detailed", bty="f", ...)
+        
+            for (i in 1:length(col))
+                plot3D::points3D(x$x[x$label==i,1], x$x[x$label==i,2], x$x[x$label==i,3], col=col[i], add=TRUE, ...)
+        }
+        else if (disp1=="rgl")
+        {
+            ## suggestions from Viktor Petukhov 08/03/2018
+            if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+
+            if (!add) rgl::plot3d(x$x, col=col[x$label], alpha=alpha, ...)
+            else rgl::points3d(x$x, col=col[x$label], alpha=alpha, ...) 
+        }
+    }
+    else if (d>=3)
+    {
+        pairs(x$x, col=col[x$label], ...)
+    }    
 }

@@ -77,10 +77,10 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
   }
   fhat$binned <- binned
   fhat$names <- parse.name(x)
+  fhat$type <- "kdde"
   class(fhat) <- "kdde"
   return(fhat)
- }
-
+}
 
 
 ###############################################################################
@@ -265,7 +265,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
 
 
 #############################################################################
-#### Univariate kernel density derivative estimate on a grid
+## Univariate kernel density derivative estimate on a grid
 #############################################################################
 
 kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w, deriv.order=0)
@@ -299,8 +299,6 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
   
   return(fhatr)
 }
-
-
 
 ##############################################################################
 ## Bivariate kernel density derivative estimate on a grid
@@ -376,6 +374,11 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
   return(fhatr)
 }
 
+##############################################################################
+## Trivariate kernel density derivative estimate on a grid
+## Computes all mixed partial derivatives for a given deriv.order
+##############################################################################
+
 kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE, verbose=FALSE)
 {
   d <- 3
@@ -423,7 +426,7 @@ kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
               for (j in 1:length(eval.y))
                   fhat.grid[[ell]][eval.x.ind,eval.y.ind[j], eval.z.ind[k]] <- 
                       fhat.grid[[ell]][eval.x.ind, eval.y.ind[j], eval.z.ind[k]] + 
-                          fhat[((j-1) * eval.x.len + 1):(j * eval.x.len)]
+                          fhat[((j-1) * eval.x.len + 1):(j * eval.x.len), ell]
           }
       
       if (verbose) setTxtProgressBar(pb, i/n)
@@ -458,7 +461,6 @@ kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
   return(fhatr)
 }
 
-
 #############################################################################
 ## Multivariate kernel density estimate using normal kernels,
 ## evaluated at each sample point
@@ -489,9 +491,10 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
 }
 
 #############################################################################
-## Plot method for KDDE 
+## S3 methods for KDDE objects
 #############################################################################
 
+## plot method
 plot.kdde <- function(x, ...)
 {
   fhat <- x
@@ -573,20 +576,19 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
   if (disp1=="quiver")
   {
       if (fhat$deriv.order==1)
-          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, col=col, xlab=xlab, ylab=ylab, ...)
+          plotquiver(fhat=fhat, thin=thin, transf=transf, neg.grad=neg.grad, col=col, xlab=xlab, ylab=ylab, alpha=alpha, ...)
       else warning("Quiver plot requires gradient estimate.")
   }
   else
   {
-      fhat.temp <- fhat 
+      fhat.temp <- fhat
       fhat.temp$deriv.ind <- fhat.temp$deriv.ind[which.deriv.ind,]
       fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
       fhat <- fhat.temp
       class(fhat) <- "kde"
       
-
-      if (disp1=="persp") plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, thin=thin, ...) 
-      else plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, ...) 
+      if (disp1=="persp") plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, thin=thin, alpha=alpha, ...) 
+      else plot(fhat, display=display, abs.cont=abs.cont, xlab=xlab, ylab=ylab, zlab=zlab, col.fun=col.fun, kdde.flag=kdde.flag, col=col, alpha=alpha, ...) 
   }
 }
 
@@ -626,10 +628,12 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
 ## Quiver plot
 ######################################################################
 
-plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, length=0.1, ...)
+plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, length=0.1, alpha=1, ...)
 {
     if (!requireNamespace("pracma", quietly=TRUE)) stop("Install the pracma package as it is required.", call.=FALSE)
     if (missing(col)) col <- 1
+    col <- transparency.col(col, alpha=alpha)
+    
     ev <- fhat$eval.points
     est <- fhat$estimate
 
@@ -674,13 +678,9 @@ plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, 
         nsf <- which(nsmall.f==i)
         if (length(nsf)>0) pracma::quiver(x=x0[nsf], y=y0[nsf], u=fx[nsf], v=fy[nsf], col=col, scale=scale, length=arrowint[i], ...)
 	}
-    #OceanView::quiver2D(x=evx, y=evy, u=fx, v=fy, xlab=xlab, ylab=ylab, col=col, ...)
 }
 
-  
-#############################################################################
-## ContourLevels method for KDDE 
-#############################################################################
+## contourLevels method 
 
 contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deriv.ind=1, ...)
 { 
@@ -742,9 +742,7 @@ contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deri
   return(hts)
 }
 
-#############################################################################
 ## predict method for KDDE 
-#############################################################################
 
 predict.kdde <- function(object, ..., x)
 {
@@ -779,8 +777,6 @@ predict.kdde <- function(object, ..., x)
   }
   return(drop(pk.mat))
 }
-
-
 
 ######################################################################
 ## Summary kernel curvature 
@@ -818,6 +814,7 @@ kcurv <- function(fhat, compute.cont=TRUE)
         fhat.curv$cont <- contourLevels(fhat.temp, cont=1:99)
     }
     class(fhat.curv) <- "kde"
+    fhat.curv$type <- "kcurv"
     return(fhat.curv)
 }
 

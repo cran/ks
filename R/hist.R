@@ -91,9 +91,10 @@ plot.histde <- function(x, ...)
     invisible()
 }
 
-plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col="transparent", col.pt=4, jitter=FALSE, border=1, ...)
+plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col="transparent", col.pt=4, jitter=FALSE, border=1, alpha=1, ...)
 {
     if (missing(xlab)) xlab <- fhat$names
+    col <- transparency.col(col, alpha=alpha)
     if (!add) plot(fhat$eval.points, c(fhat$estimate,0), type="n",  xlab=xlab, ylab=ylab, ...)
     rect(fhat$eval.points[-length(fhat$eval.points)], 0, fhat$eval.points[-1], fhat$estimate, border=border, col=col, ...)
     if (drawpoints)
@@ -112,6 +113,7 @@ plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density f
     if (missing(breaks)) breaks <- seq(min(fhat$estimate,0), max(fhat$estimate)+0.1*diff(range(fhat$estimate)), length=nbreaks)
     if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="heat", rev=TRUE, alpha=alpha)} 
     if (missing(col)) col <- col.fun(n=length(breaks))
+    col <- transparency.col(col, alpha=alpha)
     
     for (i in 1:(nrow(fhat$estimate)))
         for (j in 1:(ncol(fhat$estimate)))
@@ -127,14 +129,13 @@ plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density f
             lines(rep(fhat$eval.points[[1]][i],2), range(fhat$eval.points[[2]]), col=border, ...)
         for (j in 1:length(fhat$eval.points[[2]]))
             lines(range(fhat$eval.points[[1]]), rep(fhat$eval.points[[2]][j],2), col=border, ...)
-        ##abline(v=ev1, h=ev2, col=border, ...)
     }
     
     if (drawpoints) 
         points(fhat$x[,1], fhat$x[,2], col=col.pt, cex=cex, pch=pch)
 }
 
-
+## predict method
 predict.histde <- function(object, ..., x)
 {
     fhat <- object$estimate
@@ -160,6 +161,7 @@ predict.histde <- function(object, ..., x)
 
 }
 
+## contourLevels method
 contourLevels.histde <- function(...)
 {
     return(contourLevels.kde(...))
