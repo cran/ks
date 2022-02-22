@@ -93,12 +93,12 @@ kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE)
 set.seed(8192)
 cardio.train.ind <- sample(1:nrow(cardio), round(nrow(cardio)/4,0))
 cardio2 <- cardio[cardio.train.ind,c(8,18)]
-cardio.dr2 <- kdr(x=cardio2)
+cardio.dr2 <- kdr(x=cardio2, gridsize=c(21,21))
+## gridsize=c(21,21) is for illustrative purposes only
 plot(cardio2, pch=16, col=3)
 plot(cardio.dr2, cex=0.5, pch=16, col=6, add=TRUE)}
 
-\dontrun{
-cardio3 <- cardio[cardio.train.ind,c(8,18,11)]
+\dontrun{cardio3 <- cardio[cardio.train.ind,c(8,18,11)]
 cardio.dr3 <- kdr(x=cardio3)
 plot(cardio.dr3, pch=16, col=6, xlim=c(10,90), ylim=c(70,180), zlim=c(0,40))
 plot3D::points3D(cardio3[,1], cardio3[,2], cardio3[,3], pch=16, col=3, add=TRUE)

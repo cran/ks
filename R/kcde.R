@@ -666,12 +666,12 @@ summary.kroc <- function(object, ...)
 ## predict methods
 predict.kcde <- function(object, ..., x)
 {
-    return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
+    return(predict.kde(object=object, ..., x=x))
 }
 
 predict.kroc <- function(object, ..., x)
 {
-    return(predict.kde(object=object, ..., x=x, zero.flag=FALSE))
+    return(predict.kde(object=object, ..., x=x))
 }
 
 ## contourLevels method

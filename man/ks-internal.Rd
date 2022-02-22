@@ -12,17 +12,16 @@
 \alias{Sdrv}
 \alias{symconv.1d}
 \alias{symconv.nd}
-
-% Write Rd help files for these functions
-
 \alias{dwsupp}
 \alias{reg.ucv}
 \alias{kr}
   
 \title{Internal functions in the ks library}
+
 \description{
 These functions are user-level but which the user is not required to use directly.
 }
 
+\value{The user is not required to use directly these outputs.}
 
 \keyword{internal}

@@ -1,5 +1,9 @@
 Change log file for ks
 
+1.13.4
+-Removed calls to zero.flag=FALSE.
+-Fixed in bug in kdr(y=y, pre=FALSE). 
+
 1.13.3
 -Fixed matrix inverse calculation in Hns.diag().
 -Added density ridge segmentation in kdr() and kdr.segment().

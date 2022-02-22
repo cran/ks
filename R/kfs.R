@@ -161,7 +161,7 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
 
 predict.kfs <- function(object, ..., x)
 {
-    fhat <- predict.kde(object=object, ..., x=x, zero.flag=FALSE)
+    fhat <- predict.kde(object=object, ..., x=x)
     fhat <- as.integer(fhat>=0.5)
    
     return(fhat)

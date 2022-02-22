@@ -43,7 +43,7 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
             y <- expand.grid(xx, yy, zz)
         }
     }
-    else { y <- as.matrix(y); y <- y %*% Sinv12 }
+    else { y <- as.matrix(y); if (pre) y <- y %*% Sinv12 }
    
     if (is.vector(y)) y <- matrix(y, nrow=1)
     if (missing(min.seg.size)) min.seg.size <- round(1e-3*nrow(y), 0)
