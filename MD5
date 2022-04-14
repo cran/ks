@@ -1,17 +1,17 @@
-aca23eed34ba7eed6ac61b7fcebba6e7 *CHANGELOG
-1a9056b68609152586f248e428fc093d *DESCRIPTION
+010980822e336ad58dbd1bfb50b5af98 *CHANGELOG
+2c78a761aa9786ce01d63503b8afa8cd *DESCRIPTION
 2395c1bf7e87d2359625c5eb1f24980b *NAMESPACE
 49df1779028c4b001b76c035d847feca *R/binning.R
 81a135908c91c83359ca16de9cddeec8 *R/deconv-kde.R
 9f608c2d8fa06e5e1d083ff87191792a *R/hist.R
 5e29300b8e573ad525ba453f413fe7b0 *R/integrate-kde.R
-708b82864755493a4d75fa77548de04c *R/kcde.R
+f4f0ae2688bd54d6f26d61bdcaa7b51f *R/kcde.R
 c8f71d31544351f3fba33de1b515ed01 *R/kcopula.R
 3ec6cba8eb837b05b89ce98b50fd56eb *R/kda.R
 1884b4361902f514bcebe0a77983cd03 *R/kdde.R
 f9a86fd94203ad25a1abb93b4fc3b571 *R/kde-boundary.R
 8ada57c8bec9426cd7729059a3d76547 *R/kde-test.R
-5e045781da76a0df7491b6e98d0cc355 *R/kde.R
+c49ca678b421988d05612f999a4a65f0 *R/kde.R
 13b01cff3a0fde6fff32d1e909bfceed *R/kdr.R
 3f45278877cb751fb074595095e57140 *R/kfe.R
 80e0b5e65b5e15bf1345e96ac3b5c6ed *R/kfs.R
@@ -22,7 +22,7 @@ bbdae992781a535a1dc830db9098efb7 *R/normal.R
 41b7f2fda3611b95ec4515a0e5c9686a *R/prelim.R
 84eacc819021f768983a783a4cc60125 *R/selector.R
 b3bc079daec6c50d278c1c090f7c78d8 *R/vkde.R
-197948d73c4f78dfd47ca8e44f14e2d5 *build/vignette.rds
+6365cbd4e607cc7fe833ca911ecdec31 *build/vignette.rds
 3c7be27cb3c3505cb05a32dbdc3429ce *data/air.RData
 421d741ffd92ca967c18a8f69a4824dc *data/cardio.RData
 0b36987e874b237b5f47264783c15d56 *data/grevillea.RData
@@ -36,7 +36,7 @@ cfd66d7c906e51e34dcc3138079b5aa2 *data/tempb.RData
 9bbcbfd4701d3cf7b336d8d4a2d15226 *data/worldbank.RData
 98233c320602e02860adfb695a903cea *inst/doc/kde.R
 67b2ecacaa219eb280291a7e3fef063a *inst/doc/kde.Rnw
-b6ddc9efdc11a9fc559116a51549aa62 *inst/doc/kde.pdf
+eb6440e8f10a943e1592a0b8fa97f54c *inst/doc/kde.pdf
 a552ddadac60a9371838f1232332e9c0 *man/Hbcv.Rd
 2ae1e9cabb9a7091ab1857aed9cb3258 *man/Hlscv.Rd
 625ad07b8d36301a3a59131bfbb6f415 *man/Hnm.Rd
@@ -56,7 +56,7 @@ b84630af757b1260078218a19cd5f3cc *man/histde.Rd
 5e2fb1df46a4bb8c7cff094b9009c1e7 *man/kda.Rd
 b99c129bc5cd58259ada6e96356f9afd *man/kdcde.Rd
 e6282694097108cb38301329da40276d *man/kdde.Rd
-a6ba2c58d4ea3ecfc1559da697a908f7 *man/kde.Rd
+71f2c32eccc5527aa1479ebdd46bde2c *man/kde.Rd
 540f9482f566b47bee066552e888df8d *man/kde.boundary.Rd
 2445d08fee73347f84821dcf0732b06e *man/kde.local.test.Rd
 cddf2eb163545c194182c1615b3d9be1 *man/kde.test.Rd
@@ -64,7 +64,7 @@ cddf2eb163545c194182c1615b3d9be1 *man/kde.test.Rd
 bbf1d15329dce41d6d8b381b0edce0e3 *man/kdr.Rd
 c917f82a0091d96b0b55ec5abfd14e5c *man/kfe.Rd
 b5e642b48e8277190bd9d8356fc7b530 *man/kfs.Rd
-924dc3a4ea803975c8940f7f0bda5532 *man/kms.Rd
+fded9ad0c082950e0aaf18199b3bff71 *man/kms.Rd
 d524dedb2d96feea6ee37a3ffd3abc90 *man/kroc.Rd
 7423ec63acb02529a5bd41c736b6b0b6 *man/ks-internal.Rd
 51c5d6d7a66718bd40463f9fe7c5b431 *man/ks-package.Rd

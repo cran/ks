@@ -21,7 +21,7 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{y}{matrix of candidate data values for which the mean shift will
     estimate their cluster labels. If missing, \code{y=x}.}
   \item{H}{bandwidth matrix/scalar bandwidth. If missing,
-  \code{Hpi(x,deriv,order=1)} is called by default.}
+  \code{Hpi(x,deriv.order=1,nstage=2-(d>2))} is called by default.}
   \item{max.iter}{maximum number of iterations. Default is 400.}
   \item{tol.iter}{distance under which two successive iterations are
     considered convergent. Default is 0.001*min marginal IQR of \code{x}.}

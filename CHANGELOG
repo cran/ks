@@ -1,5 +1,10 @@
 Change log file for ks
 
+1.13.5
+-Fixed inconsistency in code and help guide for kms().
+-Added kde(density=TRUE) option to force non-negative KDE values.
+-Fixed bug in 1D kcde(positive=TRUE). 
+
 1.13.4
 -Removed calls to zero.flag=FALSE.
 -Fixed in bug in kdr(y=y, pre=FALSE). 

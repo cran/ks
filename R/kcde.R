@@ -18,8 +18,13 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   {
     if (missing(h) & !positive) h <- hpi.kcde(x=x, binned=default.bflag(d=d, n=n))
     Fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
+    if (positive) 
+    {
+        ep <- seq(Fhat$eval.points[1], tail(Fhat$eval.points,n=1), length=length(Fhat$eval.points))
+        Fhat$estimate <- predict(Fhat, x=ep)
+       Fhat$eval.points <- ep
+    }
     diffe <- abs(diff(Fhat$eval.points))
-    
     if (tail.flag1=="lower.tail") Fhat$estimate <- c(0, diffe) * cumsum(Fhat$estimate)
     else Fhat$estimate <- c(diffe[1], diffe) * (sum(Fhat$estimate) - cumsum(Fhat$estimate))
   }

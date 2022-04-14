@@ -10,7 +10,7 @@
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, 
     bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, 
-    approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
+    approx.cont=TRUE, unit.interval=FALSE, density=FALSE, verbose=FALSE)
 
 \method{predict}{kde}(object, ..., x, zero.flag=TRUE)
 }
@@ -33,6 +33,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
     levels. Default is TRUE.}
   \item{unit.interval}{flag if 1-d data are bounded on unit interval
   [0,1]. Default is FALSE.} 
+  \item{density}{flag if density estimate values are forced to be non-negative function. Default is FALSE.} 
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
   \item{object}{object of class \code{kde}}
@@ -90,6 +91,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. The default value of the
   binning flag \code{binned} is n>1 (d=1), n>500 (d=2), n>1000 (d>=3). 
+  Some times binned estimation leads to negative density values: if non-negative
+  values are required, then set \code{density=TRUE}.
   
   The default \code{bgridsize,gridsize} are d=1: 401; d=2: rep(151, 2); d=3: 
   rep(51, 3); d=4: rep(21, 4). 

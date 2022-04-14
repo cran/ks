@@ -373,7 +373,7 @@ varying.grid.interp.1d <- function(x, gridx, f)
 ## estimate is evaluated at, and values of the density estimate 
 ##############################################################################
 
-kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE, verbose=FALSE)
+kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE, density=FALSE, verbose=FALSE)
 {
     ## default values
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
@@ -460,6 +460,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
         }
     }
     
+    if (density) fhat$estimate[fhat$estimate<0] <- 0
     fhat$binned <- binned
     fhat$names <- parse.name(x)  ## add variable names
     fhat$w <- w
@@ -557,6 +558,11 @@ kde.positive.1d <- function(x, h, adj.positive, binned=FALSE, xmin, xmax, comput
 
   if (compute.cont)
       fhatx$cont <- contourLevels(fhatx, cont=1:99, approx=approx.cont)
+      
+  ## re-sample on regular grid    
+  ep <- seq(fhatx$eval.points[1], tail(fhatx$eval.points,n=1), length=length(fhatx$eval.points))
+  fhatx$estimate <- predict(fhatx, x=ep)
+  fhatx$eval.points <- ep
 
   return(fhatx)
 }
