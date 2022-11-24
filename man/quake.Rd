@@ -1,12 +1,9 @@
 \name{quake}
-
 \docType{data}
-
 \alias{quake}
 \alias{quakesf}
 \alias{plate}
 \alias{platesf}
-
 \title{Geographical locations of earthquakes and tectonic plates}
 
 \description{
@@ -42,7 +39,6 @@ data(platesf)
 Alhenius, H., Nordpil and Bird, P. (2014). World Tectonic Plates and Boundaries. 
 \url{https://github.com/fraxen/tectonicplates}. Accessed 2021-03-11.
 
-
 Bird, P. (2003) An updated digital model of plate boundaries,
 \emph{Geochemistry, Geophysics, Geosystems} \bold{4(3)}, 1-52. 1027.
 %Data set accessed 2016-03-24 from
@@ -51,9 +47,7 @@ Bird, P. (2003) An updated digital model of plate boundaries,
 NGDC/WDS (2017) Global significant earthquake database, National
   Geophysical Data Center, NOAA, doi:10.7289/V5TD9V7K.
 National Geophysical Data Center/World Data Service. Accessed 2017-03-30.
-
 }
-
 
 \keyword{datasets}
 

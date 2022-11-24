@@ -1,5 +1,12 @@
 Change log file for ks
 
+1.14.0
+-Systematised code indentation (4 spaces). 
+-Further systematised default bandwidth calculation. 
+-Added new flag grid.clip which excludes data outside of xmin, xmax in
+ kde() etc. for binned estimation.
+-Fixed bug in kde(unit.interval=TRUE) for 1D data.
+
 1.13.5
 -Fixed inconsistency in code and help guide for kms().
 -Added kde(density=TRUE) option to force non-negative KDE values.

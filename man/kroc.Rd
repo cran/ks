@@ -2,7 +2,6 @@
 \alias{kroc}
 \alias{predict.kroc}
 \alias{summary.kroc}
-
 \title{Kernel receiver operating characteristic (ROC) curve}
 
 \description{ Kernel receiver operating characteristic (ROC) curve for 1- to 3-dimensional data.}
@@ -53,8 +52,6 @@ kroc(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{indices}{summary indices of ROC curve.}
 }
 
-
-
 \details{
   In this set-up, the values in the first sample \code{x1} should
   be larger in general that those in the second sample \code{x2}. The
@@ -100,4 +97,4 @@ summary(Rhat)
 predict(Rhat, x=0.5) 
 }
 
-\keyword{ smooth }
+\keyword{smooth}

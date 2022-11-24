@@ -4,12 +4,11 @@
 \alias{Hpi.diag.kcde}
 \alias{hpi.kcde}
 \alias{predict.kcde}
-
 \title{Kernel cumulative distribution/survival function estimate}
+
 \description{
   Kernel cumulative distribution/survival function estimate for 1- to 3-dimensional data.
 }
-
 
 \usage{
 kcde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, 
@@ -57,7 +56,6 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   \item{...}{other parameters} 
 }
   
-
 \value{
   A kernel cumulative distribution estimate is an object of class
   \code{kcde} which is a list with fields:
@@ -99,15 +97,14 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
   Society}, \bold{45}, 33-50.
 }
 
-
 \seealso{\code{\link{kde}}, \code{\link{plot.kcde}}}
 
 \examples{
-library(MASS)
-data(iris)
+data(iris, package="MASS")
 Fhat <- kcde(iris[,1:2])  
 predict(Fhat, x=as.matrix(iris[,1:2]))
 
 ## See other examples in ? plot.kcde
 }
+
 \keyword{smooth}

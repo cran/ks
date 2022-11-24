@@ -1,7 +1,7 @@
 \name{plot.kcde}
 \alias{plot.kcde}
-
 \title{Plot for kernel cumulative distribution estimate}
+
 \description{
   Plot for kernel cumulative distribution estimate 1- to 3-dimensional data.
 }
@@ -15,7 +15,6 @@
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}}
 }
   
-
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   graphics/RGL window.
@@ -53,6 +52,5 @@ plot(Fhat)
 Fhat <- kcde(x=iris[,1:3])
 plot(Fhat, alpha=0.3)
 }
-
 
 \keyword{hplot}

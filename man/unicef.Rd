@@ -1,9 +1,6 @@
 \name{unicef}
-
 \docType{data}
-
 \alias{unicef}
-
 \title{Unicef child mortality - life expectancy data}
 
 \description{
@@ -22,7 +19,6 @@ life expectancy.}
 \source{
 Unicef (2003). \emph{State of the World's Children Report 2003}, Oxford University Press, for Unicef.
 }
-
 
 \keyword{datasets}
 

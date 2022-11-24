@@ -1,11 +1,12 @@
 \name{Hbcv}
 \alias{Hbcv}
 \alias{Hbcv.diag}
-
 \title{Biased cross-validation (BCV) bandwidth matrix selector
   for bivariate data}
+
 \description{
 BCV bandwidth matrix for bivariate data.}
+
 \usage{
 Hbcv(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 Hbcv.diag(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
@@ -23,7 +24,6 @@ Hbcv.diag(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 \value{
 BCV bandwidth matrix. If \code{amise=TRUE} then the minimal BCV value is returned too. 
 }
-
 
 \references{Sain, S.R, Baggerly, K.A. & Scott, D.W. (1994)
   Cross-validation of multivariate densities. \emph{Journal of the
@@ -50,4 +50,5 @@ data(unicef)
 Hbcv(unicef)
 Hbcv.diag(unicef)
 }
-\keyword{ smooth }
+
+\keyword{smooth}

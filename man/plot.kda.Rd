@@ -1,14 +1,13 @@
 \name{plot.kda}
 \alias{plot.kda}
-
 \title{Plot for kernel discriminant analysis}
+
 \description{
   Plot for kernel discriminant analysis for 1- to 3-dimensional data.
 }
 
 \usage{
 \method{plot}{kda}(x, y, y.group, ...)
-
 }
 
 \arguments{
@@ -31,7 +30,6 @@
   graphics/RGL window. 
 }
 
-
 \details{
   For \code{kda} objects, the function headers for the different dimensional data are 
   \preformatted{
@@ -53,7 +51,6 @@
        theta=-30, phi=40, d=4, ticktype="detailed", bty="f", add=FALSE, ...)}
 }
  
-
 \seealso{\code{\link{kda}}, \code{\link{kde}}}
 
 \examples{

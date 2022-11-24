@@ -1,6 +1,5 @@
 \name{kde.local.test}
 \alias{kde.local.test}
-
 \title{Kernel density based local two-sample comparison test}
 
 \description{
@@ -42,8 +41,6 @@ kde.local.test(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned,
   \item{H1,H2,h1,h2}{bandwidth matrices/scalar bandwidths}
 }
 
-
-
 \details{The null hypothesis is \eqn{H_0(\bold{x}): f_1(\bold{x}) = f_2(\bold{x})}{H_0(x): f_1(x) = f_2(x)} where \eqn{f_1, f_2}{f_1, f_2} 
   are the respective density functions. The measure of discrepancy is  
   \eqn{U(\bold{x}) = [f_1(\bold{x}) - f_2(\bold{x})]^2}{U(x) = [f_1(x) - f_2(x)]^2}. 
@@ -79,13 +76,16 @@ second order correction to the mean value of the test statistic should be comput
 \seealso{\code{\link{kde.test}}, \code{\link{plot.kde.loctest}}}
   
 \examples{
-library(MASS)
+data(crabs, package="MASS")
 x1 <- crabs[crabs$sp=="B", 4]
 x2 <- crabs[crabs$sp=="O", 4]
 loct <- kde.local.test(x1=x1, x2=x2)
-plot(loct)
+plot(loct, ylim=c(-0.08,0.12))
+cols <- hcl.colors(palette="Dark2",2)
+plot(loct$fhat1, add=TRUE, col=cols[1])
+plot(loct$fhat2, add=TRUE, col=cols[2])
 
 ## see examples in ? plot.kde.loctest
 }
 
-\keyword{ test }
+\keyword{test}

@@ -1,7 +1,7 @@
 \name{plot.kde.loctest}
 \alias{plot.kde.loctest}
-
 \title{Plot for kernel local significant difference regions}
+
 \description{
   Plot for kernel local significant difference regions for 1- to 3-dimensional data. 
 }
@@ -27,15 +27,12 @@
     
     and those used in \code{\link{plot.kde}}
   }
-}
-  
-  
+} 
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is
   sent to graphics/RGL window. 
 }
-
 
 \details{
   For \code{kde.loctest} objects, the function headers are  
@@ -53,7 +50,6 @@
         add.legend=TRUE, ...)}
 }
  
-
 \seealso{\code{\link{kde.local.test}}}
 
 \examples{
@@ -73,6 +69,5 @@ plot(loct, lwd=1)
 loct <- kde.local.test(x1=a1, x2=a2)
 plot(loct, xlim=c(0,800), ylim=c(0,300), zlim=c(0,300))}
 }
-
 
 \keyword{hplot}

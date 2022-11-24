@@ -1,12 +1,12 @@
 \name{kde}
 \alias{kde}
 \alias{predict.kde}
-
 \title{Kernel density estimate}
 
 \description{
   Kernel density estimate for 1- to 6-dimensional data.
 }
+
 \usage{
 kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, 
     bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, 
@@ -40,7 +40,6 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   \item{zero.flag}{deprecated (retained for backwards compatibilty)}
   \item{...}{other parameters}
 }
-  
 
 \value{
   A kernel density estimate is an object of class \code{kde} which is a
@@ -92,7 +91,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   kernel estimators feasible for large samples. The default value of the
   binning flag \code{binned} is n>1 (d=1), n>500 (d=2), n>1000 (d>=3). 
   Some times binned estimation leads to negative density values: if non-negative
-  values are required, then set \code{density=TRUE}.
+  values are required, then set \code{density=TRUE}. 
   
   The default \code{bgridsize,gridsize} are d=1: 401; d=2: rep(151, 2); d=3: 
   rep(51, 3); d=4: rep(21, 4). 
@@ -103,13 +102,21 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   The default \code{xmin} is \code{min(x)-Hmax*supp} and \code{xmax}
   is \code{max(x)+Hmax*supp}  where \code{Hmax} is the maximum of the
   diagonal elements of \code{H}. The grid produced is the outer
-  product of \code{c(xmin[1], xmax[1])}, ..., \code{c(xmin[d], xmax[d])}.
+  product of \code{c(xmin[1], xmax[1])}, ..., \code{c(xmin[d], xmax[d])}. 
+  For \pkg{ks} \eqn{\geq}{>=} 1.14.0, when \code{binned=TRUE} and \code{xmin,xmax} 
+  are not missing, the data values \code{x} are clipped to the estimation grid 
+  delimited by \code{xmin,xmax} to prevent potential memory leaks.
 }
 
-\seealso{\code{\link{plot.kde}}}
+\seealso{\code{\link{plot.kde}}, \code{\link{kde.boundary}}}
 
 \examples{
-## positive data example
+## unit interval data 
+set.seed(8192)             
+fhat <- kde(runif(10000,0,1), unit.interval=TRUE)
+plot(fhat, ylim=c(0,1.2))
+
+## positive data 
 data(worldbank)
 wb <- as.matrix(na.omit(worldbank[,2:3]))
 wb[,2] <- wb[,2]/1000
@@ -119,7 +126,7 @@ plot(fhat, col=1, xlim=c(0,20), ylim=c(0,80))
 plot(fhat.trans, add=TRUE, col=2)
 rect(0,0,100,100, lty=2)
 
-## large data example on non-default grid
+## large data on non-default grid
 ## 151 x 151 grid = [-5,-4.933,..,5] x [-5,-4.933,..,5]
 set.seed(8192)
 x <- rmvnorm.mixt(10000, mus=c(0,0), Sigmas=invvech(c(1,0.8,1)))
@@ -128,4 +135,5 @@ plot(fhat)
 
 ## See other examples in ? plot.kde
 }
+
 \keyword{smooth}

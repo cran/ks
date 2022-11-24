@@ -1,38 +1,71 @@
-
 ########################################################################
 ## Default grid sizes
 ########################################################################
 
 default.gridsize <- function(d)
 {
-  if (d==1)      gridsize <- 401
-  else if (d==2) gridsize <- rep(151,d)
-  else if (d==3) gridsize <- rep(51, d)
-  else if (d>=4) gridsize <- rep(21, d)
-  ##else gridsize <- NA
-  
-  return(gridsize)
+    if (d==1)      gridsize <- 401
+    else if (d==2) gridsize <- rep(151,d)
+    else if (d==3) gridsize <- rep(51, d)
+    else if (d>=4) gridsize <- rep(21, d)
+    
+    return(gridsize)
 }
 
 default.bgridsize <- function(d)
 {
-  if (d==1)      gridsize <- 401
-  else if (d==2) gridsize <- rep(151,d)
-  else if (d==3) gridsize <- rep(31, d)
-  else if (d==4) gridsize <- rep(15, d)
-  else gridsize <- NA
-  
-  return(gridsize)
+    if (d==1)      gridsize <- 401
+    else if (d==2) gridsize <- rep(151,d)
+    else if (d==3) gridsize <- rep(31, d)
+    else if (d==4) gridsize <- rep(15, d)
+    else gridsize <- NA
+    
+    return(gridsize)
 }
 
 default.bflag <- function(d, n)
 {
-  if (d==1) thr <- 1
-  else if (d==2) thr <- 500
-  else if (d>2) thr <- 1000
-  bf <- n>thr
-  
-  return(bf)
+    if (d==1) thr <- 1
+    else if (d==2) thr <- 500
+    else if (d>2) thr <- 1000
+    bf <- n>thr
+    
+    return(bf)
+}
+
+## truncate x to xmin, xmax grid
+truncate.grid <- function(x, y, xmin, xmax)
+{
+    if (is.vector(x)) { d <- 1; n <- length(x); xvec <- TRUE; x <- matrix(x, ncol=1) }
+    else { d <- ncol(x); n <- nrow(x); xvec <- FALSE }
+    
+    xind <- rep(TRUE, n)
+    if (!(missing(xmax)))
+    {
+        if (d==1) msgmax <- xmax else msgmax <- paste0("c(", paste0(xmax, collapse=","), ")")
+        if (any(sweep(x, 2, FUN=">", xmax))) warning(paste0("Points in x greater than xmax=", msgmax, " have been excluded."))
+        for (i in 1:d) xind <- xind & x[,i]<=xmax[i]
+    }
+    if (!(missing(xmin)))
+    {
+        if (d==1) msgmin <- xmin else msgmin <- paste0("c(", paste0(xmin, collapse=","), ")")
+        if (any(sweep(x, 2, FUN="<", xmin))) warning(paste0("Points in x less than xmin=", msgmin, " have been excluded."))
+        for (i in 1:d) xind <- xind & x[,i]>=xmin[i]
+    }
+
+    if (d==1) 
+    { 
+        x <- x[xind,, drop=xvec]
+        ## special case for x is 1-col matrix to force x to be 
+        ## 1-col matrix, as required for eks <= 1.0.1
+    }
+    else 
+    { 
+        x <- x[xind,, drop=FALSE]
+    }
+    if (!missing(y)) { y <- y[xind]; x <- list(x=x, y=y) }
+     
+    return(x)
 }
 
 ########################################################################
@@ -44,55 +77,51 @@ default.bflag <- function(d, n)
 
 binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 {
-  x <- as.matrix(x)
-  d <- ncol(x)
-  n <- nrow(x)
-  if (missing(w)) w <- rep(1,n)
-  if (missing(h)) h <- rep(0,d)
-  if (!missing(H)) h <- sqrt(diag(H))
-
-  if (missing(bgridsize)) bgridsize <- default.gridsize(d)
-  if (!(missing(xmin) & missing(xmax)))
-  {
+    ## default values
+    x <- as.matrix(x)
+    d <- ncol(x)
+    n <- nrow(x)
+    if (missing(bgridsize)) bgridsize <- default.gridsize(d)
+    if (missing(w)) w <- rep(1,n)
+    if (missing(h)) h <- rep(0,d)
+    if (!missing(H)) h <- sqrt(diag(H))
+    
     range.x <- list()
-    for (i in 1:d)
-      range.x[[i]] <- c(xmin[i], xmax[i])
-  }
-  else
-  {
-    range.x <- list()
-    for (i in 1:d)
-      range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
-  }
-  if (!(missing(xmax))) {if (any(sweep(x, 2, FUN=">", xmax))) warning("Points in x greater than xmax don't contribute to binning grid counts.")}
-  if (!(missing(xmin))) {if (any(sweep(x, 2, FUN="<", xmin))) warning("Points in x less than xmin don't contribute to binning grid counts.")}
-      
-  a <- unlist(lapply(range.x,min))
-  b <- unlist(lapply(range.x,max))
-  
-  if (missing(gridtype)) gridtype <- rep("linear", d)
-  gridtype.vec <- rep("", d)
-  
-  gpoints <- list()
-  for (id in 1:d)
-  {
-    gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "log"))
-    if (gridtype1=="linear")
-      gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
-    else if (gridtype1=="log")
-      gpoints[[id]] <- seq(exp(a[id]),exp(b[id]),length=bgridsize[id])
-  }
-  
-  if (d==1) counts <- linbin.ks(x,gpoints[[1]], w=w) 
-  if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
-  if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
-  if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
+    if (!missing(xmin) & !missing(xmax))
+        for (i in 1:d) range.x[[i]] <- c(xmin[i], xmax[i])
+    else if (!missing(xmin) & missing(xmax))
+        for (i in 1:d) range.x[[i]] <- c(xmin[i], max(x[,i]) + supp*h[i])
+    else if (missing(xmin) & !missing(xmax))
+        for (i in 1:d) range.x[[i]] <- c(min(x[,i]) - supp*h[i], xmax[i])
+    else 
+        for (i in 1:d) range.x[[i]] <- c(min(x[,i]) - supp*h[i], max(x[,i]) + supp*h[i])
 
-  bin.counts <- list(counts=counts, eval.points=gpoints, w=w)
-  if (d==1) bin.counts <- lapply(bin.counts, unlist)
-  return(bin.counts)
+    a <- sapply(range.x,min) 
+    b <- sapply(range.x,max) 
+    
+    if (missing(gridtype)) gridtype <- rep("linear", d)
+    gridtype.vec <- rep("", d)
+    
+    gpoints <- list()
+    for (id in 1:d)
+    {
+        gridtype1 <- match.arg(gridtype[i], c("linear", "sqrt", "quantile", "log"))
+        if (gridtype1=="linear")
+          gpoints[[id]] <- seq(a[id],b[id],length=bgridsize[id])  
+        else if (gridtype1=="log")
+          gpoints[[id]] <- seq(exp(a[id]),exp(b[id]),length=bgridsize[id])
+    }
+    
+    if (d==1) counts <- linbin.ks(x,gpoints[[1]], w=w) 
+    if (d==2) counts <- linbin2D.ks(x,gpoints[[1]],gpoints[[2]], w=w)
+    if (d==3) counts <- linbin3D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]], w=w)
+    if (d==4) counts <- linbin4D.ks(x,gpoints[[1]],gpoints[[2]],gpoints[[3]],gpoints[[4]], w=w)
+
+    bin.counts <- list(counts=counts, eval.points=gpoints, w=w)
+    if (d==1) bin.counts <- lapply(bin.counts, unlist)
+    
+    return(bin.counts)
 }
-
 
 ########################################################################
 ## Linear binning
@@ -112,20 +141,20 @@ linbin.ks <- function(x, gpoints, w)
 
 linbin2D.ks <- function(x, gpoints1, gpoints2, w)
 {
-   n <- nrow(x)
-   M1 <- length(gpoints1)
-   M2 <- length(gpoints2)
-   a1 <- gpoints1[1]
-   a2 <- gpoints2[1]
-   b1 <- gpoints1[M1]
-   b2 <- gpoints2[M2]
-   if (missing(w)) w <- rep(1, n)
+    n <- nrow(x)
+    M1 <- length(gpoints1)
+    M2 <- length(gpoints2)
+    a1 <- gpoints1[1]
+    a2 <- gpoints2[1]
+    b1 <- gpoints1[M1]
+    b2 <- gpoints2[M2]
+    if (missing(w)) w <- rep(1, n)
 
-   ## binning for interior points
+    ## binning for interior points
       out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
-   xi <- matrix(out$est, nrow=M1, ncol=M2)
+    xi <- matrix(out$est, nrow=M1, ncol=M2)
 
-   return(xi)
+    return(xi)
 }
 
 linbin3D.ks <- function(x, gpoints1, gpoints2, gpoints3, w)

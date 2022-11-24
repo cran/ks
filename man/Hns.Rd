@@ -4,14 +4,11 @@
 \alias{hns}
 \alias{Hns.kcde}
 \alias{hns.kcde}
-
-
 \title{Normal scale bandwidth}
 
 \description{
 Normal scale bandwidth.  
 }
-
 
 \usage{
 Hns(x, deriv.order=0)
@@ -25,7 +22,6 @@ hns.kcde(x)
   \item{x}{vector/matrix of data values}
   \item{deriv.order}{derivative order}
 }
-
 
 \value{
   Normal scale bandwidth. 
@@ -41,15 +37,13 @@ hns.kcde(x)
   \code{Hns.kcde} and \code{hns.cde}. 
 }
 
-
 \references{Chacon J.E., Duong, T. & Wand, M.P. (2011). Asymptotics for
   general multivariate kernel density derivative
   estimators. \emph{Statistica Sinica}, \bold{21}, 807-840.   
 }
 
 \examples{
-library(MASS)
-data(forbes)
+data(forbes, package="MASS")
 Hns(forbes, deriv.order=2)
 hns(forbes$bp, deriv.order=2)
 }

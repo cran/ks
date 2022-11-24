@@ -1,12 +1,12 @@
 \name{histde}
 \alias{histde}
 \alias{predict.histde}
-
 \title{Histogram density estimate}
 
 \description{
   Histogram density estimate for 1- and 2-dimensional data.
 }
+
 \usage{
 histde(x, binw, xmin, xmax, adj=0)
 
@@ -61,4 +61,5 @@ plot(fhat)
 
 ## See other examples in ? plot.histde
 }
+
 \keyword{smooth}

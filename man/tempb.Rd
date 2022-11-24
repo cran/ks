@@ -1,9 +1,6 @@
 \name{tempb}
-
 \docType{data}
-
 \alias{tempb}
-
 \title{Daily temperature}
 
 \description{
@@ -29,7 +26,6 @@ T. (2012) An overview of the global historical climatology network-daily
 database, \emph{Journal of Atmospheric and Oceanic Technology}
 \bold{429}, 897 - 910. \url{https://climexp.knmi.nl/selectdailyseries.cgi}. Accessed 2016-10-20.
 }
-
 
 \keyword{datasets}
 

@@ -2,11 +2,12 @@
 \alias{kdde}
 \alias{predict.kdde}
 \alias{kcurv}
-
 \title{Kernel density derivative estimate}
+
 \description{
   Kernel density derivative estimate for 1- to 6-dimensional data.
 }
+
 \usage{
 kdde(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, 
     eval.points, binned, bgridsize, positive=FALSE, adj.positive, w,
@@ -41,7 +42,6 @@ kcurv(fhat, compute.cont=TRUE)
   \item{...}{other parameters} 
 }
   
-
 \value{
   A kernel density derivative estimate is an object of class
   \code{kdde} which is a list with fields:

@@ -1,9 +1,6 @@
 \name{grevillea}
-
 \docType{data}
-
 \alias{grevillea}
-
 \title{Geographical locations of grevillea plants}
 
 \description{
@@ -25,7 +22,6 @@ concentrations of endemic species and experiencing exceptional loss of habitat'.
 CSIRO (2016) Atlas of Living Australia: \emph{Grevillea uncinulata Diels},
 \url{https://bie.ala.org.au/species/https://id.biodiversity.org.au/node/apni/2895039}. Commonwealth Scientific and Industrial Research Organisation. Accessed 2016-03-11. 
 }
-
 
 \keyword{datasets}
 

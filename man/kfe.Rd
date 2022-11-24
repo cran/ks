@@ -3,7 +3,6 @@
 \alias{Hpi.kfe}
 \alias{Hpi.diag.kfe}
 \alias{hpi.kfe}
-
 \title{Kernel functional estimate}
 
 \description{
@@ -45,8 +44,6 @@ hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
    Plug-in bandwidth matrix for \eqn{r}{r}-th order kernel functional estimator.
 }
 
-
-
 \details{
   \code{Hpi.kfe} is the optimal plug-in bandwidth for \eqn{r}{r}-th order kernel functional estimator
   based on the unconstrained pilot selectors of Chacon & Duong (2010).
@@ -67,5 +64,4 @@ hpi.kfe(x, nstage=2, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0)
 
 \seealso{\code{\link{kde.test}}}
  
-
-\keyword{ smooth }
+\keyword{smooth}

@@ -1,9 +1,6 @@
 \name{air}
-
 \docType{data}
-
 \alias{air}
-
 \title{Air quality measurements in an underground train station}
 
 \description{
@@ -30,7 +27,6 @@ the eighth is the relative humidity (percentage). }
 RATP (2016) Qualite de l'air mesuree dans la station Chatelet, 
 \url{https://data.iledefrance.fr/explore/dataset/qualite-de-lair-mesuree-dans-la-station-chatelet}. Regie autonome des transports parisiens - Departement Developpement, Innovation et Territoires. Accessed 2017-09-27.
 }
-
 
 \keyword{datasets}
 

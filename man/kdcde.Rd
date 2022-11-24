@@ -2,9 +2,11 @@
 \alias{kdcde}
 \alias{dckde}
 \title{Deconvolution kernel density derivative estimate}
+
 \description{
   Deconvolution kernel density derivative estimate for 1- to 6-dimensional data.
 }
+
 \usage{
 kdcde(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, 
       verbose=FALSE, ...)
@@ -24,7 +26,6 @@ dckde(...)
   \item{...}{other parameters to \code{\link{kde}}} 
 }
   
-
 \value{
   A deconvolution kernel density derivative estimate is an object of class
   \code{kde} which is a list with fields:
@@ -43,8 +44,8 @@ dckde(...)
 
 \details{ 
   A weighted kernel density estimate is utilised to perform the
-  deconvolution. The weights are obtained from from a
-  quadratic programming problem, and then input into \code{kde(,w=)}.
+  deconvolution. The weights \code{w} are the solution to a
+  quadratic programming problem, and then input into \code{kde(,w=w)}.
   This weighted estimate also requires an estimate of the error
   variance matrix from repeated observations, and of the regularisation
   parameter. If the latter is missing, it is calculated internally using

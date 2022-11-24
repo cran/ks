@@ -1,11 +1,12 @@
 \name{kde.truncate}
 \alias{kde.truncate}
 \alias{kdde.truncate}
-
 \title{Truncated kernel density derivative estimate}
+
 \description{
   Truncated kernel density derivative estimate for 2-dimensional data.
 }
+
 \usage{
 kde.truncate(fhat, boundary) 
 kdde.truncate(fhat, boundary) 
@@ -16,7 +17,6 @@ kdde.truncate(fhat, boundary)
   \item{boundary}{two column matrix delimiting the boundary for truncation}
 }
   
-
 \value{
   A truncated kernel density (derivative) estimate inherits the same
   object class as the input estimate. 

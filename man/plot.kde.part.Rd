@@ -2,8 +2,8 @@
 \alias{plot.kde.part}
 \alias{kms.part}
 \alias{mvnorm.mixt.part}
-
 \title{Partition plot for kernel density clustering}
+
 \description{
   Plot of partition for kernel density clustering for 2-dimensional data.
 }
@@ -34,7 +34,6 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
   \item{...}{other parameters}
 }
   
-
 \value{
   A kernel partition is an object of class \code{kde.part} which is a
   list with fields:
@@ -59,7 +58,6 @@ kms.part(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
   Plot is sent to graphics window. 
 }
 
-
 \details{
   For 2-d data, \code{kms.part} and \code{mvnorm.mixt.part} produce a
   \code{kde.part} object whose 
@@ -83,6 +81,5 @@ x <- rmvnorm.mixt(n=10000, mus=mus, Sigmas=Sigmas, props=props)
 msize <- round(prod(gridsize)*0.1)
 kms.nmixt.part <- kms.part(x=x, min.clust.size=msize, gridsize=gridsize)
 plot(kms.nmixt.part, asp=1, xlim=c(-3,3), ylim=c(-3,3), alpha=0.5)}}
-
 
 \keyword{hplot}

@@ -1,5 +1,4 @@
 \name{ks-internal}
-
 \alias{getRow}
 \alias{Lpdiff}
 \alias{matrix.sqrt}
@@ -15,7 +14,6 @@
 \alias{dwsupp}
 \alias{reg.ucv}
 \alias{kr}
-  
 \title{Internal functions in the ks library}
 
 \description{

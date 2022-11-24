@@ -1,11 +1,9 @@
 \name{plot.kroc}
 \alias{plot.kroc}
+\title{Plot for kernel receiver operating characteristic curve (ROC) estimate}
 
-\title{Plot for kernel receiver operating
-  characteristic curve (ROC) estimate}
 \description{
-  Plot for kernel receiver operating
-  characteristic curve (ROC) estimate 1- to 3-dimensional data.
+  Plot for kernel receiver operating characteristic curve (ROC) estimate 1- to 3-dimensional data.
 }
 
 \usage{
@@ -24,12 +22,10 @@
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}.} 
 }
   
-
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   graphics/RGL window. 
 }
-
 
 \seealso{\code{\link{plot.kde}}}
 
@@ -41,6 +37,5 @@ x2 <- fgl[fgl[,"type"]=="Head",c("RI", "Na")]
 Rhat <- kroc(x1=x1, x2=x2) 
 plot(Rhat, add.roc.ref=TRUE)
 }
-
 
 \keyword{hplot}

@@ -1,10 +1,11 @@
 \name{pre.transform}
 \alias{pre.sphere}
 \alias{pre.scale}
-
 \title{Pre-sphering and pre-scaling}
+
 \description{
 Pre-sphered or pre-scaled version of data.}
+
 \usage{
 pre.sphere(x, mean.centred=FALSE)
 pre.scale(x, mean.centred=FALSE)
@@ -14,6 +15,7 @@ pre.scale(x, mean.centred=FALSE)
   \item{x}{matrix of data values}
   \item{mean.centred}{flag to centre the data values to have zero mean. Default is FALSE.}
 }
+
 \value{Pre-sphered or pre-scaled version of data. These
   pre-transformations are required for implementing the plug-in
   \code{\link{Hpi}} selectors and the smoothed cross validation
@@ -33,4 +35,5 @@ pre.scale(x, mean.centred=FALSE)
 data(unicef)
 unicef.sp <- pre.sphere(as.matrix(unicef))
 }
-\keyword{ algebra }
+
+\keyword{algebra}

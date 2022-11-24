@@ -1,11 +1,10 @@
 \name{plotmixt}
 \alias{plotmixt}
-
 \title{Plot for 1- to 3-dimensional normal and t-mixture density functions}
+
 \description{
   Plot for 1- to 3-dimensional normal and t-mixture density functions.
 }
-
 
 \usage{
 plotmixt(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE,
@@ -31,8 +30,6 @@ plotmixt(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE,
   graphics/RGL window. If \code{draw=FALSE}, then a \code{kdde}-like object is returned.
 }
 
- 
-
 \examples{
 ## bivariate 
 mus <- rbind(c(0,0), c(-1,1))
@@ -49,4 +46,4 @@ props <- c(1/2, 1/2)
 plotmixt(mus=mus, Sigmas=Sigmas, props=props, dfs=c(11,8), dist="t")
 }
 
-\keyword{ hplot}
+\keyword{hplot}

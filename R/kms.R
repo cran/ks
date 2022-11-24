@@ -6,8 +6,8 @@ kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merg
 {
     n <- nrow(x)
     d <- ncol(x)
-    if (missing(tol.iter)) tol.iter <- 1e-3*min(apply(x, 2, IQR)) ##mean(apply(apply(x, 2, range), 2, diff))
-    if (missing(tol.clust)) tol.clust <- 1e-2*max(apply(x, 2, IQR)) ##mean(apply(apply(x, 2, range), 2, diff))  
+    if (missing(tol.iter)) tol.iter <- 1e-3*min(apply(x, 2, IQR)) ## mean(apply(apply(x, 2, range), 2, diff))
+    if (missing(tol.clust)) tol.clust <- 1e-2*max(apply(x, 2, IQR)) ## mean(apply(apply(x, 2, range), 2, diff))  
     if (missing(y)) y <- x
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(y),0) 
     if (missing(H)) H <- Hpi(x, deriv.order=1, binned=default.bflag(d=d, n=n), nstage=2-(d>2))
@@ -56,7 +56,6 @@ kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merg
     return(ms)
 }
 
-
 kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE)
 {
     ## mean shift iterations
@@ -81,7 +80,7 @@ kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE
     disp.ind <- head(sample(1:nrow(y)), n=min(100,nrow(y)))
     while (eps > tol.iter & i< max.iter)
     {
-	y.curr <- y.update
+        y.curr <- y.update
         yHinvy <- t(rowSums(y.curr%*%Hinv *y.curr))
         Mah <- apply(yHinvy, 2, "+", xHinvx) - 2*xHinv %*% t(y.curr)
         w <- exp(-Mah/2)
@@ -115,8 +114,8 @@ kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE
     nclust.table <- table(clust.label, dnn="")
     
     ms <- list(x=x, y=y, end.points=ms.endpt, H=H, label=clust.label, nclust=nclust, nclust.table=nclust.table, mode=mode.val, path=y.path)
-
     class(ms) <- "kms"
+
     return(ms)
 }
 
@@ -147,10 +146,8 @@ ms.merge.label <- function(ms, label, verbose=FALSE)
     ms.merge$label <- as.numeric(ms.merge$label)
     ms.merge$nclust.table <- table(ms.merge$label)
 
-    if (verbose)
-    {
-        cat("Current clusters:", ms.merge$nclust.table, "\n")
-    }
+    if (verbose) cat("Current clusters:", ms.merge$nclust.table, "\n")
+    
     return(ms.merge)  
 }
    
@@ -169,7 +166,6 @@ ms.merge.dist <- function(ms, tol, verbose)
     
     return(ms.temp)
 }
-
 
 ## merge mean shift clusters based on min cluster size
 
@@ -201,15 +197,13 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
         }
         ms <- ms.temp
         ms$min.clust.size <- min.clust.size
-        ##ms <- ms.merge.num1(ms, num=min.clust.size, verbose=verbose)
         
         if (verbose) cat("Min cluster size merging ends.\n\n")
     }
-    if (verbose) {cat("Final clusters:\n"); summary(ms)}
+    if (verbose) { cat("Final clusters:\n"); summary(ms) }
 
     return(ms)
 }
-
 
 ######################################################################
 ## Cluster partition for 2D kernel mean shift
@@ -218,7 +212,7 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 {
     if (missing(H)) H <- Hpi(x, deriv.order=1, binned=TRUE)
-    tol <- 5 ##3.7
+    tol <- 5
     tol.H <-  tol * diag(H)
     if (missing(xmin)) xmin <- apply(x, 2, min) - tol.H
     if (missing(xmax)) xmax <- apply(x, 2, max) + tol.H
@@ -242,7 +236,7 @@ kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 plot.kde.part <- function(x, display="filled.contour", col, col.fun, alpha=1, add=FALSE, ...)
 {
     clev <- sort(unique(as.vector(x$estimate)))
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Dark2", alpha=alpha)}
+    if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Dark2", alpha=alpha) }
     if (missing(col)) col <- col.fun(length(clev))
     
     for (i in 1:length(clev))
@@ -252,6 +246,7 @@ plot.kde.part <- function(x, display="filled.contour", col, col.fun, alpha=1, ad
         plot.kde(xtemp, display=display, col=c("transparent", col[i]), add=add | i>1, abs.cont=0.5, drawlabels=FALSE, alpha=alpha, ...)
     }
 }
+
 #############################################################################
 ## S3 methods for KMS objects
 #############################################################################
@@ -270,9 +265,9 @@ summary.kms <- function(object, ...)
 
 plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, phi=40, add=FALSE, ...)
 {
- 	disp1 <- match.arg(display, c("splom", "plot3D", "rgl"))
+    disp <- match.arg(display, c("splom", "plot3D", "rgl"))
     if (is.vector(x$H)) d <- 1 else d <- ncol(x$H)
-    if (missing(col.fun)) col.fun <- function(n) {hcl.colors(n, palette="Set2", alpha=alpha)}
+    if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Set2", alpha=alpha) }
     if (missing(col)) col <- col.fun(length(unique(x$label)))
     col <- transparency.col(col, alpha=alpha)
     if (d==1) stop("kms plot not yet implemented")
@@ -283,24 +278,23 @@ plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab
         if (!add) plot(x$x, col=col[x$label], xlab=xlab, ylab=ylab, ...)
         else points(x$x, col=col[x$label], ...)
     }
-    else if (d==3 & disp1 %in% c("plot3D", "rgl"))
+    else if (d==3 & disp %in% c("plot3D", "rgl"))
     {
         if (missing(xlab)) xlab <- x$names[1]
         if (missing(ylab)) ylab <- x$names[2]
         if (missing(zlab)) zlab <- x$names[3]
     
-        if (disp1=="plot3D")
+        if (disp=="plot3D")
         {
             if (!add) plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=1, cex=0, add=add, theta=theta, phi=phi, d=4, colkey=FALSE, xlab=xlab, ylab=ylab, zlab=zlab, ticktype="detailed", bty="f", ...)
         
             for (i in 1:length(col))
                 plot3D::points3D(x$x[x$label==i,1], x$x[x$label==i,2], x$x[x$label==i,3], col=col[i], add=TRUE, ...)
         }
-        else if (disp1=="rgl")
+        else if (disp=="rgl")
         {
             ## suggestions from Viktor Petukhov 08/03/2018
             if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
-
             if (!add) rgl::plot3d(x$x, col=col[x$label], alpha=alpha, ...)
             else rgl::points3d(x$x, col=col[x$label], alpha=alpha, ...) 
         }

@@ -1,9 +1,6 @@
 \name{hsct}
-
 \docType{data}
-
 \alias{hsct}
-
 \title{Haematopoietic stem cell transplant}
 
 \description{
@@ -28,7 +25,6 @@
 Aghaeepour, N., Finak, G., The FlowCAP Consortium, The DREAM Consortium,
 Hoos, H., Mosmann, T. R., Brinkman, R., Gottardo, R. & Scheuermann, R. H. (2013) Critical assessment of automated flow cytometry data analysis techniques, \emph{Nature Methods} \bold{10}, 228-238.
 }
-
 
 \keyword{datasets}
 

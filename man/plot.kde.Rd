@@ -1,7 +1,7 @@
 \name{plot.kde}
 \alias{plot.kde}
-
 \title{Plot for kernel density estimate}
+
 \description{
   Plot for kernel density estimate for 1- to 3-dimensional data.
 }
@@ -39,13 +39,11 @@
     }
   }
 }
-  
 
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   graphics/RGL window. 
 }
-
 
 \details{
   For \code{kde} objects, the function headers for the different dimensional data are  
@@ -126,6 +124,5 @@ fhat <- kde(x=iris[,2:4])
 plot(fhat)
 if (interactive()) plot(fhat, display="rgl")
 }
-
 
 \keyword{hplot}

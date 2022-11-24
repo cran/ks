@@ -1,9 +1,6 @@
 \name{worldbank}
-
 \docType{data}
-
 \alias{worldbank}
-
 \title{Development indicators from the World Bank Group}
 
 \description{
@@ -29,7 +26,6 @@ World Bank Group (2016) World development indicators.
 \url{http://databank.worldbank.org/data/reports.aspx?
 source=world-development-indicators}. Accessed 2016-10-03.
 }
-
 
 \keyword{datasets}
 

@@ -1,6 +1,5 @@
 \name{kde.test}
 \alias{kde.test}
-
 \title{Kernel density based global two-sample comparison test}
 
 \description{
@@ -33,8 +32,6 @@ A kernel two-sample global significance test is a list with fields:
   \item{H1,H2}{bandwidth matrices}
   \item{psi1,psi12,psi21,psi2}{kernel functional estimates}
 }
-
-
 
 \details{The null hypothesis is \eqn{H_0: f_1 \equiv f_2}{H_0: f_1 = f_2} where \eqn{f_1, f_2}{f_1, f_2} 
   are the respective density functions. The measure of discrepancy is
@@ -76,4 +73,4 @@ x2 <- crabs[crabs$sp=="O", c(4,6)]
 kde.test(x1=x1, x2=x2)$pvalue  ## reject H0: f1=f2
 }
 
-\keyword{ test }
+\keyword{test}

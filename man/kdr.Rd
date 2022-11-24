@@ -2,11 +2,12 @@
 \alias{kdr}
 \alias{kdr.segment}
 \alias{plot.kdr}
-
 \title{Kernel density ridge estimation}
+
 \description{
   Kernel density ridge estimation for 2- to 3-dimensional data.
 }
+
 \usage{
 kdr(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min.seg.size,
     keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat,
@@ -50,7 +51,6 @@ kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE)
   \item{...}{other graphics parameters}
 }
   
-
 \value{
   A kernel density ridge set is an object of class \code{kdr}
   which is a list with fields: 

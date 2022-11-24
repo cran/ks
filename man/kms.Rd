@@ -2,11 +2,12 @@
 \alias{kms}
 \alias{summary.kms}
 \alias{plot.kms}
-
 \title{Kernel mean shift clustering}
+
 \description{
   Kernel mean shift clustering for 2- to 6-dimensional data.
 }
+
 \usage{
 kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
     keep.path=FALSE, verbose=FALSE)
@@ -43,7 +44,6 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{...}{other (graphics) parameters}
 }
   
-
 \value{
   A kernel mean shift clusters set is an object of class \code{kms}
   which is a list with fields: 

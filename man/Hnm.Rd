@@ -2,14 +2,11 @@
 \alias{Hnm}
 \alias{hnm}
 \alias{Hnm.diag}
-
-
 \title{Normal mixture bandwidth}
 
 \description{
 Normal mixture bandwidth.  
 }
-
 
 \usage{
 Hnm(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose, ...)
@@ -27,7 +24,6 @@ hnm(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose, ... )
   \item{...}{other parameters for \code{Mclust}}
 }
 
-
 \value{
   Normal mixture bandwidth. If \code{mise=TRUE} then the minimal MISE value is returned too. 
 }
@@ -39,7 +35,6 @@ hnm(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose, ... )
   these fitted normal mixture parameters. Likewise for 
   \code{Hnm.diag}, \code{hnm}.   
 }
-
 
 \seealso{ \link{Hmise.mixt}, \link{Hamise.mixt} }
 

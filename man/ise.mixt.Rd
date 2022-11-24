@@ -8,7 +8,6 @@
 \alias{ise.mixt}
 \alias{amise.mixt}
 \alias{mise.mixt}
-
 \title{Squared error bandwidth matrix selectors for normal
   mixture densities}
 
@@ -20,7 +19,6 @@
   AMISE. So in these cases, we can numerically minimise these criteria
   to find MISE- and AMISE-optimal matrices.
 }
-
 
 \usage{
 Hamise.mixt(mus, Sigmas, props, samp, Hstart, deriv.order=0)
@@ -48,7 +46,6 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   \item{bgridsize}{vector of binning grid sizes}
 }
 
-
 \value{
   MISE- or AMISE-optimal bandwidth matrix. ISE, MISE or AMISE value. 
 }
@@ -59,7 +56,6 @@ mise.mixt(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
   depend on the data. For normal mixture densities, ISE, MISE and AMISE 
   have exact formulas for all dimensions.
 }
-
 
 \references{Chacon J.E., Duong, T. & Wand, M.P. (2011). Asymptotics for
   general multivariate kernel density derivative
@@ -72,4 +68,3 @@ Hamise.mixt(samp=nrow(x), mus=rep(0,2), Sigmas=var(x), props=1, deriv.order=1)
 }
 
 \keyword{smooth}
-

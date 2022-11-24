@@ -1,17 +1,18 @@
 \name{kcopula}
 \alias{kcopula}
 \alias{kcopula.de}
-
 \title{Kernel copula (density) estimate}
+
 \description{
   Kernel copula and copula density estimator for 2-dimensional data.
 }
+
 \usage{
 kcopula(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
-  binned, bgridsize, w, verbose=FALSE, marginal="kernel")
+  binned, bgridsize, w, marginal="kernel", verbose=FALSE)
 kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
-  binned, bgridsize, w, verbose=FALSE, compute.cont=TRUE, approx.cont=TRUE,
-  marginal="kernel", boundary.supp, boundary.kernel="beta")
+  binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
+  marginal="kernel", boundary.supp, boundary.kernel="beta", verbose=FALSE)
 }
 
 \arguments{
@@ -25,7 +26,6 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \item{binned}{flag for binned estimation}
   \item{bgridsize}{vector of binning grid sizes}
   \item{w}{vector of weights. Default is a vector of all ones.}
-  \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{marginal}{"kernel" = kernel cdf or "empirical" = empirical cdf
     to calculate pseudo-uniform values. Default is "kernel".}
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
@@ -33,10 +33,9 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     levels. Default is TRUE.}
   \item{boundary.supp}{effective support for boundary region}
   \item{boundary.kernel}{"beta" = beta boundary kernel, "linear" = linear boundary kernel}
-  
+ \item{verbose}{flag to print out progress information. Default is FALSE.}  
 }
   
-
 \value{
   A kernel copula estimate, output from \code{kcopula}, is an object of
   class \code{kcopula}. A kernel copula density estimate, output from
@@ -78,7 +77,6 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   \bold{31}, 131--145.
 }
 
-
 \seealso{\code{\link{kcde}}, \code{\link{kde}}}
 
 \examples{
@@ -86,8 +84,8 @@ library(MASS)
 data(fgl)
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
-plot(Chat, disp="persp", border=1)
-plot(Chat, disp="filled.contour", lwd=1)
+plot(Chat, display="persp", border=1)
+plot(Chat, display="filled.contour", lwd=1)
 }
 
 \keyword{smooth}

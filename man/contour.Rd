@@ -5,8 +5,8 @@
 \alias{contourLevels.kdde}
 \alias{contourSizes}
 \alias{contourProbs}
-
 \title{Contour functions}
+
 \description{
   Contour levels and sizes.
 } 
@@ -34,7 +34,6 @@ contourProbs(x, abs.cont, cont=c(25,50,75), approx=TRUE)
   \item{...}{other parameters}
 }
   
-
 \value{
   --For \code{contourLevels}, for \code{kde} objects, returns vector of
   heights.  For \code{kda} objects, returns a list of vectors, one for
@@ -47,8 +46,6 @@ contourProbs(x, abs.cont, cont=c(25,50,75), approx=TRUE)
   --For \code{contourProbs}, returns an approximation of the probability measure of 
   level set. 
 }
-
-
 
 \details{
   --For \code{contourLevels}, the most straightforward is to specify \code{prob}.
@@ -68,7 +65,6 @@ contourProbs(x, abs.cont, cont=c(25,50,75), approx=TRUE)
   reduce computation time for large data sets. 
 }
  
-
 \seealso{\code{\link{contour}}, \code{\link{contourLines}}}
 
 \examples{

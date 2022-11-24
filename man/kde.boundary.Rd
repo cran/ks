@@ -1,11 +1,11 @@
 \name{kde.boundary}
 \alias{kde.boundary}
-
 \title{Kernel density estimate for bounded data}
 
 \description{
   Kernel density estimate for bounded 1- to 3-dimensional data.
 }
+
 \usage{
 kde.boundary(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
    binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
@@ -32,7 +32,6 @@ kde.boundary(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     FALSE.}
 }
   
-
 \value{
   A kernel density estimate for bounded data is an object of class \code{kde}.    
 }

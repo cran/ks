@@ -1,7 +1,7 @@
 \name{plot.kfs}
 \alias{plot.kfs}
-
 \title{Plot for kernel feature significance}
+
 \description{
   Plot for kernel significant regions for 1- to 3-dimensional data.
 }
@@ -25,7 +25,6 @@
   \item{...}{other graphics parameters used in \code{\link{plot.kde}}}
 }
   
-
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   graphics/RGL window.
@@ -39,6 +38,5 @@ data(geyser)
 geyser.fs <- kfs(geyser, binned=TRUE)
 plot(geyser.fs)
 }}
-
 
 \keyword{hplot}

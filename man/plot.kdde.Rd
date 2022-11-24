@@ -1,7 +1,7 @@
 \name{plot.kdde}
 \alias{plot.kdde}
-
 \title{Plot for kernel density derivative estimate}
+
 \description{
   Plot for kernel density derivative estimate for 1- to 3-dimensional data.
 }
@@ -21,7 +21,6 @@
     and those used in \code{\link{plot.kde}}}
 }
   
-
 \value{
   Plots for 1-d and 2-d are sent to graphics window. Plot for 3-d is sent to
   graphics/RGL window.
@@ -32,7 +31,6 @@
   magnitude/direction of the density gradient. See \code{quiver} from
   the \pkg{pracma} package for more details. 
 }
-
 
 \details{
   For \code{kdde} objects, the function headers for the different dimensional data are  
@@ -76,6 +74,5 @@ plot(s2, display="filled.contour", alpha=0.5, lwd=1)
 data(iris)
 fhat1 <- kdde(iris[,2:4], deriv.order=1)
 plot(fhat1)}}
-
 
 \keyword{hplot}

@@ -2,38 +2,34 @@
 ## Deconvolution KDE
 ######################################################################
 
-dckde <- function(...) {return (kdcde(...)) }
+dckde <- function(...) { return (kdcde(...)) }
 
 kdcde <- function(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, verbose=FALSE, ...)
 {
     ## default values 
     ksd <- ks.defaults(x=x, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
     d <- ksd$d; n <- ksd$n 
-    ##if (missing(binned)) binned <- ksd$binned
-    ##if (missing(bgridsize)) bgridsize <- ksd$bgridsize
-    ##if (missing(gridsize)) gridsize <- ksd$gridsize
     binned <- ksd$binned
     gridsize <- ksd$gridsize
     bgridsize <- ksd$bgridsize
 
     x <- as.matrix(x)
-    if (d==1 & missing(h)) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
-    if (d>1 & missing(H)) H <- Hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=0)
+    if (d==1 & missing(h)) h <- hpi(x=x, nstage=2, binned=binned, deriv.order=0)
+    if (d>1 & missing(H)) H <- Hpi(x=x, nstage=2, binned=binned, deriv.order=0)
 
-    if (d==1) stop("d=1 not yet implemented for dckde.")
+    if (d==1) stop("dckde not yet implemented for d=1")
     if (missing(reg)) reg <- reg.ucv(x=x, H=H, h=h, Sigma=Sigma, sigma=sigma, k=5, d=d, binned=binned, verbose=verbose)
 
     ## Deconvolution KDE is weighted KDE with non-uniform weights
     w <- dckde.weights(x=x, H=H, Sigma=Sigma, reg=reg)
-    fhat <- kde(x=x, H=H, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    fhat <- kde(x=x, H=H, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize, verbose=verbose, ...)
     fhat$reg <- reg
 
     return(fhat)
 }
 
-## Weights for deconvolution KDE
-## Code adapted from DeconWK 0.6-5
-## Author B. Turlach
+## weights for deconvolution KDE
+## code adapted from DeconWK 0.6-5, author B. Turlach
 ## R-forge website: https://r-forge.r-project.org/R/?group_id=630
 
 dckde.weights <- function(x, Sigma, H, reg)
@@ -58,15 +54,11 @@ dckde.weights <- function(x, Sigma, H, reg)
     return(w)  
 }
 
-
-## Unbiased k-fold cross validation choice of regularisation penalty (gamma)
+## unbiased k-fold cross validation choice of regularisation penalty (gamma)
 
 reg.ucv <- function(x, H, h, Sigma, sigma, k=5, d, binned=FALSE, verbose=FALSE)
 {
-    if (d>1)
-        gamma.ucv.temp <- function(gamma)
-        { return(-reg.ucv.val(x=x, H=H, Sigma=Sigma, k=k, reg=gamma^2, binned=binned)) }
-
+    gamma.ucv.temp <- function(gamma) { return(-reg.ucv.val(x=x, H=H, Sigma=Sigma, k=k, reg=gamma^2, binned=binned)) }
     gamma.val <- nlm(f=gamma.ucv.temp, p=0.1, print.level=2*as.numeric(verbose))$estimate^2
     
     return(gamma.val)

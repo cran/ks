@@ -23,6 +23,8 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
     binned <- ksd$binned
     bgridsize <- ksd$bgridsize
     gridsize <- ksd$gridsize
+
+    ## default bandwidth
     if (missing(H)) H <- Hpi(x=x, nstage=2-(d>2), binned=binned, deriv.order=2, verbose=verbose)
     Hinv <- chol2inv(chol(H))
     tol <- 3.7
@@ -100,9 +102,6 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
         pc$y <- pc$y[pc.label.ind,]
         pc$end.points <- pc$end.points[pc.label.ind,]
         pc$path <- pc$path[pc.label.ind]
-        #pc$label <- factor(pc.label[pc.label.ind])
-        #levels(pc$label) <- 1:length(levels(pc$label))
-        #pc$label <- as.numeric(pc$label)
     }
     pc$H <- H
     pc$names <- xnames
@@ -123,7 +122,6 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
     
     return(pc)
 }
-
 
 kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv, ...)
 {
@@ -154,7 +152,6 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
         mean.shift.H <- num/denom - y.curr
 
         fhat2.y.curr <- predict(fhat2, x=y.curr)
-        ##if (ny==1) fhat2.y.curr <- matrix(fhat2.y.curr, nrow=1) 
         for (j in 1:ny)
         {
             Hessian <- invvec(fhat2.y.curr[j,])
@@ -185,11 +182,9 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
 
 ## create segment of KDR filaments
 ## x = output from kdr
+
 kdr.segment <- function(x, k, kmax, min.seg.size, verbose=FALSE)
 {
-    ## separate KDR into 'reasonable' segments
-    #ccname <- "Calinski_Harabasz"
-    #ccname <- match.arg(ccname, c("Calinski_Harabasz", "Ratkowsky_Lance", "S_Dbw")) #clusterCrit::getCriteriaNames(TRUE))
     ep <- x$end.points
     if (any(names(ep) %in% "segment")) ep <- x$end.points[,-which(names(ep)=="segment")]
     if (missing(min.seg.size)) min.seg.size <- x$min.seg.size
@@ -209,7 +204,6 @@ kdr.segment <- function(x, k, kmax, min.seg.size, verbose=FALSE)
         }
         if (verbose) close(pb)
         clust.ind[is.na(clust.ind)] <- 0
-        #if (ccname %in% c("S_Dbw", "Scott_Symons")) kopt <- which.min(clust.ind) else 
         kopt <- which.max(clust.ind) 
     }
     else kopt <- k
@@ -243,6 +237,7 @@ kdr.segment <- function(x, k, kmax, min.seg.size, verbose=FALSE)
 }
 
 ## rbind nearest neighbour of y from x to y
+
 add.knnx <- function(x, y, k=1)
 {
     xynn <- FNN::get.knnx(x, y, k=k)
@@ -253,8 +248,8 @@ add.knnx <- function(x, y, k=1)
     return(xy)      
 }
 
-
 ## arrange points in KDR to form a "reasonable" linestring 
+
 chain.knnx <- function(x, k1=1, k2=5)
 {
     ## concatenate the nearest neighbours in a chain
@@ -299,6 +294,7 @@ chain.knnx <- function(x, k1=1, k2=5)
 }
 
 ## Calinski-Harabasz clustering criterion for hierarchical clustering object
+
 clust.crit <- function(hc, x, k, min.seg.size=1)
 {
     label <- cutree(hc, k=k)
@@ -310,6 +306,7 @@ clust.crit <- function(hc, x, k, min.seg.size=1)
 }
 
 ## copied from fpc::calinhara 2020-09-18
+
 fpc.calinhara <- function(x, clustering, cn = max(clustering)) 
 {
     x <- as.matrix(x)
@@ -337,6 +334,7 @@ fpc.calinhara <- function(x, clustering, cn = max(clustering))
 #############################################################################
 
 ## plot method 
+
 plot.kdr <- function(x, ...)
 { 
     fhat <- x
@@ -377,7 +375,6 @@ plotkdr.2d <- function(x, add=FALSE, col, type="p", alpha=1, ...)
     }
 }
 
-
 plotkdr.3d <- function(x, display="plot3D", colors, col, col.fun, alphavec, size=3, cex=1, pch=1, theta=-30, phi=40, d=4, ticktype="detailed", add=FALSE, xlab, ylab, zlab, alpha=1, box=TRUE, axes=TRUE, type="p", ...)
 {
     fhat <- x
@@ -397,16 +394,17 @@ plotkdr.3d <- function(x, display="plot3D", colors, col, col.fun, alphavec, size
         if (length(col) < length(xps)) col <- rep(col, length(xps))
     }
     colors <- col
-    disp1 <- match.arg(display, c("plot3D", "rgl")) 
-	if (disp1 %in% "plot3D") 
+    disp <- match.arg(display, c("plot3D", "rgl")) 
+	if (disp %in% "plot3D") 
 	{
         if (!add) plot3D::scatter3D(x=xp[,1], y=xp[,2], z=xp[,3], add=add, theta=theta, phi=phi, d=d, type=type, xlab=xlab, ylab=ylab, zlab=zlab, ticktype=ticktype, type="n", col=NA, ...) 
         for (i in 1:length(xps))
             plot3D::scatter3D(x=xp[xp$segment==xps[i],1], y=xp[xp$segment==xps[i],2], z=xp[xp$segment==xps[i],3], cex=cex, col=col[i], add=TRUE, pch=pch, type=type, alpha=alpha, ...) 
     }
-    else if (disp1 %in% "rgl")
+    else if (disp %in% "rgl")
     {
-         for (i in 1:length(xps))
+        if (!requireNamespace("rgl", quietly=TRUE)) stop("Install the rgl package as it is required.", call.=FALSE)
+        for (i in 1:length(xps))
             rgl::plot3d(x=xp[xp$segment==xps[i],1], y=xp[xp$segment==xps[i],2], z=xp[xp$segment==xps[i],3], col=col[i], alpha=alpha, xlab=xlab, ylab=ylab, zlab=zlab, add=add | (i>1), box=box, axes=axes, type=type, size=size, ...)
     }
 }

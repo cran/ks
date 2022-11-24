@@ -3,7 +3,6 @@
 \alias{vech}
 \alias{invvec}
 \alias{invvech}
-
 \title{Vector and vector half operators}
 
 \description{
@@ -29,13 +28,10 @@ invvech(x)
   \item{byrow}{flag for stacking row-wise or column-wise. Default is FALSE.}  
   }
   
-
 \references{ Magnus, J.R. & Neudecker H.M. (2007) \emph{Matrix
   Differential Calculus with Applications in Statistics and
   Econometrics (3rd edition)}, Wiley & Sons. Chichester.
 }
-
-
 
 \examples{
 x <- matrix(1:9, nrow=3, ncol=3)

@@ -1,11 +1,11 @@
 \name{kfs}
 \alias{kfs}
-
 \title{Kernel feature significance }
 
 \description{
   Kernel feature significance for 1- to 6-dimensional data.
 }
+
 \usage{
 kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
     eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, 
@@ -32,7 +32,6 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
   tests. Default is 0.05.} 
 }
   
-
 \value{
   A kernel feature significance estimate is an object of class
   \code{kfs} which is a list with fields 
@@ -83,7 +82,6 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
   This function is similar to the \code{featureSignif} function in the
   \pkg{feature} package, except that it accepts unconstrained bandwidth
   matrices. 
-  
 }
 
 \references{
@@ -113,4 +111,5 @@ plot(geyser.fs, xlab="duration")
 
 ## see example in ? plot.kfs
 }
+
 \keyword{smooth}

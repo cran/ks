@@ -1,12 +1,12 @@
 \name{vkde}
 \alias{kde.balloon}
 \alias{kde.sp}
-
 \title{Variable kernel density estimate.}
 
 \description{
   Variable kernel density estimate for 2-dimensional data.
 }
+
 \usage{
 kde.balloon(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
    binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
@@ -34,7 +34,6 @@ kde.sp(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
     FALSE.}
 }
   
-
 \value{
   A variable kernel density estimate for bounded data is an object of class \code{kde}.    
 }
@@ -62,20 +61,20 @@ kde.sp(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   Mathematical Statistics}, \bold{36}, 1049-1051.  
 }
 
-
 \seealso{\code{\link{kde}}, \code{\link{plot.kde}}}
 
 \examples{
 \donttest{data(worldbank)
 wb <- as.matrix(na.omit(worldbank[,4:5]))
-xmin <- c(-70,-25); xmax <- c(35,70)
+xmin <- c(-70,-35); xmax <- c(35,70)
 fhat <- kde(x=wb, xmin=xmin, xmax=xmax)
 fhat.sp <- kde.sp(x=wb, xmin=xmin, xmax=xmax)
-plot(fhat, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))
-plot(fhat.sp, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
+zmax <- max(fhat.sp$estimate)
+plot(fhat, display="persp", box=TRUE, phi=20, thin=1, border=grey(0,0.2), zlim=c(0,zmax))
+plot(fhat.sp, display="persp", box=TRUE, phi=20, thin=1, border=grey(0,0.2), zlim=c(0,zmax))}
 \dontrun{
 fhat.ball <- kde.balloon(x=wb, xmin=xmin, xmax=xmax)
-plot(fhat.ball, display="persp", box=TRUE, phi=20, zlim=c(0,max(fhat.sp$estimate)))}
+plot(fhat.ball, display="persp", box=TRUE, phi=20, zlim=c(0,zmax))}
 }
 
 \keyword{smooth}

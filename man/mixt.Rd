@@ -6,10 +6,11 @@
 \alias{rmvt.mixt}
 \alias{dmvt.mixt}
 \alias{mvnorm.mixt.mode}
-
 \title{Normal and t-mixture distributions}
+
 \description{
 Random generation and density values from normal and t-mixture distributions.}
+
 \usage{
 dnorm.mixt(x, mus=0, sigmas=1, props=1)
 rnorm.mixt(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
@@ -31,9 +32,8 @@ mvnorm.mixt.mode(mus, Sigmas, props=1, verbose=FALSE)
     component. Default is FALSE.}
   \item{verbose}{flag to print out progress information. Default is FALSE.}
   \item{dfs}{vector of degrees of freedom}
-  }
+}
   
-
 \value{Normal and t-mixture random vectors and density values.}
 
 \details{
@@ -61,4 +61,4 @@ y <- rmvt.mixt(1000, mus=mus, Sigmas=Sigmas, dfs=dfs, props=props)
 mvnorm.mixt.mode(mus=mus, Sigmas=Sigmas, props=props)
 }
 
-\keyword{ distribution }
+\keyword{distribution}

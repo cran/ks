@@ -1,10 +1,11 @@
 \name{binning}
 \alias{binning}
-
 \title{Linear binning for multivariate data}
+
 \description{
   Linear binning for 1- to 4-dimensional data.
 }
+
 \usage{
 binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 }
@@ -19,7 +20,6 @@ binning(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
   \item{gridtype}{not yet implemented}
 }
   
-
 \value{
   Returns a list with 2 fields
   \item{counts}{linear binning counts}

@@ -2,6 +2,7 @@
 \alias{ks}
 \docType{package}
 \title{ks}
+
 \description{
   Kernel smoothing for data from 1- to 6-dimensions.
 }
@@ -285,5 +286,3 @@
 \keyword{package}
 
 \seealso{\pkg{feature}, \pkg{sm}, \pkg{KernSmooth}}
-
-

@@ -1,7 +1,7 @@
 \name{plot.histde}
 \alias{plot.histde}
-
 \title{Plot for histogram density estimate}
+
 \description{
   Plot for histogram density estimate for 1- and 2-dimensional data.
 }
@@ -32,11 +32,9 @@
   }
 }
   
-
 \value{
   Plots for 1-d and 2-d are sent to graphics window. 
 }
-
 
 \details{
   For \code{histde} objects, the function headers for the different dimensional data are  
@@ -74,6 +72,5 @@ fhat <- histde(x=iris[,2:3])
 plot(fhat, drawpoints=TRUE)
 box()
 }
-
 
 \keyword{hplot}

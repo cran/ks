@@ -4,36 +4,29 @@
 
 kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
-    if (is.vector(x))
+    ## default values
+    ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    d <- ksd$d; n <- ksd$n; w <- ksd$w
+    binned <- ksd$binned
+    gridsize <- ksd$gridsize
+    bgridsize <- ksd$bgridsize
+
+    ## clip data to xmin, xmax grid limits for binned estimation
+    grid.clip <- binned    
+    if (grid.clip) 
     {
-        if (missing(H)) {d <- 1; n <- length(x)}
-        else
-        {
-            if (is.vector(H)) { d <- 1; n <- length(x)}
-            else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-        }
-    }
-    else {d <- ncol(x); n <- nrow(x)}
-    
-    if (!missing(w))
-        if (!(identical(all.equal(sum(w), n), TRUE)))
-        {
-            warning("Weights don't sum to sample size - they have been scaled accordingly\n")
-            w <- w*n/sum(w)
-        }
-    
-    if (missing(w)) w <- rep(1,n)
-    if (d==1)
-    {  
-        if (missing(h)) h <- hns(x=x, deriv.order=2)
-    }
-    if (missing(H) & d>1)
-    {
-        H <- Hns(x=x, deriv.order=2) ##Hpi(x=x, binned=default.bflag(d=d, n=n), bgridsize=bgridsize, verbose=verbose, deriv.order=2)
+        if (!missing(xmax)) xmax <- xmax[1:d]
+        if (!missing(xmin)) xmin <- xmin[1:d]
+        xt <- truncate.grid(x=x, y=w, xmin=xmin, xmax=xmax)
+        x <- xt$x; w <- xt$y; n <- length(w)
     }
 
+    ## default bandwidths
+    if (d==1 & missing(h)) h <- hns(x=x, deriv.order=2)
+    if (d>1 & missing(H)) H <- Hns(x=x, deriv.order=2) 
+    
     if (d==2) fhat <- kde.balloon.2d(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, compute.cont=compute.cont, approx.cont=approx.cont, verbose=verbose)
-    else stop("d!=1 not yet implemented.")
+    else stop("kde.balloon only implemented for d=2")
 
     if (compute.cont)
         fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
@@ -90,36 +83,29 @@ kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
 
 kde.sp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
-    if (is.vector(x))
+    ## default values
+    ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    d <- ksd$d; n <- ksd$n; w <- ksd$w
+    binned <- ksd$binned
+    gridsize <- ksd$gridsize
+    bgridsize <- ksd$bgridsize
+
+    ## clip data to xmin, xmax grid limits for binned estimation
+    grid.clip <- binned    
+    if (grid.clip) 
     {
-        if (missing(H)) {d <- 1; n <- length(x)}
-        else
-        {
-            if (is.vector(H)) { d <- 1; n <- length(x)}
-            else {x <- matrix(x, nrow=1); d <- ncol(x); n <- nrow(x)}
-        }
-    }
-    else {d <- ncol(x); n <- nrow(x)}
-    
-    if (!missing(w))
-        if (!(identical(all.equal(sum(w), n), TRUE)))
-        {
-            warning("Weights don't sum to sample size - they have been scaled accordingly\n")
-            w <- w*n/sum(w)
-        }
-    
-    if (missing(w)) w <- rep(1,n)
-    if (d==1)
-    {  
-        if (missing(h)) h <- hns(x=x, deriv.order=4)
-    }
-    if (missing(H) & d>1)
-    {
-        H <- Hns(x=x, deriv.order=4)
+        if (!missing(xmax)) xmax <- xmax[1:d]
+        if (!missing(xmin)) xmin <- xmin[1:d]
+        xt <- truncate.grid(x=x, y=w, xmin=xmin, xmax=xmax)
+        x <- xt$x; w <- xt$y; n <- length(w)
     }
 
+    ## default bandwidths
+    if (d==1 & missing(h)) h <- hns(x=x, deriv.order=4)
+    if (d>1 & missing(H)) H <- Hns(x=x, deriv.order=4) 
+
     if (d==2) fhat <- kde.sp.2d(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, compute.cont=compute.cont, approx.cont=approx.cont, verbose=verbose, pre=TRUE)
-    else stop("d!=2 not yet implemented.")
+    else stop("kde.sp only implemented for d=2")
 
     fhat$names <- parse.name(x)  ## add variable names
     if (compute.cont)
@@ -134,9 +120,7 @@ kde.sp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.point
 
 kde.sp.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE, pre=TRUE)
 {
-    d <- 2
-    n <- nrow(x)
-    
+    d <- 2; n <- nrow(x)
     if (pre) 
     { 
         x.orig <- x
@@ -198,6 +182,4 @@ kde.sp.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.point
     
     return(fhat)
 }
-
-
 

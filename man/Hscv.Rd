@@ -2,7 +2,6 @@
 \alias{Hscv}
 \alias{Hscv.diag}
 \alias{hscv}
-
 \title{Smoothed cross-validation (SCV) bandwidth selector}
 
 \description{
@@ -15,6 +14,7 @@ Hscv.diag(x, nstage=2, pre="scale", pilot, Hstart, binned,
      bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 }
+
 \arguments{
   \item{x}{vector or matrix of data values}
   \item{pre}{"scale" = \code{\link{pre.scale}}, "sphere" = \code{\link{pre.sphere}}}
@@ -38,7 +38,6 @@ hscv(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 \value{
 SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returned too. 
 }
-
 
 \details{ \code{hscv} is the univariate SCV
   selector of Jones, Marron & Park (1991). \code{Hscv} is a
@@ -82,4 +81,4 @@ Hscv(unicef)
 hscv(unicef[,1])
 }
 
-\keyword{ smooth }
+\keyword{smooth}

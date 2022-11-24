@@ -1,7 +1,6 @@
 \name{ksupp}
 \alias{ksupp}
 \alias{plot.ksupp}
-
 \title{Kernel support estimate}
 
 \description{
@@ -25,7 +24,6 @@ ksupp(fhat, cont=95, abs.cont, convex.hull=TRUE)
   \item{...}{other graphics parameters}
 }
   
-
 \value{
   A kernel support estimate is an object of class \code{ksupp}, i.e. a 2- or 3-column matrix which delimits the (convex hull of the) level set of the density estimate \code{fhat}.  
 }

@@ -1,9 +1,6 @@
 \name{cardio}
-
 \docType{data}
-
 \alias{cardio}
-
 \title{Foetal cardiotocograms}
 
 \description{
@@ -26,7 +23,6 @@ Lichman, M. (2013) UCI Machine learning repository: cardiotocography data set.
 University of California, Irvine, School of Information and Computer
 Sciences. Accessed 2017-05-18.
 }
-
 
 \keyword{datasets}
 

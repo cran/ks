@@ -5,12 +5,12 @@
 \alias{Hucv.diag}
 \alias{hlscv}
 \alias{hucv}
-
-
 \title{Least-squares cross-validation (LSCV) bandwidth matrix selector
   for multivariate data}
+
 \description{
 LSCV bandwidth for 1- to 6-dimensional data}
+
 \usage{
 Hlscv(x, Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, 
       verbose=FALSE, optim.fun="optim", trunc)
@@ -21,7 +21,6 @@ Hucv(...)
 Hucv.diag(...)
 hucv(...)
 }
-
 
 \arguments{
   \item{x}{vector or matrix of data values}
@@ -78,10 +77,9 @@ LSCV bandwidth. If \code{amise=TRUE} then the minimal LSCV value is returned too
 \seealso{\code{\link{Hbcv}}, \code{\link{Hpi}}, \code{\link{Hscv}}}
 
 \examples{
-library(MASS)
-data(forbes)
+data(forbes, package="MASS")
 Hlscv(forbes)
 hlscv(forbes$bp)
 }
 
-\keyword{ smooth }
+\keyword{smooth}

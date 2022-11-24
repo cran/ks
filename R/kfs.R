@@ -12,7 +12,18 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     binned <- ksd$binned
     bgridsize <- ksd$bgridsize
     gridsize <- ksd$gridsize
-       
+    
+    ## clip data to xmin, xmax grid limits for binned estimation
+    grid.clip <- binned    
+    if (grid.clip) 
+    {
+        if (!missing(xmax)) xmax <- xmax[1:d]
+        if (!missing(xmin)) xmin <- xmin[1:d]
+        if (positive & missing(xmin)) { xmin <- rep(0,d) } 
+        xt <- truncate.grid(x=x, y=w, xmin=xmin, xmax=xmax)
+        x <- xt$x; w <- xt$y; n <- length(w)
+    }
+
     if (d==1)
     {
         if (missing(h)) h <- hpi(x=x, nstage=2, binned=default.bflag(d=d, n=n), deriv.order=r)
@@ -23,7 +34,6 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         ## KDE
         fhat <- kde(x=x, h=h, gridsize=gridsize, gridtype=gridtype, xmin=min(fhatr$eval.points), xmax=max(fhatr$eval.points), binned=binned, bgridsize=bgridsize, positive=positive, adj.positive=adj.positive, w=w)
 
-     
         fhat.est <- as.vector(fhat$estimate)
         fhatr.est <- as.vector(fhatr$estimate)
 
@@ -63,7 +73,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
         fhatr.est <- fhatr.est %*% fhatr.Sigma.const12inv  
 
         ## all eigenvalues < 0 => local mode 
-        fhatr.eigen <- lapply(lapply(seq(1,nrow(fhatr.est)), function(i) {invvech(fhatr.est[i,])}), eigen, only.values=TRUE)
+        fhatr.eigen <- lapply(lapply(seq(1,nrow(fhatr.est)), function(i) { invvech(fhatr.est[i,]) }), eigen, only.values=TRUE)
         fhatr.eigen <- t(sapply(fhatr.eigen, getElement, "values"))
         local.mode <- apply(fhatr.eigen <= 0, 1, all)
         fhatr.wald <- apply(fhatr.est^2, 1, sum)/fhat.est
@@ -100,7 +110,6 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
     ## ESS = effective sample size
     ## ess <- n*fhat$estimate*dmvnorm.mixt(x=rep(0,d), mu=rep(0,d), Sigma=H, props=1)
     ## signif.ess <- ess >= 5
-
     fhatr$estimate <- signif.wald 
     fhatr$type <- "kfs"
     class(fhatr) <- "kfs"
@@ -113,6 +122,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
 #############################################################################
 
 ## plot method
+
 plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha=1, alphavec=0.4, add=FALSE, ...)
 {
     fhatr <- x
@@ -150,7 +160,7 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
     {
         if (missing(abs.cont)) abs.cont <- 0.25
         e1 <- try(match.arg(display, c("plot3D", "rgl")), silent=TRUE)
-        if (class(e1) %in% "try-error") display <- "plot3D"
+        if (inherits(e1, "try-error")) display <- "plot3D"
         if (!missing(colors)) col <- colors     
         plot(fhatr, abs.cont=abs.cont, col=col, colors=colors, alphavec=alphavec, add=add, display=display, ...)
     }

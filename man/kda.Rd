@@ -7,11 +7,12 @@
 \alias{compare}
 \alias{compare.kda.diag.cv}
 \alias{compare.kda.cv}
+\title{Kernel discriminant analysis (kernel classification)}
 
-\title{Kernel discriminant analysis}
 \description{
-  Kernel discriminant analysis for 1- to d-dimensional data.
+  Kernel discriminant analysis (kernel classification) for 1- to d-dimensional data.
 }
+
 \usage{
 kda(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7,
   eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE,
@@ -145,4 +146,4 @@ compare(y.gr, y.gr.est)
 ## See other examples in ? plot.kda
 }
 
-\keyword{ smooth }
+\keyword{smooth}

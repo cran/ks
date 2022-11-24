@@ -2,9 +2,6 @@
 \alias{Hpi}
 \alias{Hpi.diag}
 \alias{hpi}
-
-
-
 \title{Plug-in bandwidth selector}
 
 \description{
@@ -40,8 +37,6 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 \value{
 Plug-in bandwidth. 
 If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
-
-
 
 \details{\code{hpi(,deriv.order=0)} is the univariate plug-in 
   selector of Wand & Jones (1994), i.e. it is exactly the same as
@@ -92,4 +87,4 @@ Hpi(unicef, pilot="dscalar")
 hpi(unicef[,1])
 }
 
-\keyword{ smooth }
+\keyword{smooth}

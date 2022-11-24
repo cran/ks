@@ -3,13 +3,11 @@
 \alias{pkde}
 \alias{qkde}
 \alias{rkde}
-
 \title{Derived quantities from kernel density estimates}
 
 \description{
    Derived quantities from kernel density estimates.
 }
-
 
 \usage{
  dkde(x, fhat)
@@ -26,7 +24,6 @@
    line. Default is FALSE.}  
    \item{fhat}{kernel density estimate, object of class \code{kde}}
 }
-
 
 \value{
    For the 1-d kernel density estimate \code{fhat},
@@ -64,5 +61,5 @@ plot(fhat, col=1)
 plot(fhaty, add=TRUE, col=2)
 }
 
-\keyword{ smooth }
+\keyword{smooth}
 
