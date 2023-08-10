@@ -80,8 +80,7 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 \seealso{\code{\link{kcde}}, \code{\link{kde}}}
 
 \examples{
-library(MASS)
-data(fgl)
+data(fgl, package="MASS")
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
 plot(Chat, display="persp", border=1)

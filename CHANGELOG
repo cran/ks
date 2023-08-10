@@ -1,5 +1,11 @@
 Change log file for ks
 
+1.14.1
+-Added weighted estimate for 1D kde(unit.interval=TRUE).
+-Fixed bug with decreasing cumulative probs in qkde(). 
+-Changed name plot.histde.*d() to plothistde.*d(), gamma.r*() to gamma_r*() to 
+ avoid S3 method clashes.
+
 1.14.0
 -Systematised code indentation (4 spaces). 
 -Further systematised default bandwidth calculation. 

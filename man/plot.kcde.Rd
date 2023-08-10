@@ -43,7 +43,6 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-library(MASS)
 data(iris)
 Fhat <- kcde(x=iris[,1])
 plot(Fhat, xlab="Sepal.Length")

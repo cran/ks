@@ -60,12 +60,11 @@
 \seealso{\code{\link{plot.kde}}}
  
 \examples{
-library(MASS)
 data(iris)
 
 ## univariate example
 fhat <- histde(x=iris[,2])
-plot(fhat, border=3, xlab="Sepal length")
+plot(fhat, xlab="Sepal length")
 
 ## bivariate example
 fhat <- histde(x=iris[,2:3])

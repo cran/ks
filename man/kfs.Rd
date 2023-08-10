@@ -104,8 +104,7 @@ kfs(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7,
 \seealso{\code{\link{kdde}}, \code{\link{plot.kfs}}}
 
 \examples{
-library(MASS)
-data(geyser)
+data(geyser, package="MASS")
 geyser.fs <- kfs(geyser$duration, binned=TRUE)
 plot(geyser.fs, xlab="duration")
 

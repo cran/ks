@@ -33,8 +33,7 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-\donttest{library(MASS)
-data(geyser)
+\donttest{data(geyser, package="MASS")
 geyser.fs <- kfs(geyser, binned=TRUE)
 plot(geyser.fs)
 }}

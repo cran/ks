@@ -54,7 +54,6 @@
 \seealso{\code{\link{kda}}, \code{\link{kde}}}
 
 \examples{
-library(MASS)
 data(iris)
 
 ## univariate example

@@ -70,7 +70,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
         }
         else if (unit.interval)
         {
-             fhat <- kde.unit.interval.1d(x=x, binned=binned, h=h)
+             fhat <- kde.unit.interval.1d(x=x, w=w, binned=binned, h=h)
         }
         else 
         {
@@ -92,7 +92,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
             if (missing(eval.points))
             {
                 if (unit.interval)
-                    fhat <- kde.unit.interval.1d(x=x, h=h, binned=FALSE)
+                    fhat <- kde.unit.interval.1d(x=x, w=w, h=h, binned=FALSE)
                 else if (positive)
                     fhat <- kde.positive.1d(x=x, h=h, xmin=xmin, xmax=xmax, w=w, binned=FALSE, adj.positive=adj.positive)
                 else
@@ -231,13 +231,13 @@ kde.positive.1d <- function(x, h, adj.positive, binned=FALSE, xmin, xmax, comput
     return(fhatx)
 }
 
-kde.unit.interval.1d <- function(x, h, binned=FALSE)
+kde.unit.interval.1d <- function(x, h, w, binned=FALSE)
 {
     d <- 1
     y <- qnorm(x)
     if (missing(h)) h <- hpi(y)
     xseq <- tail(head(seq(0,1, length=default.gridsize(d)+2),n=-1), n=-1)
-    fhaty <- kde(x=y, h=h, binned=binned)
+    fhaty <- kde(x=y, h=h, w=w, binned=binned)
     fhaty$estimate <- predict(fhaty, x=qnorm(xseq))
     fhatx <- fhaty
     fhatx$eval.points <- xseq
@@ -246,7 +246,7 @@ kde.unit.interval.1d <- function(x, h, binned=FALSE)
     ## apply loess smoothing for unsmooth binned estimates
     if (binned)
     {      
-        fhatx.loess <- loess(fhatx$estimate ~ fhatx$eval.points)
+        fhatx.loess <- loess(fhatx$estimate ~ fhatx$eval.points, span=0.1)
         fhatx.smoothed <- fhatx
         fhatx.smoothed$eval.points <- xseq
         fhatx.smoothed$estimate <- predict(fhatx.loess, x=xseq)
@@ -808,7 +808,7 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
 ## contourLevels method
 ## create S3 generic 
 
-contourLevels <- function(x, ...) { UseMethod("contourLevels") }   
+contourLevels <- function(x, ...) UseMethod("contourLevels")    
 
 contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
 { 

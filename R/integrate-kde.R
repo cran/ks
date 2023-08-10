@@ -2,12 +2,11 @@
 ## Cumulative integral for KDE
 #############################################################################
 
-integral.kde <- function(q, fhat, density) #, exact=FALSE)
+integral.kde <- function(q, fhat, density)
 {
     gridsize <- length(fhat$eval.points)
 
     ## Use Simpson's rule to compute numerical integration
-
     simp.rule <- rep(0, gridsize-1)
     for (i in 1:(gridsize-1))
     {
@@ -15,7 +14,7 @@ integral.kde <- function(q, fhat, density) #, exact=FALSE)
         simp.rule[i] <- min(fhat$estimate[i], fhat$estimate[i+1])*del + 1/2*abs(fhat$estimate[i+1] - fhat$estimate[i])*del 
     }
 
-    ## add last incomplete trapezoid 
+    ## add last incomplete trapezoid
     q.ind <- findInterval(x=q, vec=fhat$eval.points)
     q.prob <- rep(0, length(q))
     i <- 0
@@ -43,6 +42,14 @@ integral.kde <- function(q, fhat, density) #, exact=FALSE)
     }
 
     if (density) q.prob[q.prob>=1] <- 1
+
+    ## remove possible decreasing values in q.prob
+    dec.ind <- which(diff(q.prob)<0)
+    if (length(dec.ind)>0) 
+    {
+        dec.ind <- dec.ind+1 
+        for (i in dec.ind) q.prob[i] <- q.prob[i-1]
+    }
 
     return(q.prob)
 }

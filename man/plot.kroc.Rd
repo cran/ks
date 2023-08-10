@@ -30,8 +30,7 @@
 \seealso{\code{\link{plot.kde}}}
 
 \examples{
-library(MASS)
-data(fgl)
+data(fgl, package="MASS")
 x1 <- fgl[fgl[,"type"]=="WinF",c("RI", "Na")]
 x2 <- fgl[fgl[,"type"]=="Head",c("RI", "Na")]
 Rhat <- kroc(x1=x1, x2=x2) 

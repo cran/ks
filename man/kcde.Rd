@@ -100,7 +100,7 @@ hpi.kcde(x, nstage=2, binned, amise=FALSE)
 \seealso{\code{\link{kde}}, \code{\link{plot.kcde}}}
 
 \examples{
-data(iris, package="MASS")
+data(iris)
 Fhat <- kcde(iris[,1:2])  
 predict(Fhat, x=as.matrix(iris[,1:2]))
 

@@ -31,8 +31,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   \item{compute.cont}{flag for computing 1\% to 99\% probability contour levels. Default is TRUE.}
   \item{approx.cont}{flag for computing approximate probability contour
     levels. Default is TRUE.}
-  \item{unit.interval}{flag if 1-d data are bounded on unit interval
-  [0,1]. Default is FALSE.} 
+  \item{unit.interval}{flag for computing log transformation KDE on 1-d data bounded on unit interval [0,1]. Default is FALSE.} 
   \item{density}{flag if density estimate values are forced to be non-negative function. Default is FALSE.} 
   \item{verbose}{flag to print out progress information. Default is
     FALSE.}
@@ -64,7 +63,8 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   For d=1, if \code{positive=TRUE} then \code{x} is transformed to
   \code{log(x+adj.positive)} where the default \code{adj.positive} is
   the minimum of \code{x}. This is known as a log transformation density
-  estimate. 
+  estimate. If \code{unit.interval=TRUE} then \code{x} is transformed to 
+  \code{qnorm(x)}. See \code{\link{kde.boundary}} for boundary kernel density estimates, as these tend to be more robust than transformation density estimates. 
   
   For d=1, 2, 3, and if \code{eval.points} is not specified, then the
   density estimate is computed over a grid 
@@ -105,7 +105,7 @@ kde(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned,
   product of \code{c(xmin[1], xmax[1])}, ..., \code{c(xmin[d], xmax[d])}. 
   For \pkg{ks} \eqn{\geq}{>=} 1.14.0, when \code{binned=TRUE} and \code{xmin,xmax} 
   are not missing, the data values \code{x} are clipped to the estimation grid 
-  delimited by \code{xmin,xmax} to prevent potential memory leaks.
+  delimited by \code{xmin,xmax} to prevent potential memory leaks. 
 }
 
 \seealso{\code{\link{plot.kde}}, \code{\link{kde.boundary}}}

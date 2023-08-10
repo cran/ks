@@ -2,7 +2,7 @@
 ## Exact MISE for normal mixtures
 ###############################################################################
 
-## nu, gamma.r, gamma.r2 written by Jose Chacon 10/2008
+## nu, gamma_r, gamma_r2 written by Jose Chacon 10/2008
 
 nu <- function(r, A)
 { 
@@ -40,7 +40,7 @@ nu.rs <- function(r, s, A, B)
 
 ## gamma functional for normal mixture MISE
 
-gamma.r <- function(mu, Sigma, r)
+gamma_r <- function(mu, Sigma, r)
 {
     Sigmainv <- chol2inv(chol(Sigma))
     d <- ncol(Sigma)
@@ -54,7 +54,7 @@ gamma.r <- function(mu, Sigma, r)
 
 ## gamma functional for normal mixture AMISE 
 
-gamma.r2 <- function(mu, Sigma, d, r, H)
+gamma_r2 <- function(mu, Sigma, d, r, H)
 {
     Sigmainv <- chol2inv(chol(Sigma))
 
@@ -94,7 +94,7 @@ omega <- function(mus, Sigmas, k, a, H, r)
     else d <- length(mus)
 
     if (k == 1)
-        omega.mat <- gamma.r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)  
+        omega.mat <- gamma_r(mu=rep(0,d),Sigma=a*H + 2*Sigmas, r=r)  
     else
     {
         omega.mat <- matrix(0, nrow=k, ncol=k)
@@ -106,7 +106,7 @@ omega <- function(mus, Sigmas, k, a, H, r)
             {
                 Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
                 muj <- mus[j,]    
-                omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, r=r) 
+                omega.mat[i,j] <- gamma_r(mu=mui-muj, Sigma=a*H + Sigmai + Sigmaj, r=r) 
             }
         }
     }
@@ -120,7 +120,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
     Sigmas <- sigmas^2
 
     if (k == 1)
-        omega.mat <- gamma.r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), r=r)  
+        omega.mat <- gamma_r(mu=0, Sigma=as.matrix(a*H + 2*Sigmas), r=r)  
     else
     {   
         omega.mat <- matrix(0, nrow=k, ncol=k)
@@ -132,7 +132,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
             {
                 Sigmaj <- Sigmas[j]
                 muj <- mus[j]    
-                omega.mat[i,j] <- gamma.r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj),  r=r) 
+                omega.mat[i,j] <- gamma_r(mu=mui-muj, Sigma=as.matrix(a*H + Sigmai + Sigmaj),  r=r) 
             }
         }
     }
@@ -246,7 +246,7 @@ amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
             {
             Sigmaj <- Sigmas[((j-1)*d+1):(j*d),]
             muj <- mus[j,]    
-            omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma=Sigmai + Sigmaj, d=d, r=r, H=H)
+            omega.mat[i,j] <- gamma_r2(mu=mui-muj, Sigma=Sigmai + Sigmaj, d=d, r=r, H=H)
             }
         }
     }
@@ -266,7 +266,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
     H <- as.matrix(h^2)
 
     if (k == 1)
-        omega.mat <- gamma.r2(mu=rep(0,d),Sigma=as.matrix(2*sigmas^2), d=d, r=r, H=H)
+        omega.mat <- gamma_r2(mu=rep(0,d),Sigma=as.matrix(2*sigmas^2), d=d, r=r, H=H)
     else
     {  
         omega.mat <- matrix(0, nrow=k, ncol=k)
@@ -278,7 +278,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
             {
                 Sigmaj <- as.matrix(sigmas[j]^2)
                 muj <- mus[j]    
-                omega.mat[i,j] <- gamma.r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, H=H)
+                omega.mat[i,j] <- gamma_r2(mu=mui-muj, Sigma= Sigmai + Sigmaj, d=d, r=r, H=H)
             }
         }
     }

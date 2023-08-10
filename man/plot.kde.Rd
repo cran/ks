@@ -107,7 +107,6 @@
 }
  
 \examples{
-library(MASS)
 data(iris)
 
 ## univariate example

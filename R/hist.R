@@ -77,12 +77,12 @@ hist.2d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 
 plot.histde <- function(x, ...)
 {
-    if (is.vector(x$x)) plot.histde.1d(fhat=x, ...)
-    else plot.histde.2d(fhat=x, ...)
+    if (is.vector(x$x)) plothistde.1d(fhat=x, ...)
+    else plothistde.2d(fhat=x, ...)
     invisible()
 }
 
-plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col="transparent", col.pt=4, jitter=FALSE, border=1, alpha=1, ...)
+plothistde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawpoints=FALSE, col="transparent", col.pt=4, jitter=FALSE, border=1, alpha=1, ...)
 {
     if (missing(xlab)) xlab <- fhat$names
     col <- transparency.col(col, alpha=alpha)
@@ -94,7 +94,7 @@ plot.histde.1d <- function(fhat, xlab, ylab="Density function", add=FALSE, drawp
 
 }
 
-plot.histde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, alpha=1, col.pt=4, lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
+plothistde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density function", cex=1, pch=1, add=FALSE, drawpoints=FALSE, col, col.fun, alpha=1, col.pt=4, lty.rect=2, cex.text=1, border, lwd.rect=1, col.rect="transparent", add.grid=TRUE, ...)
 {
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]

@@ -101,8 +101,7 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
 \seealso{\code{\link{kde}}}
 
 \examples{
-library(MASS)
-data(crabs)
+data(crabs, package="MASS")
 kms.crabs <- kms(x=crabs[,c("FL","CW")])
 plot(kms.crabs, pch=16)
 summary(kms.crabs)
