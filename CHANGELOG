@@ -1,5 +1,9 @@
 Change log file for ks
 
+1.14.2
+-Moved plot3D from Imports to Suggests, so ks can run in environments which 
+ can't install its visual functionalities.
+
 1.14.1
 -Added weighted estimate for 1D kde(unit.interval=TRUE).
 -Fixed bug with decreasing cumulative probs in qkde(). 

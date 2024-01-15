@@ -1,4 +1,4 @@
-importFrom(grDevices, chull, grey, hcl.colors)
+importFrom(grDevices, chull, col2rgb, grey, hcl.colors, rgb)
 importFrom(graphics, .filled.contour, box, contour, hist, image, legend, lines, pairs, par, persp, points, polygon, rect, rug)
 importFrom(KernSmooth, dpik)
 importFrom(Matrix, Diagonal, Matrix, norm)

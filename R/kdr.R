@@ -397,6 +397,7 @@ plotkdr.3d <- function(x, display="plot3D", colors, col, col.fun, alphavec, size
     disp <- match.arg(display, c("plot3D", "rgl")) 
 	if (disp %in% "plot3D") 
 	{
+        if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE)
         if (!add) plot3D::scatter3D(x=xp[,1], y=xp[,2], z=xp[,3], add=add, theta=theta, phi=phi, d=d, type=type, xlab=xlab, ylab=ylab, zlab=zlab, ticktype=ticktype, type="n", col=NA, ...) 
         for (i in 1:length(xps))
             plot3D::scatter3D(x=xp[xp$segment==xps[i],1], y=xp[xp$segment==xps[i],2], z=xp[xp$segment==xps[i],3], cex=cex, col=col[i], add=TRUE, pch=pch, type=type, alpha=alpha, ...) 

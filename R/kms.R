@@ -286,6 +286,7 @@ plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab
     
         if (disp=="plot3D")
         {
+            if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE)
             if (!add) plot3D::points3D(x$x[,1], x$x[,2], x$x[,3], col=1, cex=0, add=add, theta=theta, phi=phi, d=4, colkey=FALSE, xlab=xlab, ylab=ylab, zlab=zlab, ticktype="detailed", bty="f", ...)
         
             for (i in 1:length(col))

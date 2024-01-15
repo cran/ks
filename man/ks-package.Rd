@@ -1,5 +1,6 @@
 \name{ks-package}
 \alias{ks}
+\alias{ks-package}
 \docType{package}
 \title{ks}
 
@@ -228,7 +229,7 @@
   is utilised, where the weights \eqn{\alpha_1, \dots,
   \alpha_n}{alpha_1, ..., alpha_n} are chosen via a
   quadratic optimisation involving the error variance and the
-  regularisation parameter.  The bandwidth selectors are those used with
+  regularisation parameter. The bandwidth selectors are those used with
   \code{\link{kde}}.
      
   --Binned kernel estimation is an approximation to the exact kernel
@@ -239,25 +240,21 @@
   \code{vignette("kde")}.
 
   --For \pkg{ks} \eqn{\geq}{>=} 1.11.1, the \pkg{misc3d} and
-  \pkg{rgl} (3-d plot), \pkg{OceanView} (quiver plot),
-  \pkg{oz} (Australian map) packages have been moved from
+  \pkg{rgl} (3-d plot), \pkg{oz} (Australian map) packages, and for \pkg{ks} \eqn{\geq}{>=} 1.14.2, the \pkg{plot3D} (3-d plot) package, have been moved from
   Depends to Suggests. This was done to allow \pkg{ks} to be installed
   on systems where these latter graphical-based packages can't be
   installed. Furthermore, since the future of OpenGL in R is not certain, 
-  \pkg{plot3D} becomes the default for 3D plotting for \pkg{ks} \eqn{\geq}{>=} 1.12.0. 
-  RGL plots are still supported though these may be deprecated in the 
+  \pkg{plot3D} becomes the default for 3D plotting for \pkg{ks} \eqn{\geq}{>=} 1.12.0. RGL plots are still supported though these may be deprecated in the 
   future.  
 }
 
 \author{
   Tarn Duong for most of the package. 
-  M. P. Wand for the binned estimation, univariate plug-in selector
-  and univariate density derivative estimator code.
-  J. E. Chacon for the unconstrained pilot
-  functional estimation and fast implementation of derivative-based
-  estimation code.
-  A. and J. Gramacki for the binned estimation for
-  unconstrained bandwidth matrices. 
+  M. P. Wand for the binned estimation, univariate plug-in selector and 
+  univariate density derivative estimator code.
+  J. E. Chacon for the unconstrained pilot functional estimation and fast implementation of derivative-based estimation code.
+  A. and J. Gramacki for the binned estimation for unconstrained bandwidth 
+  matrices. 
 }
 
 \references{

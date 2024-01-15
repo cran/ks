@@ -356,5 +356,8 @@ plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, al
     plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
 
     if (add.legend) 
-    plot3D::colkey(clim=c(1,2), col=col, at=c(1.25, 1.75), add=TRUE, side=1, addlines=TRUE, length=0.2, dist=-0.1, shift=0.1, labels=c(expression(f[1]>f[2]), expression(f[1]<f[2])))
+    {
+        if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE)
+        plot3D::colkey(clim=c(1,2), col=col, at=c(1.25, 1.75), add=TRUE, side=1, addlines=TRUE, length=0.2, dist=-0.1, shift=0.1, labels=c(expression(f[1]>f[2]), expression(f[1]<f[2])))
+    }
 }

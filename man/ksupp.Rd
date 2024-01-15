@@ -39,13 +39,12 @@ ksupp(fhat, cont=95, abs.cont, convex.hull=TRUE)
 \seealso{\code{\link{kde}}}
 
 \examples{
-library(oz)
 data(grevillea)
 fhat <- kde(x=grevillea)
 fhat.supp <- ksupp(fhat)
 plot(fhat, display="filled.contour", cont=seq(10,90,by=10))
 plot(fhat, cont=95, add=TRUE, col=1)
-plot(fhat.supp,  lty=2)
+plot(fhat.supp, lty=2)
 
 data(iris)
 fhat <- kde(x=iris[,1:3])

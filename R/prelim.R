@@ -924,10 +924,17 @@ ise.diff <- function(fhat1, fhat2, xmin, xmax)
 ## partial alias for plot3D::alpha.col
 ##########################################################################
 
+## copied from plot3D::alpha.col
+plot3D.alpha.col <- function (col="grey", alpha=0.5) 
+{
+    RGBini <- col2rgb(col)
+    return(rgb(t(RGBini), maxColorValue=255, alpha=alpha*255))
+}
+
 transparency.col <- function(col, alpha)
 { 
     trans.ind <- col!="transparent"
-    col[trans.ind] <- plot3D::alpha.col(col[trans.ind], alpha=alpha)
+    col[trans.ind] <- plot3D.alpha.col(col[trans.ind], alpha=alpha)
     
     return(col)
 }

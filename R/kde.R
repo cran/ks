@@ -777,7 +777,7 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
     disp <- match.arg(display, c("plot3D", "rgl")) 
     if (disp %in% "plot3D")
     {
-         
+        if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE) 
         for (i in 1:nc)
             if (hts[nc-i+1] < max(fhat$estimate))
                 plot3D::isosurf3D(x=fhat$eval.points[[1]], y=fhat$eval.points[[2]], z=fhat$eval.points[[3]], colvar=fhat$estimate, level=hts[nc-i+1], add=add | (i>1), col=colors[i], alpha=alphavec[i], phi=phi, theta=theta, xlab=xlab, ylab=ylab, zlab=zlab, d=d, ticktype=ticktype, bty=bty, ...)

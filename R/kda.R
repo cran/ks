@@ -298,7 +298,7 @@ plotkda.1d <- function(x, y, y.group, prior.prob=NULL, xlim, ylim, xlab, ylab="W
     if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Dark2") }
     if (missing(col)) col <- col.fun(m)
     if (length(col) < m) col <- rep(col, m)
-    if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=alpha) 
+    if (missing(col.part)) col.part <- plot3D.alpha.col(col, alpha=alpha) 
     if (missing(col.pt)) col.pt <- col.fun(m)
     if (length(col.pt)==1) col.pt <- rep(col.pt, m)
   
@@ -351,7 +351,7 @@ plotkda.2d <- function(x, y, y.group, prior.prob=NULL, display.part="filled.cont
     if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Dark2", alpha=1) }
     if (missing(col)) col <- col.fun(m)
     if (length(col) < m) col <- rep(col, m)
-    if (missing(col.part)) col.part <- plot3D::alpha.col(col, alpha=alpha) 
+    if (missing(col.part)) col.part <- plot3D.alpha.col(col, alpha=alpha) 
     if (missing(col.pt)) col.pt <- col.fun(m)
     if (length(col.pt)==1) col.pt <- rep(col.pt, m)
 
@@ -503,6 +503,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     disp <- match.arg(display, c("plot3D", "rgl")) 
     if (disp %in% "plot3D")
     {
+        if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE)
         for (j in 1:m)
         {
             for (i in 1:nhts)
