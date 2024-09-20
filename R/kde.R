@@ -393,7 +393,6 @@ kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
         eval.pts <- expand.grid(eval.x, eval.y)
 
         ## place vector of density estimate values `fhat' onto grid 'fhat.grid' 
-
         for (k in 1:length(eval.z))
         {
             fhat <- w[i]*dmvnorm(cbind(eval.pts, eval.z[k]), x[i,], H)
@@ -645,7 +644,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
         if (missing(col)) col <- col.fun(length(hts))
         if (length(col)<length(hts)) col <- rep(col, times=length(hts))
         col <- transparency.col(col, alpha=alpha)
-
+        
         ## draw contours
         j <- 0
         for (i in 1:length(hts)) 
@@ -706,6 +705,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
         if (missing(col)) col <- c("transparent", col.fun(length(hts)))
         col <- transparency.col(col, alpha=alpha)
         clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
+        clev <- unique(clev) 
 
         if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
         .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
@@ -772,7 +772,7 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
         else alphavec <- c(rev(seq(0.1,0.4,length=round(nc/2))), seq(0.1,0.4,length=round(nc/2)))
     }
     if (missing(alpha)) alpha <- 0.1 
-    else if (!missing(alpha)) { alphavec <- rep(alpha,nc) }
+    #else if (!missing(alpha)) { alphavec <- rep(alpha,nc) }
             
     disp <- match.arg(display, c("plot3D", "rgl")) 
     if (disp %in% "plot3D")

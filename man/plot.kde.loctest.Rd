@@ -19,9 +19,8 @@
 	sample 1<sample2.}
       \item{\code{add}}{flag to add to current plot. Default is FALSE.}
       \item{\code{rugsize}}{height of rug-like plot (1-d)}
-      \item{\code{add.legend}}{flag to add legend. Default is FALSE.}
+      \item{\code{add.legend}}{flag to add legend. Default is TRUE.}
       \item{\code{pos.legend}}{position label for legend (1-d, 2-d)}
-      \item{\code{add.contour}}{flag to add contour lines. Default is FALSE (2-d).} 
       \item{\code{alphavec}}{vector of transparency values for contour (3-d)}    
     }
     
@@ -42,8 +41,8 @@
         pos.legend="topright", alpha=1, ...)
    
    ## bivariate
-   plot(x, col, add=FALSE, xlab="x", ylab="y", add.contour=FALSE, 
-        add.legend=TRUE, pos.legend="topright", alpha=1, ...)
+   plot(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", alpha=1, 
+        ...)
 
    ## trivariate 
    plot(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), 

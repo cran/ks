@@ -332,8 +332,8 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
     plot.lim <- par()$usr
     if (missing(rugsize)) rugsize <- abs(plot.lim[4]-plot.lim[3])/50
 
-    image(x$fhat.diff.pos$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.pos$estimate==1, x$fhat.diff.pos$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[1]), ...)
-    image(x$fhat.diff.neg$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.neg$estimate==1, x$fhat.diff.neg$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[2]), ...)
+    try(image(x$fhat.diff.pos$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.pos$estimate==1, x$fhat.diff.pos$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[1]), ...))
+    try(image(x$fhat.diff.neg$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.neg$estimate==1, x$fhat.diff.neg$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[2]), ...))
 
     if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n") 
 }
@@ -342,8 +342,8 @@ plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="t
 { 
     if (missing(col)) col <- hcl.colors(palette="Dark2",2)
     col <- transparency.col(col, alpha=alpha)
-    plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=add, ...)
-    plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=TRUE, ...)
+    try(plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=add, ...))
+    try(plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=TRUE, ...))
 
     if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n")  
 }
@@ -352,8 +352,8 @@ plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, al
 {
     if (length(alphavec)==1) alphavec <- rep(alphavec,2)
     if (missing(col)) col <- hcl.colors(palette="Dark2",2) 
-    plot(x$fhat.diff.pos, color=col[1], col=col[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1],  ...)
-    plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...) 
+    try(plot(x$fhat.diff.pos, color=col[1], col=col[1], abs.cont=0.5, add=add, box=FALSE, axes=FALSE, alphavec=alphavec[1],  ...))
+    try(plot(x$fhat.diff.neg, color=col[2], col=col[2], abs.cont=0.5, add=TRUE, box=box, axes=axes, alphavec=alphavec[2], ...)) 
 
     if (add.legend) 
     {

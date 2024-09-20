@@ -151,7 +151,7 @@ linbin2D.ks <- function(x, gpoints1, gpoints2, w)
     if (missing(w)) w <- rep(1, n)
 
     ## binning for interior points
-      out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
+    out <- .C(C_massdist2d, x1=as.double(x[,1]), x2=as.double(x[,2]), n=as.integer(n), a1=as.double(a1), a2=as.double(a2), b1=as.double(b1), b2=as.double(b2), M1=as.integer(M1), M2=as.integer(M2), weight=as.double(w), est=double(M1*M2))
     xi <- matrix(out$est, nrow=M1, ncol=M2)
 
     return(xi)
@@ -210,12 +210,12 @@ symconv.1d <- function(keval, gcounts)
 {
     M <- length(gcounts)
     N <- length(keval) 
-    L <- (length(keval)+1)/2
+    L <- round(length(keval)/2)+1
   
     ## Smallest powers of 2 >= M + N
     P <- 2^(ceiling(log2(M + N)))
     
-    ## Zero-padded version of keval an gcounts
+    ## Zero-padded version of keval and gcounts
     keval.zeropad <- rep(0, P)
     gcounts.zeropad <- rep(0, P)
     keval.zeropad[1:N] <- keval
@@ -235,9 +235,9 @@ symconv.nd <- function(keval, gcounts, d)
 {
     M <- dim(gcounts)
     N <- dim(keval) 
-    L <- (dim(keval)+1)/2
-  
-    ## Smallest powers of 2 >= M + N
+    L <- round(dim(keval)/2)+1
+    
+    ## Smallest powers of 2 > M + N
     P <- 2^(ceiling(log2(M + N)))
     
     ## Zero-padded version of keval and gcounts
@@ -256,7 +256,7 @@ symconv.nd <- function(keval, gcounts, d)
     else if (d==4)
     {
         keval.zeropad[1:N[1], 1:N[2], 1:N[3], 1:N[4]] <- keval
-        gcounts.zeropad[L[1]:(L[1]+M[1]-1), L[2]:(L[2]+M[2]-1), L[3]:(L[3]+M[3]-1), L[4]:(L[4]+M[4]-1) ] <- gcounts
+        gcounts.zeropad[L[1]:(L[1]+M[1]-1), L[2]:(L[2]+M[2]-1), L[3]:(L[3]+M[3]-1), L[4]:(L[4]+M[4]-1)] <- gcounts
     }
     
     ## FFTs
@@ -265,10 +265,9 @@ symconv.nd <- function(keval, gcounts, d)
 
     ## Invert element-wise product of FFTs and truncate and normalise it
     symconv.val <- Re(fft(K*C, inverse=TRUE)/prod(P))
-    if (d==2) symconv.val <- symconv.val[N[1]:(N[1]+M[1]-1), N[2]:(N[2]+M[2]-1)]
+    if (d==2) symconv.val <- symconv.val[N[1]:(N[1]+M[1]-1), N[2]:(N[2]+M[2]-1)] 
     else if (d==3) symconv.val <- symconv.val[N[1]:(N[1]+M[1]-1), N[2]:(N[2]+M[2]-1), N[3]:(N[3]+M[3]-1)]
     else if (d==4) symconv.val <- symconv.val[N[1]:(N[1]+M[1]-1), N[2]:(N[2]+M[2]-1), N[3]:(N[3]+M[3]-1), N[4]:(N[4]+M[4]-1)]
     
     return(symconv.val)
 }
-

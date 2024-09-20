@@ -1,5 +1,12 @@
 Change log file for ks
 
+1.14.3
+-Made small changes to kdde.binned.nd() and binning() to better report small 
+ bandwidth errors.
+-Removed repeated contour levels in .filled.contour() call in plotkde.2d(). 
+-Fixed bug for empty contour regions in plot() method for kde.loctest 
+ objects.
+
 1.14.2
 -Moved plot3D from Imports to Suggests, so ks can run in environments which 
  can't install its visual functionalities.

@@ -142,7 +142,7 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
         ind.mat <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, only.index=TRUE, deriv.vec=deriv.vec)
         fhat.grid <- kdde.binned.nd(H=H, deriv.order=r, bin.par=bin.par, verbose=verbose, deriv.vec=deriv.vec)
     }
-
+     
     if (missing(x)) x <- NULL
   
     if (d==1)
@@ -150,17 +150,17 @@ kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w,
         if (r==0) fhat <- list(x=x, eval.points=unlist(eval.points), estimate=est, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w)
         else
         fhat <- list(x=x, eval.points=unlist(eval.points), estimate=est, h=h, H=h^2, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=r)
-      }
-  else
-  {
+    }
+    else
+    {
         if (r==0)
             fhat <- list(x=x, eval.points=fhat.grid$eval.points, estimate=fhat.grid$estimate[[1]], H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w)
         else
             fhat <- list(x=x, eval.points=fhat.grid$eval.points, estimate=fhat.grid$estimate, H=H, gridtype="linear", gridded=TRUE, binned=TRUE, names=NULL, w=w, deriv.order=r, deriv.ind=ind.mat)
-  }
-  class(fhat) <- "kdde"
+    }
+    class(fhat) <- "kdde"
   
-  return(fhat)
+    return(fhat)
 }
 
 kdde.binned.1d <- function(h, deriv.order, bin.par)
@@ -170,11 +170,11 @@ kdde.binned.1d <- function(h, deriv.order, bin.par)
     a <- min(bin.par$eval.points)
     b <- max(bin.par$eval.points)
     M <- length(bin.par$eval.points)
-    L <- min(ceiling((4+r)*h*(M-1)/(b-a)), M-1)
     delta <- (b-a)/(M-1)
+    L <- min(ceiling((4+r)*h/delta), M-1)
     N <- 2*L-1
-    grid1 <- seq(-(L-1), L-1)
 
+    grid1 <- seq(-(L-1), L-1)
     keval <- dnorm.deriv(x=delta*grid1, mu=0, sigma=h, deriv.order=r)/n
     est <- symconv.1d(keval, bin.par$counts)
 
@@ -189,11 +189,13 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
     a <- sapply(bin.par$eval.points, min)
     b <- sapply(bin.par$eval.points, max)
     M <- sapply(bin.par$eval.points, length)
-    L <- pmin(ceiling((4+r)*max(sqrt(abs(diag(H))))*(M-1)/(b-a)), M-1)
     delta <- (b-a)/(M-1)
-
-    if (min(L)<=0) warning(paste("Binning grid too coarse for current (small) bandwidth: consider increasing grid size for dimensions", toString(which(pmin(L)<=1))))
+    lambda <- max(sqrt(abs(svd(H)$d)))
+    L <- pmin(ceiling((4+r)*lambda/delta), M-1)
     N <- 2*L-1
+    
+    if (min(L)<=1) warning(paste("Binning grid may be too coarse for current (small) bandwidth: consider increasing grid size for dimensions", toString(which(pmin(L)<=1))))
+    
     if(d==2)
     {
         grid1 <- seq(-(L[1]-1), L[1]-1)
@@ -219,7 +221,7 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
     deriv.index.minimal <- dmvnorm.deriv(x=rep(0,d), mu=rep(0,d), Sigma=H, deriv.order=r, add.index=TRUE, only.index=TRUE, deriv.vec=FALSE)
 
     if (verbose) pb <- txtProgressBar()
-
+     
     if (r==0)
     {
         n.seq <- block.indices(1, nrow(xgrid), d=d, r=r, diff=FALSE)
