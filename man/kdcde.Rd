@@ -45,7 +45,7 @@ dckde(...)
 \details{ 
   A weighted kernel density estimate is utilised to perform the
   deconvolution. The weights \code{w} are the solution to a
-  quadratic programming problem, and then input into \code{kde(,w=w)}.
+  quadratic programming problem, and then input into \code{kde(w=w)}.
   This weighted estimate also requires an estimate of the error
   variance matrix from repeated observations, and of the regularisation
   parameter. If the latter is missing, it is calculated internally using

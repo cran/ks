@@ -64,10 +64,10 @@ plot(fhat1, display="quiver")
 
 \donttest{fhat2 <- kdde(x=tempb[,c("tmin", "tmax")], deriv.order=2)
 plot(fhat2, which.deriv.ind=2, display="persp", phi=10)
-plot(fhat2, which.deriv.ind=2, display="filled.contour")
+plot(fhat2, which.deriv.ind=2, display="filled.contour", lwd=1)
   ## d^2 f/(dx dy): blue=-ve, red=+ve
 s2 <- kcurv(fhat2)
-plot(s2, display="filled.contour", alpha=0.5, lwd=1)
+plot(s2, display="filled.contour", lwd=1)
   ## summary curvature 
 
 ## trivariate example  

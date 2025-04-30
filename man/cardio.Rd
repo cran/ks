@@ -19,7 +19,7 @@
 
 \source{
 Lichman, M. (2013) UCI Machine learning repository: cardiotocography data set.
-%\url{http://archive.ics.uci.edu/ml/datasets/Cardiotocography}.
+\doi{10.24432/C51S4N}.
 University of California, Irvine, School of Information and Computer
 Sciences. Accessed 2017-05-18.
 }

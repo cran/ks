@@ -1,7 +1,6 @@
 #####################################################################
 ## Kernel estimators of the multivariate cdf (cumulative distribution function)
 #####################################################################
-
 kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, tail.flag="lower.tail")
 {
     ## default values 
@@ -57,15 +56,15 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
         if (tail.flag1=="lower.tail")
         {
-          Fhat$estimate <- apply(Fhat$estimate, 1, cumsum)*c(0,diffe1)
-          Fhat$estimate <- apply(t(Fhat$estimate), 2, cumsum)*c(0,diffe2)
+            Fhat$estimate <- apply(Fhat$estimate, 1, cumsum)*c(0,diffe1)
+            Fhat$estimate <- apply(t(Fhat$estimate), 2, cumsum)*c(0,diffe2)
         }
         else
         {
-          Fhatsum <- matrix(apply(Fhat$estimate, 1, sum), ncol=ncol(Fhat$estimate), nrow=nrow(Fhat$estimate), byrow=TRUE)
-          Fhat$estimate <- (Fhatsum-apply(Fhat$estimate, 1, cumsum))*c(diffe1[1], diffe1)
-          Fhatsum <- matrix(apply(Fhat$estimate, 1, sum), ncol=ncol(Fhat$estimate), nrow=nrow(Fhat$estimate), byrow=TRUE)
-          Fhat$estimate <- (Fhatsum-apply(t(Fhat$estimate), 2, cumsum))*c(diffe2[1], diffe2)
+            Fhatsum <- matrix(apply(Fhat$estimate, 1, sum), ncol=ncol(Fhat$estimate), nrow=nrow(Fhat$estimate), byrow=TRUE)
+            Fhat$estimate <- (Fhatsum-apply(Fhat$estimate, 1, cumsum))*c(diffe1[1], diffe1)
+            Fhatsum <- matrix(apply(Fhat$estimate, 1, sum), ncol=ncol(Fhat$estimate), nrow=nrow(Fhat$estimate), byrow=TRUE)
+            Fhat$estimate <- (Fhatsum-apply(t(Fhat$estimate), 2, cumsum))*c(diffe2[1], diffe2)
         }
     }
     else if (d==3)
@@ -79,33 +78,33 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
         diffe3 <- abs(diff(Fhat$eval.points[[3]]))
         if (tail.flag1=="lower.tail")
         {
-          for (i in 1:dim(Fhat$estimate)[3])
-          {
-            Fhat.temp[,,i] <- apply(Fhat.temp[,,i], 1, cumsum)*c(0,diffe1)
-            Fhat.temp[,,i] <- apply(t(Fhat.temp[,,i]), 2, cumsum)*c(0,diffe2)
-          }
-          for (i in 1:dim(Fhat$estimate)[1])
-            for (j in 1:dim(Fhat$estimate)[2])
-              Fhat.temp[i,j,] <- cumsum(Fhat.temp[i,j,])*c(0,diffe3)
-          Fhat$estimate <- Fhat.temp
+            for (i in 1:dim(Fhat$estimate)[3])
+            {
+                Fhat.temp[,,i] <- apply(Fhat.temp[,,i], 1, cumsum)*c(0,diffe1)
+                Fhat.temp[,,i] <- apply(t(Fhat.temp[,,i]), 2, cumsum)*c(0,diffe2)
+            }
+            for (i in 1:dim(Fhat$estimate)[1])
+                for (j in 1:dim(Fhat$estimate)[2])
+                    Fhat.temp[i,j,] <- cumsum(Fhat.temp[i,j,])*c(0,diffe3)
+            Fhat$estimate <- Fhat.temp
         }
         else
         {
-          for (i in 1:dim(Fhat$estimate)[3])
-          {
-            Fhatsum <- matrix(apply(Fhat.temp[,,i], 1, sum), ncol=ncol(Fhat.temp), nrow=nrow(Fhat.temp), byrow=TRUE)
-            Fhat.temp[,,i] <- (Fhatsum-apply(Fhat.temp[,,i], 1, cumsum))*c(diffe1[1], diffe1)
-            Fhatsum <- matrix(apply(Fhat.temp[,,i], 1, sum), ncol=ncol(Fhat.temp), nrow=nrow(Fhat.temp), byrow=TRUE)
-            Fhat.temp[,,i] <- (Fhatsum-apply(t(Fhat.temp[,,i]), 2, cumsum))*c(diffe2[1],diffe2)
-          }
-          
-          for (i in 1:dim(Fhat$estimate)[1])
-            for (j in 1:dim(Fhat$estimate)[2])
-              {
-                Fhatsum <- sum(Fhat.temp[i,j,])
-                Fhat.temp[i,j,] <- (Fhatsum-cumsum(Fhat.temp[i,j,]))*c(diffe3[1],diffe3)
-              }
-          Fhat$estimate <- Fhat.temp
+            for (i in 1:dim(Fhat$estimate)[3])
+            {
+                Fhatsum <- matrix(apply(Fhat.temp[,,i], 1, sum), ncol=ncol(Fhat.temp), nrow=nrow(Fhat.temp), byrow=TRUE)
+                Fhat.temp[,,i] <- (Fhatsum-apply(Fhat.temp[,,i], 1, cumsum))*c(diffe1[1], diffe1)
+                Fhatsum <- matrix(apply(Fhat.temp[,,i], 1, sum), ncol=ncol(Fhat.temp), nrow=nrow(Fhat.temp), byrow=TRUE)
+                Fhat.temp[,,i] <- (Fhatsum-apply(t(Fhat.temp[,,i]), 2, cumsum))*c(diffe2[1],diffe2)
+            }
+
+            for (i in 1:dim(Fhat$estimate)[1])
+                for (j in 1:dim(Fhat$estimate)[2])
+                {
+                    Fhatsum <- sum(Fhat.temp[i,j,])
+                    Fhat.temp[i,j,] <- (Fhatsum-cumsum(Fhat.temp[i,j,]))*c(diffe3[1],diffe3)
+                }
+            Fhat$estimate <- Fhat.temp
         }
     }
     ## normalise max CDF estimate equal to 1
@@ -113,15 +112,15 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 
     if (!missing(eval.points))
     {
-      if (d<=3)
-      {
-        Fhat$estimate <- predict(Fhat, x=eval.points)
-        Fhat$eval.points <- eval.points
-      }
-      else
-      {
-        Fhat <- kcde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose, tail.flag=tail.flag1)
-      }
+        if (d<=3)
+        {
+            Fhat$estimate <- predict(Fhat, x=eval.points)
+            Fhat$eval.points <- eval.points
+        }
+        else
+        {
+            Fhat <- kcde.points(x=x, H=H, eval.points=eval.points, w=w, verbose=verbose, tail.flag=tail.flag1)
+        }
     }
     Fhat$tail <- tail.flag1
     Fhat$type <- "kcde"
@@ -131,7 +130,6 @@ kcde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 }
 
 ## KCDE is computed at specified estimation points
-
 kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.tail") 
 {
     n <- nrow(x)
@@ -156,7 +154,6 @@ kcde.points <- function(x, H, eval.points, w, verbose=FALSE, tail.flag="lower.ta
 #####################################################################
 ## Plotting functions for 1-d to 3-d KCDE
 #####################################################################
-
 plot.kcde <- function(x, ...)
 { 
     Fhat <- x
@@ -338,9 +335,7 @@ plotkcde.3d <- function(Fhat, display="plot3D", cont=c(25,50,75), colors, col, a
 #####################################################################
 ## Bandwidth selectors for KCDE
 #####################################################################
-
 ## Normal scale bandwidth selectors
-
 hns.kcde <- function(x)
 {
     d <- 1
@@ -366,7 +361,6 @@ Hns.kcde <- function(x)
 }
 
 ## Plug-in bandwidth selector
-
 hpi.kcde <- function(x, nstage=2, binned, amise=FALSE)
 {
     n <- length(x)
@@ -566,7 +560,6 @@ Hpi.diag.kcde <- function(x, nstage=2, pilot, Hstart, binned=FALSE, bgridsize, a
 #####################################################################
 ## Multivariate kernel ROC estimators
 #####################################################################
-
 kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE)
 {
     if (is.vector(x1)) { d <- 1; n1 <- length(x1) } 
@@ -624,7 +617,6 @@ kroc <- function(x1, x2, H1, h1, hy, gridsize, gridtype, xmin, xmax, supp=3.7, e
 }
 
 ## summary measure of ROC curves
-
 indices.kroc <- function(Rhat)
 {
     auc <- sum(abs((head(Rhat$estimate, n=-1) - tail(Rhat$estimate, n=-1)))*abs(diff(Rhat$eval.points))/2 + head(Rhat$estimate, n=-1)*abs(diff(Rhat$eval.points)))
@@ -645,9 +637,7 @@ indices.kroc <- function(Rhat)
 #############################################################################
 ## S3 methods
 #############################################################################
-
 ## plot method
-
 plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, xlab, ylab, alpha=1, col=1, ...)
 {
     Rhat <- x
@@ -670,7 +660,6 @@ plot.kroc <- function(x, add=FALSE, add.roc.ref=FALSE, xlab, ylab, alpha=1, col=
 }
 
 ## summary method
-
 summary.kroc <- function(object, ...)
 {
     cat("Summary measures for ROC curve\nAUC =", signif(object$indices$auc, ...), "\n")
@@ -679,7 +668,6 @@ summary.kroc <- function(object, ...)
 }
 
 ## predict methods
-
 predict.kcde <- function(object, ..., x)
 {
     return(predict.kde(object=object, ..., x=x))
@@ -691,10 +679,10 @@ predict.kroc <- function(object, ..., x)
 }
 
 ## contourLevels method
-
-contourLevels.kcde <- function(x, prob, cont, nlevels=5,  ...)
+contourLevels.kcde <- function(x, prob, cont, ...)
 {
-    fhat <- x
+    nlevels <- 5
+    fhat <- x 
     if (missing(prob) & missing(cont)) hts <- pretty(fhat$estimate, n=nlevels) 
     if (!missing(prob) & missing(cont)) { hts <- prob/100; names(hts) <- paste0(prob, "%") }     
     if (missing(prob) & !missing(cont)) { prob <- 100-cont; hts <- prob/100; names(hts) <-  paste0(prob, "%") }

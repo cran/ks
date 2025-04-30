@@ -38,14 +38,14 @@ hpi(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 Plug-in bandwidth. 
 If \code{amise=TRUE} then the minimal scaled PI value is returned too.}
 
-\details{\code{hpi(,deriv.order=0)} is the univariate plug-in 
+\details{\code{hpi(deriv.order=0)} is the univariate plug-in 
   selector of Wand & Jones (1994), i.e. it is exactly the same as
   \pkg{KernSmooth}'s \code{dpik}. For deriv.order>0, the formula is
   taken from Wand & Jones (1995). \code{Hpi} is a multivariate
   generalisation of this. Use \code{Hpi} for unconstrained bandwidth matrices and
   \code{Hpi.diag} for diagonal bandwidth matrices.
 
-  The default pilot is \code{"samse"} for d=2,r=0, and
+  The default pilot is \code{"samse"} for d=2, r=0, and
   \code{"dscalar"} otherwise.
   For AMSE pilot bandwidths, see Wand & Jones (1994). For
   SAMSE pilot bandwidths, see Duong & Hazelton (2003).  The latter is a

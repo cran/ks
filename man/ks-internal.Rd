@@ -14,6 +14,8 @@
 \alias{dwsupp}
 \alias{reg.ucv}
 \alias{kr}
+\alias{col.diverging}
+
 \title{Internal functions in the ks library}
 
 \description{

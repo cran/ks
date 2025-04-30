@@ -77,7 +77,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   \item{x.group.estimate}{vector of estimated group labels. If the test data
     \code{eval.points} are given then these are classified. Otherwise
     the training data \code{x} are classified.}
-  For \code{kde.flag=FALSE}, which is always the case for \eqn{d>3}{d>3},
+  For \code{kde.flag=FALSE}, which is always the case for d > 3,
   then only the vector of estimated group labels is returned. 
   
   --The result from \code{Hkda} and \code{Hkda.diag} is a stacked matrix
@@ -113,7 +113,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
 
 \details{
   If the bandwidths \code{Hs} are missing from \code{kda}, then the
-  default bandwidths are the plug-in selectors \code{Hkda(, bw="plugin")}.
+  default bandwidths are the plug-in selectors \code{Hkda(bw="plugin")}.
   Likewise for missing \code{hs}. Valid options for \code{bw}
   are \code{"plugin"}, \code{"lscv"} and \code{"scv"} which in turn call
   \code{\link{Hpi}}, \code{\link{Hlscv}} and \code{\link{Hscv}}.
@@ -128,7 +128,7 @@ compare.kda.diag.cv(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE,
   For \pkg{ks} \eqn{\geq}{>=} 1.8.11, \code{kda.kde} has been subsumed
   into \code{kda}, so all prior calls to \code{kda.kde} can be replaced
   by \code{kda}. To reproduce the previous behaviour of \code{kda}, the
-  command is \code{kda(, kde.flag=FALSE)}.
+  command is \code{kda(kde.flag=FALSE)}.
 }
 
 \seealso{\code{\link{plot.kda}}}

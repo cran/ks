@@ -1,11 +1,9 @@
 #############################################################################
 ## Kernel copula and copula density estimators
 #############################################################################
-
 ## empirical pseudo-uniform transformation
 ## taken from pobs() function in copula package
-
-pseudo.unif.empirical <- function (x, y) ##, na.last="keep", ties.method="average")
+pseudo.unif.empirical <- function (x, y) 
 {
     if (missing(y)) y <- x
     if (is.vector(y)) y <- matrix(y, nrow=1)
@@ -21,7 +19,6 @@ pseudo.unif.empirical <- function (x, y) ##, na.last="keep", ties.method="averag
 }
 
 ## kernel pseudo-uniform transformation
-
 pseudo.unif.kernel <- function(x, y, hs, binned=TRUE)
 {
     if (missing(y)) y <- x
@@ -40,7 +37,6 @@ pseudo.unif.kernel <- function(x, y, hs, binned=TRUE)
 #############################################################################
 ## Kernel copula estimator
 #############################################################################
-
 kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, marginal="kernel", verbose=FALSE)
 {
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
@@ -103,6 +99,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
     Chat$x <- y 
     Chat$x.orig <- x
     Chat$eval.points <- ep
+    if (inherits(Chat$eval.points, "list")) names(Chat$eval.points) <- ksd$names
     Chat$hs <- hs
 
     ## loess smoothing on a uniform grid
@@ -164,6 +161,7 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 
     Chat <- Chat.smoothed
     Chat$marginal <- marginal
+    if (inherits(Chat$eval.points, "list")) names(Chat$eval.points) <- ksd$names
     class(Chat) <- "kcopula"
 
     return(Chat)
@@ -172,7 +170,6 @@ kcopula <- function(x, H, hs, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poi
 #############################################################################
 ## Kernel copula density estimator
 #############################################################################
-
 kcopula.de <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, marginal="kernel", boundary.supp, boundary.kernel="beta", verbose=FALSE)
 {
     ksd <- ks.defaults(x=x, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
@@ -213,7 +210,8 @@ kcopula.de <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poin
 
     ## normalise KDE to integrate to 1 
     chat$estimate <- chat$estimate/sum(chat$estimate*apply(sapply(chat$eval.points, diff), 1, prod)[1])
-    chat$names <- parse.name(x) 
+    chat$names <- parse.name(x)
+    if (inherits(Chat$eval.points, "list")) names(Chat$eval.points) <- ksd$names
     chat$x.orig <- x
     chat$hs <- hs
 
@@ -229,9 +227,7 @@ kcopula.de <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.poin
 #############################################################################
 ## S3 methods
 #############################################################################
-
 ## plot methods
-
 plot.kcopula <- function(x, ...)
 {
     plot.kcde(x, ...)
@@ -243,7 +239,6 @@ plot.kcopula.de <- function(x, ...)
 }
 
 ## predict methods
-
 predict.kcopula <- function(object, ..., x, u)
 {
     if (missing(u)) { if (object$marginal=="kernel") u <- pseudo.unif.kernel(x=object$x.orig, y=x, hs=object$hs) }
@@ -257,7 +252,6 @@ predict.kcopula.de <- function(object, ..., x, u)
 }
 
 ## contourLevel method
-
 contourLevels.kcopula.de <- function(x, ...)
 {
     x1 <- x; class(x1) <- "kde"  

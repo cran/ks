@@ -46,11 +46,11 @@ plot(fhat, display="filled.contour", cont=seq(10,90,by=10))
 plot(fhat, cont=95, add=TRUE, col=1)
 plot(fhat.supp, lty=2)
 
-data(iris)
+\donttest{data(iris)
 fhat <- kde(x=iris[,1:3])
 fhat.supp <- ksupp(fhat)
 plot(fhat)
-plot(fhat.supp, add=TRUE, col=3, alpha=0.1)
+plot(fhat.supp, add=TRUE, col=3, alpha=0.1)}
 }
 
 \keyword{smooth}

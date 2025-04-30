@@ -1,7 +1,6 @@
-###############################################################################
+#############################################################################
 ## Multivariate kernel density derivative estimate 
-###############################################################################
-
+##############################################################################
 kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, deriv.vec=TRUE, verbose=FALSE)
 {
     ## default values 
@@ -92,16 +91,18 @@ kdde <- function(x, H, h, deriv.order=0, gridsize, gridtype, xmin, xmax, supp=3.
 
     fhat$binned <- binned
     fhat$names <- parse.name(x)
+    ## can remove this patch when eks 1.1.0 replace eks 1.0.7 on cran
+    if (check.eks.version() <= "1.0.7") ksd$names <- NULL
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
     fhat$type <- "kdde"
     class(fhat) <- "kdde"
     
     return(fhat)
 }
 
-###############################################################################
+##############################################################################
 ## Multivariate binned kernel density derivative estimate
-###############################################################################
-
+##############################################################################
 kdde.binned <- function(x, H, h, deriv.order, bgridsize, xmin, xmax, bin.par, w, deriv.vec=TRUE, deriv.index, verbose=FALSE)
 {
     r <- deriv.order
@@ -277,7 +278,6 @@ kdde.binned.nd <- function(H, deriv.order, bin.par, verbose=FALSE, deriv.vec=TRU
 #############################################################################
 ## Univariate kernel density derivative estimate on a grid
 #############################################################################
-
 kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w, deriv.order=0)
 {
     r <- deriv.order
@@ -313,7 +313,6 @@ kdde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive,
 ## Bivariate kernel density derivative estimate on a grid
 ## Computes all mixed partial derivatives for a given deriv.order
 ##############################################################################
-
 kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE, verbose=FALSE)
 {
     d <- 2
@@ -387,7 +386,6 @@ kdde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
 ## Trivariate kernel density derivative estimate on a grid
 ## Computes all mixed partial derivatives for a given deriv.order
 ##############################################################################
-
 kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, deriv.order=0, deriv.vec=TRUE, verbose=FALSE)
 {
     d <- 3
@@ -468,7 +466,6 @@ kdde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, 
 ## Multivariate kernel density estimate using normal kernels,
 ## evaluated at each sample point
 #############################################################################
-
 kdde.points.1d <- function(x, h, eval.points, w, deriv.order=0) 
 {
     r <- deriv.order
@@ -492,9 +489,7 @@ kdde.points <- function(x, H, eval.points, w, deriv.order=0, deriv.vec=TRUE)
 #############################################################################
 ## S3 methods for KDDE objects
 #############################################################################
-
 ## plot method
-
 plot.kdde <- function(x, ...)
 {
     fhat <- x
@@ -546,13 +541,15 @@ plotkdde.1d <- function(fhat, xlab, ylab="Density derivative function", cont=50,
     plot(fhat, xlab=xlab, ylab=ylab, abs.cont=abs.cont, ...)
 }
 
-plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", xlab, ylab, zlab="Density derivative function", col, col.fun, alpha=1, kdde.flag=TRUE, thin=3, transf=1, neg.grad=FALSE, ...)
+plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, display="slice", xlab, ylab, zlab="Density derivative function", col, col.fun, transp.neutral, alpha=1, kdde.flag=TRUE, thin=3, transf=1, neg.grad=FALSE, ...)
 {
     disp <- match.arg(display, c("slice", "persp", "image", "filled.contour", "filled.contour2", "quiver"))
     if (disp=="filled.contour2") disp <- "filled.contour"
     if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Blue-Red", alpha=alpha) }
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
+    if (missing(transp.neutral)) transp.neutral <- class(fhat) %in% "kdde"
+
     if (disp=="slice" | disp=="filled.contour")
     {
         if (missing(abs.cont))
@@ -562,12 +559,8 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
         }
         if (missing(col))
         {
-            if (disp=="slice") col <- col.fun(n=length(abs.cont)) 
-            else if (disp=="filled.contour") 
-            {
-                col <- col.fun(n=length(abs.cont)+1)
-                col[median(1:length(col))] <- "transparent"
-            }
+            if (is.matrix(abs.cont)) abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
+            col <- col.diverging(f=col.fun, levels=abs.cont, display=disp, transp.neutral=transp.neutral)
         }
     } 
 
@@ -592,7 +585,7 @@ plotkdde.2d <- function(fhat, which.deriv.ind=1, cont=c(25,50,75), abs.cont, dis
 
 plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,75), abs.cont, colors, col, col.fun, xlab, ylab, zlab, ...)
 {
-    if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n, palette="Blue-Red") }
+    if (missing(col.fun)) col.fun <- function(n) { hcl.colors(n=n, palette="Blue-Red") }
     if (missing(xlab)) xlab <- fhat$names[1]
     if (missing(ylab)) ylab <- fhat$names[2]
     if (missing(zlab)) ylab <- fhat$names[3]
@@ -602,7 +595,6 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
         abs.cont <- as.matrix(contourLevels(fhat, approx=TRUE, cont=cont, which.deriv.ind=which.deriv.ind), ncol=length(cont))
         abs.cont <- c(abs.cont[1,], rev(abs.cont[2,]))
     }
-
     fhat.temp <- fhat 
     fhat.temp$deriv.ind <- fhat.temp$deriv.ind[which.deriv.ind,]
     fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
@@ -611,19 +603,49 @@ plotkdde.3d <- function(fhat, which.deriv.ind=1, display="plot3D", cont=c(25,50,
 
     if (missing(col))
     {
-        col <- col.fun(n=length(abs.cont)+1)
+        col <- col.fun(length(abs.cont)+1)
         nc <- length(col)
-        col <- col[-median(1:nc)] 
+        col <- col[-(max(which(abs.cont<0))+1)]
     }
 
     colors <- col
     plot(fhat, display=display, abs.cont=abs.cont, colors=col, col=col, xlab=xlab, ylab=ylab, zlab=zlab, ...) 
 }
 
+## diverging hcl.colors with transparent mid point (primarily for display="filled.contour")
+col.diverging <- function(levels, f, alpha=1, transp.neutral=FALSE, ind.neutral, insert.neutral=TRUE, display="filled.contour")
+{
+    disp <- match.arg(display, c("filled.contour", "slice"))
+    if (missing(f)) f <- function(.) { hcl.colors(n=., palette="Blue-Red", alpha=alpha) } 
+    if (is.matrix(levels)) levels <- c(levels[1,], rev(levels[2,]))
+
+    levels.rle <- rle(sign(levels))
+    levels.len <- max(levels.rle$lengths)
+           
+    ## for unblanced number of negative + positive contour levels
+    col.neg <- head(f(2*length(which(levels<=0))), n=length(which(levels<=0)))
+    col.pos <- tail(f(2*length(which(levels>0))), n=length(which(levels>0))) 
+     
+    if (disp=="slice") cols <- c(col.neg, col.pos) 
+    else if (disp=="filled.contour") 
+    {
+        cols <- c(col.neg, col.pos)
+        n <- length(cols)
+        if (missing(ind.neutral)) ind.neutral <- length(col.neg)+1
+        #if (ind.neutral<1 | ind.neutral>(n-1)) ind.neutral <- 1
+        if (ind.neutral<1) ind.neutral <- 1
+        else if (ind.neutral>n) ind.neutral <- n
+        if (insert.neutral) cols <- cols[c(1:ind.neutral, ind.neutral:n)] 
+        if (transp.neutral) cols[ind.neutral] <- "transparent"
+        else cols[ind.neutral] <- f(3)[2]
+    }
+
+    return(cols)
+}
+
 ######################################################################
 ## Quiver plot
 ######################################################################
-
 plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, add=FALSE, scale, length=0.1, alpha=1, ...)
 {
     if (!requireNamespace("pracma", quietly=TRUE)) stop("Install the pracma package as it is required.", call.=FALSE)
@@ -677,107 +699,9 @@ plotquiver <- function(fhat, thin=5, transf=1, neg.grad=FALSE, xlab, ylab, col, 
     }
 }
 
-## contourLevels method 
-
-contourLevels.kdde <- function(x, prob, cont, nlevels=5, approx=TRUE, which.deriv.ind=1, ...)
-{ 
-    fhat <- x
-    if (is.vector(fhat$x))
-    {
-        d <- 1; n <- length(fhat$x)
-        if (!is.null(fhat$deriv.order))  
-        {
-          fhat.temp <- fhat 
-          fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind]
-          fhat <- fhat.temp
-        }    
-    }
-    else
-    {
-        d <- ncol(fhat$x); n <-nrow(fhat$x)
-        if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x)
-
-        if (!is.null(fhat$deriv.order))  
-        {
-            fhat.temp <- fhat 
-            fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
-            fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind,]
-            fhat <- fhat.temp
-        }
-    } 
-
-    if (is.null(x$w)) w <- rep(1, n)
-    else w <- x$w
-
-    if (is.null(fhat$gridded))
-    {
-        if (d==1) fhat$gridded <- fhat$binned
-        else fhat$gridded <- is.list(fhat$eval.points)
-    }
-
-    if (missing(prob) & missing(cont))
-    hts <- pretty(fhat$estimate, n=nlevels) 
-    else
-    {
-        if (approx & fhat$gridded)
-            dobs <- predict.kde(fhat, x=fhat$x)
-        else
-            dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
-            
-        if (is.null(fhat$deriv.order))
-        {
-            if (!missing(prob) & missing(cont)) hts <- quantile(dobs[dobs>=0], prob=prob)
-            if (missing(prob) & !missing(cont)) hts <- quantile(dobs[dobs>=0], prob=(100-cont)/100)
-        }
-        else
-        {
-            if (!missing(prob) & missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=prob), quantile(dobs[dobs>=0], prob=prob))
-            if (missing(prob) & !missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=(100-cont)/100), quantile(dobs[dobs>=0], prob=(100-cont)/100))
-        }
-    }
-  
-    return(hts)
-}
-
-## predict method for KDDE 
-
-predict.kdde <- function(object, ..., x)
-{
-    fhat <- object
-    if (is.vector(fhat$H)) d <- 1 else d <- ncol(fhat$H)
-    if (d==1) n <- length(x)
-    else
-    {
-        if (is.vector(x)) x <- matrix(x, nrow=1)
-        else x <- as.matrix(x)
-        n <- nrow(x)
-    }
-
-    if (!is.null(fhat$deriv.ind))
-    {
-        if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
-        else
-        {
-            nd <- nrow(fhat$deriv.ind)
-            pk.mat <- matrix(0, ncol=nd, nrow=n)
-            for (i in 1:nd)
-            {
-                fhat.temp <- fhat
-                fhat.temp$estimate <- fhat$estimate[[i]]
-                pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
-            }
-        }
-    }
-    else
-        pk.mat <- predict.kde(fhat, x=x, ...)
-    
-    return(drop(pk.mat))
-}
-
 ######################################################################
 ## Summary kernel curvature 
 ######################################################################
-
 kcurv <- function(fhat, compute.cont=TRUE)
 {
     fhat.curv <- fhat
@@ -813,4 +737,173 @@ kcurv <- function(fhat, compute.cont=TRUE)
     fhat.curv$type <- "kcurv"
     
     return(fhat.curv)
+}
+
+## contourLevels method 
+contourLevels.kdde <- function(x, prob, cont, approx=TRUE, which.deriv.ind=1, ...)
+{ 
+    nlevels <- 5
+    approx <- as.integer(approx)
+    fhat <- x
+    if (is.vector(fhat$x))
+    {
+        d <- 1; n <- length(fhat$x)
+        if (!is.null(fhat$deriv.order))  
+        {
+          fhat.temp <- fhat 
+          fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind]
+          fhat <- fhat.temp
+        }    
+    }
+    else
+    {
+        d <- ncol(fhat$x); n <-nrow(fhat$x)
+        if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x)
+
+        if (!is.null(fhat$deriv.order))  
+        {
+            fhat.temp <- fhat 
+            fhat.temp$estimate <- fhat.temp$estimate[[which.deriv.ind]]
+            fhat.temp$deriv.ind <-fhat.temp$deriv.ind[which.deriv.ind,]
+            fhat <- fhat.temp
+        }
+    } 
+
+    if (is.null(x$w)) w <- rep(1, n)
+    else w <- x$w
+
+    if (is.null(fhat$gridded))
+    {
+        if (d==1) fhat$gridded <- fhat$binned
+        else fhat$gridded <- is.list(fhat$eval.points)
+    }
+
+    if (missing(prob) & missing(cont))
+    {    
+        hts <- pretty(fhat$estimate, n=nlevels)
+        args <- list(...)
+        if (any(pmatch(names(args), "nlevels"))) warning("nlevels=5 always so changing nlevels has no effect") 
+    } 
+    else
+    {
+        if (approx & fhat$gridded)
+            dobs <- predict.kde(fhat, x=fhat$x)
+        else
+            dobs <- kdde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w, deriv.order=fhat$deriv.order)$estimate[,which.deriv.ind] 
+            
+        if (is.null(fhat$deriv.order))
+        {
+            if (!missing(prob) & missing(cont)) hts <- quantile(dobs[dobs>=0], prob=prob)
+            if (missing(prob) & !missing(cont)) hts <- quantile(dobs[dobs>=0], prob=(100-cont)/100)
+        }
+        else
+        {
+            if (!missing(prob) & missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=prob), quantile(dobs[dobs>=0], prob=prob))
+            if (missing(prob) & !missing(cont)) hts <- rbind(-quantile(abs(dobs[dobs<0]), prob=(100-cont)/100), quantile(dobs[dobs>=0], prob=(100-cont)/100))
+        }
+    }
+  
+    return(hts)
+}
+
+## predict method for KDDE 
+predict.kdde <- function(object, ..., x)
+{
+    fhat <- object
+    #if (is.vector(fhat$H)) d <- 1 else d <- ncol(fhat$H)
+    if (!is.list(fhat$eval.points)) d <- 1 else d <- length(fhat$eval.points)
+    if (d==1) n <- length(x)
+    else
+    {
+        if (is.vector(x)) x <- matrix(x, nrow=1)
+        else x <- as.matrix(x)
+        n <- nrow(x)
+    }
+
+    if (!is.null(fhat$deriv.ind))
+    {
+        if (is.vector(fhat$deriv.ind)) pk.mat <- predict.kde(fhat, x=x, ...)
+        else
+        {
+            nd <- nrow(fhat$deriv.ind)
+            pk.mat <- matrix(0, ncol=nd, nrow=n)
+            for (i in 1:nd)
+            {
+                fhat.temp <- fhat
+                fhat.temp$estimate <- fhat$estimate[[i]]
+                pk.mat[,i] <- predict.kde(fhat.temp, x=x, ...)
+            }
+        }
+    }
+    else
+        pk.mat <- predict.kde(fhat, x=x, ...)
+    
+    return(drop(pk.mat))
+}
+
+##############################################################################
+## Convert estimation grid to quasi-kernel density derivative estimator
+##############################################################################
+kqdde <- function(estimate, eval.points, xnames)
+{
+    if (missing(eval.points))
+    {
+        if (is.vector(estimate)) { d <- 1; eval.points <- 1:length(estimate) }
+        else { d <- length(dim(estimate)); eval.points <- lapply(dim(estimate), function(.) 1:.) }
+    } 
+    else 
+    {
+        if (!is.list(eval.points)) d <- 1 else d <- length(eval.points)
+    }
+   
+    if (d==1) { x <- 0; deriv.ind <- 1 }
+    else { x <- matrix(0, ncol=d, nrow=1); deriv.ind <- matrix(1, nrow=1) }
+    if (missing(xnames))
+    {
+        if (!all(is.na(names(eval.points)))) colnames(x) <- names(eval.points) 
+    }
+    if (!missing(xnames)) colnames(x) <- xnames
+    
+    fhat <- list(x=x, estimate=list(estimate, estimate), eval.points=eval.points, deriv.order=1, deriv.ind=deriv.ind)
+    fhat$gridded <- TRUE
+    fhat$cont <- contourLevels.kqdde(fhat, cont=1:99)
+    fhat$names <- parse.name(x)
+    fhat$type <- "kdde" 
+    class(fhat) <- "kqdde"
+    
+    return(fhat)
+}
+
+plot.kqdde <- plot.kdde 
+predict.kqdde <- predict.kdde
+
+contourLevels.kqdde <- function(x, prob, cont, ...)
+{ 
+    if (!is.list(x$eval.points)) d <- 1 else d <- length(x$eval.points)
+    
+    x$estimate[[1]][x$estimate[[1]]>0] <- 0
+    x$estimate[[1]] <- -x$estimate[[1]]
+    x$estimate[[2]][x$estimate[[2]]<=0] <- 0
+
+    which.deriv.ind <- 1; ##for (which.deriv.ind in 1:d)
+    #{
+        fhat <- x
+        if (is.vector(fhat$x))
+        {
+            fhat$deriv.ind <- fhat$deriv.ind[which.deriv.ind]
+        }
+        else
+        {
+            if (!is.matrix(fhat$x)) fhat$x <- as.matrix(fhat$x) 
+            fhat$estimate <- fhat$estimate[[which.deriv.ind]]
+            fhat$deriv.ind <-fhat$deriv.ind[which.deriv.ind,]
+        } 
+
+        hts <- contourLevelskde.grid(fhat, prob=prob, cont=cont)
+        assign(paste0("hts", which.deriv.ind), hts) 
+    #}
+    hts <- rbind(-hts1, hts2)
+    rownames(hts) <- NULL
+
+    return(hts)
 }

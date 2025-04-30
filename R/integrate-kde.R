@@ -1,7 +1,6 @@
 #############################################################################
 ## Cumulative integral for KDE
 #############################################################################
-
 integral.kde <- function(q, fhat, density)
 {
     gridsize <- length(fhat$eval.points)
@@ -45,17 +44,17 @@ integral.kde <- function(q, fhat, density)
 
     ## remove possible decreasing values in q.prob
     dec.ind <- which(diff(q.prob)<0)
-    if (length(dec.ind)>0) 
+    while (length(dec.ind)>0) 
     {
         dec.ind <- dec.ind+1 
-        for (i in dec.ind) q.prob[i] <- q.prob[i-1]
+        for (i in dec.ind) q.prob[i] <- q.prob[i-1] 
+        dec.ind <- which(diff(q.prob)<0)
     }
 
     return(q.prob)
 }
 
 ## cumulative probability P(fhat <= q)
-
 pkde <- function(q, fhat)
 {
     return(integral.kde(q=q, fhat=fhat, density=TRUE))
@@ -63,14 +62,12 @@ pkde <- function(q, fhat)
 
 ## density value of KDE at x 
 ## alias for predict.kde
-
 dkde <- function(x, fhat)
 {
     return(predict(fhat, x=x))
 }
 
 ## p-quantile of KDE, i.e. solve for x where P(fhat < x) = p 
-
 qkde <- function(p, fhat)
 {
     if (any(p > 1) | any(p < 0)) stop("p must be <= 1 and >= 0")
@@ -102,7 +99,6 @@ qkde <- function(p, fhat)
 }
 
 ## Silverman (1983)'s random sample from KDE
-
 rkde <- function(n, fhat, positive=FALSE)
 {
     if (positive) x <- log(fhat$x)
@@ -129,7 +125,6 @@ rkde <- function(n, fhat, positive=FALSE)
 }
 
 ## plot cumulative probability as shaded region on a KDE 
-
 plotkde.cumul <- function(fhat, q, add=FALSE, col="blue", ...)
 {
     qind <- fhat$eval.points<=q

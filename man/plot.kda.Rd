@@ -54,9 +54,8 @@
 \seealso{\code{\link{kda}}, \code{\link{kde}}}
 
 \examples{
-data(iris)
-
 ## univariate example
+data(iris)
 ir <- iris[,1]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr, xmin=3, xmax=9)
@@ -72,7 +71,7 @@ plot(kda.fhat, alpha=0.2, drawlabels=FALSE)
 ir <- iris[,1:3]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
-plot(kda.fhat) 
-   ## colour=species, transparency=density heights}
+plot(kda.fhat) ## colour=species, transparency=density heights
+}
 
 \keyword{hplot}

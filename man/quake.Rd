@@ -45,7 +45,7 @@ Bird, P. (2003) An updated digital model of plate boundaries,
 %\url{http://peterbird.name/publications/2003_PB2002/2003_PB2002.htm}.
   
 NGDC/WDS (2017) Global significant earthquake database, National
-  Geophysical Data Center, NOAA, doi:10.7289/V5TD9V7K.
+  Geophysical Data Center, NOAA, \doi{10.7289/V5TD9V7K}.
 National Geophysical Data Center/World Data Service. Accessed 2017-03-30.
 }
 

@@ -1,9 +1,9 @@
 #############################################################################
 ## Histogram density estimators
 #############################################################################
-
 histde <- function(x, binw, xmin, xmax, adj=0) 
 {
+    if (!is.null(names(x))) xnames <- names(x) else xnames <- colnames(x)
     if (is.vector(x))
     {
         d <- 1; n <- length(x)
@@ -23,13 +23,13 @@ histde <- function(x, binw, xmin, xmax, adj=0)
     else if (d==2) fhat <- hist.2d(x=x, binw=binw, xmin=xmin, xmax=xmax, adj=adj)
 
     fhat$names <- parse.name(x)
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- xnames 
     class(fhat) <- "histde"
 
     return(fhat)
  }
 
 ## 1D histogram
-
 hist.1d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 {
     if (missing(xmin)) xmin <- min(x)
@@ -47,7 +47,6 @@ hist.1d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 }
 
 ## 2D histogram
-
 hist.2d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 { 
     if (missing(nbin)) nbin <- round(apply(apply(x, 2, range), 2, diff)*1.2/binw,0)
@@ -74,7 +73,6 @@ hist.2d <- function(x, nbin, binw, x.cut, xmin, xmax, adj=0, ...)
 #############################################################################
 ## plot histograms
 #############################################################################
-
 plot.histde <- function(x, ...)
 {
     if (is.vector(x$x)) plothistde.1d(fhat=x, ...)
@@ -126,7 +124,6 @@ plothistde.2d <- function(fhat, breaks, nbreaks=11, xlab, ylab, zlab="Density fu
 }
 
 ## predict method
-
 predict.histde <- function(object, ..., x)
 {
     fhat <- object$estimate
@@ -155,8 +152,4 @@ predict.histde <- function(object, ..., x)
 }
 
 ## contourLevels method
-
-contourLevels.histde <- function(...)
-{
-    return(contourLevels.kde(...))
-}
+contourLevels.histde <- function(...) { return(contourLevels.kde(...)) }

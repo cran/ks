@@ -1,5 +1,20 @@
 Change log file for ks
 
+1.15.0
+-Fixed bug in pkde() with decreasing cumulative probabilities.  
+-Removed nlevels parameter from, and added approx=2 option to compute 
+ grid-based density contour levels for contourLevels S3 methods. 
+-Added name labels for eval.points field of k* objects.
+-Changed kdr.segment() so segments are ordered in decresing #points.
+-Changed short segment removal algorithm for kdr(). 
+-Added error catching for small grid sizes in kdr().  
+-Fixed bugs in plotkdde.2d(abs.cont).
+-Added more informative legend keys in plot.kde.loctest().
+-Set local random seeds in Hnm() and contourBreaks() to ensure
+ reproducibility. 
+-Fixed bug in col.diverging() for a single contour level.
+-Added patch in kdde() for eks <= 1.0.7.
+
 1.14.3
 -Made small changes to kdde.binned.nd() and binning() to better report small 
  bandwidth errors.

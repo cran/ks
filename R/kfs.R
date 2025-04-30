@@ -1,7 +1,6 @@
 ###############################################################################
 ## Feature significance for ultivariate kernel density stimate 
 ###############################################################################
-
 kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, verbose=FALSE, signif.level=0.05)
 {
     r <- deriv.order
@@ -120,9 +119,7 @@ kfs <- function(x, H, h, deriv.order=2, gridsize, gridtype, xmin, xmax, supp=3.7
 #############################################################################
 ## S3 methodfor KFS objects
 #############################################################################
-
 ## plot method
-
 plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha=1, alphavec=0.4, add=FALSE, ...)
 {
     fhatr <- x
@@ -168,7 +165,6 @@ plot.kfs <- function(x, display="filled.contour", col=7, colors, abs.cont, alpha
 }
 
 ## predict method
-
 predict.kfs <- function(object, ..., x)
 {
     fhat <- predict.kde(object=object, ..., x=x)

@@ -45,10 +45,10 @@ A kernel two-sample global significance test is a list with fields:
   
   If \code{H1,H2} are missing then the  plug-in selector \code{\link{Hpi.kfe}}
   is automatically called by \code{kde.test} to estimate the
-  functionals with \code{kfe(, deriv.order=0)}. Likewise for missing
+  functionals with \code{kfe(deriv.order=0)}. Likewise for missing
   \code{h1,h2}. 
 
-  For \pkg{ks} \eqn{\geq}{>=} 1.8.8, \code{kde.test(,binned=TRUE)} invokes binned
+  For \pkg{ks} \eqn{\geq}{>=} 1.8.8, \code{kde.test(binned=TRUE)} invokes binned
   estimation for the computation of the bandwidth selectors, and not the
   test statistic and \eqn{p}{p}-value.  
 }

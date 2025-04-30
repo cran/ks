@@ -52,7 +52,7 @@ SCV bandwidth. If \code{amise=TRUE} then the minimal scaled SCV value is returne
 
   For d=1, the selector \code{hscv} is not always stable for large
   sample sizes with binning.
-  Examine the plot from \code{hscv(, plot=TRUE)} to
+  Examine the plot from \code{hscv(plot=TRUE)} to
   determine the appropriate smoothness of the SCV function. Any
   non-smoothness is due to the discretised nature of binned estimation.
 

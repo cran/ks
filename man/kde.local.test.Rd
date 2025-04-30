@@ -80,10 +80,7 @@ data(crabs, package="MASS")
 x1 <- crabs[crabs$sp=="B", 4]
 x2 <- crabs[crabs$sp=="O", 4]
 loct <- kde.local.test(x1=x1, x2=x2)
-plot(loct, ylim=c(-0.08,0.12))
-cols <- hcl.colors(palette="Dark2",2)
-plot(loct$fhat1, add=TRUE, col=cols[1])
-plot(loct$fhat2, add=TRUE, col=cols[2])
+plot(loct)
 
 ## see examples in ? plot.kde.loctest
 }

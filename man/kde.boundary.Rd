@@ -39,14 +39,11 @@ kde.boundary(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 \details{
   There are two forms of density estimates which are suitable for
   bounded data, based on the modifying the kernel function.
-  For \code{boundary.kernel="beta"}, the 2nd
-  form of the Beta boundary kernel of Chen (1999) is employed. It is suited for
-  rectangular data  boundaries.  
+  For \code{boundary.kernel="beta"}, the 2nd form of the Beta boundary kernel of Chen (1999) is employed. It is suited for rectangular data  boundaries.  
 
   For \code{boundary.kernel="linear"}, the linear boundary kernel of
   Hazelton & Marshall (2009) is employed. It is suited for arbitrarily
-  shaped data boundaries, though it 
-  is currently only implemented for rectangular boundaries.   
+  shaped data boundaries, though it is currently only implemented for rectangular boundaries.   
 }
 
 \references{
@@ -65,14 +62,14 @@ data(worldbank)
 wb <- as.matrix(na.omit(worldbank[,c("internet", "ag.value")]))
 fhat <- kde(x=wb)
 fhat.beta <- kde.boundary(x=wb, xmin=c(0,0), xmax=c(100,100), boundary.kernel="beta")  
-fhat.LB <- kde.boundary(x=wb, xmin=c(0,0), xmax=c(100,100), boundary.kernel="linear")
-
 plot(fhat, col=1, xlim=c(0,100), ylim=c(0,100))
 plot(fhat.beta, add=TRUE, col=2)
 rect(0,0,100,100, lty=2)
+
+\donttest{fhat.LB <- kde.boundary(x=wb, xmin=c(0,0), xmax=c(100,100), boundary.kernel="linear")
 plot(fhat, col=1, xlim=c(0,100), ylim=c(0,100))
 plot(fhat.LB, add=TRUE, col=3)
-rect(0,0,100,100, lty=2) 
+rect(0,0,100,100, lty=2)} 
 }  
 
 \keyword{smooth}

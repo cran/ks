@@ -42,13 +42,13 @@ kde.sp(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
   The balloon density estimate \code{kde.balloon} employs bandwidths
   which vary at each 
   estimation point (Loftsgaarden & Quesenberry, 1965). There are as many bandwidths as there are estimation
-  grid points. The default bandwidth is \code{Hns(,deriv.order=2)} and
+  grid points. The default bandwidth is \code{Hns(deriv.order=2)} and
   the subsequent bandwidths are derived via a minimal MSE formula.  
 
   The sample point density estimate \code{kde.sp} employs bandwidths
   which vary for each data point (Abramson, 1982).
   There are as many bandwidths as there are data
-  points. The default bandwidth is \code{Hns(,deriv.order=4)} and the 
+  points. The default bandwidth is \code{Hns(deriv.order=4)} and the 
   subsequent bandwidths are derived via the Abramson formula.
 }
 

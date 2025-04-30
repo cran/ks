@@ -9,7 +9,7 @@
 }
 
 \usage{
-kdr(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min.seg.size,
+kdr(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min.seg.size=4,
     keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat,
     density.cutoff, pre=TRUE, verbose=FALSE) 
 kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE) 
@@ -29,10 +29,8 @@ kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE)
   \item{segment}{flag to compute segments of density ridge. Default is TRUE.}
   \item{k}{number of segments to partition density ridge}
   \item{kmax}{maximum number of segments to partition density ridge. Default is 30.}
-  %\item{tol.seg}{distance under which two segments are considered
-  %  to form one segment. Default is 0.01*max marginal IQR of \code{x}.}
-  \item{min.seg.size}{minimum length of a segment of a density
-  ridge. Default is \code{round(0.001*nrow(y),0)}.}
+  \item{min.seg.size}{minimum number of points in a segment of a density
+  ridge. Default is 4.}
   \item{keep.path}{flag to store the density gradient ascent
     paths. Default is FALSE.}
   \item{gridsize}{vector of number of grid points}
@@ -64,7 +62,7 @@ kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE)
   \item{names}{variable names} 
   \item{w}{vector of weights}
   \item{path}{list of density gradient ascent paths where \code{path[[i]]} is
-    the path of \code{y[i,]} (only if \code{keep.path=TRUE})}
+    the path of \code{y[i,]} (if \code{keep.path=TRUE})}
 }
 
 \details{ 
@@ -79,7 +77,7 @@ kdr.segment(x, k, kmax, min.seg.size, verbose=FALSE)
   \code{Hpi(x,deriv.order=2)}. Any bandwidth that is suitable for the
   density Hessian is also suitable for the kernel density ridge. 
   
-  \code{kdr(, segment=TRUE)} or \code{kdr.segment()} carries out the segmentation of the density ridge points in \code{end.points}. If \code{k} is set, then \code{k} segments are created. If \code{k} is not set, then the optimal number of segments is chosen from 1:\code{kmax}, with \code{kmax=30} by default. The segments are created via a hierarchical clustering with single linkage. *Experimental: following the segmentation, the points within each segment are ordered to facilitate a line plot in \code{plot(, type="l")}. The optimal ordering is not always achieved in this experimental implementation, though a scatterplot \code{plot(, type="p")} always suffices, regardless of this ordering.*    
+  \code{kdr(segment=TRUE)} or \code{kdr.segment()} carries out the segmentation of the density ridge points in \code{end.points}. If \code{k} is set, then \code{k} segments are created. If \code{k} is not set, then the optimal number of segments is chosen from 1:\code{kmax}, with \code{kmax=30} by default. The segments are created via a hierarchical clustering with single linkage. *Experimental: following the segmentation, the points within each segment are ordered to facilitate a line plot in \code{plot(type="l")}. The optimal ordering is not always achieved in this experimental implementation, though a scatterplot \code{plot(type="p")} always suffices, regardless of this ordering.*    
 }
 
 \references{

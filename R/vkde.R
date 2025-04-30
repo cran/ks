@@ -1,7 +1,6 @@
 ######################################################################
 ## Balloon variable KDE
 ######################################################################
-
 kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
     ## default values
@@ -27,9 +26,7 @@ kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
     
     if (d==2) fhat <- kde.balloon.2d(x=x, H=H, gridsize=gridsize, gridtype=gridtype, xmin=xmin, xmax=xmax, supp=supp, eval.points=eval.points, binned=binned, bgridsize=bgridsize, w=w, compute.cont=compute.cont, approx.cont=approx.cont, verbose=verbose)
     else stop("kde.balloon only implemented for d=2")
-
-    if (compute.cont)
-        fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
 
     return(fhat)
 }
@@ -37,7 +34,6 @@ kde.balloon <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
 ######################################################################
 ## Bivariate balloon variable KDE
 ######################################################################
-
 kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
     d <- ncol(x)
@@ -71,7 +67,6 @@ kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
     fhat$names <- parse.name(x)  ## add variable names
     if (compute.cont)
         fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
-
     fhat$H <- h.pi^2
     
     return(fhat)
@@ -80,7 +75,6 @@ kde.balloon.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.
 ######################################################################
 ## Sample point variable KDE
 ######################################################################
-
 kde.sp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE)
 {
     ## default values
@@ -108,6 +102,8 @@ kde.sp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.point
     else stop("kde.sp only implemented for d=2")
 
     fhat$names <- parse.name(x)  ## add variable names
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
+    
     if (compute.cont)
         fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
 
@@ -117,7 +113,6 @@ kde.sp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.point
 ######################################################################
 ## Bivariate sample point variable KDE
 ######################################################################
-
 kde.sp.2d <- function(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, verbose=FALSE, pre=TRUE)
 {
     d <- 2; n <- nrow(x)

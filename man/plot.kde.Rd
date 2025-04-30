@@ -107,9 +107,8 @@
 }
  
 \examples{
-data(iris)
-
 ## univariate example
+data(iris)
 fhat <- kde(x=iris[,2])
 plot(fhat, cont=50, col.cont=4, cont.lwd=2, xlab="Sepal length")
 

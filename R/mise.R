@@ -1,9 +1,7 @@
-###############################################################################
+##############################################################################
 ## Exact MISE for normal mixtures
-###############################################################################
-
+##############################################################################
 ## nu, gamma_r, gamma_r2 written by Jose Chacon 10/2008
-
 nu <- function(r, A)
 { 
     ## using the recursive formula provided in Kan (2008)
@@ -39,7 +37,6 @@ nu.rs <- function(r, s, A, B)
 }
 
 ## gamma functional for normal mixture MISE
-
 gamma_r <- function(mu, Sigma, r)
 {
     Sigmainv <- chol2inv(chol(Sigma))
@@ -53,7 +50,6 @@ gamma_r <- function(mu, Sigma, r)
 }
 
 ## gamma functional for normal mixture AMISE 
-
 gamma_r2 <- function(mu, Sigma, d, r, H)
 {
     Sigmainv <- chol2inv(chol(Sigma))
@@ -72,7 +68,7 @@ gamma_r2 <- function(mu, Sigma, d, r, H)
     return(gamr)
 }
 
-###############################################################################
+##############################################################################
 ## Omega matrices (for exact MISE for normal mixtures)
 ##
 ## Parameters 
@@ -84,8 +80,7 @@ gamma_r2 <- function(mu, Sigma, d, r, H)
 ##
 ## Returns 
 ## Omega matrix
-###############################################################################
-
+##############################################################################
 omega <- function(mus, Sigmas, k, a, H, r)
 {
     ## the (i,j) element of Omega matrix is
@@ -140,7 +135,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
     return(omega.mat)
 }
 
-##############################################################################
+#############################################################################
 ## Exact MISE for normal mixtures
 ##
 ## Parameters
@@ -152,8 +147,7 @@ omega.1d <- function(mus, sigmas, k, a, h, r)
 ##
 ## Returns
 ## Exact MISE for normal mixtures
-###############################################################################
-
+##############################################################################
 mise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 {
     if (!(missing(h)))
@@ -206,7 +200,7 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
     return(drop(mise)) 
 }
 
-###############################################################################
+##############################################################################
 ## Exact AMISE for bivariate normal mixtures
 ##
 ## Parameters
@@ -218,8 +212,7 @@ mise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
 ##
 ## Returns   
 ## Exact AMISE for normal mixtures
-###############################################################################
-
+##############################################################################
 amise.mixt <- function(H, mus, Sigmas, props, samp, h, sigmas, deriv.order=0)
 {
     if (!(missing(h)))
@@ -290,7 +283,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
     return(drop(amise))
 }
 
-###############################################################################
+##############################################################################
 ## Lambda matrices (for exact AMISE for normal mixtures)
 ##
 ## Parameters 
@@ -301,8 +294,7 @@ amise.mixt.1d <- function(h, mus, sigmas, props, samp, deriv.order=0)
 ##
 ## Returns 
 ## Lambda matrix
-###############################################################################
-
+##############################################################################
 lambda <- function(mus, Sigmas, k, r)
 {
     ## the (i,j) element of Lambda matrix is d^r/ dx^r  dmvnorm(0, mu_i - mu_j,
@@ -363,7 +355,7 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
     return(drop(amise)) 
 }
 
-###############################################################################
+##############################################################################
 ## Finds the bandwidth matrix that minimises the MISE for normal mixtures
 ##
 ## Parameters
@@ -377,8 +369,7 @@ amise.mixt.2d <- function(H, mus, Sigmas, props, samp)
 ## 
 ## Returns
 ## H_MISE
-###############################################################################
-
+##############################################################################
 hmise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
 {
     r <- deriv.order
@@ -448,7 +439,7 @@ Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     return(Hmise)
 }   
 
-###############################################################################
+##############################################################################
 ## Finds bandwidth matrix that minimises the AMISE for normal mixtures - 2-dim
 ##
 ## Parameters
@@ -460,8 +451,7 @@ Hmise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 ## 
 ## Returns
 ## Bandwidth matrix that minimises AMISE
-###############################################################################
-
+##############################################################################
 hamise.mixt <- function(mus, sigmas, props, samp, hstart, deriv.order=0)
 {
     r <- deriv.order
@@ -540,7 +530,7 @@ Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
     return(Hamise)
 }   
   
-###############################################################################
+##############################################################################
 ## ISE for normal mixtures (fixed KDE)
 ## 
 ## Parameters
@@ -558,8 +548,7 @@ Hamise.mixt.diag <- function(mus, Sigmas, props, samp, Hstart, deriv.order=0)
 ##
 ## Returns
 ## ISE 
-###############################################################################
-
+##############################################################################
 ise.mixt <- function(x, H, mus, Sigmas, props, h, sigmas, deriv.order=0, binned=FALSE, bgridsize)
 {
     if (!(missing(h)))
@@ -665,4 +654,3 @@ Hise.mixt <- function(x, mus, Sigmas, props, Hstart, deriv.order=0)
 
     return(Hise)
 }   
-

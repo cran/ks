@@ -1,7 +1,6 @@
 ######################################################################
 ## Boundary KDE
 ######################################################################
-
 kde.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, boundary.supp, boundary.kernel="beta", verbose=FALSE)
 {
     bk <- match.arg(boundary.kernel, c("beta", "linear")) 
@@ -23,7 +22,6 @@ kde.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval
 ######################################################################
 ## Linear boundary KDE
 ######################################################################
-
 kde.linear.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, boundary.supp=2, verbose=FALSE)
 {
     ## default values 
@@ -73,6 +71,7 @@ kde.linear.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.
     
     fhat$binned <- binned
     fhat$names <- parse.name(x)  ## add variable names
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
     fhat$w <- w
     class(fhat) <- "kde"
     
@@ -86,7 +85,6 @@ kde.linear.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.
 ######################################################################
 ## Bivariate linear boundary KDE
 ######################################################################
-
 kde.LB.grid.2d <- function(x, H, gridsize, bgridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, boundary.supp=10, binned=FALSE, verbose=FALSE)
 {
    n <- nrow(x)
@@ -182,7 +180,6 @@ kde.LB.grid.2d <- function(x, H, gridsize, bgridsize, supp, gridx=NULL, grid.pts
 }
 
 ## bivariate linear boundary normal kernel 
-
 dmvnorm.LB.kernel.2d <- function(x, H, xmin=c(0,0), xmax=c(1,1), ...)
 {
     x1 <- seq(xmin[1], xmax[1], length=151)
@@ -233,7 +230,6 @@ dmvnorm.LB <- function(x, mu, Sigma, a0, a1)
 ######################################################################
 ## Boundary kernel estimator using beta bounday kernels (2nd form)
 ######################################################################
-
 kde.beta.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned=FALSE, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, boundary.supp=1, verbose=FALSE)
 {
     ## default values
@@ -291,9 +287,10 @@ kde.beta.boundary <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7,
 
     fhat$binned <- binned
     fhat$names <- parse.name(x)  ## add variable names
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
     fhat$w <- w
     class(fhat) <- "kde"
-  
+    
     ## compute prob contour levels
     if (compute.cont & missing(eval.points))
     fhat$cont <- contourLevels(fhat, cont=1:99, approx=approx.cont)
@@ -586,7 +583,6 @@ kde.boundary.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL
 }
 
 ## indicator function for boundary region of [0,1] i.e. [0,h] + [1-h, h]
-
 boundary.ind <- function(x, h, xmin, xmax, boundary.supp=1)
 {
     if (is.vector(x)) { x <- matrix(x, ncol=1) }
@@ -604,7 +600,6 @@ boundary.ind <- function(x, h, xmin, xmax, boundary.supp=1)
 ######################################################################
 ## Bivariate beta boundary KDE
 ######################################################################
-
 ## modified boundary beta kernel - first form (Chen, 1999)
 dbeta.kernel <- function(x, eval.x, h)
 {
@@ -626,7 +621,6 @@ return(dbeta(eval.x, shape1=shape1, shape2=shape2))
 }
 
 ## modified multivariate boundary beta product kernel
-
 dmvbeta.prod.kernel2 <- function(x, eval.x, hs)
 {
     d <- length(hs)
@@ -644,7 +638,6 @@ dmvbeta.prod.kernel2 <- function(x, eval.x, hs)
 }
 
 ## modified multivariate boundary beta spherically symmetric kernel
-
 dmvbeta.symm.kernel2 <- function(x, eval.x, H)
 {
     d <- ncol(H)
@@ -698,7 +691,6 @@ dmvbeta.prod.kernel2.2d <- function(x, hs, xmin=c(0,0), xmax=c(1,1), ...)
 ##########################################################################
 ## Truncate unbounded KDE to polygon boundary
 ##########################################################################
-
 kde.truncate <- function(fhat, boundary)
 {
     ## reallocate any probability mass outside of map boundary regions
@@ -720,7 +712,6 @@ kde.truncate <- function(fhat, boundary)
 ##########################################################################
 ## Truncate unbounded KDDE to polygon boundary
 ##########################################################################
-
 kdde.truncate <- function(fhat, boundary)
 {
     ## reallocate any probability mass outside of map boundary regions

@@ -1,7 +1,6 @@
 ##########################################################################
 ## Default values for parameter choices for ks objects
 ##########################################################################
-
 ks.defaults <- function(x, w, binned, bgridsize, gridsize)
 {
     ## dimensions of x
@@ -31,15 +30,30 @@ ks.defaults <- function(x, w, binned, bgridsize, gridsize)
     if (missing(gridsize)) gridsize <- default.gridsize(d)
     if (length(gridsize)==1) gridsize <- rep(gridsize, d)
     if (length(bgridsize)==1) bgridsize <- rep(bgridsize, d)
-    ksd <- list(d=d, n=n, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize)
+    if (inherits(x, c("matrix","data.frame"))) xnames <- colnames(x) 
+    else xnames <- NULL
+    ksd <- list(d=d, n=n, w=w, binned=binned, bgridsize=bgridsize, gridsize=gridsize, names=xnames)
 
     return(ksd)
+}
+
+check.eks.version <- function()
+{
+    pfn <- sapply(strsplit(toString(sys.call(-sys.parent())), split=","), head,n=1)
+    call.from.eks <- try(utils::getFromNamespace(pfn, "eks"), silent=TRUE)
+    eks.version <- "1.1.0"
+    if (!inherits(call.from.eks, "try-error"))
+    {
+        eks.version <- try(utils::packageVersion("eks"), silent=TRUE)
+        if (inherits(eks.version, "try-error")) eks.version <- "1.1.0"
+    }
+
+    return(eks.version)
 }
 
 ##########################################################################
 ## Parse variable name
 ##########################################################################
-
 parse.name <- function(x)
 {
     if (is.vector(x))
@@ -64,9 +78,7 @@ parse.name <- function(x)
 ##########################################################################
 ## Basic vectors and matrices and their operations
 ##########################################################################
-  
 ## vec operator 
-
 vec <- function(x, byrow=FALSE)
 {
     if (is.vector(x)) return (x)
@@ -79,7 +91,6 @@ vec <- function(x, byrow=FALSE)
 }
 
 ## vech operator
-
 vech <- function(x)
 {
     if (is.vector(x))
@@ -101,7 +112,6 @@ vech <- function(x)
 }
 
 ## inverse vec operator 
-    
 invvec <- function(x, ncol, nrow, byrow=FALSE)
 {
     if (length(x)==1) return(x)
@@ -126,7 +136,6 @@ invvec <- function(x, ncol, nrow, byrow=FALSE)
 }
 
 ## inverse vech operator 
-
 invvech <- function(x)
 {
   if (length(x)==1) return(x)
@@ -145,7 +154,6 @@ invvech <- function(x)
 }
 
 ## trace of matrix
-
 tr <- function(A)
 {   
     count <- 0
@@ -158,7 +166,6 @@ tr <- function(A)
 }
 
 ## elementary vector 
-    
 elem <- function(i, d)
 {
     elem.vec <- rep(0, d)
@@ -168,7 +175,6 @@ elem <- function(i, d)
 }      
 
 ## commutation matrix (taken from MCMCglmmm library)
-
 comm <- function(m,n)
 {
     K <- matrix(0,m*n, m*n)
@@ -190,7 +196,6 @@ comm <- function(m,n)
 ## Duplication matrix
 ## Taken from Felipe Osorio http://www.ime.usp.br/~osorio/files/dupl.q
 ##########################################################################
-
 dupl <- function(order, ret.q = FALSE)
 {
     ## call
@@ -247,7 +252,6 @@ dupl <- function(order, ret.q = FALSE)
 ## Returns
 ## Pre-scaled x values
 ##########################################################################
-
 pre.scale <- function(x, mean.centred=FALSE)
 {
     S <- diag(diag(var(x)))
@@ -268,7 +272,6 @@ pre.scale <- function(x, mean.centred=FALSE)
 ## Returns
 ## Pre-sphered x values
 ##########################################################################
-
 pre.sphere <- function(x, mean.centred=FALSE)
 {
     S <- var(x)
@@ -284,7 +287,6 @@ pre.sphere <- function(x, mean.centred=FALSE)
 ##########################################################################
 ## Boolean functions
 ##########################################################################
-
 is.even <- function(x)
 {
     y <- x[x>0] %%2
@@ -305,7 +307,6 @@ is.diagonal <- function(x)
 ## i  - if r==mat[i,]
 ## NA - otherwise
 ##########################################################################
-
 which.mat <- function(r, mat)
 {
     ind <- numeric()
@@ -323,7 +324,6 @@ which.mat <- function(r, mat)
 ####################################################################
 ## Exactly the same function as combinat:::permn
 ####################################################################
-
 permn.ks <- function (x, fun = NULL, ...) 
 {
     if (is.numeric(x) && length(x) == 1 && x > 0 && trunc(x) == x) x <- seq(x)
@@ -364,7 +364,6 @@ permn.ks <- function (x, fun = NULL, ...)
 ## Each row represents one permutation
 ## Second version: filling in the matrix comlumn-wise (slightly faster)
 ##########################################################################
-
 perm.rep <- function(d,r)
 {
     if (r==0) { PM <- 1 }
@@ -398,7 +397,6 @@ perm.rep <- function(d,r)
 ## Same function as EXPAND.GRID (base package), modified to take 
 ## list as an argument and returns a matrix 
 ##########################################################################
-
 permute <- function (args) 
 {
     nargs <- length(args)
@@ -443,7 +441,6 @@ permute.mat <- function(order)
 ## pinv.all generates all the permutations PR_{d,r} as described in
 ## Appendix B of Chacon and Duong (2014)
 ##########################################################################
-    
 pinv.all <- function(d,r)
 {
     i <- 1:d^r
@@ -460,7 +457,6 @@ pinv.all <- function(d,r)
 ##########################################################################
 ## Block indices for double sums
 ##########################################################################
-
 block.indices <- function(nx, ny, d, r=0, diff=FALSE, block.limit=1e6, npergroup)
 {
     if (missing(npergroup)) 
@@ -488,7 +484,6 @@ block.indices2 <- function(nx, ny, block.limit=1e6, npergroup)
 ####################################################################
 ## Differences for double sums calculations
 ####################################################################
-
 differences <- function(x, y, upper=FALSE, ff=FALSE, Kpow=0)
 {
     if (missing(y)) y <- x
@@ -522,14 +517,12 @@ differences <- function(x, y, upper=FALSE, ff=FALSE, Kpow=0)
 ##########################################################################
 ## Odd factorial
 ##########################################################################
-
 OF <- function(m) { factorial(m)/(2^(m/2)*factorial(m/2)) } 
 
 ##########################################################################
 ## Matrix square root - taken from Stephen Lake 
 ## http://www5.biostat.wustl.edu/s-news/s-news-archive/200109/msg00067.html
 ##########################################################################
-
 matrix.sqrt <- function(A)
 {
     if (length(A)==1) return(sqrt(A))
@@ -543,7 +536,6 @@ matrix.sqrt <- function(A)
 ##########################################################################
 ## Matrix power
 ##########################################################################
-
 matrix.pow <- function(A, n)
 {
     if (nrow(A)!=ncol(A)) stop("A must be a square matrix")
@@ -571,7 +563,6 @@ matrix.pow <- function(A, n)
 ##########################################################################
 ## Kmat computes the commutation matrix of orders m,n
 ##########################################################################
-    
 Kmat <- function(m, n)
 { 
     K <- matrix(0,ncol=m*n,nrow=m*n)
@@ -588,7 +579,6 @@ Kmat <- function(m, n)
 ## mat.Kprod computes row-wise Kronecker products of matrices
 ## Returns a matrix with rows U[i,]%x%V[i,]
 ##########################################################################
-
 mat.Kprod <- function(U,V)
 { 
     n1 <- nrow(U)
@@ -606,7 +596,6 @@ mat.Kprod <- function(U,V)
 ##########################################################################
 ## Kpow computes the Kronecker power of a matrix A
 ##########################################################################
-
 Kpow <- function(A,pow)
 {    
     if (floor(pow)!=pow) stop("pow must be an integer")
@@ -620,7 +609,6 @@ Kpow <- function(A,pow)
 ##########################################################################
 ## Kronecker sum
 ##########################################################################
-
 Ksum <- function(A,B)
 {
     AB <- numeric()
@@ -634,7 +622,6 @@ Ksum <- function(A,B)
 ##########################################################################
 ## Row-wise Kronecker product
 ##########################################################################
-
 rowKpow <- function(A,B,r=1,s=1)
 {
     A <- as.matrix(A)
@@ -659,7 +646,6 @@ rowKpow <- function(A,B,r=1,s=1)
 getRow <- function(object, n) { return(object[n,]) }
 
 ## Returns a matrix with the pow-th Kronecker power of A[i,] in the i-th row
-
 mat.Kpow <- function(A,pow)
 { 
     Apow <- A
@@ -673,7 +659,6 @@ mat.Kpow <- function(A,pow)
 }
 
 ## Vector of all r-th partial derivatives of the normal density at x=0, i.e., D^{\otimes r)\phi(0)
-
 DrL0 <- function(d,r)
 {
     v <- as.vector(Kpow(A=vec(diag(d)),pow=r/2))
@@ -685,9 +670,7 @@ DrL0 <- function(d,r)
 ##########################################################################
 ## Symmetriser matrix
 ##########################################################################
-
 ## Wrapper functions for Chacon & Duong (2014) 
-
 Sdr <- function(d, r, type="recursive")
 {
     type <- match.arg(type, c("recursive", "direct"))
@@ -698,18 +681,17 @@ Sdr <- function(d, r, type="recursive")
 
 Sdrv <- function(d, r, v, type="recursive")
 {
-  type <- match.arg(type, c("recursive", "direct"))
-  v <- as.vector(v)
-  Sdrvec <- do.call(paste("Sdrv", type, sep="."), list(d=d, r=r, v=v))
+    type <- match.arg(type, c("recursive", "direct"))
+    v <- as.vector(v)
+    Sdrvec <- do.call(paste("Sdrv", type, sep="."), list(d=d, r=r, v=v))
   
-  return(Sdrvec)
+    return(Sdrvec)
 }
 
 ##########################################################################
 ## Sdr.direct computes the symmetrizer matrix S_{d,r} based on Equation (4)
 ## as described in Section 3 of Chacon and Duong (2014)
 ##########################################################################
-
 Sdr.direct <- function(d,r)
 { 
     S <- matrix(0,ncol=d^r,nrow=d^r)
@@ -755,8 +737,7 @@ Sdr.direct <- function(d,r)
 ## Sdr.recursive computes the symmetrizer matrix S_{d,r} based on 
 ## the recursive approach detailed in Algorithm 1 in Section 3 of 
 ## Chacon and Duong (2014)
-##########################################################################
-     
+########################################################################## 
 Sdr.recursive <- function(d,r)
 {
     S <- diag(d)
@@ -781,13 +762,11 @@ Sdr.recursive <- function(d,r)
 ## Symmetrizer matrix applied to a vector
 ##########################################################################
     
-
 ##########################################################################
 ## Sdrv.direct computes the result of multiplying the symmetrizer matrix
 ## S_{d,r} by a vector v of length d^r, based on Equation (4) as described
 ## in Section 4 of Chacon and Duong (2014)
 ##########################################################################
-
 Sdrv.direct <- function(d,r,v)
 {
     Sv <- rep(0,d^r)
@@ -833,7 +812,6 @@ Sdrv.direct <- function(d,r,v)
 ## S_{d,r} by a vector v of length d^r, based on the recursive Algorithm 2
 ## as described in Section 4 of Chacon and Duong (2014)
 ##########################################################################
-
 Sdrv.recursive <- function(d,r,v)
 {
     if ((!is.vector(v)) & (!is.matrix(v))) { stop("v must be a vector or a matrix") }
@@ -871,7 +849,6 @@ Sdrv.recursive <- function(d,r,v)
 ##########################################################################
 ## Lp norm between two functions (grid based)
 ##########################################################################
-
 Lpdiff <- function(f1, f2, p=2, index=1)
 {
     if (is.vector(f1$H)) d <- 1 else d <- ncol(f1$H)
@@ -895,7 +872,6 @@ Lpdiff <- function(f1, f2, p=2, index=1)
 }
 
 ## ISE of difference between two KDEs
-
 ise.diff <- function(fhat1, fhat2, xmin, xmax)
 {
     if(!isTRUE(all.equal(fhat1$eval.points, fhat2$eval.points)))
@@ -923,7 +899,6 @@ ise.diff <- function(fhat1, fhat2, xmin, xmax)
 ## Create transparent colour
 ## partial alias for plot3D::alpha.col
 ##########################################################################
-
 ## copied from plot3D::alpha.col
 plot3D.alpha.col <- function (col="grey", alpha=0.5) 
 {

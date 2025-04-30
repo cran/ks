@@ -34,8 +34,10 @@
 
 \examples{
 \donttest{data(geyser, package="MASS")
+geyser.kde <- kde(geyser)
 geyser.fs <- kfs(geyser, binned=TRUE)
-plot(geyser.fs)
+plot(geyser.kde, col=1)
+plot(geyser.fs, add=TRUE, alpha=0.6)
 }}
 
 \keyword{hplot}

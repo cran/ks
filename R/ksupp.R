@@ -1,7 +1,6 @@
 ######################################################################
 ## Kernel support estimate - contour-based or convex hull 
 ######################################################################
-
 ksupp <- function(fhat, cont=95, abs.cont, convex.hull=TRUE)
 {
     if (missing(abs.cont)) abs.cont <- contourLevels(fhat, cont=cont)
@@ -22,7 +21,6 @@ ksupp <- function(fhat, cont=95, abs.cont, convex.hull=TRUE)
 }
 
 ## Devroye-Wise support estimate
-
 dwsupp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, binned, bgridsize, verbose=FALSE, w)
 {
     if (is.vector(x))
@@ -101,9 +99,7 @@ dwsupp <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, binned, bg
 ######################################################################
 ## S3 methods for KSUPP objects
 ######################################################################
-
 ## plot method
-
 plot.ksupp <- function(x, display="plot3D", ...)
 {
     d <- ncol(x)

@@ -1,7 +1,6 @@
-###############################################################################
+############################################################################
 ## Univariate mixture normal densities and derivatives
-###############################################################################
-
+############################################################################
 rnorm.mixt <- function(n=100, mus=0, sigmas=1, props=1, mixt.label=FALSE)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE)))
@@ -64,7 +63,7 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
     return(dens)
 }   
 
-###############################################################################
+############################################################################
 ## Derivatives of the univariate normal 
 ## (code: J.E.Chacon 08/06/2018)
 ##
@@ -75,8 +74,7 @@ dnorm.mixt <- function(x, mus=0, sigmas=1, props=1)
 #
 ## Returns
 ## r-th derivative at x
-###############################################################################
-
+############################################################################
 dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
 {
     r <- deriv.order
@@ -99,7 +97,7 @@ dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
     return(derivt)
 }
 
-###############################################################################
+############################################################################
 ## Double sum  of K(X_i - X_j) used in density derivative estimation
 #
 ## Parameters
@@ -110,8 +108,7 @@ dnorm.deriv <- function (x, mu=0, sigma=1, deriv.order=0)
 #
 ## Returns
 ## Double sum at x
-###############################################################################
-
+############################################################################
 dnorm.deriv.sum <- function(x, sigma, deriv.order, inc=1, binned=FALSE, bin.par, kfe=FALSE)
 {
     r <- deriv.order
@@ -163,11 +160,11 @@ dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
     return(dens)
 }   
 
-###############################################################################
+############################################################################
 ## Multivariate normal densities and derivatives
-###############################################################################
+############################################################################
 
-###############################################################################
+############################################################################
 ## Multivariate normal mixture - random sample
 ## 
 ## Parameters
@@ -180,8 +177,7 @@ dnorm.deriv.mixt <- function(x, mus=0, sigmas=1, props=1, deriv.order=0)
 ## 
 ## Returns
 ## Vector of n observations from the normal mixture 
-###############################################################################
-
+############################################################################
 rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=FALSE)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE)))
@@ -223,7 +219,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
     return(rand[sample(n),])
 }
 
-###############################################################################
+############################################################################
 ## Multivariate normal mixture - density values
 ## 
 ## Parameters
@@ -234,8 +230,7 @@ rmvnorm.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), props=1, mixt.label=
 ## 
 ## Returns
 ## Density values from the normal mixture (at x)
-###############################################################################
-
+############################################################################
 dmvnorm.mixt <- function(x, mus, Sigmas, props=1, verbose=FALSE)
 {  
     if (!(identical(all.equal(sum(props), 1), TRUE)))
@@ -274,7 +269,6 @@ dmvnorm.mixt <- function(x, mus, Sigmas, props=1, verbose=FALSE)
 ##########################################################################
 ## Computation of the r-th derivative vector of the Gaussian density
 ##########################################################################
-
 dmvnorm.deriv <- function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index=FALSE, only.index=FALSE, type="unique")
 {
     type1 <- match.arg(type, c("recursive", "direct", "unique"))
@@ -338,7 +332,6 @@ dmvnorm.deriv <- function(x, mu, Sigma, deriv.order=0, deriv.vec=TRUE, add.index
 ## density phi_Sigma(x) on the basis of Equation (1) and Algotihm 2, as
 ## described in Chacon and Duong (2014)
 ############################################################################
-
 dmvnorm.deriv.direct <- function(x,Sigma,deriv.order=0)
 { 
     if (is.vector(x)) { x <- matrix(x,nrow=1) }
@@ -365,7 +358,6 @@ dmvnorm.deriv.direct <- function(x,Sigma,deriv.order=0)
 ## density phi_Sigma(x) on the basis of Equation (7) and Algorithm 2 as
 ## described in Section 5 of Chacon and Duong (2014)
 ############################################################################
-
 dmvnorm.deriv.recursive <- function(x,Sigma,deriv.order=0)
 { 
     if (is.vector(x)) { x <- matrix(x,nrow=1) }
@@ -399,12 +391,11 @@ dmvnorm.deriv.recursive <- function(x,Sigma,deriv.order=0)
     return(result)
 }
 
-###############################################################################
+############################################################################
 ## dmvnorm.deriv.unique computes the whole vector derivative of the Gaussian
 ## density phi_Sigma(x) from its unique coordinates, based on Algorithm 3 as
 ## described in Section 5 of Chacon and Duong (2014)
-###############################################################################
-
+############################################################################
 dmvnorm.deriv.unique <- function(x,Sigma,deriv.order=0)
 {
     if (is.vector(x)) { x <- matrix(x,nrow=1) }
@@ -549,7 +540,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRU
     else return(deriv=dens)
 }
 
-###############################################################################
+############################################################################
 ## Double sum  of K(X_i - X_j) used in density derivative estimation
 ##
 ## Parameters
@@ -560,8 +551,7 @@ dmvnorm.deriv.mixt <- function(x, mus, Sigmas, props, deriv.order, deriv.vec=TRU
 ##
 ## Returns
 ## Double sum at x
-##############################################################################
-
+#############################################################################
 dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.par, bgridsize, kfe=FALSE, deriv.vec=TRUE, add.index=FALSE, verbose=FALSE)
 {
     r <- deriv.order
@@ -753,7 +743,6 @@ dmvnorm.deriv.sum <- function(x, Sigma, deriv.order=0, inc=1, binned=FALSE, bin.
 
 ## Single partial derivative of the multivariate normal with scalar variance matrix sigma^2 I_d  
 ## Code by Jose  Chacon 04/09/2007
-
 dmvnorm.deriv.scalar <- function(x, mu, sigma, deriv.order, binned=FALSE)
 {
     r <- deriv.order
@@ -825,7 +814,6 @@ dmvnorm.deriv.scalar.sum <- function(x, sigma, deriv.order=0, inc=1, kfe=FALSE, 
 ##########################################################################
 ## Normal scale psi functionals
 ##########################################################################
-
 psins.1d <- function(r, sigma)
 {
     if (r %% 2 ==0)
@@ -862,7 +850,6 @@ psins <- function(r, Sigma, deriv.vec=length(r)==1)
 ##########################################################################
 ## Vector moments of the normal distribution
 ##########################################################################
-
 mur <- function(r, A, mu, Sigma, type="unique")
 {
     type1 <- match.arg(type, c("direct", "recursive", "unique"))
@@ -876,7 +863,6 @@ mur <- function(r, A, mu, Sigma, type="unique")
 ## vector with N(mu,Sigma) distribution, on the basis of Equation (8) in
 ## Section 6 of Chacon and Duong (2014)
 #############################################################################
-
 mur.direct <- function(r, mu, Sigma)
 {
     d <- ncol(Sigma)
@@ -903,7 +889,6 @@ mur.direct <- function(r, mu, Sigma)
 ## Section 6 of Chacon and Duong (2014), using Equation (7) in Section 5
 ## to obtain the Hermite polynomial
 #############################################################################
-
 mur.recursive <- function(r, mu, Sigma)
 { 
     d <- ncol(Sigma)
@@ -928,13 +913,12 @@ mur.recursive <- function(r, mu, Sigma)
     return(drop(Sdrv.recursive(d=d,r=r,v=hmnew)))   
 }
 
-###############################################################################
+############################################################################
 ## mur.unique computes the vector moment E[X^{\otimes r}] for a random vector 
 ## with N(mu,Sigma) distribution, on the basis of Equation (9) in Section 6
 ## of Chacon and Duong (2014), using Algorithm 3 in Section 5, based on the
 ## unique partial derivatives, to obtain the Hermite polynomial
-###############################################################################
-
+############################################################################
 mur.unique <- function(r, mu, Sigma)
 {
     d <- ncol(Sigma)
@@ -1023,7 +1007,6 @@ mur.unique <- function(r, mu, Sigma)
 ##########################################################################
 ## Moments of quadratic forms in normal variables
 ##########################################################################
-
 nur <- function(r, A, mu, Sigma, type="cumulant")
 {
     type <- match.arg(type, c("direct", "recursive", "unique", "cumulant"))
@@ -1046,7 +1029,6 @@ nurs <- function(r, s, A, B, mu, Sigma, type="cumulant")
 ## Equation (10) in Section 6 of Chacon and Duong (2014), and the direct
 ## implementation mur.direct of the normal moments
 #############################################################################
-
 nur.direct <- function(r,A,mu,Sigma)
 {
     vA <- vec(A)
@@ -1061,7 +1043,6 @@ nur.direct <- function(r,A,mu,Sigma)
 ## Equation (10) in Section 6 of Chacon and Duong (2014), and the recursive
 ## implementation mur.recursive of the normal moments
 #############################################################################
-
 nur.recursive <- function(r,A,mu,Sigma)
 {
     vA <- vec(A)
@@ -1076,7 +1057,6 @@ nur.recursive <- function(r,A,mu,Sigma)
 ## Equation (10) in Section 6 of Chacon and Duong (2014), and the function
 ## mur.unique to compute the normal moments from its unique coordinates
 #############################################################################
-
 nur.unique <- function(r,A,mu,Sigma)
 {
     vA <- vec(A)
@@ -1090,7 +1070,6 @@ nur.unique <- function(r,A,mu,Sigma)
 ## X^T AX where X is a random vector with N(mu,Sigma) distribution, using
 ## the recursive formula relating moments and cumulants
 #############################################################################
-
 nur.cumulant <- function(r,A,mu,Sigma)
 {
     if(r==0) { result <- 1 }
@@ -1124,7 +1103,6 @@ nur.cumulant <- function(r,A,mu,Sigma)
 ## Duong (2014), and the direct implementation mur.direct of the
 ## normal moments
 #############################################################################
-
 nurs.direct <- function(r,s,A,B,mu,Sigma)
 {
     vA <- vec(A)
@@ -1141,7 +1119,6 @@ nurs.direct <- function(r,s,A,B,mu,Sigma)
 ## Duong (2014), and the recursive implementation mur.recursive of the
 ## normal moments
 #############################################################################
-
 nurs.recursive <- function(r,s,A,B,mu,Sigma)
 {
     vA <- vec(A)
@@ -1158,7 +1135,6 @@ nurs.recursive <- function(r,s,A,B,mu,Sigma)
 ## Duong (2014), and the function mur.unique to compute the normal moments
 ## from its unique coordinates
 #############################################################################
-
 nurs.unique <- function(r,s,A,B,mu,Sigma)
 {
     vA <- vec(A)
@@ -1175,7 +1151,6 @@ nurs.unique <- function(r,s,A,B,mu,Sigma)
 ## of Chacon and Duong (2014), relating moments and cumulants. The cumulants
 ## are computed using the function kappars, which is based on Theorem 3
 #############################################################################
-
 kappars <- function(r,s,A,B,mu,Sigma)
 { 
     d <- ncol(A)
@@ -1247,7 +1222,6 @@ nurs.cumulant <- function(r,s,A,B,mu,Sigma)
 ##########################################################################
 ## V-statistics with multivariate Gaussian derivatives kernel
 ##########################################################################
-
 Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE)
 {
     if (missing(y)) y <- x
@@ -1264,7 +1238,6 @@ Qr <- function(x, y, Sigma, deriv.order=0, inc=1, type="cumulant", verbose=FALSE
 ## Qr.direct computes the V-statistic using the direct approach, as
 ## described in Section 6 of Chacon and Duong (2014)
 ############################################################################
-
 Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize, verbose=FALSE)
 {
     if (is.vector(x)) x <- matrix(x, nrow=1)
@@ -1279,7 +1252,6 @@ Qr.direct <- function(x, y, Sigma, r=0, inc=1, binned=FALSE, bin.par, bgridsize,
 ## Qr.cumulant computes the V-statistic using the relationship with nur
 ## shown in Theorem 4 of Chacon and Duong (2014)
 ############################################################################
-
 Qr.cumulant <- function(x, y, Sigma, r=0, inc=1, verbose=FALSE)
 {
     if (is.vector(x)) x <- matrix(x, nrow=1)
@@ -1474,7 +1446,7 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
     return(eta)
 }
 
-###############################################################################
+############################################################################
 ## Creates plots of mixture density functions
 ##
 ## Parameters
@@ -1485,8 +1457,7 @@ Qr.1d <- function(x, y, sigma, deriv.order=0, inc=1, verbose=FALSE)
 ## dist - "normal" - normal mixture
 ##      - "t" - t mixture
 ## ...
-###############################################################################
-
+############################################################################
 plotmixt <- function(mus, sigmas, Sigmas, props, dfs, dist="normal", draw=TRUE, deriv.order=0, which.deriv.ind=1, binned=TRUE, ...)
 {
     ## locally set random seed not to interfere with global random number generators
@@ -1691,7 +1662,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
     invisible(fhat)
 }
 
-###############################################################################
+############################################################################
 ## Multivariate t mixture - density values
 ##
 ## Parameters
@@ -1703,8 +1674,7 @@ plotmixt.3d <- function(mus, Sigmas, props, dfs, dist="normal", xlim, ylim, zlim
 ##
 ## Returns
 ## Value of multivariate t mixture density at x
-###############################################################################
-
+############################################################################
 dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE)))
@@ -1729,7 +1699,7 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
     return(dens)
 }
 
-###############################################################################
+############################################################################
 ## Multivariate t mixture - random sample
 ## 
 ## Parameters
@@ -1741,8 +1711,7 @@ dmvt.mixt <- function(x, mus, Sigmas, dfs, props)
 ## 
 ## Returns
 ## Vector of n observations from the t mixture
-###############################################################################
-
+############################################################################
 rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE)))  
@@ -1785,10 +1754,9 @@ rmvt.mixt <- function(n=100, mus=c(0,0), Sigmas=diag(2), dfs=7, props=1)
     return(rand[sample(n),])
 }
 
-###############################################################################
+############################################################################
 ## Moments of multivariate normal mixture
-###############################################################################
-
+############################################################################
 mvnorm.mixt.moment <- function (mus, Sigmas, props)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE)))
@@ -1810,7 +1778,6 @@ mvnorm.mixt.moment <- function (mus, Sigmas, props)
 ######################################################################
 ## Modes for normal mixture
 ######################################################################
-
 mvnorm.mixt.mode <- function(mus, Sigmas, props=1, verbose=FALSE)
 {
     if (!(identical(all.equal(sum(props), 1), TRUE))) 
@@ -1839,7 +1806,6 @@ mvnorm.mixt.mode <- function(mus, Sigmas, props=1, verbose=FALSE)
 ######################################################################
 ## Partition for 2-d normal mixture
 ######################################################################
-
 mvnorm.mixt.part <- function(mus, Sigmas, props=1, xmin, xmax, gridsize, max.iter=100, verbose=FALSE)
 {
     maxSigmas <- 4*max(Sigmas)

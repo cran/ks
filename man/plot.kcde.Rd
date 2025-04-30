@@ -48,8 +48,8 @@ Fhat <- kcde(x=iris[,1])
 plot(Fhat, xlab="Sepal.Length")
 Fhat <- kcde(x=iris[,1:2])
 plot(Fhat)
-Fhat <- kcde(x=iris[,1:3])
-plot(Fhat, alpha=0.3)
+\donttest{Fhat <- kcde(x=iris[,1:3])
+plot(Fhat, alpha=0.3)}
 }
 
 \keyword{hplot}

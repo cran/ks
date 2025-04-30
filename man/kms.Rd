@@ -58,7 +58,7 @@ kms(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE,
   \item{tol.iter,tol.clust,min.clust.size}{tuning parameter values -
   same as input}
   \item{path}{list of density gradient ascent paths where \code{path[[i]]} is
-    the path of \code{y[i,]} (only if \code{keep.path=TRUE})}
+    the path of \code{y[i,]} (if \code{keep.path=TRUE})}
 }
 
 \details{ 

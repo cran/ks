@@ -15,13 +15,12 @@
   \item{...}{other graphics parameters:
     \describe{
       \item{\code{lcol}}{colour for KDE curve (1-d)}
-      \item{\code{col}}{vector of 2 colours. First colour: sample 1>sample 2, second colour:
-	sample 1<sample2.}
+      \item{\code{col}}{vector of 2 colours. First colour: sample 1>sample 2, second colour: sample 1<sample2.}
       \item{\code{add}}{flag to add to current plot. Default is FALSE.}
       \item{\code{rugsize}}{height of rug-like plot (1-d)}
       \item{\code{add.legend}}{flag to add legend. Default is TRUE.}
       \item{\code{pos.legend}}{position label for legend (1-d, 2-d)}
-      \item{\code{alphavec}}{vector of transparency values for contour (3-d)}    
+      \item{\code{alphavec}}{vector of transparency values for contour (3-d)} 
     }
     
     and those used in \code{\link{plot.kde}}
@@ -61,11 +60,19 @@ a1 <- as.matrix(na.omit(air2[, paste0(air.var, ".08:00")]))
 a2 <- as.matrix(na.omit(air2[, paste0(air.var, ".20:00")]))
 colnames(a1) <- air.var
 colnames(a2) <- air.var
-loct <- kde.local.test(x1=a1[,c("co2","pm10")], x2=a2[,c("co2","pm10")])
+air08 <- a1[,c("co2","pm10")]
+air20 <- a2[,c("co2","pm10")]
+
+loct <- kde.local.test(x1=air08, x2=air20)
 plot(loct, lwd=1)
 
-\donttest{## trivariate
-loct <- kde.local.test(x1=a1, x2=a2)
+\donttest{## significant curvature regions
+air20.fs <- kfs(air20)
+plot(air20.fs, add=TRUE)
+
+## trivariate
+air08 <- a1; air20 <- a2
+loct <- kde.local.test(x1=air08, x2=air20)
 plot(loct, xlim=c(0,800), ylim=c(0,300), zlim=c(0,300))}
 }
 

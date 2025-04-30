@@ -1,7 +1,6 @@
 ##############################################################################
 ## Test statistic for multivariate 2-sample test
 ##############################################################################
-
 kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned=FALSE, bgridsize, verbose=FALSE)
 {
     ## default values 
@@ -44,7 +43,7 @@ kde.test <- function(x1, x2, H1, H2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, b
         H2.r1 <- Hns(x=x2, deriv.order=1)
         fhat2.r1 <- predict(kdde(x=x2, H=H2.r1, deriv.order=1), x=apply(x2, 2, mean))
         var.fhat2 <- drop(fhat2.r1 %*% S2 %*% fhat2.r1)
-        }
+    }
     psi21 <- Qr(x=x2, y=x1, Sigma=H2, verbose=verbose) 
 
     ## test statistic + its parameters
@@ -107,12 +106,11 @@ kde.test.1d <- function(x1, x2, h1, h2, psi1, psi2, var.fhat1, var.fhat2, binned
     return(val)
 }
 
-###############################################################################
+##############################################################################
 ## Local kde test
-###############################################################################
+##############################################################################
 
 ## multivariate local test
-
 kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binned, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
     ## default values 
@@ -198,14 +196,14 @@ kde.local.test <- function(x1, x2, H1, H2, h1, h2, fhat1, fhat2, gridsize, binne
         fhat.diff.pos$estimate <- fhat.diff.pos$estimate*ESS
         fhat.diff.neg$estimate <- fhat.diff.neg$estimate*ESS
     }
-    result <- list(fhat1=fhat1, fhat2=fhat2, X2=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=HD2fhat, var.fhat.diff=var.fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, n1=n1, n2=n2, H1=H1, H2=H2, names=parse.name(x1))
+    mc <- as.character(match.call())[2:3]
+    result <- list(fhat1=fhat1, fhat2=fhat2, X2=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=HD2fhat, var.fhat.diff=var.fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, n1=n1, n2=n2, H1=H1, H2=H2, names=parse.name(x1), names.test=mc)
     class(result) <- "kde.loctest"
 
     return(result)
 }
 
 ## 1-d local test
-
 kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, binned=FALSE, bgridsize, verbose=FALSE, supp=3.7, mean.adj=FALSE, signif.level=0.05, min.ESS, xmin, xmax)
 {
     if (missing(h1) & !missing(x1)) h1 <- hpi(x=x1, nstage=2, binned=binned, bgridsize=bgridsize)
@@ -265,15 +263,14 @@ kde.local.test.1d <- function(x1, x2, h1, h2, fhat1, fhat2, gridsize=gridsize, b
         fhat.diff.pos$estimate <- fhat.diff.pos$estimate*ESS
         fhat.diff.neg$estimate <- fhat.diff.neg$estimate*ESS
     }
-
-    result <- list(fhat1=fhat1, fhat2=fhat2, chisq=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=h2D2fhat, var.fhat.diff=var.fhat.diff, n1=n1, n2=n2, h1=h1, h2=h2, H1=h1^2, H2=h2^2, fhat.diff=fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, names=parse.name(x1))
+    mc <- as.character(match.call())[2:3]
+    result <- list(fhat1=fhat1, fhat2=fhat2, chisq=X2, pvalue=pvalue, fhat.diff=fhat.diff, mean.fhat.diff=h2D2fhat, var.fhat.diff=var.fhat.diff, n1=n1, n2=n2, h1=h1, h2=h2, H1=h1^2, H2=h2^2, fhat.diff=fhat.diff, fhat.diff.pos=fhat.diff.pos, fhat.diff.neg=fhat.diff.neg, names=parse.name(x1), names.test=mc)
     class(result) <- "kde.loctest"
 
     return(result)
 }
 
 ## Hochberg (1988) adjustment for multiple correlated tests
-
 hochberg.mult.test <- function(pvalue, gridsize, signif.level)
 {
     pvalue.ord <- pvalue[order(pvalue)]
@@ -301,28 +298,32 @@ hochberg.mult.test <- function(pvalue, gridsize, signif.level)
 #############################################################################
 ## S3 method for kde.loctest objects
 #############################################################################
-
 ## plot methods
-
 plot.kde.loctest <- function(x, ...)
 {
     fhat <- x
-
-    if (is.vector(fhat$fhat1$x)) plotkde.loctest.1d(fhat, ...)
+    names.test <- fhat$names.test
+    if (is.vector(fhat$fhat1$x)) plotkde.loctest.1d(fhat, labels=names.test, ...)
     else
     {
         d <- ncol(fhat$fhat1$x)
 
-        if (d==2) plotkde.loctest.2d(x, ...)
-        else if (d==3) plotkde.loctest.3d(x, ...)
+        if (d==2) plotkde.loctest.2d(x, labels=names.test, ...)
+        else if (d==3) plotkde.loctest.3d(x, labels=names.test, ...)
         else stop("Plot function only available for 1, 2 or 3-d data")   
     }
 }
 
-plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add.legend=TRUE, pos.legend="topright", alpha=1, ...)
+plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add.legend=TRUE, pos.legend="topright", alpha=1, labels, ...)
 {
     if (missing(xlab)) xlab <- x$fhat.diff.pos$names[1]
-    if (missing(ylab)) ylab <- expression("Density difference  "*f[1]-f[2])
+    if (missing(ylab)) 
+    {
+        if (is.null(labels)) ylab <- expression("Density difference "*f[1]-f[2])
+        else ylab <- paste("Density difference", labels[1], "-", labels[2])
+    }  
+    if (is.null(labels)) labels <- c(expression(f[1]>f[2]), expression(f[1]<f[2]))
+    else labels <- c(paste(labels[1], ">", labels[2]), paste(labels[1], "<" ,labels[2]))
     if (missing(col)) col <- hcl.colors(palette="Dark2",2)  
     col <- transparency.col(col, alpha=alpha)
     if (missing(lcol)) lcol <- 1
@@ -335,20 +336,22 @@ plotkde.loctest.1d <- function(x, lcol, col, add=FALSE, xlab, ylab, rugsize, add
     try(image(x$fhat.diff.pos$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.pos$estimate==1, x$fhat.diff.pos$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[1]), ...))
     try(image(x$fhat.diff.neg$eval, c(plot.lim[3], plot.lim[3]+rugsize), cbind(x$fhat.diff.neg$estimate==1, x$fhat.diff.neg$estimate==1), level=0.5, add=TRUE, col=c("transparent", col[2]), ...))
 
-    if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n") 
+    if (add.legend) legend(pos.legend, legend=labels, fill=col, bty="n") 
 }
 
-plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", alpha=1, ...)
+plotkde.loctest.2d <- function(x, col, add=FALSE, add.legend=TRUE, pos.legend="topright", alpha=1, labels, ...)
 { 
     if (missing(col)) col <- hcl.colors(palette="Dark2",2)
     col <- transparency.col(col, alpha=alpha)
     try(plot(x$fhat.diff.pos, col=c("transparent", col[1]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=add, ...))
     try(plot(x$fhat.diff.neg, col=c("transparent", col[2]), abs.cont=0.5, drawlabel=FALSE, disp="filled.contour", alpha=alpha, add=TRUE, ...))
 
-    if (add.legend) legend(pos.legend, legend=c(expression(f[1]>f[2]), expression(f[1]<f[2])), fill=col, bty="n")  
+    if (is.null(labels)) labels <- c(expression(f[1]>f[2]), expression(f[1]<f[2]))
+    else labels <- c(paste(labels[1], ">", labels[2]), paste(labels[1], "<" ,labels[2]))
+    if (add.legend) legend(pos.legend, legend=labels, fill=col, bty="n")  
 }
 
-plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), add.legend=TRUE, ...)
+plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, alphavec=c(0.5, 0.5), add.legend=TRUE, labels, ...)
 {
     if (length(alphavec)==1) alphavec <- rep(alphavec,2)
     if (missing(col)) col <- hcl.colors(palette="Dark2",2) 
@@ -357,7 +360,10 @@ plotkde.loctest.3d <- function(x, col, color, add=FALSE, box=TRUE, axes=TRUE, al
 
     if (add.legend) 
     {
+        if (is.null(labels)) labels <- c(expression(f[1]>f[2]), expression(f[1]<f[2]))
+        else labels <- c(paste(labels[1], ">", labels[2]), paste(labels[1], "<" ,labels[2]))
+
         if (!requireNamespace("plot3D", quietly=TRUE)) stop("Install the plot3D package as it is required.", call.=FALSE)
-        plot3D::colkey(clim=c(1,2), col=col, at=c(1.25, 1.75), add=TRUE, side=1, addlines=TRUE, length=0.2, dist=-0.1, shift=0.1, labels=c(expression(f[1]>f[2]), expression(f[1]<f[2])))
+        plot3D::colkey(clim=c(1,2), col=col, at=c(1.25, 1.75), add=TRUE, side=1, addlines=TRUE, length=0.5, dist=-0.1, shift=0.1, labels=labels)
     }
 }

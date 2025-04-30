@@ -1,8 +1,8 @@
-##############################################################################
+#############################################################################
 ## Kernel discriminant analysis
-###############################################################################
+#############################################################################
 
-###############################################################################
+#############################################################################
 ## KDEs of individual densities for KDA - 1- to 3-dim
 ##
 ## Parameters
@@ -16,8 +16,7 @@
 ## eval.points - evaluation points of dnesity estimate
 ## estimate - list of density estimate
 ## H - list of bandwidth matrices
-##############################################################################
-
+#############################################################################
 kda <- function(x, x.group, Hs, hs, prior.prob=NULL, gridsize, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, w, compute.cont=TRUE, approx.cont=TRUE, kde.flag=TRUE)
 {
     if (missing(eval.points)) eval.points <- x
@@ -216,11 +215,11 @@ kda.nd <- function(x, x.group, Hs, prior.prob, gridsize, supp, eval.points, binn
 ##############################################################################
 ## S3 methods for kda objects
 ##############################################################################
-
-## contourLevel method
-
-contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=TRUE,...) 
+## contourLevels method
+contourLevels.kda <- function(x, prob, cont, approx=TRUE,...) 
 {
+    nlevels <- 5
+    approx <- as.integer(approx)
     fhat <- x
     m <- length(fhat$x)
     hts <- list()
@@ -229,14 +228,13 @@ contourLevels.kda <- function(x, prob, cont, nlevels=5, approx=TRUE,...)
     {
         fhatj <- list(x=fhat$x[[j]], eval.points=fhat$eval.points, estimate=fhat$estimate[[j]], H=fhat$H[[j]], binned=fhat$binned, gridded=fhat$gridded)
         class(fhatj) <- "kde"
-        hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, nlevels=nlevels, approx=approx, ...)
+        hts[[j]] <- contourLevels(x=fhatj, prob=prob, cont=cont, approx=approx, ...)
     }
    
     return(hts) 
 }
 
 ## predict method
-
 predict.kda <- function(object, ..., x)
 {
     fhat <- object
@@ -256,7 +254,6 @@ predict.kda <- function(object, ..., x)
 ## fhat - output from `kda.kde'
 ## y - data points (separate from training data inside fhat)
 ## y.group - data group labels
-
 plot.kda <- function(x, y, y.group, ...) 
 {
     if (is.vector(x$x[[1]]))
@@ -575,7 +572,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
     }   
 }
 
-###############################################################################
+#############################################################################
 ## Find bandwidths for each class in training set, for 2- to 6-dim 
 ##
 ## Parameters
@@ -588,8 +585,7 @@ plotkda.3d <- function(x, y, y.group, prior.prob=NULL, display="plot3D", cont=c(
 ##
 ## Returns
 ## Matrix of bandwidths for each group in training set
-###############################################################################
-
+#############################################################################
 hkda <- function(x, x.group, bw="plugin", ...)
 {
     gr <- sort(unique(x.group))
@@ -658,7 +654,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", ...)
     return(Hs)   
 }
 
-###############################################################################
+#############################################################################
 ## Compares true group classification with an estimated one
 ##
 ## Parameters
@@ -670,8 +666,7 @@ Hkda.diag <- function(x, x.group, bw="plugin", ...)
 ## comp - cross-classification table of groupings - true groups are the rows,
 ##        estimated groups are the columns
 ## error - total mis-classification rate
-###############################################################################
-
+#############################################################################
 compare <- function(x.group, est.group, by.group=FALSE)
 {
     if (length(x.group)!=length(est.group))
@@ -713,7 +708,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
     return(comp)
 }
 
-###############################################################################
+#############################################################################
 ## Computes cross-validated misclassification rates (for use when test data is
 ## not independent of training data) for KDA
 ##
@@ -729,8 +724,7 @@ compare <- function(x.group, est.group, by.group=FALSE)
 ## comp - cross-classification table of groupings - true groups are the rows,
 ##        estimated groups are the columns
 ## error - total mis-classification rate
-###############################################################################
-
+#############################################################################
 compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 {
     if (verbose) pb <- txtProgressBar()
@@ -820,10 +814,9 @@ compare.kda.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, Hstart, by.
     return(compare(x.group, kda.cv.gr, by.group=by.group)) 
 }
 
-###############################################################################
+#############################################################################
 ## Same as compare.kda.cv except uses diagonal b/w matrices
-###############################################################################
-
+#############################################################################
 compare.kda.diag.cv <- function(x, x.group, bw="plugin", prior.prob=NULL, by.group=FALSE, verbose=FALSE, recompute=FALSE, ...)
 {
     if (is.vector(x))  return(compare.kda.cv(x=x, x.group=x.group, by.group=by.group, verbose=verbose, prior.prob=prior.prob, recompute=recompute, ...))

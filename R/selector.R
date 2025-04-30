@@ -1,4 +1,4 @@
-###############################################################################
+#############################################################################
 ## Estimate g_AMSE pilot bandwidths for even orders - 2-dim
 ##
 ## Parameters
@@ -9,8 +9,7 @@
 ##
 ## Returns
 ## g_AMSE pilot bandwidths for even orders
-###############################################################################
-
+#############################################################################
 gamse.even.2d <- function(r, n, psi1, psi2)
 {
     d <- 2
@@ -21,7 +20,7 @@ gamse.even.2d <- function(r, n, psi1, psi2)
     return(g.amse)
 }
 
-###############################################################################
+#############################################################################
 ## Estimate g_AMSE pilot bandwidths for odd orders - 2-dim
 ##
 ## Parameters
@@ -35,8 +34,7 @@ gamse.even.2d <- function(r, n, psi1, psi2)
 ## 
 ## Returns
 ## g_AMSE pilot bandwidths for odd orders
-###############################################################################
-
+#############################################################################
 gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
 {  
     d <- 2
@@ -47,7 +45,7 @@ gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
     return(g.amse)
 }
 
-###############################################################################
+#############################################################################
 ## Estimate g_SAMSE pilot bandwidth - 2- to 6-dim 
 ##
 ## Parameters
@@ -56,8 +54,7 @@ gamse.odd.2d <- function(r, n, psi1, psi2, psi00, RK)
 ##
 ## Returns
 ## g_SAMSE pilot bandwidth
-###############################################################################
-
+#############################################################################
 gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
 {
     d <- ncol(Sigma.star)
@@ -118,11 +115,10 @@ gsamse <- function(Sigma.star, n, modr, nstage=1, psihat=NULL)
     return (g.samse)      
 }
 
-##############################################################################
+############################################################################
 ## Scalar pilot selector for derivatives r>0 from Chacon & Duong (2011)
 ## Generalisation of gsamse for r>0
-##############################################################################
-
+############################################################################
 gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
 {
     if (scv) cf <- c(2^(-d), 2^(-d/2+1), 4)
@@ -178,11 +174,10 @@ gdscalar <- function(x, d, r, n, verbose, binned=FALSE, nstage=1, scv=FALSE)
     return(g2r4)
 }
 
-##############################################################################
+############################################################################
 ## Unconstrained pilot selector for derivatives r>0 from Chacon & Duong (2011)
 ## Generalisation of Gunconstr for r>0
-##############################################################################
-
+############################################################################
 Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, optim.fun="optim")
 {
     if (scv) cf <- c(2^(-(d/2+r+2)), 2)
@@ -240,7 +235,7 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, o
     return(G2r4)
 }
 
-##############################################################################
+############################################################################
 ## Estimate psi functionals using 1-stage plug-in 
 ##
 ## Parameters
@@ -250,8 +245,7 @@ Gdunconstr <- function(x, d, r, n, nstage=1, verbose, binned=FALSE, scv=FALSE, o
 ##
 ## Returns
 ## estimated psi functionals
-###############################################################################
-
+#############################################################################
 psifun1 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
 {
     d <- ncol(x.star)
@@ -301,7 +295,7 @@ psifun1 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
     return(psihat.star)
 }
 
-###############################################################################
+#############################################################################
 ## Estimate psi functionals using 2-stage plug-in 
 ##
 ## Parameters
@@ -310,8 +304,7 @@ psifun1 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
 ##       - "samse" - SAMSE pilot
 ## Returns
 ## estimated psi functionals
-###############################################################################
-
+#############################################################################
 psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbose=FALSE)
 { 
     d <- ncol(x.star)
@@ -362,7 +355,6 @@ psifun2 <- function(x.star, pilot="samse", binned, bin.par, deriv.order=0, verbo
 
         ## pilots are based on 4th order derivatives using 6th order psi functionals
         ## computed above 'psihat6.star'
-
         for (k in 1:nrow(derivt4))
         {
             r <- derivt4[k,]
@@ -494,8 +486,7 @@ psifun2.unconstr <- function(x, binned, bgridsize, deriv.order=0, verbose=FALSE,
 ##
 ## Returns
 ## Plug-in full bandwidth matrix
-###############################################################################
-
+#############################################################################
 hpi <- function(x, nstage=2, binned=TRUE, bgridsize, deriv.order=0)
 {
     ## 1-d selector is taken from KernSmooth's dpik
@@ -655,7 +646,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, ami
     else return(list(H = H, PI.star=amise.star))
 }     
 
-###############################################################################
+#############################################################################
 ## Computes plug-in diagonal bandwidth matrix for 2 to 6-dim
 ##
 ## Parameters
@@ -666,8 +657,7 @@ Hpi <- function(x, nstage=2, pilot, pre="sphere", Hstart, binned, bgridsize, ami
 ##
 ## Returns
 ## Plug-in diagonal bandwidth matrix
-###############################################################################
-
+#############################################################################
 Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim")
 {
     n <- nrow(x)
@@ -780,11 +770,11 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize,
     else return(list(H = H, PI.star=amise.star))
 }
 
-###############################################################################
+#############################################################################
 ## Cross-validation bandwidth selectors
-###############################################################################
+#############################################################################
 
-###############################################################################
+#############################################################################
 ## Computes the least squares cross validation LSCV function for 2 to 6 dim
 ## 
 ## Parameters
@@ -793,8 +783,7 @@ Hpi.diag <- function(x, nstage=2, pilot, pre="scale", Hstart, binned, bgridsize,
 ##
 ## Returns
 ## LSCV(H)
-###############################################################################
-
+#############################################################################
 lscv.1d <- function(x, h, binned, bin.par, deriv.order=0)
 {
     r <- deriv.order
@@ -825,7 +814,7 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
     return(lscv)  
 }
 
-###############################################################################
+#############################################################################
 ## Finds the bandwidth matrix that minimises LSCV for 2 to 6 dim
 ## 
 ## Parameters
@@ -834,8 +823,7 @@ lscv.mat <- function(x, H, binned=FALSE, bin.par, bgridsize, deriv.order=0)
 ##
 ## Returns
 ## H_LSCV
-###############################################################################
-
+#############################################################################
 hlscv <- function(x, binned=TRUE, bgridsize, amise=FALSE, deriv.order=0, bw.ucv=TRUE)
 {
     ## adapted from versions supplied by J.E. Chacon 19/02/2021
@@ -934,7 +922,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
     else return(list(H=H, LSCV=amise.opt))
 }
 
-###############################################################################
+#############################################################################
 ## Finds the diagonal bandwidth matrix that minimises LSCV for 2 to 6 dim
 ## 
 ## Parameters
@@ -943,8 +931,7 @@ Hlscv <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0
 ##
 ## Returns
 ## H_LSCV,diag
-###############################################################################
-
+#############################################################################
 Hlscv.diag <- function(x, Hstart, binned=FALSE, bgridsize, amise=FALSE, deriv.order=0, verbose=FALSE, optim.fun="optim", trunc)
 {
     if (any(duplicated(x))) warning("Data contain duplicated values: LSCV is not well-behaved in this case")
@@ -1003,7 +990,7 @@ hucv <- function(...) { hlscv(...) }
 Hucv <- function(...) { Hlscv(...) }
 Hucv.diag <- function(...) { Hlscv.diag(...) }
 
-###############################################################################
+#############################################################################
 ## Computes the biased cross validation BCV function for 2-dim
 ## 
 ## Parameters
@@ -1012,8 +999,7 @@ Hucv.diag <- function(...) { Hlscv.diag(...) }
 ##
 ## Returns
 ## BCV(H)
-###############################################################################
-
+#############################################################################
 bcv.mat <- function(x, H1, H2, binned=FALSE)
 {
     n <- nrow(x)
@@ -1036,7 +1022,7 @@ bcv.mat <- function(x, H1, H2, binned=FALSE)
     return(list(bcv=bcv, psimat=psi4.mat))
 }
 
-###############################################################################
+#############################################################################
 ## Find the bandwidth matrix that minimises the BCV for 2-dim
 ## 
 ## Parameters
@@ -1047,8 +1033,7 @@ bcv.mat <- function(x, H1, H2, binned=FALSE)
 ##
 ## Returns
 ## H_BCV
-###############################################################################
-
+#############################################################################
 Hbcv <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 {
     n <- nrow(x)
@@ -1078,7 +1063,7 @@ Hbcv <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE
     else return(list(H = H, BCV=amise.opt))
 }
 
-###############################################################################
+#############################################################################
 ## Find the diagonal bandwidth matrix that minimises the BCV for 2-dim
 ## 
 ## Parameters
@@ -1089,8 +1074,7 @@ Hbcv <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE
 ##
 ## Returns
 ## H_BCV, diag
-###############################################################################
-
+#############################################################################
 Hbcv.diag <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=FALSE)
 {
     n <- nrow(x)
@@ -1119,7 +1103,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=
     else return(list(H = H, BCV=amise.opt))
 }
 
-###############################################################################
+#############################################################################
 ## Estimate scalar g_AMSE pilot bandwidth for SCV for 2 to 6 dim
 ##
 ## Parameters
@@ -1129,8 +1113,7 @@ Hbcv.diag <- function(x, whichbcv=1, Hstart, binned=FALSE, amise=FALSE, verbose=
 ##
 ## Returns
 ## g_AMSE pilot bandwidth
-###############################################################################
-
+#############################################################################
 Theta6.elem <- function(d)
 {
     Theta6.mat <- list()
@@ -1206,14 +1189,13 @@ gamse.scv <- function(x.star, d, Sigma.star, Hamise, n, binned=FALSE, bin.par, b
     return(gamse)
 }
 
-###############################################################################
+#############################################################################
 ## Estimate unconstrained G_AMSE pilot bandwidth for SCV for 2 to 6 dim
 ## Code by J.E. Chacon
 ##
 ## Returns
 ## G_AMSE pilot bandwidth
-###############################################################################
-
+#############################################################################
 Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, verbose=FALSE, nstage=1, optim.fun="optim")
 {
     d <- ncol(x)
@@ -1267,7 +1249,7 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, verbose=FALSE, ns
     return(G4) 
 }
 
-###############################################################################
+#############################################################################
 ## Computes the smoothed cross validation function for 2 to 6 dim
 ## 
 ## Parameters
@@ -1277,8 +1259,7 @@ Gunconstr.scv <- function(x, binned=FALSE, bin.par, bgridsize, verbose=FALSE, ns
 ##
 ## Returns
 ## SCV(H)
-###############################################################################
-
+#############################################################################
 scv.1d <- function(x, h, g, binned=TRUE, bin.par, inc=1, deriv.order=0)
 {
     r <- deriv.order
@@ -1325,7 +1306,7 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
     return (scvmat)
 }
 
-###############################################################################
+#############################################################################
 ## Find the bandwidth that minimises the SCV for 1 to 6 dim
 ## 
 ## Parameters
@@ -1336,8 +1317,7 @@ scv.mat <- function(x, H, G, binned=FALSE, bin.par, bgridsize, verbose=FALSE, de
 ##
 ## Returns
 ## H_SCV
-###############################################################################
-
+#############################################################################
 hscv <- function(x, nstage=2, binned=TRUE, bgridsize, plot=FALSE)
 {
     sigma <- sd(x)
@@ -1595,9 +1575,9 @@ Hscv.diag <- function(x, nstage=2, pre="scale", pilot, Hstart, binned, bgridsize
     else return(list(H = H, SCV.star=amise.star))
 }
 
-##############################################################################
+############################################################################
 ## Normal scale selector H_ns for kernel density derivate estimators
-##############################################################################
+############################################################################
 
 Hns <- function(x, deriv.order=0)
 {
@@ -1659,15 +1639,19 @@ Gns.search <- function(G, f, n=10)
     return(Gstart)
 }
 
-##############################################################################
+############################################################################
 ## Normal mixture selector 
-##############################################################################
+############################################################################
 
 Hnm <- function(x, deriv.order=0, G=1:9, subset.ind, mise.flag=FALSE, verbose=FALSE, ...)
 {
     if (!requireNamespace("mclust", quietly=TRUE)) stop("Install the mclust package as it is required.", call.=FALSE)
     modelNames <- "VVV" 
-    
+    ## set local seed
+    current.seed <- .Random.seed
+    on.exit( { .Random.seed <<- current.seed } )
+    set.seed(8192)
+
     if (!missing(subset.ind)) nmixt.fit <- mclust::Mclust(x[subset.ind,], G=G, verbose=verbose, modelNames=modelNames, ...)
     else nmixt.fit <- mclust::Mclust(x, G=G, verbose=verbose, modelNames=modelNames, ...)
 

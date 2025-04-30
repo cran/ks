@@ -1,7 +1,6 @@
 ######################################################################
 ## Deconvolution KDE
 ######################################################################
-
 dckde <- function(...) { return (kdcde(...)) }
 
 kdcde <- function(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, verbose=FALSE, ...)
@@ -31,7 +30,6 @@ kdcde <- function(x, H, h, Sigma, sigma, reg, bgridsize, gridsize, binned, verbo
 ## weights for deconvolution KDE
 ## code adapted from DeconWK 0.6-5, author B. Turlach
 ## R-forge website: https://r-forge.r-project.org/R/?group_id=630
-
 dckde.weights <- function(x, Sigma, H, reg)
 {
     n <- nrow(x)
@@ -55,7 +53,6 @@ dckde.weights <- function(x, Sigma, H, reg)
 }
 
 ## unbiased k-fold cross validation choice of regularisation penalty (gamma)
-
 reg.ucv <- function(x, H, h, Sigma, sigma, k=5, d, binned=FALSE, verbose=FALSE)
 {
     gamma.ucv.temp <- function(gamma) { return(-reg.ucv.val(x=x, H=H, Sigma=Sigma, k=k, reg=gamma^2, binned=binned)) }
@@ -65,7 +62,6 @@ reg.ucv <- function(x, H, h, Sigma, sigma, k=5, d, binned=FALSE, verbose=FALSE)
 }
 
 ## k-fold UCV value for regularisation penalty
-
 reg.ucv.val <- function(x, Sigma, H, reg, k=5, binned=FALSE)
 {
     n <- nrow(x)
@@ -80,4 +76,3 @@ reg.ucv.val <- function(x, Sigma, H, reg, k=5, binned=FALSE)
     }
     return(cv.val)
 }
-

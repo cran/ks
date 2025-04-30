@@ -1,7 +1,6 @@
 ###############################################################################
 ## Kernel mean shift
 ###############################################################################
-
 kms <- function(x, y, H, max.iter=400, tol.iter, tol.clust, min.clust.size, merge=TRUE, keep.path=FALSE, verbose=FALSE)
 {
     n <- nrow(x)
@@ -122,7 +121,6 @@ kms.base <- function(x, H, Hinv, y, max.iter, tol.iter, tol.clust, verbose=FALSE
 ## merge classes in 'label' into a single class
 ## label is a list of vector of class labels
 ## i.e. all classes in label[[j]] merged into new class j
-
 ms.merge.label <- function(ms, label, verbose=FALSE)
 {
     ms.merge <- ms
@@ -152,7 +150,6 @@ ms.merge.label <- function(ms, label, verbose=FALSE)
 }
    
 ## merge mean shift clusters based on distance threshold
-
 ms.merge.dist <- function(ms, tol, verbose)
 {   
     if (missing(tol)) tol <- 1e-1*min(apply(ms$x, 2, IQR))
@@ -168,7 +165,6 @@ ms.merge.dist <- function(ms, tol, verbose)
 }
 
 ## merge mean shift clusters based on min cluster size
-
 ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 {
     if (missing(min.clust.size)) min.clust.size <- round(1e-2*nrow(ms$y),0)
@@ -208,7 +204,6 @@ ms.merge.num <- function(ms, min.clust.size, verbose=FALSE)
 ######################################################################
 ## Cluster partition for 2D kernel mean shift
 #####################################################################
-
 kms.part <- function(x, H, xmin, xmax, gridsize, verbose=FALSE, ...)
 {
     if (missing(H)) H <- Hpi(x, deriv.order=1, binned=TRUE)
@@ -250,9 +245,7 @@ plot.kde.part <- function(x, display="filled.contour", col, col.fun, alpha=1, ad
 #############################################################################
 ## S3 methods for KMS objects
 #############################################################################
-
 ## summary method
-
 summary.kms <- function(object, ...)
 {
     cat("Number of clusters =", object$nclust, "\n")
@@ -262,7 +255,6 @@ summary.kms <- function(object, ...)
 }
 
 ## plot method
-
 plot.kms <- function(x, display="splom", col, col.fun, alpha=1, xlab, ylab, zlab, theta=-30, phi=40, add=FALSE, ...)
 {
     disp <- match.arg(display, c("splom", "plot3D", "rgl"))

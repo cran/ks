@@ -1,8 +1,7 @@
 ######################################################################
 ## Kernel density ridge estimation for 2D/3D data
 #####################################################################
-
-kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min.seg.size, keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat, density.cutoff, pre=TRUE, verbose=FALSE)
+kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min.seg.size=4, keep.path=FALSE, gridsize, xmin, xmax, binned, bgridsize, w, fhat, density.cutoff, pre=TRUE, verbose=FALSE)
 {
     ## default values 
     xnames <- parse.name(x)
@@ -45,11 +44,10 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
             y <- expand.grid(xx, yy, zz)
         }
     }
-    else { y <- as.matrix(y); if (pre) y <- y %*% Sinv12 }
-   
+    else { y <- as.matrix(y); if (pre) y <- y %*% Sinv12 }    
     if (is.vector(y)) y <- matrix(y, nrow=1)
-    if (missing(min.seg.size)) min.seg.size <- round(1e-3*nrow(y), 0)
-    
+    #if (missing(min.seg.size)) min.seg.size <- min(round(1e-3*nrow(y)),1)
+
     ## exclude low density regions from ridge search 
     if (missing(fhat)) fhat <- kde(x=x, w=w, binned=binned)
     if (missing(density.cutoff)) density.cutoff <- contourLevels(fhat, cont=99)
@@ -59,7 +57,7 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
     fhat2 <- kdde(x=x, H=H, deriv.order=2, xmin=xmin, xmax=xmax, binned=binned, bgridsize=bgridsize, gridsize=gridsize, w=w, verbose=verbose) 
     
     ## projected gradient mean shift iterations
-    n.seq <- block.indices(n, nrow(y), d=d, r=0, diff=FALSE)#, block.limit=1e6)
+    n.seq <- block.indices(n, nrow(y), d=d, r=0, diff=FALSE)
     if (verbose) pb <- txtProgressBar() 
     pc <- list()
     
@@ -91,25 +89,28 @@ kdr <- function(x, y, H, p=1, max.iter=400, tol.iter, segment=TRUE, k, kmax, min
         }
     }
     if (verbose) close(pb)
-
     ## remove short segments for p=1
-    if (p==1)
-    {     
-        tol.seg <- 1e-2*max(apply(x.orig, 2, IQR))
-        pc.dendo <- hclust(dist(pc$end.points), method="single")
-        pc.label <- cutree(pc.dendo, h=tol.seg)
-        pc.label.ind <- pc.label %in% which(table(pc.label)>min.seg.size)
-        pc$y <- pc$y[pc.label.ind,]
-        pc$end.points <- pc$end.points[pc.label.ind,]
-        pc$path <- pc$path[pc.label.ind]
-    }
+    # if (p==1)
+    # {     
+    #     tol.seg <- 1e-2*max(apply(x.orig, 2, IQR))
+    #     pc.dendo <- hclust(dist(pc$end.points), method="single")
+    #     pc.label <- cutree(pc.dendo, h=tol.seg)
+    #     pc.label.ind <- pc.label %in% which(table(pc.label)>min.seg.size)
+    #     pc$y <- pc$y[pc.label.ind,]
+    #     pc$end.points <- pc$end.points[pc.label.ind,]
+    #     pc$path <- pc$path[pc.label.ind]
+    # }
     pc$H <- H
     pc$names <- xnames
     if (pre) pc$H <- S12 %*% pc$H %*% S12
     
+    ## keep segments with at least min.seg.size points
     if (segment) pc <- kdr.segment(x=pc, k=k, kmax=kmax, min.seg.size=min.seg.size, verbose=verbose)
-    else pc$end.points <- data.frame(pc$end.points, segment=1L)
+    else pc$end.points <- data.frame(pc$end.points, segment=factor(1L))
      
+    ## force segment from factor to nuemric as this causes error in eks <= 1.0.7
+    pc$end.points$segment <- as.numeric(levels(pc$end.points$segment)[pc$end.points$segment])
+
     ## put paths as last element in list
     path.temp <- pc$path
     pc$path <- NULL
@@ -182,7 +183,6 @@ kdr.base <-function(x, fhat2, H, y, max.iter, tol.iter, p=1, verbose=FALSE, Hinv
 
 ## create segment of KDR filaments
 ## x = output from kdr
-
 kdr.segment <- function(x, k, kmax, min.seg.size, verbose=FALSE)
 {
     ep <- x$end.points
@@ -208,36 +208,53 @@ kdr.segment <- function(x, k, kmax, min.seg.size, verbose=FALSE)
     }
     else kopt <- k
    
+    ## remove singleton segments
     ep <- data.frame(ep, segment=as.integer(cutree(hc, k=kopt)))
     label <- ep$segment
-    tlabel <- as.integer(names(table(label))[table(label) > min.seg.size])
+    tlabel <- as.integer(names(table(label))[table(label) > max(min.seg.size,1)])
     ep <- ep[label %in% tlabel,]
-    ep$segment <- factor(ep$segment, labels=1:length(unique(ep$segment)))
+    ep$segment <- factor(ep$segment)
+    levels(ep$segment) <- 1:length(levels(ep$segment))
     ep$segment <- as.integer(levels(ep$segment))[ep$segment]
     
     ## re-order KDR segments into 'reasonable' linestring order
     ## experimental 
     j <- 1
-    for (i in unique(ep$segment))
+    if (nrow(ep)>0)
     {
-        ep.temp <- as.matrix(ep[ep$segment==i,-ncol(ep)])
-        ep.temp <- data.frame(chain.knnx(ep.temp, k1=1, k2=1), segment=i) 
-        if (j==1) ep.ord <- ep.temp else ep.ord <- rbind(ep.ord, ep.temp) 
-        j <- j+1
+        for (i in unique(ep$segment))
+        {
+            ep.temp <- as.matrix(ep[ep$segment==i,-ncol(ep)])
+            ep.temp <- data.frame(chain.knnx(ep.temp, k1=1, k2=1), segment=i) 
+            if (j==1) ep.ord <- ep.temp else ep.ord <- rbind(ep.ord, ep.temp) 
+            j <- j+1
+        }
+
+        names(ep.ord) <- c(x$names, "segment")
+        rownames(ep.ord) <- NULL
+        
+        ## order in decreasing #points in segment 
+        ep.ord <- split(ep.ord, ep.ord$segment)
+        ep.ord <- ep.ord[order(sapply(ep.ord, nrow), decreasing=TRUE)]
+        ep.ord <- lapply(1:length(ep.ord), function(.) { ep.ord[[.]]$segment <- .; ep.ord[[.]]}) 
+        ep.ord <- do.call(rbind, ep.ord)
+        ep.ord$segment <- factor(ep.ord$segment)
+        levels(ep.ord$segment) <- 1:length(levels(ep.ord$segment))
+        x$end.points <- ep.ord
+        x$min.seg.size <- min.seg.size
+        x$k <- length(levels(ep.ord$segment))
+        if (exists("clust.ind")) x$clust.ind <- clust.ind
     }
-    names(ep.ord) <- c(x$names, "segment")
-    rownames(ep.ord) <- NULL
-    x$end.points <- ep.ord
-    
-    x$min.seg.size <- min.seg.size
-    x$k <- kopt
-    if (exists("clust.ind")) x$clust.ind <- clust.ind
+    else 
+    {
+        x$end.points <- data.frame(x$end.points, segment=factor(1L))
+        names(x$end.points) <- c(x$names, "segment")
+    }
     
     return(x)
 }
 
 ## rbind nearest neighbour of y from x to y
-
 add.knnx <- function(x, y, k=1)
 {
     xynn <- FNN::get.knnx(x, y, k=k)
@@ -249,7 +266,6 @@ add.knnx <- function(x, y, k=1)
 }
 
 ## arrange points in KDR to form a "reasonable" linestring 
-
 chain.knnx <- function(x, k1=1, k2=5)
 {
     ## concatenate the nearest neighbours in a chain
@@ -294,7 +310,6 @@ chain.knnx <- function(x, k1=1, k2=5)
 }
 
 ## Calinski-Harabasz clustering criterion for hierarchical clustering object
-
 clust.crit <- function(hc, x, k, min.seg.size=1)
 {
     label <- cutree(hc, k=k)
@@ -306,7 +321,6 @@ clust.crit <- function(hc, x, k, min.seg.size=1)
 }
 
 ## copied from fpc::calinhara 2020-09-18
-
 fpc.calinhara <- function(x, clustering, cn = max(clustering)) 
 {
     x <- as.matrix(x)
@@ -332,9 +346,7 @@ fpc.calinhara <- function(x, clustering, cn = max(clustering))
 #############################################################################
 ## S3 methods for KDR objects
 #############################################################################
-
 ## plot method 
-
 plot.kdr <- function(x, ...)
 { 
     fhat <- x

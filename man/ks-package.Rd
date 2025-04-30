@@ -75,8 +75,8 @@
   \eqn{\bold{X}_i, i=1,\dots,n}{X_i, i=1, ..., n}. 
   Their \code{plot} methods call \code{\link{plot.kde}}. The bandwidth
   selectors for \code{kde.balloon} are based on the normal scale bandwidth
-  \code{Hns(,deriv.order=2)} via the MSE minimal formula, and for
-  \code{kde.SP} on \code{Hns(,deriv.order=4)} via the Abramson formula.
+  \code{Hns(deriv.order=2)} via the MSE minimal formula, and for
+  \code{kde.SP} on \code{Hns(deriv.order=4)} via the Abramson formula.
   
   --For kernel density derivative estimation, the main function is \code{\link{kdde}}
   \deqn{{\sf D}^{\otimes r}\hat{f}(\bold{x}) = n^{-1} \sum_{i=1}^n {\sf
@@ -184,7 +184,7 @@
   local mode in the density estimate \eqn{\hat{f}}{hat(f)} by following
   the density gradient ascent paths. This mode determines the cluster
   label for \eqn{\bold{x}}{x}.  The bandwidth selectors are those used with
-  \code{\link{kdde}(,deriv.order=1)}.  
+  \code{\link{kdde}(deriv.order=1)}.  
 
   --For kernel density ridge estimation, the main function is
     \code{\link{kdr}}. The kernel density ridge recurrence relation of
@@ -198,7 +198,7 @@
     density gradient, 
     is iterated until \eqn{{\bold x}}{x} converges to the ridge in the
     density estimate. The bandwidth selectors are those used with 
-    \code{\link{kdde}(,deriv.order=2)}. 
+    \code{\link{kdde}(deriv.order=2)}. 
   
   -- For kernel feature significance, the main function
      \code{\link{kfs}}.  The hypothesis test at a point \eqn{\bold{x}}{x} is
@@ -217,7 +217,7 @@
   If \eqn{H_0(\bold{x})}{H0(x)} is rejected, then \eqn{\bold{x}}{x}
   belongs to a significant modal region.
   The bandwidth selectors are those used with
-  \code{\link{kdde}(,deriv.order=2)}. Its \code{plot} method is
+  \code{\link{kdde}(deriv.order=2)}. Its \code{plot} method is
   \code{\link{plot.kfs}}.
      
   --For deconvolution density estimation, the main function is
@@ -231,7 +231,9 @@
   quadratic optimisation involving the error variance and the
   regularisation parameter. The bandwidth selectors are those used with
   \code{\link{kde}}.
-     
+  
+  --For quasi kernel density estimation, the main function is \code{\link{as.kde}}. The gridded data is converted to a quasi kernel density estimate which mimics the output from \code{\link{kde}}.  
+
   --Binned kernel estimation is an approximation to the exact kernel
   estimation and is available for d=1, 2, 3, 4. This makes
   kernel estimators feasible for large samples. 
@@ -243,9 +245,9 @@
   \pkg{rgl} (3-d plot), \pkg{oz} (Australian map) packages, and for \pkg{ks} \eqn{\geq}{>=} 1.14.2, the \pkg{plot3D} (3-d plot) package, have been moved from
   Depends to Suggests. This was done to allow \pkg{ks} to be installed
   on systems where these latter graphical-based packages can't be
-  installed. Furthermore, since the future of OpenGL in R is not certain, 
-  \pkg{plot3D} becomes the default for 3D plotting for \pkg{ks} \eqn{\geq}{>=} 1.12.0. RGL plots are still supported though these may be deprecated in the 
-  future.  
+  installed. For \pkg{ks} \eqn{\geq}{>=}1.12.0, \pkg{plot3D} becomes the 
+  default for 3D plotting, since the future of OpenGL in R is not certain. 
+  RGL plots are still supported though these may be deprecated in the future.  
 }
 
 \author{

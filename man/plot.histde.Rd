@@ -60,9 +60,8 @@
 \seealso{\code{\link{plot.kde}}}
  
 \examples{
-data(iris)
-
 ## univariate example
+data(iris)
 fhat <- histde(x=iris[,2])
 plot(fhat, xlab="Sepal length")
 

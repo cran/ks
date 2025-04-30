@@ -1,7 +1,6 @@
 ########################################################################
 ## Default grid sizes
 ########################################################################
-
 default.gridsize <- function(d)
 {
     if (d==1)      gridsize <- 401
@@ -74,7 +73,6 @@ truncate.grid <- function(x, y, xmin, xmax)
 ## Extended by T Duong to 3- and 4-dim 2006
 ## Extended by Gramack & Gramacki to include unconstrained b/w 2015 
 ########################################################################
-
 binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linear")
 {
     ## default values
@@ -126,7 +124,6 @@ binning <- function(x, H, h, bgridsize, xmin, xmax, supp=3.7, w, gridtype="linea
 ########################################################################
 ## Linear binning
 ########################################################################
-
 linbin.ks <- function(x, gpoints, w)
 {
    n <- length(x)
@@ -205,7 +202,6 @@ linbin4D.ks <- function(x, gpoints1, gpoints2, gpoints3, gpoints4, w)
 ########################################################################
 ## Discrete convolution
 ########################################################################
-
 symconv.1d <- function(keval, gcounts)
 {
     M <- length(gcounts)

@@ -1,8 +1,8 @@
-###############################################################################
+#############################################################################
 ## Multivariate kernel density estimators
-###############################################################################
+#############################################################################
 
-###############################################################################
+#############################################################################
 ## Multivariate kernel density estimate using normal kernels
 ##
 ## Parameters
@@ -17,8 +17,7 @@
 ## Returns
 ## list with first d components with the points that the density
 ## estimate is evaluated at, and values of the density estimate 
-##############################################################################
-
+#############################################################################
 kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, binned, bgridsize, positive=FALSE, adj.positive, w, compute.cont=TRUE, approx.cont=TRUE, unit.interval=FALSE, density=FALSE, verbose=FALSE)
 {
     ## default values
@@ -128,6 +127,7 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     if (density) fhat$estimate[fhat$estimate<0] <- 0
     fhat$binned <- binned
     fhat$names <- parse.name(x)  ## add variable names
+    if (inherits(fhat$eval.points, "list")) names(fhat$eval.points) <- ksd$names
     fhat$w <- w
     fhat$type <- "kde" 
     class(fhat) <- "kde"
@@ -139,10 +139,9 @@ kde <- function(x, H, h, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points, 
     return(fhat)
 }
 
-###############################################################################
+#############################################################################
 ## Univariate kernel density estimate on a grid
-###############################################################################
-
+#############################################################################
 kde.grid.1d <- function(x, h, gridsize, supp=3.7, positive=FALSE, adj.positive, xmin, xmax, gridtype, w)
 {
     if (missing(xmin)) xmin <- min(x) - h*supp
@@ -257,7 +256,7 @@ kde.unit.interval.1d <- function(x, h, w, binned=FALSE)
     return(fhatx)
 }
 
-###############################################################################
+#############################################################################
 ## Bivariate kernel density estimate using normal kernels, evaluated over grid
 ##
 ## Parameters
@@ -272,8 +271,7 @@ kde.unit.interval.1d <- function(x, h, w, binned=FALSE)
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-###############################################################################
-
+#############################################################################
 kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, verbose=FALSE)
 {
     ## initialise grid 
@@ -316,7 +314,6 @@ kde.grid.2d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ######################################################################
 ## Bivariate KDE for data in positive quadrant
 ######################################################################
-
 kde.positive.2d <- function(x, H, adj.positive, binned=FALSE, xmin, xmax, compute.cont=TRUE, approx.cont=TRUE, ...)
 {
     if (missing(adj.positive)) adj.positive <- abs(apply(x, 2, min)) 
@@ -349,7 +346,7 @@ kde.positive.2d <- function(x, H, adj.positive, binned=FALSE, xmin, xmax, comput
     return(fhatx)
 }
 
-###############################################################################
+#############################################################################
 ## Trivariate kernel density estimate using normal kernels, evaluated over grid
 ##
 ## Parameters
@@ -364,8 +361,7 @@ kde.positive.2d <- function(x, H, adj.positive, binned=FALSE, xmin, xmax, comput
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-###############################################################################
-
+#############################################################################
 kde.grid.3d <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, xmax, gridtype, w, verbose=FALSE)
 {
     ## initialise grid 
@@ -430,7 +426,7 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
     return(fhat.list)
 }
 
-###############################################################################
+#############################################################################
 ## Multivariate kernel density estimate using normal kernels,
 ## evaluated at each sample point
 ##
@@ -445,8 +441,7 @@ kde.grid.nd <- function(x, H, gridsize, supp, gridx=NULL, grid.pts=NULL, xmin, x
 ## eval.points - points that KDE is evaluated at
 ## estimate - KDE evaluated at eval.points 
 ## H - bandwidth matrix 
-###############################################################################
-
+#############################################################################
 kde.points <- function(x, H, eval.points, w, verbose) 
 {
     n <- nrow(x)
@@ -486,9 +481,7 @@ kde.points.1d <- function(x, h, eval.points, positive=FALSE, adj.positive, w)
 #############################################################################
 ## S3 methods for KDE objects
 #############################################################################
-
 ## predict method for KDE objects
-
 predict.kde <- function(object, ..., x, zero.flag=TRUE)
 {
     fhat <- grid.interp(x=x, gridx=object$eval.points, f=object$estimate)
@@ -498,7 +491,6 @@ predict.kde <- function(object, ..., x, zero.flag=TRUE)
 }
 
 ## plot method
-
 plot.kde <- function(x, ...)
 { 
     fhat <- x
@@ -595,7 +587,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
         if (any(fhat$type=="kcurv")) col.fun <- function(n) { hcl.colors(n, palette="Oranges",rev=TRUE, alpha=alpha) }
         else col.fun <- function(n) { hcl.colors(n, palette="heat",rev=TRUE, alpha=alpha) }
     }
-  
+    
     ## perspective/wireframe plot
     if (disp=="persp")
     {
@@ -707,7 +699,7 @@ plotkde.2d <- function(fhat, display="slice", cont=c(25,50,75), abs.cont, approx
         clev <- c(min(c(fhat$estimate, hts)-0.01*max(abs(fhat$estimate))), hts, max(c(fhat$estimate, hts)) + 0.01*max(abs(fhat$estimate)))
         clev <- unique(clev) 
 
-        if (!add) plot(fhat$eval.points[[1]], fhat$eval.points[[2]], type="n", xlab=xlab, ylab=ylab, ...)
+        if (!add) plot(fivenum(fhat$eval.points[[1]]), fivenum(fhat$eval.points[[2]]), type="n", xlab=xlab, ylab=ylab, ...)
         .filled.contour(fhat$eval.points[[1]], fhat$eval.points[[2]], z=fhat$estimate, levels=clev, col=col)
       
         if (!missing(lwd))
@@ -760,7 +752,7 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
             if (any(fhat$type=="kcurv")) col.fun <- function(n) { hcl.colors(n, palette="Oranges",rev=TRUE) }
             else col.fun <- function(n) { hcl.colors(n, palette="heat",rev=TRUE) }
         }
-        col <- col.fun(n=length(hts))
+        col <- col.fun(length(hts))
     }    
     colors <- col
     if (missing(xlab)) xlab <- fhat$names[1]
@@ -807,12 +799,14 @@ plotkde.3d <- function(fhat, display="plot3D", cont=c(25,50,75), abs.cont, appro
 
 ## contourLevels method
 ## create S3 generic 
-
 contourLevels <- function(x, ...) UseMethod("contourLevels")    
 
-contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
+contourLevels.kde <- function(x, prob, cont, approx=TRUE, ...)
 { 
+    nlevels <- 5
+    approx <- as.integer(approx)
     fhat <- x
+
     if (is.vector(fhat$x))
     {
         d <- 1; n <- length(fhat$x)
@@ -833,7 +827,11 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
     }
   
     if (missing(prob) & missing(cont))
-        hts <- pretty(fhat$estimate, n=nlevels) 
+    {    
+        hts <- pretty(fhat$estimate, n=nlevels)
+        args <- list(...)
+        if (any(pmatch(names(args), "nlevels"))) warning("nlevels=5 always so changing nlevels has no effect") 
+    }
     else
     {
         if (approx & fhat$gridded)
@@ -841,20 +839,61 @@ contourLevels.kde <- function(x, prob, cont, nlevels=5, approx=TRUE, ...)
         else
             dobs <- kde(x=fhat$x, H=fhat$H, eval.points=fhat$x, w=w)$estimate 
         
-        if (!missing(prob) & missing(cont))
-            hts <- quantile(dobs, prob=prob)
+        if (approx<=1)
+        {
+            if (!missing(prob) & missing(cont))
+                hts <- quantile(dobs, prob=prob)
           
-        if (missing(prob) & !missing(cont))
-            hts <- quantile(dobs, prob=(100-cont)/100)
+            if (missing(prob) & !missing(cont))
+                hts <- quantile(dobs, prob=(100-cont)/100)
+        }
+        else 
+            hts <- contourLevelskde.grid(x=x, prob=prob, cont=cont)
+
     }
       
     return(hts)
 }
 
-###############################################################################
-## Riemann sums to compute approximate Lebesgue measure of contour set
-###############################################################################
+## approximate contour levels using estimation grid only from "kde" object and not 
+## original data sample  
+contourLevelskde.grid <- function(x, prob, cont)
+{ 
+    fhat <- x
+    if (!is.list(fhat$eval.points)) d <- 1 else d <- length(fhat$eval.points)
+    fhat$estimate[fhat$estimate<0] <- 0
+    
+    ## compute Riemann probability for each bin 
+    if (d==1)
+    {
+        del.mat <- c(0, diff(fhat$eval.points))
+    }
+    else
+    {
+        del <- lapply(fhat$eval.points, function(.) c(0, diff(.)))
+        del.mat <- as.matrix(expand.grid(del))
+        del.mat <- apply(del.mat, 1, prod)
+        del.mat <- array(del.mat, dim=dim(fhat$estimate))
+    }
+    cestimate <- fhat$estimate*del.mat
 
+    ## alpha density contour consists of ordered bins whose prob sum = alpha   
+    cestimate.ord <- order(cestimate)
+    cestimate[cestimate.ord] <- cumsum(cestimate[cestimate.ord]) 
+    cestimate <- (cestimate-min(cestimate))/(max(cestimate)-min(cestimate))
+
+    ## contour levels are min of density values of density contours
+    if (missing(prob) & !missing(cont)) prob <- (100-cont)/100
+    hts <- sapply(prob, function(.) fhat$estimate[which.min(abs(cestimate-.))]) 
+    names(hts) <- paste0(prob*100, "%")  
+
+    return(hts)
+}
+
+
+#############################################################################
+## Riemann sums to compute approximate Lebesgue measure of contour set
+#############################################################################
 contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 {
     if (missing(abs.cont))
@@ -873,10 +912,60 @@ contourSizes <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
     return(num.int*delta.int)
 }
 
-###############################################################################
-## Riemann sums to compute approximate probability of contour set
-###############################################################################
+contourBreaks <- function(x, n=3, cont=c(25,50,75), type="density")
+{
+    is.kdde <- FALSE 
+    #if (!inherits(x, c("kde", "kqde"))) message("contourBreaks is defined rigorously for `kde' objects only")
+    cb <- .contourBreaks(x=x, n=n, cont=cont, type=type, is.kdde=is.kdde)
 
+    return(cb)
+}
+
+.contourBreaks <- function(x, n=3, cont=c(25,50,75), type="density", is.kdde=FALSE)
+{
+    type <- match.arg(type, c("density", "length", "quantile", "natural"))
+    xe <- x
+    if (any(names(x) %in% "estimate")) xe <- unlist(x$estimate)
+    neg.prop <- abs(mean(xe[xe<=0]))/abs(mean(xe[xe>0]))
+
+    if (type=="density")
+        clev <- c(min(xe, na.rm=TRUE), contourLevels(x, cont=cont), max(xe, na.rm=TRUE))
+    else if (type=="length")
+        clev <- seq(min(xe, na.rm=TRUE), max(xe, na.rm=TRUE), length=n+2) 
+    else if (type=="quantile")
+    {
+        prob <- sort(unique((100-cont)/100)) 
+        if (neg.prop > 0.01) 
+            clev <- c(min(xe, na.rm=TRUE), quantile(xe[xe<=0], prob=prob), quantile(xe[xe>0], prob=prob), max(xe, na.rm=TRUE))
+        else
+            clev <- c(min(xe, na.rm=TRUE), quantile(xe, prob=prob), max(xe, na.rm=TRUE))
+    }
+    else if (type=="natural")
+    {
+        ## set local seed
+        if (!exists(".Random.seed")) rnorm(1)
+        current.seed <- .Random.seed
+        on.exit( { .Random.seed <<- current.seed } )
+        set.seed(8192)
+        clev <- c(min(xe, na.rm=TRUE), sort(as.vector(kmeans(as.vector(xe), centers=max(1,n), nstart=10)$centers)), max(xe, na.rm=TRUE))
+    }
+    
+    clev <- sort(clev)
+    npos <- sum(clev>=0)
+    nneg <- sum(clev<0)
+    include.min <- is.kdde | (nneg==1 & neg.prop>0.01)
+    include.max <- is.kdde | npos==1
+    if (!include.min) clev <- tail(clev, n=-1)
+    if (!include.max) clev <- head(clev, n=-1)
+    clev <- unique(clev)
+    
+    return(clev)
+}
+
+
+#############################################################################
+## Riemann sums to compute approximate probability of contour set
+#############################################################################
 contourProbs <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 {
     if (missing(abs.cont)) 
@@ -901,8 +990,7 @@ contourProbs <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
     return(num.int)
 }
  
-
-###############################################################################
+#############################################################################
 ## Generate grid over a set of points
 ##
 ## Parameters
@@ -915,8 +1003,7 @@ contourProbs <- function(x, abs.cont, cont=c(25,50,75), approx=TRUE)
 ## gridx - list of intervals, one for each co-ord direction so that
 ##         gridx[[1]] x gridx[[2]] x ... x gridx[[d]] is the grid
 ## stepsize - vector of step sizes 
-###############################################################################
-
+#############################################################################
 make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
 {
     d <- ncol(x)
@@ -963,7 +1050,7 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
     return(gridx)
 }  
 
-###############################################################################
+#############################################################################
 ## Generate kernel (rectangular) support at data point
 ## 
 ## Parameters
@@ -974,8 +1061,7 @@ make.grid.ks <- function(x, H, tol, gridsize, xmin, xmax, gridtype)
 ## Returns
 ## list of min and max points of support (here we parameterise rectangles
 ## by their min = lower left co-ord and max = upper right coord)
-###############################################################################
-
+#############################################################################
 make.supp <- function(x, H, tol)
 {
     n <- nrow(x)
@@ -993,7 +1079,7 @@ make.supp <- function(x, H, tol)
     return(list(xmin=xmin, xmax=xmax))
 }
 
-###############################################################################
+#############################################################################
 ## Find the grid points contained in kernel support rectangles 
 ##
 ## Parameters
@@ -1002,8 +1088,7 @@ make.supp <- function(x, H, tol)
 ##
 ## Returns
 ## list of min and max points of the grid for each rectangle 
-###############################################################################
-
+#############################################################################
 find.gridpts <- function(gridx, suppx)
 {
     xmax <- suppx$xmax
@@ -1030,10 +1115,9 @@ find.gridpts <- function(gridx, suppx)
     return(list(xmin=gridpts.min, xmax=gridpts.max))
 } 
 
-##############################################################################
+#############################################################################
 ## Interpolate the values of f defined on gridx at new values x 
-##############################################################################
-
+#############################################################################
 grid.interp <- function(x, gridx, f)
 {
     if (!is.list(gridx))
@@ -1154,16 +1238,14 @@ grid.interp.3d <- function(x, gridx, f)
 
 ## Linear intepolation based on kernel estimation grid
 ## alias for predict.kde
-
 kde.approx <- function(fhat, x)
 {
     return(grid.interp(x=x, gridx=fhat$eval.points, f=fhat$estimate))
 }
 
-##############################################################################
+#############################################################################
 ## Find the nearest grid points surrounding point x for non-uniform grids 
-##############################################################################
-
+#############################################################################
 varying.grid.interp <- function(x, gridx, f)
 {
     if (!is.list(gridx))
@@ -1240,3 +1322,122 @@ varying.grid.interp.1d <- function(x, gridx, f)
 
   return(fx)
 }
+
+#############################################################################
+## Convert estimation grid to quasi-kernel density estimator
+## Allow estimate to be negative
+#############################################################################
+
+as.kde <- function(x, density)
+{
+    ## eval.points is tidy matrix 
+    if (inherits(x, c("data.frame", "matrix","numeric")))
+    {
+        d <- ncol(x)-1
+        eval.points <- x[,1:d]
+        estimate <- x[,(d+1)]
+        
+        if (!all(is.na(names(eval.points))) & d>1) xnames <- names(eval.points) 
+        else 
+        {
+            if (d<=3) xnames <- c("x","y","z")[1:d]
+            else xnames <- paste0("x[,", 1:d,"]")
+        }
+        if (d>1)
+        {
+            eval.points <- lapply(1:d, function(.) sort(unique(unlist(eval.points[,.]))))
+            names(eval.points) <- xnames
+            estimate <- array(estimate, dim=lengths(eval.points))
+        }
+        
+    }
+    else 
+    {
+        eval.points <- x$eval.points
+        estimate <- x$estimate
+        if (is.matrix(x$estimate)) d <- length(x$eval.points) else d <- 1
+        if (!all(is.na(names(eval.points))) & d>1) xnames <- names(eval.points) 
+        else
+        {
+            if (d<=3) xnames <- c("x","y","z")[1:d]
+            else xnames <- paste0("x[,", 1:d,"]")
+        }
+    }
+
+    if (d==1) x <- 0
+    else 
+    {
+        x <- matrix(0, ncol=d, nrow=1) 
+        colnames(x) <- xnames
+    }
+
+    if (missing(density)) density <- ifelse(all(estimate>=0), TRUE, abs(mean(estimate[estimate<0]))/mean(estimate[estimate>=0]) < 1e-6)
+
+    if (density)
+    {
+        estimate[estimate<0] <- 0
+        fhat <- list(x=x, estimate=estimate, eval.points=eval.points)
+        fhat$gridded <- TRUE
+        fhat$cont <- contourLevels.kqde(fhat, cont=1:99)
+        fhat$names <- xnames
+        fhat$type <- "kde" 
+        class(fhat) <- "kqde"
+    }
+    else
+    {
+        fhat <- list(x=x, estimate=estimate, eval.points=eval.points)
+        fhat$gridded <- TRUE
+        fhat$cont <- contourLevels.kqdde(fhat, cont=1:99)
+        fhat$estimate <- list(estimate)
+        fhat$names <- xnames
+        fhat$deriv.order <- 1L
+        fhat$deriv.ind <- matrix(1, nrow=1) 
+        fhat$type <- "kdde" 
+        class(fhat) <- "kqdde"
+    }
+    
+    return(fhat)
+}
+
+plot.kqde <- plot.kde 
+predict.kqde <- predict.kde
+
+contourLevels.kqde <- function(x, prob, cont, ...) 
+{ 
+    contourLevelskde.grid(x=x, prob=prob, cont=cont) 
+}
+
+plot.kqdde <- plot.kdde 
+predict.kqdde <- predict.kdde
+
+contourLevels.kqdde <- function(x, prob, cont, ...) 
+{ 
+    if (is.list(x$estimate)) x$estimate <- x$estimate[[1]]
+    xpos <- xneg <- x
+    xpos$estimate[xpos$estimate<0] <- 0 
+    xneg$estimate[xneg$estimate>=0] <- 0 
+    xneg$estimate <- -xneg$estimate 
+    xpos.ct <- contourLevelskde.grid(x=xpos, prob=prob, cont=cont)
+    xneg.ct <- contourLevelskde.grid(x=xneg, prob=prob, cont=cont) 
+    xct <- rbind(-xneg.ct, xpos.ct)
+    rownames(xct) <- NULL
+
+    return(xct)
+}
+
+## create S3 generic 
+addContourLabels <- function(x, ...) UseMethod("addContourLabels")
+
+addContourLabels.kde <- function(x, cont, abs.cont, ...)
+{
+    if (missing(abs.cont)) abs.cont <- contourLevels(x, cont=cont)
+    else cont <- abs.cont
+    abs.cont <- sort(c(min(x$estimate)-0.1*abs(max(x$estimate)), abs.cont, max(x$estimate)+0.1*abs(max(x$estimate))))
+    contlabel <- sort(unique(c(0,cont)))
+    xcontlabel <- cut(x$estimate, abs.cont, right=TRUE, labels=contlabel)
+    xcontlabel <- array(as.numeric(levels(xcontlabel))[xcontlabel], dim=dim(x$estimate))
+    x$estimate <- xcontlabel
+
+    return(x)
+}
+
