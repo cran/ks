@@ -1,5 +1,9 @@
 Change log file for ks
 
+1.15.1
+-Fixed bug in transparency.col() (MacOS only).
+-Marked all 3D plots in examples as donttest.  
+
 1.15.0
 -Fixed bug in pkde() with decreasing cumulative probabilities.  
 -Removed nlevels parameter from, and added approx=2 option to compute 

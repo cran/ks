@@ -108,7 +108,7 @@ summary(kms.crabs)
 
 kms.crabs <- kms(x=crabs[,c("FL","CW","RW")])
 plot(kms.crabs, pch=16)
-plot(kms.crabs, display="plot3D", pch=16) 
+\donttest{plot(kms.crabs, display="plot3D", pch=16)}
 }
 
 \keyword{cluster}

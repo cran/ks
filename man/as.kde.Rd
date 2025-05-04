@@ -50,7 +50,7 @@ f2.kde <- as.kde(f2, density=FALSE)
 plot(f2.kde, display="filled.contour")
 plot(f2.kde, display="persp", phi=10)
 
-## trivariate
+\donttest{## trivariate
 mus3 <- c(0,0,0)
 Sigmas3 <- 1/2*diag(c(1,1/3,2))
 props3 <- 1
@@ -58,7 +58,7 @@ ep3 <- expand.grid(x=seq(-3,3, length=51), y=seq(-3,3, length=51), z=seq(-3,3, l
 est3 <- dmvnorm.mixt(ep3, mus=mus3, Sigmas=Sigmas3, props=props3)
 f3 <- data.frame(ep3, estimate=est3)
 f3.kde <- as.kde(f3)
-plot(f3.kde)
+plot(f3.kde)}
 }
 
 \keyword{smooth}

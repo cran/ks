@@ -83,8 +83,8 @@ kcopula.de(x, H, gridsize, gridtype, xmin, xmax, supp=3.7, eval.points,
 data(fgl, package="MASS")
 x <- fgl[,c("RI", "Na")]
 Chat <- kcopula(x=x)
-plot(Chat, display="persp", border=1)
 plot(Chat, display="filled.contour", lwd=1)
+plot(Chat, display="persp", border=1)
 }
 
 \keyword{smooth}

@@ -906,10 +906,12 @@ plot3D.alpha.col <- function (col="grey", alpha=0.5)
     return(rgb(t(RGBini), maxColorValue=255, alpha=alpha*255))
 }
 
+#transparency.col <- plot3D.alpha.col 
 transparency.col <- function(col, alpha)
 { 
-    trans.ind <- col!="transparent"
-    col[trans.ind] <- plot3D.alpha.col(col[trans.ind], alpha=alpha)
+    #trans.ind <- as.vector(na.omit(col!="transparent"))
+    trans.ind <- !(col %in% "transparent")
+    col[trans.ind] <- plot3D.alpha.col(col[trans.ind], alpha=alpha) 
     
     return(col)
 }

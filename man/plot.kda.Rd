@@ -67,11 +67,11 @@ ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
 plot(kda.fhat, alpha=0.2, drawlabels=FALSE)
 
-## trivariate example
+\donttest{## trivariate example
 ir <- iris[,1:3]
 ir.gr <- iris[,5]
 kda.fhat <- kda(x=ir, x.group=ir.gr)
-plot(kda.fhat) ## colour=species, transparency=density heights
+plot(kda.fhat) ## colour=species, transparency=density heights}
 }
 
 \keyword{hplot}

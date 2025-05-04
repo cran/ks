@@ -117,10 +117,10 @@ fhat <- kde(x=iris[,2:3])
 plot(fhat, display="filled.contour", cont=seq(10,90,by=10), lwd=1, alpha=0.5)
 plot(fhat, display="persp", border=1, alpha=0.5)
 
-## trivariate example
+\donttest{## trivariate example
 fhat <- kde(x=iris[,2:4])
 plot(fhat)
-if (interactive()) plot(fhat, display="rgl")
+if (interactive()) plot(fhat, display="rgl")}
 }
 
 \keyword{hplot}
